@@ -15,8 +15,8 @@ package org.apache.hadoop.security.authentication.server;
 
 import org.apache.hadoop.security.authentication.client.AuthenticationException;
 import org.apache.hadoop.security.authentication.client.PseudoAuthenticator;
-import org.apache.http.client.utils.URLEncodedUtils;
-import org.apache.http.NameValuePair;
+import org.apache.hc.core5.net.URLEncodedUtils;
+import org.apache.hc.core5.http.NameValuePair;
 
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
