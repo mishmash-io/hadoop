@@ -17,7 +17,6 @@ import org.apache.hadoop.security.authentication.server.AuthenticationFilter;
 import org.apache.hc.client5.http.impl.classic.CloseableHttpResponse;
 import org.apache.hc.client5.http.auth.AuthScope;
 import org.apache.hc.client5.http.auth.Credentials;
-import org.apache.hc.client5.http.auth.CredentialsProvider;
 import org.apache.hc.client5.http.impl.classic.CloseableHttpClient;
 import org.apache.hc.client5.http.classic.methods.HttpGet;
 import org.apache.hc.client5.http.classic.methods.HttpPost;
@@ -215,7 +214,7 @@ public class AuthenticatorTestCase {
     );
 
     Credentials useJaasCreds = new Credentials() {
-      public String getPassword() {
+      public char[] getPassword() {
         return null;
       }
       public Principal getUserPrincipal() {
@@ -223,7 +222,7 @@ public class AuthenticatorTestCase {
       }
     };
 
-    CredentialsProvider jaasCredentialProvider
+    BasicCredentialsProvider jaasCredentialProvider
         = new BasicCredentialsProvider();
     jaasCredentialProvider.setCredentials(new AuthScope(null, null, -1, null, null), useJaasCreds);
     // Set credential provider
@@ -232,9 +231,9 @@ public class AuthenticatorTestCase {
     return builder.build();
   }
 
-  private void doHttpClientRequest(HttpClient httpClient, HttpUriRequest request) throws Exception {
+  private void doHttpClientRequest(CloseableHttpClient httpClient, HttpUriRequest request) throws Exception {
     try (CloseableHttpResponse response = httpClient.execute(request)) {
-      final int httpStatus = response.getStatusLine().getStatusCode();
+      final int httpStatus = response.getCode();
       assertEquals(HttpURLConnection.HTTP_OK, httpStatus);
       EntityUtils.consumeQuietly(response.getEntity());
     }
@@ -250,7 +249,7 @@ public class AuthenticatorTestCase {
         HttpPost post = new HttpPost(getBaseURL());
         byte [] postBytes = POST.getBytes();
         ByteArrayInputStream bis = new ByteArrayInputStream(postBytes);
-        InputStreamEntity entity = new InputStreamEntity(bis, ContentType.APPLICATION_OCTET_STREAM, postBytes.length);
+        InputStreamEntity entity = new InputStreamEntity(bis, postBytes.length, ContentType.APPLICATION_OCTET_STREAM);
 
         // Important that the entity is not repeatable -- this means if
         // we have to renegotiate (e.g. b/c the cookie wasn't handled properly)
