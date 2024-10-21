@@ -14,6 +14,7 @@
 package org.apache.hadoop.security.authentication.server;
 
 import java.util.Properties;
+import java.util.concurrent.TimeUnit;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -37,6 +38,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.fail;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.Timeout;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mockito;
 
@@ -65,6 +67,7 @@ import org.mockito.Mockito;
     "objectClass: inetOrgPerson",
     "uid: bjones",
     "userPassword: p@ssw0rd"})
+@Timeout(value=60000, unit=TimeUnit.MILLISECONDS)
 public class TestLdapAuthenticationHandler extends AbstractLdapTestUnit {
   private LdapAuthenticationHandler handler;
 
@@ -87,7 +90,7 @@ public class TestLdapAuthenticationHandler extends AbstractLdapTestUnit {
     return p;
   }
 
-  @Test(timeout = 60000)
+  @Test
   public void testRequestWithoutAuthorization() throws Exception {
     HttpServletRequest request = Mockito.mock(HttpServletRequest.class);
     HttpServletResponse response = Mockito.mock(HttpServletResponse.class);
@@ -97,7 +100,7 @@ public class TestLdapAuthenticationHandler extends AbstractLdapTestUnit {
     Mockito.verify(response).setStatus(HttpServletResponse.SC_UNAUTHORIZED);
   }
 
-  @Test(timeout = 60000)
+  @Test
   public void testRequestWithInvalidAuthorization() throws Exception {
     HttpServletRequest request = Mockito.mock(HttpServletRequest.class);
     HttpServletResponse response = Mockito.mock(HttpServletResponse.class);
@@ -111,7 +114,7 @@ public class TestLdapAuthenticationHandler extends AbstractLdapTestUnit {
     Mockito.verify(response).setStatus(HttpServletResponse.SC_UNAUTHORIZED);
   }
 
-  @Test(timeout = 60000)
+  @Test
   public void testRequestWithIncompleteAuthorization() throws Exception {
     HttpServletRequest request = Mockito.mock(HttpServletRequest.class);
     HttpServletResponse response = Mockito.mock(HttpServletResponse.class);
@@ -121,7 +124,7 @@ public class TestLdapAuthenticationHandler extends AbstractLdapTestUnit {
     assertNull(handler.authenticate(request, response));
   }
 
-  @Test(timeout = 60000)
+  @Test
   public void testRequestWithAuthorization() throws Exception {
     HttpServletRequest request = Mockito.mock(HttpServletRequest.class);
     HttpServletResponse response = Mockito.mock(HttpServletResponse.class);
@@ -139,7 +142,7 @@ public class TestLdapAuthenticationHandler extends AbstractLdapTestUnit {
     assertEquals("bjones", token.getName());
   }
 
-  @Test(timeout = 60000)
+  @Test
   public void testRequestWithWrongCredentials() throws Exception {
     HttpServletRequest request = Mockito.mock(HttpServletRequest.class);
     HttpServletResponse response = Mockito.mock(HttpServletResponse.class);

@@ -49,7 +49,7 @@ import java.util.concurrent.TimeUnit;
 /**
  * Tests for Kerberos Authentication Handler.
  */
-@Timeout(60000, unit=TimeUnit.MILLISECONDS)
+@Timeout(value=60000, unit=TimeUnit.MILLISECONDS)
 public class TestKerberosAuthenticationHandler
     extends KerberosSecurityTestcase {
 

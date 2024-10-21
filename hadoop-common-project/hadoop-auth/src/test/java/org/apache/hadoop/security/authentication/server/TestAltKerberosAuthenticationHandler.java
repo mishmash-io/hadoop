@@ -15,13 +15,16 @@ package org.apache.hadoop.security.authentication.server;
 
 import java.io.IOException;
 import java.util.Properties;
+import java.util.concurrent.TimeUnit;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import org.apache.hadoop.security.authentication.client.AuthenticationException;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.Timeout;
 import org.mockito.Mockito;
 
+@Timeout(value=60000, unit=TimeUnit.MILLISECONDS)
 public class TestAltKerberosAuthenticationHandler
     extends TestKerberosAuthenticationHandler {
 
@@ -47,7 +50,7 @@ public class TestAltKerberosAuthenticationHandler
     return AltKerberosAuthenticationHandler.TYPE;
   }
 
-  @Test(timeout=60000)
+  @Test
   public void testAlternateAuthenticationAsBrowser() throws Exception {
     HttpServletRequest request = Mockito.mock(HttpServletRequest.class);
     HttpServletResponse response = Mockito.mock(HttpServletResponse.class);
@@ -62,7 +65,7 @@ public class TestAltKerberosAuthenticationHandler
     assertEquals(getExpectedType(), token.getType());
   }
 
-  @Test(timeout=60000)
+  @Test
   public void testNonDefaultNonBrowserUserAgentAsBrowser() throws Exception {
     HttpServletRequest request = Mockito.mock(HttpServletRequest.class);
     HttpServletResponse response = Mockito.mock(HttpServletResponse.class);
@@ -90,7 +93,7 @@ public class TestAltKerberosAuthenticationHandler
     assertEquals(getExpectedType(), token.getType());
   }
 
-  @Test(timeout=60000)
+  @Test
   public void testNonDefaultNonBrowserUserAgentAsNonBrowser() throws Exception {
     if (handler != null) {
       handler.destroy();

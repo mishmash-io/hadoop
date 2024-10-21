@@ -38,6 +38,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.Timeout;
 import org.mockito.Mockito;
 
 import java.io.File;
@@ -46,10 +47,12 @@ import java.net.URL;
 import java.util.Arrays;
 import java.util.Properties;
 import java.util.concurrent.Callable;
+import java.util.concurrent.TimeUnit;
 
 /**
  * Test class for {@link KerberosAuthenticator}.
  */
+@Timeout(value=60000, unit=TimeUnit.MILLISECONDS)
 public class TestKerberosAuthenticator extends KerberosSecurityTestcase {
 
   public TestKerberosAuthenticator() {
@@ -90,7 +93,7 @@ public class TestKerberosAuthenticator extends KerberosSecurityTestcase {
     return props;
   }
 
-  @Test(timeout=60000)
+  @Test
   public void testFallbacktoPseudoAuthenticator() throws Exception {
     AuthenticatorTestCase auth = new AuthenticatorTestCase();
     Properties props = new Properties();
@@ -100,7 +103,7 @@ public class TestKerberosAuthenticator extends KerberosSecurityTestcase {
     auth._testAuthentication(new KerberosAuthenticator(), false);
   }
 
-  @Test(timeout=60000)
+  @Test
   public void testFallbacktoPseudoAuthenticatorAnonymous() throws Exception {
     AuthenticatorTestCase auth = new AuthenticatorTestCase();
     Properties props = new Properties();
@@ -110,7 +113,7 @@ public class TestKerberosAuthenticator extends KerberosSecurityTestcase {
     auth._testAuthentication(new KerberosAuthenticator(), false);
   }
 
-  @Test(timeout=60000)
+  @Test
   public void testNotAuthenticated() throws Exception {
     AuthenticatorTestCase auth = new AuthenticatorTestCase();
     AuthenticatorTestCase.setAuthenticationHandlerConfig(getAuthenticationHandlerConfiguration());
@@ -126,7 +129,7 @@ public class TestKerberosAuthenticator extends KerberosSecurityTestcase {
     }
   }
 
-  @Test(timeout=60000)
+  @Test
   public void testAuthentication() throws Exception {
     final AuthenticatorTestCase auth = new AuthenticatorTestCase();
     AuthenticatorTestCase.setAuthenticationHandlerConfig(
@@ -140,7 +143,7 @@ public class TestKerberosAuthenticator extends KerberosSecurityTestcase {
     });
   }
 
-  @Test(timeout=60000)
+  @Test
   public void testAuthenticationPost() throws Exception {
     final AuthenticatorTestCase auth = new AuthenticatorTestCase();
     AuthenticatorTestCase.setAuthenticationHandlerConfig(
@@ -154,7 +157,7 @@ public class TestKerberosAuthenticator extends KerberosSecurityTestcase {
     });
   }
 
-  @Test(timeout=60000)
+  @Test
   public void testAuthenticationHttpClient() throws Exception {
     final AuthenticatorTestCase auth = new AuthenticatorTestCase();
     AuthenticatorTestCase.setAuthenticationHandlerConfig(
@@ -168,7 +171,7 @@ public class TestKerberosAuthenticator extends KerberosSecurityTestcase {
     });
   }
 
-  @Test(timeout=60000)
+  @Test
   public void testAuthenticationHttpClientPost() throws Exception {
     final AuthenticatorTestCase auth = new AuthenticatorTestCase();
     AuthenticatorTestCase.setAuthenticationHandlerConfig(
@@ -182,7 +185,7 @@ public class TestKerberosAuthenticator extends KerberosSecurityTestcase {
     });
   }
 
-  @Test(timeout = 60000)
+  @Test
   public void testNotAuthenticatedWithMultiAuthHandler() throws Exception {
     AuthenticatorTestCase auth = new AuthenticatorTestCase();
     AuthenticatorTestCase
@@ -201,7 +204,7 @@ public class TestKerberosAuthenticator extends KerberosSecurityTestcase {
     }
   }
 
-  @Test(timeout = 60000)
+  @Test
   public void testAuthenticationWithMultiAuthHandler() throws Exception {
     final AuthenticatorTestCase auth = new AuthenticatorTestCase();
     AuthenticatorTestCase
@@ -215,7 +218,7 @@ public class TestKerberosAuthenticator extends KerberosSecurityTestcase {
     });
   }
 
-  @Test(timeout = 60000)
+  @Test
   public void testAuthenticationHttpClientPostWithMultiAuthHandler()
       throws Exception {
     final AuthenticatorTestCase auth = new AuthenticatorTestCase();
@@ -230,7 +233,7 @@ public class TestKerberosAuthenticator extends KerberosSecurityTestcase {
     });
   }
 
-  @Test(timeout = 60000)
+  @Test
   public void testWrapExceptionWithMessage() {
     IOException ex;
     ex = new IOException("Induced exception");
@@ -256,7 +259,7 @@ public class TestKerberosAuthenticator extends KerberosSecurityTestcase {
     assertTrue(ex.equals(ex2));
   }
 
-  @Test(timeout = 60000)
+  @Test
   public void testNegotiate() throws NoSuchMethodException, InvocationTargetException,
           IllegalAccessException, IOException {
     KerberosAuthenticator kerberosAuthenticator = new KerberosAuthenticator();
@@ -273,7 +276,7 @@ public class TestKerberosAuthenticator extends KerberosSecurityTestcase {
     assertTrue((boolean)method.invoke(kerberosAuthenticator, conn));
   }
 
-  @Test(timeout = 60000)
+  @Test
   public void testNegotiateLowerCase() throws NoSuchMethodException, InvocationTargetException,
           IllegalAccessException, IOException {
     KerberosAuthenticator kerberosAuthenticator = new KerberosAuthenticator();
@@ -290,7 +293,7 @@ public class TestKerberosAuthenticator extends KerberosSecurityTestcase {
     assertTrue((boolean)method.invoke(kerberosAuthenticator, conn));
   }
 
-  @Test(timeout = 60000)
+  @Test
   public void testReadToken() throws NoSuchMethodException, IOException, IllegalAccessException,
           InvocationTargetException {
     KerberosAuthenticator kerberosAuthenticator = new KerberosAuthenticator();
@@ -311,7 +314,7 @@ public class TestKerberosAuthenticator extends KerberosSecurityTestcase {
     method.invoke(kerberosAuthenticator, conn); // expecting this not to throw an exception
   }
 
-  @Test(timeout = 60000)
+  @Test
   public void testReadTokenLowerCase() throws NoSuchMethodException, IOException,
           IllegalAccessException, InvocationTargetException {
     KerberosAuthenticator kerberosAuthenticator = new KerberosAuthenticator();

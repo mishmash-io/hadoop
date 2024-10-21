@@ -26,6 +26,7 @@ import static org.apache.hadoop.security.authentication.server.HttpConstants.*;
 
 import java.io.File;
 import java.util.Properties;
+import java.util.concurrent.TimeUnit;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -49,6 +50,7 @@ import static org.junit.jupiter.api.Assertions.fail;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.Timeout;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mockito;
 
@@ -77,6 +79,7 @@ import org.mockito.Mockito;
     "objectClass: inetOrgPerson",
     "uid: bjones",
     "userPassword: p@ssw0rd"})
+@Timeout(value=60000, unit=TimeUnit.MILLISECONDS)
 public class TestMultiSchemeAuthenticationHandler
     extends AbstractLdapTestUnit {
   private KerberosSecurityTestcase krbTest = new KerberosSecurityTestcase();
@@ -125,7 +128,7 @@ public class TestMultiSchemeAuthenticationHandler
     return p;
   }
 
-  @Test(timeout = 60000)
+  @Test
   public void testRequestWithoutAuthorization() throws Exception {
     HttpServletRequest request = Mockito.mock(HttpServletRequest.class);
     HttpServletResponse response = Mockito.mock(HttpServletResponse.class);
@@ -136,7 +139,7 @@ public class TestMultiSchemeAuthenticationHandler
     Mockito.verify(response).setStatus(HttpServletResponse.SC_UNAUTHORIZED);
   }
 
-  @Test(timeout = 60000)
+  @Test
   public void testRequestWithInvalidAuthorization() throws Exception {
     HttpServletRequest request = Mockito.mock(HttpServletRequest.class);
     HttpServletResponse response = Mockito.mock(HttpServletResponse.class);
@@ -151,7 +154,7 @@ public class TestMultiSchemeAuthenticationHandler
     Mockito.verify(response).setStatus(HttpServletResponse.SC_UNAUTHORIZED);
   }
 
-  @Test(timeout = 60000)
+  @Test
   public void testRequestWithLdapAuthorization() throws Exception {
     HttpServletRequest request = Mockito.mock(HttpServletRequest.class);
     HttpServletResponse response = Mockito.mock(HttpServletResponse.class);
@@ -169,7 +172,7 @@ public class TestMultiSchemeAuthenticationHandler
     assertEquals("bjones", token.getName());
   }
 
-  @Test(timeout = 60000)
+  @Test
   public void testRequestWithInvalidKerberosAuthorization() throws Exception {
     String token = new Base64(0).encodeToString(new byte[]{0, 1, 2});
 

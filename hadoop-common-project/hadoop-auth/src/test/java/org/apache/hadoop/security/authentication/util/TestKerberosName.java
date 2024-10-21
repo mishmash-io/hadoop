@@ -26,6 +26,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.fail;
 
 public class TestKerberosName {
@@ -137,9 +138,12 @@ public class TestKerberosName {
     checkTranslation("Joe/guestguest@FOO.COM", "joe");
   }
 
-  @Test(expected = IllegalArgumentException.class)
+  @Test
   public void testInvalidRuleMechanism() throws Exception {
-    KerberosName.setRuleMechanism("INVALID_MECHANISM");
+    assertThrows(IllegalArgumentException.class,
+      () -> {
+              KerberosName.setRuleMechanism("INVALID_MECHANISM");
+      });
   }
 
   @AfterEach
