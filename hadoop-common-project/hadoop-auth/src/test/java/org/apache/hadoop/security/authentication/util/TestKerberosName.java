@@ -52,7 +52,7 @@ public class TestKerberosName {
     KerberosName nm = new KerberosName(from);
     String simple = nm.getShortName();
     System.out.println("to " + simple);
-    assertEquals("short name incorrect", to, simple);
+    assertEquals(to, simple, "short name incorrect");
   }
 
   @Test

@@ -73,34 +73,41 @@ public class TestKerberosUtil {
       atDefaultRealm = "@" + defaultRealm;
     }
     // check that the test environment is as expected
-    assertEquals("testGetServerPrincipal assumes localhost realm is default",
+    assertEquals(
         KerberosUtil.getDomainRealm(service + "/" + localHostname.toLowerCase(Locale.US)),
-        defaultRealm);
-    assertEquals("testGetServerPrincipal assumes realm of testHost 'FooBar' is default",
+        defaultRealm,
+        "testGetServerPrincipal assumes localhost realm is default");
+    assertEquals(
         KerberosUtil.getDomainRealm(service + "/" + testHost.toLowerCase(Locale.US)),
-        defaultRealm);
+        defaultRealm,
+        "testGetServerPrincipal assumes realm of testHost 'FooBar' is default");
 
     // send null hostname
-    assertEquals("When no hostname is sent",
+    assertEquals(
         service + "/" + localHostname.toLowerCase(Locale.US) + atDefaultRealm,
-        KerberosUtil.getServicePrincipal(service, null));
+        KerberosUtil.getServicePrincipal(service, null),
+        "When no hostname is sent");
     // send empty hostname
-    assertEquals("When empty hostname is sent",
+    assertEquals(
         service + "/" + localHostname.toLowerCase(Locale.US) + atDefaultRealm,
-        KerberosUtil.getServicePrincipal(service, ""));
+        KerberosUtil.getServicePrincipal(service, ""),
+        "When empty hostname is sent");
     // send 0.0.0.0 hostname
-    assertEquals("When 0.0.0.0 hostname is sent",
+    assertEquals(
         service + "/" + localHostname.toLowerCase(Locale.US) + atDefaultRealm,
-        KerberosUtil.getServicePrincipal(service, "0.0.0.0"));
+        KerberosUtil.getServicePrincipal(service, "0.0.0.0"),
+        "When 0.0.0.0 hostname is sent");
     // send uppercase hostname
-    assertEquals("When uppercase hostname is sent",
+    assertEquals(
         service + "/" + testHost.toLowerCase(Locale.US) + atDefaultRealm,
-        KerberosUtil.getServicePrincipal(service, testHost));
+        KerberosUtil.getServicePrincipal(service, testHost),
+        "When uppercase hostname is sent");
     // send lowercase hostname
-    assertEquals("When lowercase hostname is sent",
+    assertEquals(
         service + "/" + testHost.toLowerCase(Locale.US) + atDefaultRealm,
         KerberosUtil.getServicePrincipal(
-            service, testHost.toLowerCase(Locale.US)));
+            service, testHost.toLowerCase(Locale.US)),
+            "When lowercase hostname is sent");
   }
 
   @Test
@@ -130,7 +137,7 @@ public class TestKerberosUtil {
     createKeyTab(testKeytab, testPrincipals); 
     // read all principals in the keytab file
     String[] principals = KerberosUtil.getPrincipalNames(testKeytab);
-    assertNotNull("principals cannot be null", principals);
+    assertNotNull(principals, "principals cannot be null");
     
     int expectedSize = 0;
     List<String> principalList = Arrays.asList(principals);
@@ -150,14 +157,14 @@ public class TestKerberosUtil {
     Pattern httpPattern = Pattern.compile("HTTP/.*");
     String[] httpPrincipals =
         KerberosUtil.getPrincipalNames(testKeytab, httpPattern);
-    assertNotNull("principals cannot be null", httpPrincipals);
+    assertNotNull(httpPrincipals, "principals cannot be null");
     
     int expectedSize = 0;
     List<String> httpPrincipalList = Arrays.asList(httpPrincipals);
     for (String principal : testPrincipals) {
       if (httpPattern.matcher(principal).matches()) {
-        assertTrue("missing principal "+principal,
-            httpPrincipalList.contains(principal));
+        assertTrue(httpPrincipalList.contains(principal),
+            "missing principal "+principal);
         expectedSize++;
       }
     }

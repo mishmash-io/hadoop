@@ -275,7 +275,7 @@ public class TestJWTRedirectAuthenticationHandler extends
 
       AuthenticationToken token = handler.alternateAuthenticate(request,
           response);
-      assertNotNull("Token should not be null.", token);
+      assertNotNull(token, "Token should not be null.");
       assertEquals("bob", token.getUserName());
     } catch (ServletException se) {
       fail("alternateAuthentication should NOT have thrown a ServletException");
@@ -370,7 +370,7 @@ public class TestJWTRedirectAuthenticationHandler extends
 
       AuthenticationToken token = handler.alternateAuthenticate(request,
           response);
-      assertNotNull("Token should not be null.", token);
+      assertNotNull(token, "Token should not be null.");
       assertEquals("alice", token.getUserName());
     } catch (ServletException se) {
       fail("alternateAuthentication should NOT have thrown a ServletException.");
@@ -392,7 +392,7 @@ public class TestJWTRedirectAuthenticationHandler extends
     Mockito.when(request.getQueryString()).thenReturn("name=value");
 
     String loginURL = handler.constructLoginURL(request);
-    assertNotNull("loginURL should not be null.", loginURL);
+    assertNotNull(loginURL, "loginURL should not be null.");
     assertEquals("https://localhost:8443/authserver?originalUrl=" + SERVICE_URL + "?name=value", loginURL);
   }
 
@@ -409,7 +409,7 @@ public class TestJWTRedirectAuthenticationHandler extends
     Mockito.when(request.getQueryString()).thenReturn(null);
 
     String loginURL = handler.constructLoginURL(request);
-    assertNotNull("LoginURL should not be null.", loginURL);
+    assertNotNull(loginURL, "LoginURL should not be null.");
     assertEquals("https://localhost:8443/authserver?originalUrl=" + SERVICE_URL, loginURL);
   }
 

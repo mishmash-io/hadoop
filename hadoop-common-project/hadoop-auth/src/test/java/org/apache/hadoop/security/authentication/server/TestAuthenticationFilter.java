@@ -464,7 +464,7 @@ public class TestAuthenticationFilter {
         assertEquals("AuthenticationToken expired", ex.getMessage());
         failed = true;
       } finally {
-        assertTrue("token not expired", failed);
+        assertTrue(failed, "token not expired");
       }
     } finally {
       filter.destroy();
@@ -511,7 +511,7 @@ public class TestAuthenticationFilter {
         assertEquals("Invalid AuthenticationToken type", ex.getMessage());
         failed = true;
       } finally {
-        assertTrue("token not invalid type", failed);
+        assertTrue(failed, "token not invalid type");
       }
     } finally {
       filter.destroy();
@@ -684,7 +684,7 @@ public class TestAuthenticationFilter {
           addHeader(Mockito.eq("Set-Cookie"), Mockito.anyString());
       } else {
         String v = cookieMap.get(AuthenticatedURL.AUTH_COOKIE);
-        assertNotNull("cookie missing", v);
+        assertNotNull(v, "cookie missing");
         assertTrue(v.contains("u=") && v.contains("p=") && v.contains
                 ("t=") && v.contains("e=") && v.contains("s="));
         Mockito.verify(chain).doFilter(any(ServletRequest.class),
@@ -860,7 +860,7 @@ public class TestAuthenticationFilter {
       Mockito.verify(response, Mockito.never()).setHeader(Mockito.eq("WWW-Authenticate"), Mockito.anyString());
 
       String value = cookieMap.get(AuthenticatedURL.AUTH_COOKIE);
-      assertNotNull("cookie missing", value);
+      assertNotNull(value, "cookie missing");
       assertEquals("", value);
     } finally {
       filter.destroy();
@@ -1157,7 +1157,7 @@ public class TestAuthenticationFilter {
     if (newCookie) {
       // a new cookie should be dropped when maxInactiveInterval is enabled
       String v = cookieMap.get(AuthenticatedURL.AUTH_COOKIE);
-      assertNotNull("cookie missing", v);
+      assertNotNull(v, "cookie missing");
       assertTrue(v.contains("u=") && v.contains("p=") && v.contains
           ("t=") && v.contains("i=") && v.contains("e=")
           && v.contains("s="));
@@ -1175,12 +1175,12 @@ public class TestAuthenticationFilter {
       AuthenticationToken token = AuthenticationToken.parse(value);
       assertNotEquals(token.getMaxInactives(), 0L);
       assertNotEquals(token.getExpires(), 0L);
-      assertFalse("Token is expired.", token.isExpired());
+      assertFalse(token.isExpired(), "Token is expired.");
     } else {
       //make sure that no auth cookie is dropped.
       //For unauthorized response, auth cookie is dropped with empty value
-      assertTrue("cookie is present",
-          !cookieMap.containsKey(AuthenticatedURL.AUTH_COOKIE));
+      assertTrue(
+          !cookieMap.containsKey(AuthenticatedURL.AUTH_COOKIE), "cookie is present");
     }
   }
 
@@ -1208,8 +1208,8 @@ public class TestAuthenticationFilter {
     Mockito.verify(chain, Mockito.never()).doFilter(
         any(ServletRequest.class), any(ServletResponse.class));
 
-    assertTrue("cookie is missing",
-        cookieMap.containsKey(AuthenticatedURL.AUTH_COOKIE));
+    assertTrue(
+        cookieMap.containsKey(AuthenticatedURL.AUTH_COOKIE), "cookie is missing");
     assertEquals("", cookieMap.get(AuthenticatedURL.AUTH_COOKIE));
   }
 
