@@ -233,8 +233,7 @@ public class AuthenticatorTestCase {
   }
 
   private void doHttpClientRequest(HttpClient httpClient, HttpUriRequest request) throws Exception {
-    try (CloseableHttpResponse response) {
-      response = httpClient.execute(request);
+    try (CloseableHttpResponse response = httpClient.execute(request)) {
       final int httpStatus = response.getStatusLine().getStatusCode();
       assertEquals(HttpURLConnection.HTTP_OK, httpStatus);
       EntityUtils.consumeQuietly(response.getEntity());
