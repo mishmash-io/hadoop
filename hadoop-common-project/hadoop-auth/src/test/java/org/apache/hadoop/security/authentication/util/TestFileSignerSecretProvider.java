@@ -19,7 +19,6 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import org.junit.jupiter.api.Test;
-import org.junit.function.ThrowingRunnable;
 
 import java.io.File;
 import java.io.FileWriter;
@@ -66,11 +65,8 @@ public class TestFileSignerSecretProvider {
             secretFile.getAbsolutePath());
 
     Exception exception =
-        assertThrows(RuntimeException.class, new ThrowingRunnable() {
-          @Override
-          public void run() throws Throwable {
-            secretProvider.init(secretProviderProps, null, -1);
-          }
+        assertThrows(RuntimeException.class, () -> {
+          secretProvider.init(secretProviderProps, null, -1);
         });
     assertTrue(exception.getMessage().startsWith(
         "No secret in signature secret file:"));

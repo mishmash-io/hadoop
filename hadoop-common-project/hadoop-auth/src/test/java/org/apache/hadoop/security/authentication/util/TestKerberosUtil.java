@@ -142,8 +142,8 @@ public class TestKerberosUtil {
     int expectedSize = 0;
     List<String> principalList = Arrays.asList(principals);
     for (String principal : testPrincipals) {
-      assertTrue("missing principal "+principal,
-          principalList.contains(principal));
+      assertTrue(principalList.contains(principal),
+          "missing principal "+principal);
       expectedSize++;
     }
     assertEquals(expectedSize, principals.length);
