@@ -18,8 +18,8 @@ import java.util.Properties;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import org.apache.hadoop.security.authentication.client.AuthenticationException;
-import org.junit.Assert;
-import org.junit.Test;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 
 public class TestAltKerberosAuthenticationHandler
@@ -57,9 +57,9 @@ public class TestAltKerberosAuthenticationHandler
     Mockito.when(request.getHeader("User-Agent")).thenReturn("Some Browser");
 
     AuthenticationToken token = handler.authenticate(request, response);
-    Assert.assertEquals("A", token.getUserName());
-    Assert.assertEquals("B", token.getName());
-    Assert.assertEquals(getExpectedType(), token.getType());
+    assertEquals("A", token.getUserName());
+    assertEquals("B", token.getName());
+    assertEquals(getExpectedType(), token.getType());
   }
 
   @Test(timeout=60000)
@@ -85,9 +85,9 @@ public class TestAltKerberosAuthenticationHandler
     Mockito.when(request.getHeader("User-Agent")).thenReturn("blah");
     // Should use alt authentication
     AuthenticationToken token = handler.authenticate(request, response);
-    Assert.assertEquals("A", token.getUserName());
-    Assert.assertEquals("B", token.getName());
-    Assert.assertEquals(getExpectedType(), token.getType());
+    assertEquals("A", token.getUserName());
+    assertEquals("B", token.getName());
+    assertEquals(getExpectedType(), token.getType());
   }
 
   @Test(timeout=60000)

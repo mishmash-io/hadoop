@@ -13,8 +13,11 @@
  */
 package org.apache.hadoop.security.authentication.client;
 
-import org.junit.Assert;
-import org.junit.Test;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.fail;
+import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 
 import java.net.HttpURLConnection;
@@ -29,10 +32,10 @@ public class TestAuthenticatedURL {
   @Test
   public void testToken() throws Exception {
     AuthenticatedURL.Token token = new AuthenticatedURL.Token();
-    Assert.assertFalse(token.isSet());
+    assertFalse(token.isSet());
     token = new AuthenticatedURL.Token("foo");
-    Assert.assertTrue(token.isSet());
-    Assert.assertEquals("foo", token.toString());
+    assertTrue(token.isSet());
+    assertEquals("foo", token.toString());
   }
 
   @Test
@@ -60,7 +63,7 @@ public class TestAuthenticatedURL {
     AuthenticatedURL.Token token = new AuthenticatedURL.Token();
     AuthenticatedURL.extractToken(conn, token);
 
-    Assert.assertEquals(tokenStr, token.toString());
+    assertEquals(tokenStr, token.toString());
   }
 
   @Test
@@ -80,12 +83,12 @@ public class TestAuthenticatedURL {
     token.set("bar");
     try {
       AuthenticatedURL.extractToken(conn, token);
-      Assert.fail();
+      fail();
     } catch (AuthenticationException ex) {
       // Expected
-      Assert.assertFalse(token.isSet());
+      assertFalse(token.isSet());
     } catch (Exception ex) {
-      Assert.fail();
+      fail();
     }
   }
 
@@ -105,7 +108,7 @@ public class TestAuthenticatedURL {
     AuthenticatedURL.Token token = new AuthenticatedURL.Token();
     AuthenticatedURL.extractToken(conn, token);
 
-    Assert.assertTrue(token.isSet());
+    assertTrue(token.isSet());
   }
 
   @Test
@@ -124,7 +127,7 @@ public class TestAuthenticatedURL {
     AuthenticatedURL.Token token = new AuthenticatedURL.Token();
     AuthenticatedURL.extractToken(conn, token);
 
-    Assert.assertTrue(token.isSet());
+    assertTrue(token.isSet());
   }
 
   @Test
@@ -150,7 +153,7 @@ public class TestAuthenticatedURL {
     Authenticator authenticator = Mockito.mock(Authenticator.class);
 
     AuthenticatedURL aURL = new AuthenticatedURL(authenticator);
-    Assert.assertEquals(authenticator, aURL.getAuthenticator());
+    assertEquals(authenticator, aURL.getAuthenticator());
   }
 
 }
