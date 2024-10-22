@@ -16,7 +16,6 @@ package org.apache.hadoop.security.authentication.util;
 import java.util.Properties;
 import javax.servlet.ServletContext;
 import org.apache.hadoop.security.authentication.server.AuthenticationFilter;
-import org.junit.Assert;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.junit.jupiter.api.Assertions.fail;
