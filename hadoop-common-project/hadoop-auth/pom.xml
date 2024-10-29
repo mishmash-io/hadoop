@@ -34,6 +34,8 @@
     <maven.build.timestamp.format>yyyyMMdd</maven.build.timestamp.format>
     <!-- override default for project -->
     <apacheds.version>2.0.0.AM27</apacheds.version>
+    <jetty.version>12.0.14</jetty.version>
+    <servelet-api.version>6.0.0</servelet-api.version>
   </properties>
 
   <dependencies>
@@ -56,21 +58,25 @@
     <dependency>
       <groupId>org.eclipse.jetty</groupId>
       <artifactId>jetty-util</artifactId>
+      <version>${jetty.version}</version>
       <scope>test</scope>
     </dependency>
     <dependency>
       <groupId>org.eclipse.jetty</groupId>
       <artifactId>jetty-server</artifactId>
+      <version>${jetty.version}</version>
       <scope>test</scope>
     </dependency>
     <dependency>
-      <groupId>org.eclipse.jetty</groupId>
-      <artifactId>jetty-servlet</artifactId>
+      <groupId>org.eclipse.jetty.ee10</groupId>
+      <artifactId>jetty-ee10-servlet</artifactId>
+      <version>${jetty.version}</version>
       <scope>test</scope>
     </dependency>
     <dependency>
-      <groupId>javax.servlet</groupId>
-      <artifactId>javax.servlet-api</artifactId>
+      <groupId>jakarta.servlet</groupId>
+      <artifactId>jakarta.servlet-api</artifactId>
+      <version>${servelet-api.version}</version>
       <scope>provided</scope>
     </dependency>
     <dependency>
