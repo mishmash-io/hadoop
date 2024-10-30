@@ -58,26 +58,6 @@ public class ProtobufHelper {
   }
 
   /**
-   * Extract the remote exception from an unshaded version of the protobuf
-   * libraries.
-   * Kept for backward compatibility.
-   * Return the IOException thrown by the remote server wrapped in
-   * ServiceException as cause.
-   * @param se ServiceException that wraps IO exception thrown by the server
-   * @return Exception wrapped in ServiceException or
-   *         a new IOException that wraps the unexpected ServiceException.
-   */
-  @Deprecated
-  public static IOException getRemoteException(
-      com.google.protobuf.ServiceException se) {
-    Throwable e = se.getCause();
-    if (e == null) {
-      return new IOException(se);
-    }
-    return e instanceof IOException ? (IOException) e : new IOException(se);
-  }
-
-  /**
    * Get the ByteString for frequently used fixed and small set strings.
    * @param key string
    * @return the ByteString for frequently used fixed and small set strings.
