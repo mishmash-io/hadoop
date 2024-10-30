@@ -13,23 +13,35 @@
  */
 package org.apache.hadoop.security.authentication.client;
 
+import org.apache.hadoop.security.authentication.client.KerberosAuthenticator.KerberosConfiguration;
 import org.apache.hadoop.security.authentication.server.AuthenticationFilter;
-import org.apache.hc.client5.http.impl.classic.CloseableHttpResponse;
+import org.apache.hadoop.security.authentication.util.KerberosUtil;
+import org.apache.hc.client5.http.SystemDefaultDnsResolver;
 import org.apache.hc.client5.http.auth.AuthScope;
 import org.apache.hc.client5.http.auth.Credentials;
+import org.apache.hc.client5.http.auth.KerberosConfig;
+import org.apache.hc.client5.http.auth.StandardAuthScheme;
 import org.apache.hc.client5.http.impl.classic.CloseableHttpClient;
 import org.apache.hc.client5.http.classic.methods.HttpGet;
 import org.apache.hc.client5.http.classic.methods.HttpPost;
 import org.apache.hc.client5.http.classic.methods.HttpUriRequest;
+import org.apache.hc.client5.http.config.RequestConfig;
 import org.apache.hc.core5.http.io.entity.InputStreamEntity;
 import org.apache.hc.client5.http.impl.auth.SPNegoScheme;
+import org.apache.hc.client5.http.impl.StateHolder;
 import org.apache.hc.client5.http.impl.auth.BasicCredentialsProvider;
-import org.apache.hc.client5.http.impl.classic.HttpClientBuilder;
+import org.apache.hc.client5.http.impl.classic.HttpClients;
+import org.apache.hc.client5.http.protocol.HttpClientContext;
 import org.apache.hc.core5.http.io.entity.EntityUtils;
 import org.apache.hc.core5.http.ContentType;
 import org.eclipse.jetty.server.Connector;
 import org.eclipse.jetty.server.Server;
 import org.eclipse.jetty.server.ServerConnector;
+import org.ietf.jgss.GSSContext;
+import org.ietf.jgss.GSSException;
+import org.ietf.jgss.GSSManager;
+import org.ietf.jgss.GSSName;
+import org.ietf.jgss.Oid;
 import org.eclipse.jetty.ee10.servlet.FilterHolder;
 import org.eclipse.jetty.ee10.servlet.ServletContextHandler;
 import org.eclipse.jetty.ee10.servlet.ServletHolder;
@@ -46,14 +58,22 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
+import java.io.Serializable;
 import java.io.InputStreamReader;
 import java.io.Writer;
 import java.net.HttpURLConnection;
 import java.net.ServerSocket;
 import java.net.URL;
+import java.security.AccessControlContext;
+import java.security.AccessController;
 import java.security.Principal;
+import java.security.PrivilegedExceptionAction;
 import java.util.EnumSet;
+import java.util.List;
 import java.util.Properties;
+
+import javax.security.auth.Subject;
+import javax.security.auth.login.LoginContext;
 
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -206,43 +226,132 @@ public class AuthenticatorTestCase {
     }
   }
 
-  private CloseableHttpClient getHttpClient() {
-    HttpClientBuilder builder = HttpClientBuilder.create();
-    // Register auth schema
-    builder.setDefaultAuthSchemeRegistry(
-        s-> httpContext -> new SPNegoScheme()
-    );
+  /**
+   * This Authentication scheme is used by the Apache httpclient5 module and is based on
+   * the {@link KerberosAuthenticator}. More specifically, on its doSpnegoSequence() metohd.
+   *
+   * As this scheme reuses the KerberosAuthenticator's inner KerberosConfiguration class -
+   * it has to be public.
+   */
+  public static class Scheme extends SPNegoScheme implements StateHolder<Object>, Serializable {
+
+    private static final long serialVersionUID = -5355304419188224993L;
+
+    public Scheme() {
+      super(
+        KerberosConfig
+          .custom()
+          .setStripPort(true)
+          .setUseCanonicalHostname(true)
+          .build(),
+        SystemDefaultDnsResolver.INSTANCE);
+    }
+
+    @Override
+    protected byte[] generateGSSToken(byte[] input, Oid oid, String serviceName, String authServer)
+            throws GSSException {
+      try {
+        AccessControlContext context = AccessController.getContext();
+        Subject subject = Subject.getSubject(context);
+        if (subject == null
+            || (!KerberosUtil.hasKerberosKeyTab(subject)
+                && !KerberosUtil.hasKerberosTicket(subject))) {
+          subject = new Subject();
+          LoginContext login = new LoginContext("", subject,
+              null, new KerberosConfiguration());
+          login.login();
+        }
+
+        return Subject.doAs(subject, new PrivilegedExceptionAction<byte[]> () {
+          @Override
+          public byte[] run() throws Exception {
+            GSSContext gssContext = null;
+            try {
+              GSSManager gssManager = GSSManager.getInstance();
+              String servicePrincipal = KerberosUtil.getServicePrincipal("HTTP",
+                    "localhost");
+              GSSName gssServiceName = gssManager.createName(servicePrincipal,
+                                                  KerberosUtil.NT_GSS_KRB5_PRINCIPAL_OID);
+              gssContext = gssManager.createContext(gssServiceName,
+                                                  KerberosUtil.GSS_KRB5_MECH_OID,
+                                                  null,
+                                                  GSSContext.DEFAULT_LIFETIME);
+              gssContext.requestCredDeleg(true);
+              gssContext.requestMutualAuth(true);
+
+              if (input != null) {
+                return gssContext.initSecContext(input, 0, input.length);
+              }
+
+              return gssContext.initSecContext(new byte[] {}, 0, 0);
+            } finally {
+              if (gssContext != null) {
+                gssContext.dispose();
+              }
+            }
+          }
+        });
+      } catch (Exception e) {
+        GSSException gsse = new GSSException(GSSException.FAILURE, 1000, e.getMessage());
+        gsse.initCause(e);
+        throw gsse;
+      }
+    }
+
+    @Override
+    public Object store() {
+        // no-op
+        return null;
+    }
+
+    @Override
+    public void restore(Object state) {
+        // no-op
+    }
+  }
+
+  private HttpClientContext getHttpClientContext() throws Exception {
+    HttpClientContext ctx = HttpClientContext.create();
 
     Credentials useJaasCreds = new Credentials() {
-      public char[] getPassword() {
-        return null;
-      }
-      public Principal getUserPrincipal() {
-        return null;
-      }
+        public char[] getPassword() {
+          return null;
+        }
+        public Principal getUserPrincipal() {
+          return null;
+        }
     };
 
     BasicCredentialsProvider jaasCredentialProvider
-        = new BasicCredentialsProvider();
-    jaasCredentialProvider.setCredentials(new AuthScope(null, null, -1, null, null), useJaasCreds);
+          = new BasicCredentialsProvider();
+    jaasCredentialProvider.setCredentials(new AuthScope(null, host, port, null, null), useJaasCreds);
     // Set credential provider
-    builder.setDefaultCredentialsProvider(jaasCredentialProvider);
+    ctx.setCredentialsProvider(jaasCredentialProvider);
+    ctx.setAuthSchemeRegistry(
+            s-> httpContext -> new Scheme());
+    // Configure Auth scheme preferences to include SPNEGO
+    ctx.setRequestConfig(
+            RequestConfig
+                .copy(ctx.getRequestConfigOrDefault())
+                .setAuthenticationEnabled(true)
+                .setTargetPreferredAuthSchemes(List.of(StandardAuthScheme.SPNEGO)).build());
 
-    return builder.build();
+    return ctx;
   }
 
-  private void doHttpClientRequest(CloseableHttpClient httpClient, HttpUriRequest request) throws Exception {
-    try (CloseableHttpResponse response = httpClient.execute(request)) {
-      final int httpStatus = response.getCode();
-      assertEquals(HttpURLConnection.HTTP_OK, httpStatus);
-      EntityUtils.consumeQuietly(response.getEntity());
-    }
+  private void doHttpClientRequest(CloseableHttpClient httpClient, HttpUriRequest request, HttpClientContext ctx) throws Exception {
+    httpClient.execute(request, ctx, response -> {
+        final int httpStatus = response.getCode();
+        assertEquals(HttpURLConnection.HTTP_OK, httpStatus);
+        EntityUtils.consumeQuietly(response.getEntity());
+        return null;
+    });
   }
 
   protected void _testAuthenticationHttpClient(Authenticator authenticator, boolean doPost) throws Exception {
     start();
-    try (CloseableHttpClient httpClient = getHttpClient()) {
-      doHttpClientRequest(httpClient, new HttpGet(getBaseURL()));
+    try (CloseableHttpClient httpClient = HttpClients.createDefault()) {
+      doHttpClientRequest(httpClient, new HttpGet(getBaseURL()), getHttpClientContext());
 
       // Always do a GET before POST to trigger the SPNego negotiation
       if (doPost) {
@@ -256,7 +365,7 @@ public class AuthenticatorTestCase {
         // the test will fail.
         assertFalse(entity.isRepeatable());
         post.setEntity(entity);
-        doHttpClientRequest(httpClient, post);
+        doHttpClientRequest(httpClient, post, getHttpClientContext());
       }
     } finally {
       stop();

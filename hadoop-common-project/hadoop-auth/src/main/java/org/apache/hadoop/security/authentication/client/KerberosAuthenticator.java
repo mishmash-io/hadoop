@@ -79,7 +79,7 @@ public class KerberosAuthenticator implements Authenticator {
   * Defines the Kerberos configuration that will be used to obtain the Kerberos principal from the
   * Kerberos cache.
   */
-  private static class KerberosConfiguration extends Configuration {
+  public static class KerberosConfiguration extends Configuration {
 
     private static final String OS_LOGIN_MODULE_NAME;
     private static final boolean windows = System.getProperty("os.name").startsWith("Windows");
