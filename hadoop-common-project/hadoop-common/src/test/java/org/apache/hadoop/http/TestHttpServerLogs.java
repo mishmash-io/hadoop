@@ -17,7 +17,7 @@
  */
 package org.apache.hadoop.http;
 
-import org.apache.http.HttpStatus;
+import org.apache.hc.core5.http.HttpStatus;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.CommonConfigurationKeysPublic;
 import org.apache.hadoop.http.resource.JerseyResource;

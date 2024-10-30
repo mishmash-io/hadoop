@@ -44,7 +44,7 @@ import org.apache.hadoop.security.token.delegation.web.DelegationTokenAuthentica
 import org.apache.hadoop.util.HttpExceptionUtils;
 import org.apache.hadoop.util.JsonSerialization;
 import org.apache.hadoop.util.KMSUtil;
-import org.apache.http.client.utils.URIBuilder;
+import org.apache.hc.core5.net.URIBuilder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

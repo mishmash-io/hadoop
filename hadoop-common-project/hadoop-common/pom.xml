@@ -35,6 +35,9 @@
     <is.hadoop.common.component>true</is.hadoop.common.component>
     <wsce.config.dir>../etc/hadoop</wsce.config.dir>
     <wsce.config.file>wsce-site.xml</wsce.config.file>
+    <!-- override default for project -->
+    <jetty.version>12.0.14</jetty.version>
+    <servlet-api.version>6.0.0</servlet-api.version>
   </properties>
 
   <dependencies>
@@ -68,8 +71,15 @@
       <scope>compile</scope>
     </dependency>
     <dependency>
-      <groupId>org.apache.httpcomponents</groupId>
-      <artifactId>httpclient</artifactId>
+      <groupId>org.apache.httpcomponents.core5</groupId>
+      <artifactId>httpcore5</artifactId>
+      <version>5.3</version>
+      <scope>compile</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.httpcomponents.client5</groupId>
+      <artifactId>httpclient5</artifactId>
+      <version>5.4</version>
       <scope>compile</scope>
     </dependency>
     <dependency>
@@ -93,8 +103,9 @@
       <scope>compile</scope>
     </dependency>
     <dependency>
-      <groupId>javax.servlet</groupId>
-      <artifactId>javax.servlet-api</artifactId>
+      <groupId>jakarta.servlet</groupId>
+      <artifactId>jakarta.servlet-api</artifactId>
+      <version>${servlet-api.version}</version>
       <scope>compile</scope>
     </dependency>
     <dependency>
@@ -105,26 +116,31 @@
     <dependency>
       <groupId>org.eclipse.jetty</groupId>
       <artifactId>jetty-server</artifactId>
+      <version>${jetty.version}</version>
       <scope>compile</scope>
     </dependency>
     <dependency>
       <groupId>org.eclipse.jetty</groupId>
       <artifactId>jetty-util</artifactId>
+      <version>${jetty.version}</version>
       <scope>compile</scope>
     </dependency>
     <dependency>
-      <groupId>org.eclipse.jetty</groupId>
-      <artifactId>jetty-servlet</artifactId>
+      <groupId>org.eclipse.jetty.ee10</groupId>
+      <artifactId>jetty-ee10-servlet</artifactId>
+      <version>${jetty.version}</version>
       <scope>compile</scope>
     </dependency>
     <dependency>
-      <groupId>org.eclipse.jetty</groupId>
-      <artifactId>jetty-webapp</artifactId>
+      <groupId>org.eclipse.jetty.ee10</groupId>
+      <artifactId>jetty-ee10-webapp</artifactId>
+      <version>${jetty.version}</version>
       <scope>compile</scope>
     </dependency>
     <dependency>
       <groupId>org.eclipse.jetty</groupId>
       <artifactId>jetty-util-ajax</artifactId>
+      <version>${jetty.version}</version>
       <scope>test</scope>
     </dependency>
     <dependency>

@@ -63,7 +63,7 @@ import javax.net.ssl.X509KeyManager;
 import javax.net.ssl.X509TrustManager;
 import javax.security.auth.x500.X500Principal;
 
-import org.apache.http.conn.ssl.NoopHostnameVerifier;
+import org.apache.hc.client5.http.ssl.NoopHostnameVerifier;
 import org.bouncycastle.x509.X509V1CertificateGenerator;
 
 public class KeyStoreTestUtil {

@@ -42,8 +42,8 @@ import org.apache.hadoop.classification.InterfaceStability;
 import org.apache.hadoop.fs.audit.CommonAuditContext;
 import org.apache.hadoop.fs.store.LogExactlyOnce;
 import org.apache.hadoop.thirdparty.com.google.common.collect.ImmutableSet;
-import org.apache.http.NameValuePair;
-import org.apache.http.client.utils.URLEncodedUtils;
+import org.apache.hc.core5.http.NameValuePair;
+import org.apache.hc.core5.net.URLEncodedUtils;
 
 import static java.util.Objects.requireNonNull;
 import static org.apache.hadoop.fs.audit.AuditConstants.PARAM_ID;
