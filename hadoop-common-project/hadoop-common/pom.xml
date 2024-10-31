@@ -36,6 +36,7 @@
     <wsce.config.dir>../etc/hadoop</wsce.config.dir>
     <wsce.config.file>wsce-site.xml</wsce.config.file>
     <!-- override default for project -->
+    <jersey.version>3.1.9</jersey.version>
     <jetty.version>12.0.14</jetty.version>
     <servlet-api.version>6.0.0</servlet-api.version>
   </properties>
@@ -148,12 +149,7 @@
       <artifactId>jsp-api</artifactId>
       <scope>runtime</scope>
     </dependency>
-    <dependency>
-      <groupId>com.sun.jersey</groupId>
-      <artifactId>jersey-core</artifactId>
-      <scope>compile</scope>
-    </dependency>
-    <dependency>
+    <!--dependency>
       <groupId>com.sun.jersey</groupId>
       <artifactId>jersey-servlet</artifactId>
       <scope>compile</scope>
@@ -171,7 +167,7 @@
           <artifactId>cal10n-api</artifactId>
         </exclusion>
       </exclusions>
-    </dependency>
+    </dependency-->
     <dependency>
       <groupId>com.github.pjfanning</groupId>
       <artifactId>jersey-json</artifactId>
@@ -203,9 +199,16 @@
       <groupId>org.codehaus.jettison</groupId>
       <artifactId>jettison</artifactId>
     </dependency>
-    <dependency>
-      <groupId>com.sun.jersey</groupId>
+    <!--dependency>
+      <groupId>org.glassfish.jersey.core</groupId>
       <artifactId>jersey-server</artifactId>
+      <version>${jersey.version}</version>
+      <scope>compile</scope>
+    </dependency-->
+    <dependency>
+      <groupId>org.glassfish.jersey.containers</groupId>
+      <artifactId>jersey-container-servlet</artifactId>
+      <version>${jersey.version}</version>
       <scope>compile</scope>
     </dependency>
     <dependency>
