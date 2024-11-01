@@ -39,6 +39,7 @@
     <jersey.version>3.1.9</jersey.version>
     <jetty.version>12.0.14</jetty.version>
     <servlet-api.version>6.0.0</servlet-api.version>
+    <jsp-api.version>4.0.0</jsp-api.version>
   </properties>
 
   <dependencies>
@@ -145,29 +146,11 @@
       <scope>test</scope>
     </dependency>
     <dependency>
-      <groupId>javax.servlet.jsp</groupId>
-      <artifactId>jsp-api</artifactId>
+      <groupId>jakarta.servlet.jsp</groupId>
+      <artifactId>jakarta.servlet.jsp-api</artifactId>
+      <version>${jsp-api.version}</version>
       <scope>runtime</scope>
     </dependency>
-    <!--dependency>
-      <groupId>com.sun.jersey</groupId>
-      <artifactId>jersey-servlet</artifactId>
-      <scope>compile</scope>
-      <exclusions>
-        <exclusion>
-          <groupId>javax.enterprise</groupId>
-          <artifactId>cdi-api</artifactId>
-        </exclusion>
-        <exclusion>
-          <groupId>javax.servlet</groupId>
-          <artifactId>servlet-api</artifactId>
-        </exclusion>
-        <exclusion>
-          <groupId>ch.qos.cal10n</groupId>
-          <artifactId>cal10n-api</artifactId>
-        </exclusion>
-      </exclusions>
-    </dependency-->
     <dependency>
       <groupId>com.github.pjfanning</groupId>
       <artifactId>jersey-json</artifactId>
@@ -199,12 +182,6 @@
       <groupId>org.codehaus.jettison</groupId>
       <artifactId>jettison</artifactId>
     </dependency>
-    <!--dependency>
-      <groupId>org.glassfish.jersey.core</groupId>
-      <artifactId>jersey-server</artifactId>
-      <version>${jersey.version}</version>
-      <scope>compile</scope>
-    </dependency-->
     <dependency>
       <groupId>org.glassfish.jersey.containers</groupId>
       <artifactId>jersey-container-servlet</artifactId>
