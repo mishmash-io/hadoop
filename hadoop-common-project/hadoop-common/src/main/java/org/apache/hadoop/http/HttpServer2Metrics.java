@@ -38,57 +38,41 @@ public class HttpServer2Metrics {
   private final StatisticsHandler handler;
   private final int port;
 
-  @Metric("number of requested that have been asynchronously dispatched")
-  public int asyncDispatches() {
-    return handler.getAsyncDispatches();
+  @Metric("number of handled requests")
+  public int handled() {
+    return handler.getHandleTotal();
   }
-  @Metric("total number of async requests")
-  public int asyncRequests() {
-    return handler.getAsyncRequests();
+  @Metric("number of handles currently active")
+  public int handleActive() {
+    return handler.getHandleActive();
   }
-  @Metric("currently waiting async requests")
-  public int asyncRequestsWaiting() {
-    return handler.getAsyncRequestsWaiting();
+  @Metric("maximum number of active handles")
+  public int handleActiveMax() {
+    return handler.getHandleActiveMax();
   }
-  @Metric("maximum number of waiting async requests")
-  public int asyncRequestsWaitingMax() {
-    return handler.getAsyncRequestsWaitingMax();
+  @Metric("maximum time spend in handling (in ns)")
+  public long handledTimeMax() {
+    return handler.getHandleTimeMax();
   }
-  @Metric("number of dispatches")
-  public int dispatched() {
-    return handler.getDispatched();
+  @Metric("mean time spent in handling (in ns)")
+  public double handledTimeMean() {
+    return handler.getHandleTimeMean();
   }
-  @Metric("number of dispatches currently active")
-  public int dispatchedActive() {
-    return handler.getDispatchedActive();
+  @Metric("standard deviation for handling (in ns)")
+  public double handledTimeStdDev() {
+    return handler.getHandleTimeStdDev();
   }
-  @Metric("maximum number of active dispatches being handled")
-  public int dispatchedActiveMax() {
-    return handler.getDispatchedActiveMax();
+  @Metric("total time spent in handling (in ns)")
+  public long handledTimeTotal() {
+    return handler.getRequestTimeTotal();
   }
-  @Metric("maximum time spend in dispatch handling (in ms)")
-  public long dispatchedTimeMax() {
-    return handler.getDispatchedTimeMax();
-  }
-  @Metric("mean time spent in dispatch handling (in ms)")
-  public double dispatchedTimeMean() {
-    return handler.getDispatchedTimeMean();
-  }
-  @Metric("standard deviation for dispatch handling (in ms)")
-  public double dispatchedTimeStdDev() {
-    return handler.getDispatchedTimeStdDev();
-  }
-  @Metric("total time spent in dispatch handling (in ms)")
-  public long dispatchedTimeTotal() {
-    return handler.getDispatchedTimeTotal();
-  }
-  @Metric("number of async requests requests that have expired")
-  public int expires() {
-    return handler.getExpires();
+  @Metric("total number of failures in handling")
+  public long handleFailed() {
+    return handler.getHandlingFailures();
   }
   @Metric("number of requests")
   public int requests() {
-    return handler.getRequests();
+    return handler.getRequestTotal();
   }
   @Metric("number of requests currently active")
   public int requestsActive() {
@@ -114,6 +98,10 @@ public class HttpServer2Metrics {
   public long requestTimeTotal() {
     return handler.getRequestTimeTotal();
   }
+  @Metric("total number of failed requests")
+  public long requestFailed() {
+    return handler.getFailures();
+  }
   @Metric("number of requests with 1xx response status")
   public int responses1xx() {
     return handler.getResponses1xx();
@@ -136,11 +124,15 @@ public class HttpServer2Metrics {
   }
   @Metric("total number of bytes across all responses")
   public long responsesBytesTotal() {
-    return handler.getResponsesBytesTotal();
+    return handler.getBytesWritten();
+  }
+  @Metric("total number of bytes across all requests")
+  public long requestsBytesTotal() {
+    return handler.getBytesRead();
   }
   @Metric("time in milliseconds stats have been collected for")
   public long statsOnMs() {
-    return handler.getStatsOnMs();
+    return handler.getStatisticsDuration().toMillis();
   }
 
   HttpServer2Metrics(StatisticsHandler handler, int port) {

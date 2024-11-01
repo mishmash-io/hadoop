@@ -799,9 +799,10 @@ public final class HttpServer2 implements FilterContainer {
       if (Files.notExists(tmpDir)) {
         Files.createDirectories(tmpDir);
       }
-      ServletContextHandler genCtx = new ServletContextHandler(contexts, "/prof-output-hadoop");
+      ServletContextHandler genCtx = new ServletContextHandler("/prof-output-hadoop");
+      contexts.addHandler(genCtx);
       genCtx.addServlet(ProfileOutputServlet.class, "/*");
-      genCtx.setResourceBase(tmpDir.toAbsolutePath().toString());
+      genCtx.setBaseResourceAsString(tmpDir.toAbsolutePath().toString());
       genCtx.setDisplayName("prof-output-hadoop");
       setContextAttributes(genCtx, conf);
     } else {
@@ -929,8 +930,9 @@ public final class HttpServer2 implements FilterContainer {
         CommonConfigurationKeys.HADOOP_HTTP_LOGS_ENABLED_DEFAULT);
     if (logDir != null && logsEnabled) {
       ServletContextHandler logContext =
-          new ServletContextHandler(parent, "/logs");
-      logContext.setResourceBase(logDir);
+          new ServletContextHandler("/logs");
+      parent.addHandler(logContext);
+      logContext.setBaseResourceAsString(logDir);
       logContext.addServlet(AdminAuthorizedServlet.class, "/*");
       if (conf.getBoolean(
           CommonConfigurationKeys.HADOOP_JETTY_LOGS_SERVE_ALIASES,
@@ -951,8 +953,9 @@ public final class HttpServer2 implements FilterContainer {
     }
     // set up the context for "/static/*"
     ServletContextHandler staticContext =
-        new ServletContextHandler(parent, "/static");
-    staticContext.setResourceBase(appDir + "/static");
+        new ServletContextHandler("/static");
+    parent.addHandler(staticContext);
+    staticContext.setBaseResourceAsString(appDir + "/static");
     staticContext.addServlet(WebServlet.class, "/*");
     staticContext.setDisplayName("static");
     @SuppressWarnings("unchecked")
@@ -1150,7 +1153,7 @@ public final class HttpServer2 implements FilterContainer {
    */
   public void addHandlerAtFront(Handler handler) {
     Handler[] h = ArrayUtil.prependToArray(
-        handler, this.handlers.getHandlers(), Handler.class);
+        handler, this.handlers.getHandlers().toArray(new Handler[0]), Handler.class);
     handlers.setHandlers(h);
   }
 
