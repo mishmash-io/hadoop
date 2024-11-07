@@ -18,12 +18,15 @@
 
 package org.apache.hadoop.metrics2.sink;
 
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
+import java.util.concurrent.TimeUnit;
 import java.util.regex.Pattern;
 
 import org.apache.hadoop.io.IOUtils;
@@ -35,9 +38,9 @@ import org.apache.hadoop.metrics2.impl.ConfigBuilder;
 import org.apache.hadoop.metrics2.impl.MetricsSystemImpl;
 import org.apache.hadoop.metrics2.impl.TestMetricsConfig;
 import org.apache.hadoop.metrics2.lib.MutableGaugeInt;
-import org.junit.After;
-import org.junit.Test;
-import static org.junit.Assert.*;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.Timeout;
 
 public class TestFileSink {
   
@@ -81,7 +84,8 @@ public class TestFileSink {
     return File.createTempFile(prefix, suffix, dir);
   }
   
-  @Test(timeout=6000) 
+  @Test
+  @Timeout(value=6000, unit=TimeUnit.MILLISECONDS) 
   public void testFileSink() throws IOException {
     outFile = getTestTempFile("test-file-sink-", ".out");
     final String outPath = outFile.getAbsolutePath();  
@@ -136,7 +140,7 @@ public class TestFileSink {
      assertTrue(expectedContentPattern.matcher(outFileContent).matches());
   }
   
-  @After
+  @AfterEach
   public void after() {
     if (outFile != null) {
       outFile.delete();

@@ -27,6 +27,7 @@ import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.Locale;
 import java.util.Map;
+import java.util.concurrent.TimeUnit;
 
 import jakarta.servlet.FilterConfig;
 import jakarta.servlet.FilterChain;
@@ -39,7 +40,9 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import org.junit.Test;
+
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.Timeout;
 import org.mockito.Mockito;
 
 
@@ -256,7 +259,8 @@ public class TestProxyUserAuthenticationFilter {
   }
 
 
-  @Test(timeout = 10000)
+  @Test
+  @Timeout(value=10000, unit=TimeUnit.MILLISECONDS)
   public void testFilter() throws Exception {
     Map<String, String> params = new HashMap<String, String>();
     params.put("proxyuser.knox.users", "testuser");

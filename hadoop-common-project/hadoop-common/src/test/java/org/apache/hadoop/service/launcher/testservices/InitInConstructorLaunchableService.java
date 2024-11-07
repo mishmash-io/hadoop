@@ -20,7 +20,11 @@ package org.apache.hadoop.service.launcher.testservices;
 
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.service.launcher.AbstractLaunchableService;
-import org.junit.Assert;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotSame;
+import static org.junit.jupiter.api.Assertions.assertSame;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.util.List;
 
@@ -41,23 +45,23 @@ public class InitInConstructorLaunchableService extends
 
   @Override
   public void init(Configuration conf) {
-    Assert.assertEquals(STATE.NOTINITED, getServiceState());
+    assertEquals(STATE.NOTINITED, getServiceState());
     super.init(conf);
   }
 
   @Override
   public Configuration bindArgs(Configuration config, List<String> args)
       throws Exception {
-    Assert.assertEquals(STATE.INITED, getServiceState());
-    Assert.assertTrue(isInState(STATE.INITED));
-    Assert.assertNotSame(getConfig(), config);
+    assertEquals(STATE.INITED, getServiceState());
+    assertTrue(isInState(STATE.INITED));
+    assertNotSame(getConfig(), config);
     return null;
   }
 
   @Override
   public int execute() throws Exception {
-    Assert.assertEquals(STATE.STARTED, getServiceState());
-    Assert.assertSame(originalConf, getConfig());
+    assertEquals(STATE.STARTED, getServiceState());
+    assertSame(originalConf, getConfig());
     return super.execute();
   }
 }

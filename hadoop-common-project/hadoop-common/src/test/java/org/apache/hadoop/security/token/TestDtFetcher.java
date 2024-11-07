@@ -20,8 +20,6 @@ package org.apache.hadoop.security.token;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.security.Credentials;
-import org.apache.hadoop.security.token.Token;
-import org.apache.hadoop.security.token.DtFetcher;
 
 public class TestDtFetcher implements DtFetcher {
   public Text getServiceName() {

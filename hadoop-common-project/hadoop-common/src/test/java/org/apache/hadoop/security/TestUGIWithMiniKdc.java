@@ -21,9 +21,9 @@ import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.minikdc.MiniKdc;
 import org.apache.hadoop.test.GenericTestUtils;
 import org.apache.hadoop.test.LambdaTestUtils;
-
-import org.junit.After;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.Timeout;
 import org.slf4j.event.Level;
 
 import javax.security.auth.kerberos.KerberosPrincipal;
@@ -33,6 +33,7 @@ import java.security.Principal;
 import java.util.HashSet;
 import java.util.Properties;
 import java.util.Set;
+import java.util.concurrent.TimeUnit;
 
 import static org.apache.hadoop.fs.CommonConfigurationKeysPublic.HADOOP_KERBEROS_MIN_SECONDS_BEFORE_RELOGIN;
 
@@ -43,7 +44,7 @@ public class TestUGIWithMiniKdc {
 
   private static MiniKdc kdc;
 
-  @After
+  @AfterEach
   public void teardown() {
     UserGroupInformation.reset();
     if (kdc != null) {
@@ -63,7 +64,8 @@ public class TestUGIWithMiniKdc {
     kdc.start();
   }
 
-  @Test(timeout = 120000)
+  @Test
+  @Timeout(value=120000, unit=TimeUnit.MILLISECONDS)
   public void testAutoRenewalThreadRetryWithKdc() throws Exception {
     GenericTestUtils.setLogLevel(UserGroupInformation.LOG, Level.DEBUG);
     final Configuration conf = new Configuration();

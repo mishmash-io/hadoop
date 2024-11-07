@@ -18,18 +18,21 @@
 package org.apache.hadoop.fs.viewfs;
 
 import java.util.function.Function;
+
+import static org.junit.jupiter.api.Assertions.assertThrows;
+
 import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
 
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.Path;
+import org.junit.jupiter.api.Test;
 import org.apache.hadoop.fs.FileAlreadyExistsException;
-import org.junit.Test;
 
 public class TestViewFsConfig {
 
-  @Test(expected = FileAlreadyExistsException.class)
+  @Test
   public void testInvalidConfig() throws IOException, URISyntaxException {
     Configuration conf = new Configuration();
     ConfigUtil.setIsNestedMountPointSupported(conf, false);
@@ -41,25 +44,27 @@ public class TestViewFsConfig {
     class Foo {
     }
 
-    new InodeTree<Foo>(conf, null, null, false) {
+    assertThrows(FileAlreadyExistsException.class, () -> {
+      new InodeTree<Foo>(conf, null, null, false) {
 
-      @Override
-      protected Function<URI, Foo> initAndGetTargetFs() {
-        return null;
-      }
+        @Override
+        protected Function<URI, Foo> initAndGetTargetFs() {
+          return null;
+        }
 
-      @Override
-      protected Foo getTargetFileSystem(final INodeDir<Foo> dir) {
-        return null;
-      }
+        @Override
+        protected Foo getTargetFileSystem(final INodeDir<Foo> dir) {
+          return null;
+        }
 
-      @Override
-      protected Foo getTargetFileSystem(final String settings,
-          final URI[] mergeFsURIList) {
-        return null;
-      }
+        @Override
+        protected Foo getTargetFileSystem(final String settings,
+            final URI[] mergeFsURIList) {
+          return null;
+        }
 
-    };
+      };
+    });
   }
 
 }

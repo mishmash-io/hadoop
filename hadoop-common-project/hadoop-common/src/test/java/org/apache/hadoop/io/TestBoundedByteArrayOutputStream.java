@@ -18,13 +18,14 @@
 
 package org.apache.hadoop.io;
 
-import org.junit.Test;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.io.IOException;
 
-import static org.junit.Assert.assertTrue;
 import java.util.Arrays;
 import java.util.Random;
+
+import org.junit.jupiter.api.Test;
 
 
 /** Unit tests for BoundedByteArrayOutputStream */
@@ -44,8 +45,8 @@ public class TestBoundedByteArrayOutputStream {
 
     // Write to the stream, get the data back and check for contents
     stream.write(INPUT, 0, SIZE);
-    assertTrue("Array Contents Mismatch",
-        Arrays.equals(INPUT, stream.getBuffer()));
+    assertTrue(Arrays.equals(INPUT, stream.getBuffer()),
+        "Array Contents Mismatch");
     
     // Try writing beyond end of buffer. Should throw an exception
     boolean caughtException = false;
@@ -56,16 +57,16 @@ public class TestBoundedByteArrayOutputStream {
       caughtException = true;
     }
     
-    assertTrue("Writing beyond limit did not throw an exception",
-        caughtException);
+    assertTrue(caughtException,
+        "Writing beyond limit did not throw an exception");
     
     //Reset the stream and try, should succeed 
     stream.reset();
-    assertTrue("Limit did not get reset correctly", 
-        (stream.getLimit() == SIZE));
+    assertTrue((stream.getLimit() == SIZE),
+        "Limit did not get reset correctly");
     stream.write(INPUT, 0, SIZE);
-    assertTrue("Array Contents Mismatch",
-        Arrays.equals(INPUT, stream.getBuffer()));
+    assertTrue(Arrays.equals(INPUT, stream.getBuffer()),
+        "Array Contents Mismatch");
   
     // Try writing one more byte, should fail
     caughtException = false;
@@ -78,8 +79,8 @@ public class TestBoundedByteArrayOutputStream {
     // Reset the stream, but set a lower limit. Writing beyond
     // the limit should throw an exception
     stream.reset(SIZE - 1);
-    assertTrue("Limit did not get reset correctly",
-        (stream.getLimit() == SIZE -1));
+    assertTrue((stream.getLimit() == SIZE -1),
+        "Limit did not get reset correctly");
     caughtException = false;
     
     try {
@@ -88,8 +89,8 @@ public class TestBoundedByteArrayOutputStream {
       caughtException = true;
     }
     
-    assertTrue("Writing beyond limit did not throw an exception",
-        caughtException);
+    assertTrue(caughtException,
+        "Writing beyond limit did not throw an exception");
   }
   
   
@@ -114,8 +115,8 @@ public class TestBoundedByteArrayOutputStream {
 
     // Write to the stream, get the data back and check for contents
     stream.write(INPUT, 0, SIZE);
-    assertTrue("Array Contents Mismatch",
-        Arrays.equals(INPUT, stream.getBuffer()));
+    assertTrue(Arrays.equals(INPUT, stream.getBuffer()),
+        "Array Contents Mismatch");
     
     // Try writing beyond end of buffer. Should throw an exception
     boolean caughtException = false;
@@ -126,17 +127,17 @@ public class TestBoundedByteArrayOutputStream {
       caughtException = true;
     }
     
-    assertTrue("Writing beyond limit did not throw an exception",
-        caughtException);
+    assertTrue(caughtException,
+        "Writing beyond limit did not throw an exception");
     
     //Reset the stream and try, should succeed
     byte[] newBuf = new byte[SIZE];
     stream.resetBuffer(newBuf, 0, newBuf.length);
-    assertTrue("Limit did not get reset correctly", 
-        (stream.getLimit() == SIZE));
+    assertTrue((stream.getLimit() == SIZE),
+        "Limit did not get reset correctly");
     stream.write(INPUT, 0, SIZE);
-    assertTrue("Array Contents Mismatch",
-        Arrays.equals(INPUT, stream.getBuffer()));
+    assertTrue(Arrays.equals(INPUT, stream.getBuffer()),
+        "Array Contents Mismatch");
   
     // Try writing one more byte, should fail
     caughtException = false;
@@ -145,8 +146,8 @@ public class TestBoundedByteArrayOutputStream {
     } catch (Exception e) {
       caughtException = true;
     }
-    assertTrue("Writing beyond limit did not throw an exception",
-        caughtException);
+    assertTrue(caughtException,
+        "Writing beyond limit did not throw an exception");
   }
 
 }

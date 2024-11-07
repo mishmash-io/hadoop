@@ -30,8 +30,6 @@ import java.util.Date;
 import java.util.Map;
 
 import org.apache.hadoop.util.StringUtils;
-import org.junit.runner.notification.Failure;
-import org.junit.runner.notification.RunListener;
 
 /**
  * JUnit run listener which prints full thread dump into System.err

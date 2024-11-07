@@ -17,17 +17,13 @@
 
 package org.apache.hadoop.io.file.tfile;
 
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.fail;
+
 import java.io.DataOutputStream;
 import java.io.EOFException;
 import java.io.IOException;
 import java.util.Random;
-
-import static org.junit.Assert.fail;
-import static org.junit.Assert.assertTrue;
-
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
 
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FSDataOutputStream;
@@ -38,6 +34,9 @@ import org.apache.hadoop.io.file.tfile.TFile.Reader;
 import org.apache.hadoop.io.file.tfile.TFile.Writer;
 import org.apache.hadoop.io.file.tfile.TFile.Reader.Scanner;
 import org.apache.hadoop.test.GenericTestUtils;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 /**
  * 
@@ -68,7 +67,7 @@ public class TestTFileStreams {
     this.comparator = comparator;
   }
 
-  @Before
+  @BeforeEach
   public void setUp() throws IOException {
     conf = new Configuration();
     path = new Path(ROOT, outputFile);
@@ -77,7 +76,7 @@ public class TestTFileStreams {
     writer = new Writer(out, BLOCK_SIZE, compression, comparator, conf);
   }
 
-  @After
+  @AfterEach
   public void tearDown() throws IOException {
     if (!skip) {
       try {
@@ -307,7 +306,7 @@ public class TestTFileStreams {
     }
     outKey.close();
     outKey.close();
-    assertTrue("Multiple close should have no effect.", true);
+    assertTrue(true, "Multiple close should have no effect.");
   }
 
   @Test

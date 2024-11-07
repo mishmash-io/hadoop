@@ -23,7 +23,7 @@ import org.apache.hadoop.metrics2.MetricsRecord;
 import org.apache.hadoop.metrics2.MetricsTag;
 import org.apache.hadoop.metrics2.impl.MetricsRecordImpl;
 import org.apache.hadoop.metrics2.impl.MsInfo;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
 
 import java.io.IOException;
@@ -33,7 +33,7 @@ import java.util.List;
 import java.util.Set;
 import java.util.Collections;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
@@ -82,7 +82,7 @@ public class TestGraphiteMetrics {
 
     String result = argument.getValue();
 
-    assertEquals(true,
+    assertTrue(
         result.equals("null.all.Context.Context=all.Hostname=host.foo1 1.25 10\n" +
         "null.all.Context.Context=all.Hostname=host.foo2 2.25 10\n") ||
         result.equals("null.all.Context.Context=all.Hostname=host.foo2 2.25 10\n" +
@@ -114,7 +114,7 @@ public class TestGraphiteMetrics {
 
     String result = argument.getValue();
 
-    assertEquals(true,
+    assertTrue(
         result.equals("null.all.Context.Context=all.foo1 1 10\n" +
         "null.all.Context.Context=all.foo2 2 10\n") ||
         result.equals("null.all.Context.Context=all.foo2 2 10\n" +
@@ -192,7 +192,7 @@ public class TestGraphiteMetrics {
     verify(mockGraphite).write(argument.capture());
     String result = argument.getValue();
 
-    assertEquals(true,
+    assertTrue(
         result.equals("null.all.Context.Context=all.Hostname=host.foo1 1.25 10\n" +
         "null.all.Context.Context=all.Hostname=host.foo2 2.25 10\n") ||
         result.equals("null.all.Context.Context=all.Hostname=host.foo2 2.25 10\n" +

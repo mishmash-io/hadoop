@@ -44,9 +44,8 @@ import static org.apache.hadoop.fs.CommonConfigurationKeysPublic.IO_FILE_BUFFER_
 import static org.apache.hadoop.test.LambdaTestUtils.interceptFuture;
 
 import org.apache.hadoop.fs.RawPathHandle;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.junit.runners.Parameterized;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.MethodSource;
 
 /**
  * Test {@link PathHandle} operations and semantics.
@@ -56,34 +55,17 @@ import org.junit.runners.Parameterized;
  * @see org.apache.hadoop.fs.FileSystem#open(PathHandle)
  * @see org.apache.hadoop.fs.FileSystem#open(PathHandle, int)
  */
-@RunWith(Parameterized.class)
 public abstract class AbstractContractPathHandleTest
     extends AbstractFSContractTestBase {
 
-  private final HandleOpt[] opts;
-  private final boolean serialized;
-
   private static final byte[] B1 = dataset(TEST_FILE_LEN, 43, 255);
   private static final byte[] B2 = dataset(TEST_FILE_LEN, 44, 255);
-
-  /**
-   * Create an instance of the test from {@link #params()}.
-   * @param testname Name of the set of options under test
-   * @param opts Set of {@link HandleOpt} params under test.
-   * @param serialized Serialize the handle before using it.
-   */
-  public AbstractContractPathHandleTest(String testname, HandleOpt[] opts,
-      boolean serialized) {
-    this.opts = opts;
-    this.serialized = serialized;
-  }
 
   /**
    * Run test against all combinations of default options. Also run each
    * after converting the PathHandle to bytes and back.
    * @return
    */
-  @Parameterized.Parameters(name="Test{0}")
   public static Collection<Object[]> params() {
     return Arrays.asList(
         Arrays.asList("Exact", HandleOpt.exact()),
@@ -108,11 +90,12 @@ public abstract class AbstractContractPathHandleTest
     return conf;
   }
 
-  @Test
-  public void testIdent() throws IOException {
+  @ParameterizedTest
+  @MethodSource("params")
+  public void testIdent(String testname, HandleOpt[] opts, boolean serialized) throws IOException {
     describe("verify simple open, no changes");
     FileStatus stat = testFile(B1);
-    PathHandle fd = getHandleOrSkip(stat);
+    PathHandle fd = getHandleOrSkip(stat, opts, serialized);
     verifyFileContents(getFileSystem(), stat.getPath(), B1);
 
     try (FSDataInputStream in = getFileSystem().open(fd)) {
@@ -120,8 +103,9 @@ public abstract class AbstractContractPathHandleTest
     }
   }
 
-  @Test
-  public void testChanged() throws IOException {
+  @ParameterizedTest
+  @MethodSource("params")
+  public void testChanged(String testname, HandleOpt[] opts, boolean serialized) throws IOException {
     describe("verify open(PathHandle, changed(*))");
     assumeSupportsContentCheck();
     HandleOpt.Data data = HandleOpt.getOpt(HandleOpt.Data.class, opts)
@@ -140,18 +124,19 @@ public abstract class AbstractContractPathHandleTest
     // verify fd entity contains contents of file1 + appended bytes
     verifyFileContents(getFileSystem(), stat.getPath(), b12);
     // get the handle *after* the file has been modified
-    PathHandle fd = getHandleOrSkip(stat);
+    PathHandle fd = getHandleOrSkip(stat, opts, serialized);
 
     try (FSDataInputStream in = getFileSystem().open(fd)) {
-      assertTrue("Failed to detect content change", data.allowChange());
+      assertTrue(data.allowChange(), "Failed to detect content change");
       verifyRead(in, b12, 0, b12.length);
     } catch (InvalidPathHandleException e) {
-      assertFalse("Failed to allow content change", data.allowChange());
+      assertFalse(data.allowChange(), "Failed to allow content change");
     }
   }
 
-  @Test
-  public void testMoved() throws IOException {
+  @ParameterizedTest
+  @MethodSource("params")
+  public void testMoved(String testname, HandleOpt[] opts, boolean serialized) throws IOException {
     describe("verify open(PathHandle, moved(*))");
     assumeSupportsFileReference();
     HandleOpt.Location loc = HandleOpt.getOpt(HandleOpt.Location.class, opts)
@@ -161,18 +146,19 @@ public abstract class AbstractContractPathHandleTest
     ContractTestUtils.rename(getFileSystem(), stat.getPath(),
         path(stat.getPath() + "2"));
     // obtain handle to entity from #getFileStatus call
-    PathHandle fd = getHandleOrSkip(stat);
+    PathHandle fd = getHandleOrSkip(stat, opts, serialized);
 
     try (FSDataInputStream in = getFileSystem().open(fd)) {
-      assertTrue("Failed to detect location change", loc.allowChange());
+      assertTrue(loc.allowChange(), "Failed to detect location change");
       verifyRead(in, B1, 0, B1.length);
     } catch (InvalidPathHandleException e) {
-      assertFalse("Failed to allow location change", loc.allowChange());
+      assertFalse(loc.allowChange(), "Failed to allow location change");
     }
   }
 
-  @Test
-  public void testChangedAndMoved() throws IOException {
+  @ParameterizedTest
+  @MethodSource("params")
+  public void testChangedAndMoved(String testname, HandleOpt[] opts, boolean serialized) throws IOException {
     describe("verify open(PathHandle, changed(*), moved(*))");
     assumeSupportsFileReference();
     assumeSupportsContentCheck();
@@ -184,26 +170,26 @@ public abstract class AbstractContractPathHandleTest
     Path dst = path(stat.getPath() + "2");
     ContractTestUtils.rename(getFileSystem(), stat.getPath(), dst);
     appendFile(getFileSystem(), dst, B2);
-    PathHandle fd = getHandleOrSkip(stat);
+    PathHandle fd = getHandleOrSkip(stat, opts, serialized);
 
     byte[] b12 = Arrays.copyOf(B1, B1.length + B2.length);
     System.arraycopy(B2, 0, b12, B1.length, B2.length);
     try (FSDataInputStream in = getFileSystem().open(fd)) {
-      assertTrue("Failed to detect location change", loc.allowChange());
-      assertTrue("Failed to detect content change", data.allowChange());
+      assertTrue(loc.allowChange(), "Failed to detect location change");
+      assertTrue(data.allowChange(), "Failed to detect content change");
       verifyRead(in, b12, 0, b12.length);
     } catch (InvalidPathHandleException e) {
       if (data.allowChange()) {
-        assertFalse("Failed to allow location change", loc.allowChange());
+        assertFalse(loc.allowChange(), "Failed to allow location change");
       }
       if (loc.allowChange()) {
-        assertFalse("Failed to allow content change", data.allowChange());
+        assertFalse(data.allowChange(), "Failed to allow content change");
       }
     }
   }
 
   private FileStatus testFile(byte[] content) throws IOException {
-    Path path = path(methodName.getMethodName());
+    Path path = path(getMethodName());
     createFile(getFileSystem(), path, false, content);
     FileStatus stat = getFileSystem().getFileStatus(path);
     assertNotNull(stat);
@@ -237,9 +223,11 @@ public abstract class AbstractContractPathHandleTest
    * Utility method to obtain a handle or skip the test if the set of opts
    * are not supported.
    * @param stat Target file status
+   * @param opts HandleOpts
+   * @param serialized serialized
    * @return Handle to the indicated entity or skip the test
    */
-  protected PathHandle getHandleOrSkip(FileStatus stat) {
+  protected PathHandle getHandleOrSkip(FileStatus stat, HandleOpt[] opts, boolean serialized) {
     try {
       PathHandle fd = getFileSystem().getPathHandle(stat, opts);
       if (serialized) {
@@ -254,26 +242,27 @@ public abstract class AbstractContractPathHandleTest
     return null;
   }
 
-
-  @Test
-  public void testOpenFileApplyRead() throws Throwable {
+  @ParameterizedTest
+  @MethodSource("params")
+  public void testOpenFileApplyRead(String testname, HandleOpt[] opts, boolean serialized) throws Throwable {
     describe("use the apply sequence to read a whole file");
     CompletableFuture<Long> readAllBytes = getFileSystem()
         .openFile(
             getHandleOrSkip(
-                testFile(B1)))
+                testFile(B1), opts, serialized))
         .build()
         .thenApply(ContractTestUtils::readStream);
-    assertEquals("Wrong number of bytes read value",
-        TEST_FILE_LEN,
-        (long) readAllBytes.get());
+    assertEquals(TEST_FILE_LEN,
+        (long) readAllBytes.get(),
+        "Wrong number of bytes read value");
   }
 
-  @Test
-  public void testOpenFileDelete() throws Throwable {
+  @ParameterizedTest
+  @MethodSource("params")
+  public void testOpenFileDelete(String testname, HandleOpt[] opts, boolean serialized) throws Throwable {
     describe("use the apply sequence to read a whole file");
     FileStatus testFile = testFile(B1);
-    PathHandle handle = getHandleOrSkip(testFile);
+    PathHandle handle = getHandleOrSkip(testFile, opts, serialized);
     // delete that file
     FileSystem fs = getFileSystem();
     fs.delete(testFile.getPath(), false);
@@ -295,19 +284,20 @@ public abstract class AbstractContractPathHandleTest
     }
   }
 
-  @Test
-  public void testOpenFileLazyFail() throws Throwable {
+  @ParameterizedTest
+  @MethodSource("params")
+  public void testOpenFileLazyFail(String testname, HandleOpt[] opts, boolean serialized) throws Throwable {
     describe("openFile fails on a misssng file in the get() and not before");
     FileStatus stat = testFile(B1);
     CompletableFuture<Long> readAllBytes = getFileSystem()
         .openFile(
             getHandleOrSkip(
-                stat))
+                stat, opts, serialized))
         .build()
         .thenApply(ContractTestUtils::readStream);
-    assertEquals("Wrong number of bytes read value",
-        TEST_FILE_LEN,
-        (long) readAllBytes.get());
+    assertEquals(TEST_FILE_LEN,
+        (long) readAllBytes.get(),
+        "Wrong number of bytes read value");
   }
 
 }

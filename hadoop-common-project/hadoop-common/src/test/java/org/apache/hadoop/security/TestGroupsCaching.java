@@ -31,15 +31,10 @@ import java.util.concurrent.TimeoutException;
 
 import org.apache.hadoop.test.GenericTestUtils;
 import org.apache.hadoop.util.FakeTimer;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import java.util.function.Supplier;
-
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.fail;
 
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.CommonConfigurationKeys;
@@ -47,6 +42,10 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.fail;
 
 public class TestGroupsCaching {
   public static final Logger TESTLOG =
@@ -54,7 +53,7 @@ public class TestGroupsCaching {
   private static String[] myGroups = {"grp1", "grp2"};
   private Configuration conf;
 
-  @Before
+  @BeforeEach
   public void setup() throws IOException {
     FakeGroupMapping.clearAll();
     ExceptionalGroupMapping.resetRequestCount();
@@ -271,25 +270,26 @@ public class TestGroupsCaching {
     conf.set(CommonConfigurationKeys.HADOOP_USER_GROUP_STATIC_OVERRIDES, "me=;user1=group1;user2=group1,group2");
     Groups groups = new Groups(conf);
     List<String> userGroups = groups.getGroups("me");
-    assertTrue("non-empty groups for static user", userGroups.isEmpty());
-    assertFalse("group lookup done for static user",
-        FakeunPrivilegedGroupMapping.invoked);
+    assertTrue(userGroups.isEmpty(), "non-empty groups for static user");
+    assertFalse(FakeunPrivilegedGroupMapping.invoked,
+        "group lookup done for static user");
     
     List<String> expected = new ArrayList<String>();
     expected.add("group1");
 
     FakeunPrivilegedGroupMapping.invoked = false;
     userGroups = groups.getGroups("user1");
-    assertTrue("groups not correct", expected.equals(userGroups));
-    assertFalse("group lookup done for unprivileged user",
-        FakeunPrivilegedGroupMapping.invoked);
+    assertTrue(expected.equals(userGroups), "groups not correct");
+    assertFalse(FakeunPrivilegedGroupMapping.invoked,
+        "group lookup done for unprivileged user");
 
     expected.add("group2");
     FakeunPrivilegedGroupMapping.invoked = false;
     userGroups = groups.getGroups("user2");
-    assertTrue("groups not correct", expected.equals(userGroups));
-    assertFalse("group lookup done for unprivileged user",
-        FakeunPrivilegedGroupMapping.invoked);
+    assertTrue(expected.equals(userGroups), "groups not correct");
+    assertFalse(
+        FakeunPrivilegedGroupMapping.invoked,
+        "group lookup done for unprivileged user");
 
   }
 

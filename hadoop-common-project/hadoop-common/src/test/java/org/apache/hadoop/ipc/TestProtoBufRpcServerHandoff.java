@@ -18,6 +18,8 @@
 
 package org.apache.hadoop.ipc;
 
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
 import java.net.InetSocketAddress;
 import java.util.concurrent.Callable;
 import java.util.concurrent.CompletionService;
@@ -25,15 +27,16 @@ import java.util.concurrent.ExecutorCompletionService;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
 
 import org.apache.hadoop.thirdparty.protobuf.BlockingService;
 import org.apache.hadoop.thirdparty.protobuf.RpcController;
 import org.apache.hadoop.thirdparty.protobuf.ServiceException;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.Timeout;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.ipc.protobuf.TestProtos;
 import org.apache.hadoop.ipc.protobuf.TestRpcServiceProtos.TestProtobufRpcHandoffProto;
-import org.junit.Assert;
-import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -42,7 +45,8 @@ public class TestProtoBufRpcServerHandoff {
   public static final Logger LOG =
       LoggerFactory.getLogger(TestProtoBufRpcServerHandoff.class);
 
-  @Test(timeout = 20000)
+  @Test
+  @Timeout(value=20000, unit=TimeUnit.MILLISECONDS)
   public void test() throws Exception {
     Configuration conf = new Configuration();
 
@@ -88,8 +92,8 @@ public class TestProtoBufRpcServerHandoff {
 
     // Ensure the 5 second sleep responses are within a reasonable time of each
     // other.
-    Assert.assertTrue(Math.abs(callable1.endTime - callable2.endTime) < 2000l);
-    Assert.assertTrue(System.currentTimeMillis() - submitTime < 7000l);
+    assertTrue(Math.abs(callable1.endTime - callable2.endTime) < 2000l);
+    assertTrue(System.currentTimeMillis() - submitTime < 7000l);
 
   }
 

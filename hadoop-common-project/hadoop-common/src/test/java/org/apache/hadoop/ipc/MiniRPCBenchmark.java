@@ -17,17 +17,17 @@
  */
 package org.apache.hadoop.ipc;
 
+import static org.junit.jupiter.api.Assertions.fail;
+
 import java.io.IOException;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.net.NetworkInterface;
 import java.security.PrivilegedExceptionAction;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Enumeration;
 
 import org.apache.hadoop.test.GenericTestUtils;
-import org.junit.Assert;
 
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.io.Text;
@@ -222,7 +222,7 @@ public class MiniRPCBenchmark {
           }
         });
       } catch (InterruptedException e) {
-        Assert.fail(Arrays.toString(e.getStackTrace()));
+        fail(e);
       }
     } finally {
       RPC.stopProxy(client);

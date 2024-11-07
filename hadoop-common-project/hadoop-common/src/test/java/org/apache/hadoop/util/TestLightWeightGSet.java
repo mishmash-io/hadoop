@@ -17,13 +17,17 @@
  */
 package org.apache.hadoop.util;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.Random;
+import java.util.concurrent.TimeUnit;
 
 import org.apache.hadoop.util.LightWeightGSet.LinkedElement;
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.Timeout;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -65,7 +69,8 @@ public class TestLightWeightGSet {
     }
   }
 
-  @Test(timeout=60000)
+  @Test
+  @Timeout(value=60000, unit=TimeUnit.MILLISECONDS)
   public void testRemoveAllViaIterator() {
     ArrayList<Integer> list = getRandomList(100, 123);
     LightWeightGSet<TestElement, TestElement> set =
@@ -78,10 +83,11 @@ public class TestLightWeightGSet {
       iter.next();
       iter.remove();
     }
-    Assert.assertEquals(0, set.size());
+    assertEquals(0, set.size());
   }
 
-  @Test(timeout=60000)
+  @Test
+  @Timeout(value=60000, unit=TimeUnit.MILLISECONDS)
   public void testRemoveSomeViaIterator() {
     ArrayList<Integer> list = getRandomList(100, 123);
     LightWeightGSet<TestElement, TestElement> set =
@@ -105,7 +111,7 @@ public class TestLightWeightGSet {
     }
     for (Iterator<TestElement> iter = set.iterator();
         iter.hasNext(); ) {
-      Assert.assertTrue(iter.next().getVal() <= mode);
+      assertTrue(iter.next().getVal() <= mode);
     }
   }
 }

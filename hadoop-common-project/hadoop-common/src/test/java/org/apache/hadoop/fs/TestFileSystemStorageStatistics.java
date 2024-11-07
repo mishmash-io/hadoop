@@ -20,25 +20,23 @@ package org.apache.hadoop.fs;
 
 import org.apache.commons.lang3.RandomUtils;
 import org.apache.hadoop.fs.StorageStatistics.LongStatistic;
-
-import org.junit.Before;
-import org.junit.Rule;
-import org.junit.Test;
-
-import org.junit.rules.Timeout;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.Timeout;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
 
 import java.util.Iterator;
 import java.util.concurrent.TimeUnit;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
-
 /**
  * This tests basic operations of {@link FileSystemStorageStatistics} class.
  */
+@Timeout(value=10, unit=TimeUnit.SECONDS)
 public class TestFileSystemStorageStatistics {
   private static final Logger LOG = LoggerFactory.getLogger(
       TestFileSystemStorageStatistics.class);
@@ -62,10 +60,7 @@ public class TestFileSystemStorageStatistics {
   private FileSystemStorageStatistics storageStatistics =
       new FileSystemStorageStatistics(FS_STORAGE_STATISTICS_NAME, statistics);
 
-  @Rule
-  public final Timeout globalTimeout = new Timeout(10, TimeUnit.SECONDS);
-
-  @Before
+  @BeforeEach
   public void setup() {
     statistics.incrementBytesRead(RandomUtils.nextInt(0, 100));
     statistics.incrementBytesWritten(RandomUtils.nextInt(0, 100));

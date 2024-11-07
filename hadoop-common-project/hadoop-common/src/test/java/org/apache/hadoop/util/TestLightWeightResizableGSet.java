@@ -22,8 +22,10 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Random;
 import java.util.Set;
+import java.util.concurrent.TimeUnit;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.Timeout;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -126,7 +128,8 @@ public class TestLightWeightResizableGSet {
     }
   }
 
-  @Test(timeout = 60000)
+  @Test
+  @Timeout(value=60000, unit=TimeUnit.MILLISECONDS)
   public void testBasicOperations() {
     TestElement[] elements = generateElements(1 << 16);
     final LightWeightResizableGSet<TestKey, TestElement> set =
@@ -191,7 +194,8 @@ public class TestLightWeightResizableGSet {
     assertThat(set.size()).isZero();
   }
 
-  @Test(timeout = 60000)
+  @Test
+  @Timeout(value=60000, unit=TimeUnit.MILLISECONDS)
   public void testRemoveAll() {
     TestElement[] elements = generateElements(1 << 16);
     final LightWeightResizableGSet<TestKey, TestElement> set =

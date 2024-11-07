@@ -22,14 +22,13 @@ import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
-import org.junit.After;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.BeforeClass;
-import org.junit.Rule;
-import org.junit.AssumptionViolatedException;
-import org.junit.rules.TestName;
-import org.junit.rules.Timeout;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.TestInfo;
+import org.junit.jupiter.api.Timeout;
+import org.opentest4j.TestAbortedException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -43,7 +42,8 @@ import static org.apache.hadoop.fs.contract.ContractTestUtils.skip;
 /**
  * This is the base class for all the contract tests.
  */
-public abstract class AbstractFSContractTestBase extends Assert
+@Timeout(value=180, unit=TimeUnit.SECONDS)
+public abstract class AbstractFSContractTestBase extends Assertions
   implements ContractOptions {
 
   private static final Logger LOG =
@@ -53,11 +53,6 @@ public abstract class AbstractFSContractTestBase extends Assert
    * Length of files to work with: {@value}.
    */
   public static final int TEST_FILE_LEN = 1024;
-
-  /**
-   * standard test timeout: {@value}.
-   */
-  public static final int DEFAULT_TEST_TIMEOUT = 180 * 1000;
 
   /**
    * The FS contract used for these tests.
@@ -74,22 +69,23 @@ public abstract class AbstractFSContractTestBase extends Assert
    */
   private Path testPath;
 
-  @Rule
-  public TestName methodName = new TestName();
+  /**
+   * The name of the test method in execution.
+   */
+  private String methodName;
 
-
-  @BeforeClass
+  @BeforeAll
   public static void nameTestThread() {
     Thread.currentThread().setName("JUnit");
   }
 
-  @Before
+  @BeforeEach
   public void nameThread() {
     Thread.currentThread().setName("JUnit-" + getMethodName());
   }
 
   protected String getMethodName() {
-    return methodName.getMethodName();
+    return methodName;
   }
 
   /**
@@ -150,7 +146,7 @@ public abstract class AbstractFSContractTestBase extends Assert
    */
   protected void assumeEnabled() {
     if (!contract.isEnabled())
-      throw new AssumptionViolatedException("test cases disabled for " + contract);
+      throw new TestAbortedException("test cases disabled for " + contract);
   }
 
   /**
@@ -162,27 +158,13 @@ public abstract class AbstractFSContractTestBase extends Assert
   }
 
   /**
-   * Set the timeout for every test.
-   */
-  @Rule
-  public Timeout testTimeout =
-      new Timeout(getTestTimeoutMillis(), TimeUnit.MILLISECONDS);
-
-  /**
-   * Option for tests to override the default timeout value.
-   * @return the current test timeout
-   */
-  protected int getTestTimeoutMillis() {
-    return DEFAULT_TEST_TIMEOUT;
-  }
-
-
-  /**
    * Setup: create the contract then init it.
+   * @param info the test info
    * @throws Exception on any failure
    */
-  @Before
-  public void setup() throws Exception {
+  @BeforeEach
+  public void setup(TestInfo info) throws Exception {
+    methodName = info.getDisplayName();
     Thread.currentThread().setName("setup");
     LOG.debug("== Setup ==");
     contract = createContract(createConfiguration());
@@ -191,7 +173,7 @@ public abstract class AbstractFSContractTestBase extends Assert
     assumeEnabled();
     //extract the test FS
     fileSystem = contract.getTestFileSystem();
-    assertNotNull("null filesystem", fileSystem);
+    assertNotNull(fileSystem, "null filesystem");
     URI fsURI = fileSystem.getUri();
     LOG.info("Test filesystem = {} implemented by {}",
         fsURI, fileSystem);
@@ -210,7 +192,7 @@ public abstract class AbstractFSContractTestBase extends Assert
    * Teardown.
    * @throws Exception on any failure
    */
-  @After
+  @AfterEach
   public void teardown() throws Exception {
     Thread.currentThread().setName("teardown");
     LOG.debug("== Teardown ==");
@@ -247,7 +229,7 @@ public abstract class AbstractFSContractTestBase extends Assert
    * @throws IOException IO problems
    */
   protected Path methodPath() throws IOException {
-    return path(methodName.getMethodName());
+    return path(getMethodName());
   }
 
   /**
@@ -360,7 +342,7 @@ public abstract class AbstractFSContractTestBase extends Assert
    * @throws IOException IO problems during file operations
    */
   protected void mkdirs(Path path) throws IOException {
-    assertTrue("Failed to mkdir " + path, fileSystem.mkdirs(path));
+    assertTrue(fileSystem.mkdirs(path), "Failed to mkdir " + path);
   }
 
   /**
@@ -381,7 +363,7 @@ public abstract class AbstractFSContractTestBase extends Assert
    * @param result read result to validate
    */
   protected void assertMinusOne(String text, int result) {
-    assertEquals(text + " wrong read result " + result, -1, result);
+    assertEquals(-1, result, text + " wrong read result " + result);
   }
 
   protected boolean rename(Path src, Path dst) throws IOException {

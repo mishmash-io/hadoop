@@ -18,10 +18,10 @@
 
 package org.apache.hadoop.io;
 
-import org.junit.Test;
-
 import java.io.*;
 import java.util.Random;
+
+import org.junit.jupiter.api.Test;
 
 /** Unit tests for VersionedWritable. */
 

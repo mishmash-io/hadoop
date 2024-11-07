@@ -18,11 +18,12 @@
 
 package org.apache.hadoop.test;
 
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
 import java.util.Iterator;
 import java.util.concurrent.CompletableFuture;
 
 import org.assertj.core.api.Assertions;
-import org.junit.Assert;
 
 /**
  * A few more asserts
@@ -42,10 +43,10 @@ public class MoreAsserts {
     Iterator<T> it = actual.iterator();
     int i = 0;
     for (; i < expected.length && it.hasNext(); ++i) {
-      Assert.assertEquals("Element " + i + " for " + s, expected[i], it.next());
+      org.junit.jupiter.api.Assertions.assertEquals(expected[i], it.next(), "Element " + i + " for " + s);
     }
-    Assert.assertTrue("Expected more elements", i == expected.length);
-    Assert.assertTrue("Expected less elements", !it.hasNext());
+    assertTrue(i == expected.length, "Expected more elements");
+    assertTrue(!it.hasNext(), "Expected less elements");
   }
 
   /**
@@ -62,10 +63,10 @@ public class MoreAsserts {
     Iterator<T> ita = actual.iterator();
     int i = 0;
     while (ite.hasNext() && ita.hasNext()) {
-      Assert.assertEquals("Element " + i + " for " + s, ite.next(), ita.next());
+      org.junit.jupiter.api.Assertions.assertEquals(ite.next(), ita.next(), "Element " + i + " for " + s);
     }
-    Assert.assertTrue("Expected more elements", !ite.hasNext());
-    Assert.assertTrue("Expected less elements", !ita.hasNext());
+    assertTrue(!ite.hasNext(), "Expected more elements");
+    assertTrue(!ita.hasNext(), "Expected less elements");
   }
 
 

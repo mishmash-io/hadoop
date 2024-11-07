@@ -24,6 +24,7 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.nio.ByteBuffer;
 import java.util.EnumSet;
+import java.util.concurrent.TimeUnit;
 
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.ByteBufferPositionedReadable;
@@ -41,9 +42,10 @@ import org.apache.hadoop.fs.Syncable;
 import org.apache.hadoop.io.ByteBufferPool;
 import org.apache.hadoop.io.DataInputBuffer;
 import org.apache.hadoop.io.DataOutputBuffer;
-import org.junit.AfterClass;
-import org.junit.BeforeClass;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.Timeout;
 
 import static org.apache.hadoop.fs.contract.ContractTestUtils.assertCapabilities;
 
@@ -56,13 +58,13 @@ public class TestCryptoStreams extends CryptoStreamsTestBase {
   private byte[] buf;
   private int bufLen;
   
-  @BeforeClass
+  @BeforeAll
   public static void init() throws Exception {
     Configuration conf = new Configuration();
     codec = CryptoCodec.getInstance(conf);
   }
   
-  @AfterClass
+  @AfterAll
   public static void shutdown() throws Exception {
   }
   
@@ -466,7 +468,8 @@ public class TestCryptoStreams extends CryptoStreamsTestBase {
    * This tests {@link StreamCapabilities#hasCapability(String)} for the
    * the underlying streams.
    */
-  @Test(timeout = 120000)
+  @Test
+  @Timeout(value=120000, unit=TimeUnit.MILLISECONDS)
   public void testHasCapability() throws Exception {
     // verify hasCapability returns what FakeOutputStream is set up for
     CryptoOutputStream cos =

@@ -22,11 +22,10 @@ import static org.mockito.Mockito.when;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.security.UserGroupInformation;
 import org.apache.hadoop.test.LambdaTestUtils;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.Timeout;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.Timeout;
 import org.mockito.Mockito;
 
 import java.util.concurrent.TimeUnit;
@@ -34,6 +33,7 @@ import java.util.concurrent.TimeUnit;
 /**
  * Test class for @DefaultImpersonationProvider
  */
+@Timeout(value=10000, unit=TimeUnit.MILLISECONDS)
 public class TestDefaultImpersonationProvider {
 
   private String proxyUser;
@@ -44,10 +44,8 @@ public class TestDefaultImpersonationProvider {
   private UserGroupInformation realUserUGI = Mockito
       .mock(UserGroupInformation.class);
   private Configuration conf;
-  @Rule
-  public Timeout globalTimeout = new Timeout(10000, TimeUnit.MILLISECONDS);
 
-  @Before
+  @BeforeEach
   public void setup() {
     conf = new Configuration();
     provider = new DefaultImpersonationProvider();
@@ -91,7 +89,7 @@ public class TestDefaultImpersonationProvider {
         provider.authorize(userGroupInformation, "2.2.2.2"));
   }
 
-  @After
+  @AfterEach
   public void clear() {
     provider = null;
     conf = null;

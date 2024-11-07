@@ -24,9 +24,8 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Arrays;
 
-import org.junit.Test;
-
 import org.apache.hadoop.test.AbstractHadoopTestBase;
+import org.junit.jupiter.api.Test;
 
 import static org.apache.hadoop.fs.impl.prefetch.SampleDataForTests.EMPTY_BYTE_ARRAY;
 import static org.apache.hadoop.fs.impl.prefetch.SampleDataForTests.EMPTY_INT_ARRAY;

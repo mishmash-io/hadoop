@@ -19,13 +19,12 @@
 
 package org.apache.hadoop.fs.impl.prefetch;
 
-import org.junit.Test;
-
 import org.apache.hadoop.test.AbstractHadoopTestBase;
+import org.junit.jupiter.api.Test;
 
 import static org.apache.hadoop.test.LambdaTestUtils.intercept;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public class TestRetryer extends AbstractHadoopTestBase {
 

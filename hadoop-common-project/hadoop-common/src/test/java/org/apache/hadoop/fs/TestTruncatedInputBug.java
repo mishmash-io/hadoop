@@ -17,14 +17,14 @@
  */
 package org.apache.hadoop.fs;
 
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
 import java.io.DataOutputStream;
 import java.io.IOException;
 
-import static org.junit.Assert.*;
-
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.test.GenericTestUtils;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 /**
  * test for the input truncation bug when mark/reset is used.

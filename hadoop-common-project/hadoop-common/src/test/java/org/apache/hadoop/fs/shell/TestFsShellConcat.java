@@ -25,11 +25,10 @@ import java.io.PrintStream;
 import java.net.URI;
 import java.util.Random;
 
-import org.junit.Before;
-import org.junit.Test;
 import org.mockito.Mockito;
 import org.assertj.core.api.Assertions;
-
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.FsShell;
@@ -40,8 +39,8 @@ import org.apache.hadoop.io.IOUtils;
 import org.apache.hadoop.test.GenericTestUtils;
 import org.apache.hadoop.test.AbstractHadoopTestBase;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.ArgumentMatchers.any;
-import static org.junit.Assert.assertEquals;
 
 /**
  * Test Concat.
@@ -54,7 +53,7 @@ public class TestFsShellConcat extends AbstractHadoopTestBase {
   private static Path testRootDir;
   private static Path dstPath;
 
-  @Before
+  @BeforeEach
   public void before() throws IOException {
     conf = new Configuration();
     shell = new FsShell(conf);

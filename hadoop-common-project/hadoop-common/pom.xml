@@ -40,6 +40,8 @@
     <jetty.version>12.0.14</jetty.version>
     <servlet-api.version>6.0.0</servlet-api.version>
     <jsp-api.version>4.0.0</jsp-api.version>
+    <junit5.version>5.11.0</junit5.version>
+    <mockito.version>5.14.2</mockito.version>
   </properties>
 
   <dependencies>
@@ -194,8 +196,21 @@
       <scope>compile</scope>
     </dependency>
     <dependency>
-      <groupId>junit</groupId>
-      <artifactId>junit</artifactId>
+      <groupId>org.junit.jupiter</groupId>
+      <artifactId>junit-jupiter-engine</artifactId>
+      <version>${junit5.version}</version>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.junit.jupiter</groupId>
+      <artifactId>junit-jupiter-params</artifactId>
+      <version>${junit5.version}</version>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.junit.platform</groupId>
+      <artifactId>junit-platform-console</artifactId>
+      <version>1.11.3</version>
       <scope>test</scope>
     </dependency>
     <dependency>
@@ -243,7 +258,13 @@
     <dependency>
       <groupId>org.mockito</groupId>
       <artifactId>mockito-core</artifactId>
-      <version>5.14.2</version>
+      <version>${mockito.version}</version>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.mockito</groupId>
+      <artifactId>mockito-junit-jupiter</artifactId>
+      <version>${mockito.version}</version>
       <scope>test</scope>
     </dependency>
     <dependency>
@@ -375,7 +396,8 @@
     </dependency>
     <dependency>
       <groupId>com.squareup.okhttp3</groupId>
-      <artifactId>mockwebserver</artifactId>
+      <artifactId>mockwebserver3-junit5</artifactId>
+      <version>5.0.0-alpha.14</version>
       <scope>test</scope>
     </dependency>
     <dependency>

@@ -17,11 +17,16 @@
  */
 package org.apache.hadoop.fs.viewfs;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.util.concurrent.TimeUnit;
 
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileStatus;
@@ -32,12 +37,11 @@ import org.apache.hadoop.fs.LocalFileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.fs.permission.FsPermission;
 import org.apache.hadoop.test.GenericTestUtils;
-import org.junit.After;
-import org.junit.AfterClass;
-import org.junit.Before;
-import org.junit.Test;
-
-import static org.junit.Assert.*;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.Timeout;
 
 /**
  * ViewFsOverloadScheme ListStatus.
@@ -49,7 +53,7 @@ public class TestViewFsOverloadSchemeListStatus {
   private Configuration conf;
   private static final String FILE_NAME = "file";
 
-  @Before
+  @BeforeEach
   public void setUp() {
     conf = new Configuration();
     conf.set(String.format("fs.%s.impl", FILE_NAME),
@@ -61,7 +65,7 @@ public class TestViewFsOverloadSchemeListStatus {
     assertTrue(TEST_DIR.mkdirs());
   }
 
-  @After
+  @AfterEach
   public void tearDown() throws IOException {
     FileUtil.fullyDelete(TEST_DIR);
   }
@@ -130,7 +134,8 @@ public class TestViewFsOverloadSchemeListStatus {
    * if there are no mount links configured. It should add fallback with the
    * chrootedFS at it's uri's root.
    */
-  @Test(timeout = 30000)
+  @Test
+  @Timeout(value=30000, unit=TimeUnit.MILLISECONDS)
   public void testViewFSOverloadSchemeWithoutAnyMountLinks() throws Exception {
     Path initUri = new Path(TEST_DIR.toURI().toString(), "init");
     try (FileSystem fs = FileSystem.get(initUri.toUri(), conf)) {
@@ -154,7 +159,7 @@ public class TestViewFsOverloadSchemeListStatus {
     }
   }
 
-  @AfterClass
+  @AfterAll
   public static void cleanup() throws IOException {
     FileUtil.fullyDelete(TEST_DIR);
   }

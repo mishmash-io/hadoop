@@ -21,6 +21,7 @@ package org.apache.hadoop.net;
 import java.net.NetworkInterface;
 import java.net.SocketException;
 import java.net.UnknownHostException;
+import java.util.concurrent.TimeUnit;
 import java.net.InetAddress;
 
 import javax.naming.CommunicationException;
@@ -30,13 +31,17 @@ import javax.naming.ServiceUnavailableException;
 import org.apache.hadoop.util.Time;
 
 import org.assertj.core.api.Assertions;
-import org.junit.Assume;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.Timeout;
+import org.opentest4j.TestAbortedException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import static org.apache.hadoop.test.PlatformAssumptions.assumeNotWindows;
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.fail;
 
 /**
  * Test host name and IP resolution and caching.
@@ -77,9 +82,8 @@ public class TestDNS {
     assertEquals(hostname3, hostname2);
     assertEquals(hostname2, hostname1);
     long interval = t2 - t1;
-    assertTrue(
-        "Took too long to determine local host - caching is not working",
-        interval < 20000);
+    assertTrue(interval < 20000,
+        "Took too long to determine local host - caching is not working");
   }
 
   /**
@@ -154,7 +158,7 @@ public class TestDNS {
   @Test
   public void testGetIPWithDefault() throws Exception {
     String[] ips = DNS.getIPs(DEFAULT);
-    assertEquals("Should only return 1 default IP", 1, ips.length);
+    assertEquals(1, ips.length, "Should only return 1 default IP");
     assertEquals(getLocalIPAddr().getHostAddress(), ips[0].toString());
     String ip = DNS.getDefaultIP(DEFAULT);
     assertEquals(ip, ips[0].toString());
@@ -178,7 +182,7 @@ public class TestDNS {
                 + " Loopback=" + localhost.isLoopbackAddress()
                 + " Linklocal=" + localhost.isLinkLocalAddress());
       }
-      Assume.assumeNoException(e);
+      throw new TestAbortedException(e.getMessage(), e);
     }
   }
 
@@ -196,7 +200,8 @@ public class TestDNS {
    *
    * @throws Exception
    */
-  @Test (timeout=60000)
+  @Test
+  @Timeout(value=60000, unit=TimeUnit.MILLISECONDS)
   public void testLookupWithHostsFallback() throws Exception {
     assumeNotWindows();
     final String oldHostname = DNS.getCachedHostname();
@@ -219,7 +224,8 @@ public class TestDNS {
    *
    * @throws Exception
    */
-  @Test(timeout=60000)
+  @Test
+  @Timeout(value=60000, unit=TimeUnit.MILLISECONDS)
   public void testLookupWithoutHostsFallback() throws Exception {
     final String oldHostname = DNS.getCachedHostname();
     try {
@@ -249,7 +255,7 @@ public class TestDNS {
   @Test
   public void testLocalhostResolves() throws Exception {
     InetAddress localhost = InetAddress.getByName("localhost");
-    assertNotNull("localhost is null", localhost);
+    assertNotNull(localhost, "localhost is null");
     LOG.info("Localhost IPAddr is " + localhost.toString());
   }
 }

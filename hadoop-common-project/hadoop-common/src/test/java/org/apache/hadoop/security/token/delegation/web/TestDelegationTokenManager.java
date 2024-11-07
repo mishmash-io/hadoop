@@ -17,6 +17,10 @@
  */
 package org.apache.hadoop.security.token.delegation.web;
 
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.fail;
+
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.Collection;
@@ -25,30 +29,21 @@ import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.security.UserGroupInformation;
 import org.apache.hadoop.security.token.Token;
-import org.junit.Assert;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.junit.runners.Parameterized;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.MethodSource;
 
-@RunWith(Parameterized.class)
 public class TestDelegationTokenManager {
 
   private static final long DAY_IN_SECS = 86400;
 
-  @Parameterized.Parameters
   public static Collection<Object[]> headers() {
     return Arrays.asList(new Object[][] { { false }, { true } });
   }
 
-  private boolean enableZKKey;
-
-  public TestDelegationTokenManager(boolean enableZKKey) {
-    this.enableZKKey = enableZKKey;
-  }
-
   @SuppressWarnings("unchecked")
-  @Test
-  public void testDTManager() throws Exception {
+  @ParameterizedTest
+  @MethodSource("headers")
+  public void testDTManager(boolean enableZKKey) throws Exception {
     Configuration conf = new Configuration(false);
     conf.setLong(DelegationTokenManager.UPDATE_INTERVAL, DAY_IN_SECS);
     conf.setLong(DelegationTokenManager.MAX_LIFETIME, DAY_IN_SECS);
@@ -61,17 +56,17 @@ public class TestDelegationTokenManager {
     Token<DelegationTokenIdentifier> token =
         (Token<DelegationTokenIdentifier>) tm.createToken(
             UserGroupInformation.getCurrentUser(), "foo");
-    Assert.assertNotNull(token);
+    assertNotNull(token);
     tm.verifyToken(token);
-    Assert.assertTrue(tm.renewToken(token, "foo") > System.currentTimeMillis());
+    assertTrue(tm.renewToken(token, "foo") > System.currentTimeMillis());
     tm.cancelToken(token, "foo");
     try {
       tm.verifyToken(token);
-      Assert.fail();
+      fail();
     } catch (IOException ex) {
       //NOP
     } catch (Exception ex) {
-      Assert.fail();
+      fail(ex);
     }
     tm.destroy();
   }

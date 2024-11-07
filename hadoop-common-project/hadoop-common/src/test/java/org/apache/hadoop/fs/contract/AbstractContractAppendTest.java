@@ -21,8 +21,8 @@ package org.apache.hadoop.fs.contract;
 import org.apache.hadoop.fs.CommonPathCapabilities;
 import org.apache.hadoop.fs.FSDataOutputStream;
 import org.apache.hadoop.fs.Path;
-
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.TestInfo;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -42,8 +42,8 @@ public abstract class AbstractContractAppendTest extends AbstractFSContractTestB
   private Path target;
 
   @Override
-  public void setup() throws Exception {
-    super.setup();
+  public void setup(TestInfo info) throws Exception {
+    super.setup(info);
     skipIfUnsupported(SUPPORTS_APPEND);
 
     //delete the test directory

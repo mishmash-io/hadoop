@@ -26,8 +26,8 @@ import org.apache.hadoop.io.compress.snappy.SnappyDecompressor;
 import org.apache.hadoop.io.compress.zlib.BuiltInZlibDeflater;
 import org.apache.hadoop.io.compress.zlib.BuiltInZlibInflater;
 import org.apache.hadoop.test.GenericTestUtils;
-import org.junit.Test;
 import org.apache.hadoop.thirdparty.com.google.common.collect.ImmutableSet;
+import org.junit.jupiter.api.Test;
 
 /** 
  * Test for pairs:

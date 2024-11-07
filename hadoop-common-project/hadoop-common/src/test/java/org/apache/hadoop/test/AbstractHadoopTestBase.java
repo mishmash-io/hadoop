@@ -19,11 +19,9 @@ package org.apache.hadoop.test;
 
 import java.util.concurrent.TimeUnit;
 
-import org.junit.Before;
-import org.junit.BeforeClass;
-import org.junit.Rule;
-import org.junit.rules.TestName;
-import org.junit.rules.Timeout;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.TestInfo;
 
 /**
  * A base class for JUnit5+ tests that sets a default timeout for all tests
@@ -80,8 +78,7 @@ public abstract class AbstractHadoopTestBase {
   /**
    * The method name.
    */
-  @Rule
-  public TestName methodName = new TestName();
+  private String methodName;
 
   /**
    * Get the method name; defaults to the value of {@link #methodName}.
@@ -89,13 +86,13 @@ public abstract class AbstractHadoopTestBase {
    * @return the name of the method.
    */
   protected String getMethodName() {
-    return methodName.getMethodName();
+    return methodName;
   }
 
   /**
    * Static initializer names this thread "JUnit".
    */
-  @BeforeClass
+  @BeforeAll
   public static void nameTestThread() {
     Thread.currentThread().setName("JUnit");
   }
@@ -103,8 +100,9 @@ public abstract class AbstractHadoopTestBase {
   /**
    * Before each method, the thread is renamed to match the method name.
    */
-  @Before
-  public void nameThreadToMethod() {
+  @BeforeEach
+  public void nameThreadToMethod(TestInfo info) {
+    methodName = info.getDisplayName();
     Thread.currentThread().setName("JUnit-" + getMethodName());
   }
 }

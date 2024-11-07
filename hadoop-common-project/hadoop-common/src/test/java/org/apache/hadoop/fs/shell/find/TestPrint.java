@@ -17,29 +17,26 @@
  */
 package org.apache.hadoop.fs.shell.find;
 
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.Mockito.*;
 
 import java.io.IOException;
 
 import org.apache.hadoop.fs.shell.PathData;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.Timeout;
 
 import java.io.PrintStream;
 import java.util.concurrent.TimeUnit;
 
 import org.apache.hadoop.fs.FileSystem;
-import org.junit.Before;
-import org.junit.Rule;
-import org.junit.rules.Timeout;
-import org.junit.Test;
 
+@Timeout(value=10000, unit=TimeUnit.MILLISECONDS)
 public class TestPrint {
   private FileSystem mockFs;
 
-  @Rule
-  public Timeout globalTimeout = new Timeout(10000, TimeUnit.MILLISECONDS);
-
-  @Before
+  @BeforeEach
   public void resetMock() throws IOException {
     mockFs = MockFileSystem.setup();
   }

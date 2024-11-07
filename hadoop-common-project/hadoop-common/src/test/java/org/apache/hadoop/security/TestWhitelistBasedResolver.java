@@ -17,15 +17,15 @@
  */
 package org.apache.hadoop.security;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+
 import java.io.IOException;
 import java.net.InetAddress;
 import java.util.Map;
 
-import org.junit.Test;
-import static org.junit.Assert.*;
-
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.util.TestFileBasedIPList;
+import org.junit.jupiter.api.Test;
 
 public class TestWhitelistBasedResolver {
 

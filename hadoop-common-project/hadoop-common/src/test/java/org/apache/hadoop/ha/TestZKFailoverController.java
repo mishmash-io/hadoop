@@ -17,7 +17,9 @@
  */
 package org.apache.hadoop.ha;
 
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.fail;
 
 import java.net.InetSocketAddress;
 import java.security.NoSuchAlgorithmException;
@@ -41,23 +43,17 @@ import org.apache.zookeeper.KeeperException;
 import org.apache.zookeeper.ZooKeeper;
 import org.apache.zookeeper.data.Stat;
 import org.apache.zookeeper.server.auth.DigestAuthenticationProvider;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.Timeout;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.Timeout;
 import org.mockito.Mockito;
 import org.slf4j.event.Level;
 
+@Timeout(value=3, unit=TimeUnit.MINUTES)
 public class TestZKFailoverController extends ClientBaseWithFixes {
   private Configuration conf;
   private MiniZKFCCluster cluster;
-
-  /**
-   * Set the timeout for every test
-   */
-  @Rule
-  public Timeout testTimeout = new Timeout(3, TimeUnit.MINUTES);
 
   // Set up ZK digest-based credentials for the purposes of the tests,
   // to make sure all of our functionality works with auth and ACLs
@@ -81,7 +77,7 @@ public class TestZKFailoverController extends ClientBaseWithFixes {
     GenericTestUtils.setLogLevel(ActiveStandbyElector.LOG, Level.TRACE);
   }
   
-  @Before
+  @BeforeEach
   public void setupConfAndServices() {
     conf = new Configuration();
     conf.set(ZKFailoverController.ZK_ACL_KEY, TEST_ACL);
@@ -91,7 +87,7 @@ public class TestZKFailoverController extends ClientBaseWithFixes {
     this.cluster = new MiniZKFCCluster(conf, getServer(serverFactory));
   }
 
-  @After
+  @AfterEach
   public void teardown() {
     if (cluster != null) {
       try {
@@ -476,8 +472,8 @@ public class TestZKFailoverController extends ClientBaseWithFixes {
     long st = Time.now();
     proxy.cedeActive(3000);
     long et = Time.now();
-    assertTrue("RPC to cedeActive took " + (et - st) + " ms",
-        et - st < 1000);
+    assertTrue(et - st < 1000,
+        "RPC to cedeActive took " + (et - st) + " ms");
 
     // Should be in "INIT" state since it's not in the election
     // at this point.
@@ -488,9 +484,9 @@ public class TestZKFailoverController extends ClientBaseWithFixes {
     // since the other node in the cluster would have taken ACTIVE.
     cluster.waitForElectorState(0, ActiveStandbyElector.State.STANDBY);
     long et2 = Time.now();
-    assertTrue("Should take ~3 seconds to rejoin. Only took " + (et2 - et) +
-        "ms before rejoining.",
-        et2 - et > 2800);
+    assertTrue(et2 - et > 2800,
+        "Should take ~3 seconds to rejoin. Only took " + (et2 - et) +
+        "ms before rejoining.");
   }
 
   @Test

@@ -18,16 +18,16 @@
 
 package org.apache.hadoop.io;
 
-import org.junit.Test;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.fail;
-
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.fail;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.security.MessageDigest;
 import java.util.Random;
+
+import org.junit.jupiter.api.Test;
 
 /** Unit tests for MD5Hash. */
 public class TestMD5Hash {
@@ -90,8 +90,8 @@ public class TestMD5Hash {
     
     assertEquals(0x0102030405060708L, orderedHash.halfDigest());
     assertEquals(0xfffefdfcfbfaf9f8L, backwardHash.halfDigest());
-    assertTrue("hash collision", 
-               closeHash1.hashCode() != closeHash2.hashCode());
+    assertTrue(closeHash1.hashCode() != closeHash2.hashCode(),
+               "hash collision");
      
     Thread t1 = new Thread() {      
       @Override

@@ -17,11 +17,11 @@
  */
 package org.apache.hadoop.fs.shell;
 
-import java.io.IOException;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotEquals;
 
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
+import java.io.IOException;
+import java.util.concurrent.TimeUnit;
 
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FSDataOutputStream;
@@ -36,9 +36,10 @@ import org.apache.hadoop.fs.shell.CopyCommands.CopyFromLocal;
 import org.apache.hadoop.fs.shell.CopyCommands.Cp;
 import org.apache.hadoop.fs.shell.CopyCommands.Get;
 import org.apache.hadoop.fs.shell.CopyCommands.Put;
-
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotEquals;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.Timeout;
 
 public class TestCopyPreserveFlag {
   private static final int MODIFICATION_TIME = 12345000;
@@ -59,7 +60,7 @@ public class TestCopyPreserveFlag {
   private Path testDir;
   private Configuration conf;
 
-  @Before
+  @BeforeEach
   public void initialize() throws Exception {
     conf = new Configuration(false);
     conf.set("fs.file.impl", LocalFileSystem.class.getName());
@@ -86,7 +87,7 @@ public class TestCopyPreserveFlag {
     fs.setTimes(DIR_FROM, MODIFICATION_TIME, ACCESS_TIME);
   }
 
-  @After
+  @AfterEach
   public void cleanup() throws Exception {
     fs.delete(testDir, true);
     fs.close();
@@ -111,19 +112,22 @@ public class TestCopyPreserveFlag {
     assertEquals(0, cmd.run(args));
   }
 
-  @Test(timeout = 10000)
+  @Test
+  @Timeout(value=10000, unit=TimeUnit.MILLISECONDS)
   public void testPutWithP() throws Exception {
     run(new Put(), "-p", FROM.toString(), TO.toString());
     assertAttributesPreserved(TO);
   }
 
-  @Test(timeout = 10000)
+  @Test
+  @Timeout(value=10000, unit=TimeUnit.MILLISECONDS)
   public void testPutWithoutP() throws Exception {
     run(new Put(), FROM.toString(), TO.toString());
     assertAttributesChanged(TO);
   }
 
-  @Test(timeout = 10000)
+  @Test
+  @Timeout(value=10000, unit=TimeUnit.MILLISECONDS)
   public void testPutWithPQ() throws Exception {
     Put put = new Put();
     run(put, "-p", "-q", "100", FROM.toString(), TO.toString());
@@ -131,7 +135,8 @@ public class TestCopyPreserveFlag {
     assertAttributesPreserved(TO);
   }
 
-  @Test(timeout = 10000)
+  @Test
+  @Timeout(value=10000, unit=TimeUnit.MILLISECONDS)
   public void testPutWithQ() throws Exception {
     Put put = new Put();
     run(put, "-q", "100", FROM.toString(), TO.toString());
@@ -139,7 +144,8 @@ public class TestCopyPreserveFlag {
     assertAttributesChanged(TO);
   }
 
-  @Test(timeout = 10000)
+  @Test
+  @Timeout(value=10000, unit=TimeUnit.MILLISECONDS)
   public void testPutWithSplCharacter() throws Exception {
     fs.mkdirs(DIR_FROM_SPL);
     fs.createNewFile(FROM_SPL);
@@ -147,37 +153,43 @@ public class TestCopyPreserveFlag {
     assertAttributesChanged(TO);
   }
 
-  @Test(timeout = 10000)
+  @Test
+  @Timeout(value=10000, unit=TimeUnit.MILLISECONDS)
   public void testCopyFromLocal() throws Exception {
     run(new CopyFromLocal(), FROM.toString(), TO.toString());
     assertAttributesChanged(TO);
   }
 
-  @Test(timeout = 10000)
+  @Test
+  @Timeout(value=10000, unit=TimeUnit.MILLISECONDS)
   public void testCopyFromLocalWithThreads() throws Exception {
     run(new CopyFromLocal(), "-t", "10", FROM.toString(), TO.toString());
     assertAttributesChanged(TO);
   }
 
-  @Test(timeout = 10000)
+  @Test
+  @Timeout(value=10000, unit=TimeUnit.MILLISECONDS)
   public void testCopyFromLocalWithThreadsPreserve() throws Exception {
     run(new CopyFromLocal(), "-p", "-t", "10", FROM.toString(), TO.toString());
     assertAttributesPreserved(TO);
   }
 
-  @Test(timeout = 10000)
+  @Test
+  @Timeout(value=10000, unit=TimeUnit.MILLISECONDS)
   public void testGetWithP() throws Exception {
     run(new Get(), "-p", FROM.toString(), TO.toString());
     assertAttributesPreserved(TO);
   }
 
-  @Test(timeout = 10000)
+  @Test
+  @Timeout(value=10000, unit=TimeUnit.MILLISECONDS)
   public void testGetWithoutP() throws Exception {
     run(new Get(), FROM.toString(), TO.toString());
     assertAttributesChanged(TO);
   }
 
-  @Test(timeout = 10000)
+  @Test
+  @Timeout(value=10000, unit=TimeUnit.MILLISECONDS)
   public void testGetWithPQ() throws Exception {
     Get get = new Get();
     run(get, "-p", "-q", "100", FROM.toString(), TO.toString());
@@ -185,7 +197,8 @@ public class TestCopyPreserveFlag {
     assertAttributesPreserved(TO);
   }
 
-  @Test(timeout = 10000)
+  @Test
+  @Timeout(value=10000, unit=TimeUnit.MILLISECONDS)
   public void testGetWithQ() throws Exception {
     Get get = new Get();
     run(get, "-q", "100", FROM.toString(), TO.toString());
@@ -193,37 +206,43 @@ public class TestCopyPreserveFlag {
     assertAttributesChanged(TO);
   }
 
-  @Test(timeout = 10000)
+  @Test
+  @Timeout(value=10000, unit=TimeUnit.MILLISECONDS)
   public void testGetWithThreads() throws Exception {
     run(new Get(), "-t", "10", FROM.toString(), TO.toString());
     assertAttributesChanged(TO);
   }
 
-  @Test(timeout = 10000)
+  @Test
+  @Timeout(value=10000, unit=TimeUnit.MILLISECONDS)
   public void testGetWithThreadsPreserve() throws Exception {
     run(new Get(), "-p", "-t", "10", FROM.toString(), TO.toString());
     assertAttributesPreserved(TO);
   }
 
-  @Test(timeout = 10000)
+  @Test
+  @Timeout(value=10000, unit=TimeUnit.MILLISECONDS)
   public void testCpWithP() throws Exception {
       run(new Cp(), "-p", FROM.toString(), TO.toString());
       assertAttributesPreserved(TO);
   }
 
-  @Test(timeout = 10000)
+  @Test
+  @Timeout(value=10000, unit=TimeUnit.MILLISECONDS)
   public void testCpWithoutP() throws Exception {
       run(new Cp(), FROM.toString(), TO.toString());
       assertAttributesChanged(TO);
   }
 
-  @Test(timeout = 10000)
+  @Test
+  @Timeout(value=10000, unit=TimeUnit.MILLISECONDS)
   public void testDirectoryCpWithP() throws Exception {
     run(new Cp(), "-p", DIR_FROM.toString(), DIR_TO2.toString());
     assertAttributesPreserved(DIR_TO2);
   }
 
-  @Test(timeout = 10000)
+  @Test
+  @Timeout(value=10000, unit=TimeUnit.MILLISECONDS)
   public void testDirectoryCpWithoutP() throws Exception {
     run(new Cp(), DIR_FROM.toString(), DIR_TO2.toString());
     assertAttributesChanged(DIR_TO2);

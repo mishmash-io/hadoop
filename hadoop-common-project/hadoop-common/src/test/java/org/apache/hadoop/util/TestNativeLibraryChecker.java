@@ -17,12 +17,14 @@
  */
 package org.apache.hadoop.util;
 
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.fail;
+
 import java.io.ByteArrayOutputStream;
 import java.io.PrintStream;
-import org.junit.Test;
-import static org.junit.Assert.*;
 
 import org.apache.hadoop.util.ExitUtil.ExitException;
+import org.junit.jupiter.api.Test;
 
 
 public class TestNativeLibraryChecker {
@@ -72,10 +74,10 @@ public class TestNativeLibraryChecker {
       ExitUtil.resetFirstExitException();
     } finally {
       if (Shell.WINDOWS) {
-        assertEquals(outContent.toString().indexOf("winutils: true") != -1, true);
+        assertTrue(outContent.toString().indexOf("winutils: true") != -1);
       }
       if (NativeCodeLoader.isNativeCodeLoaded()) {
-        assertEquals(outContent.toString().indexOf("hadoop:  true") != -1, true);
+        assertTrue(outContent.toString().indexOf("hadoop:  true") != -1);
       }
       System.setOut(originalPs);
     }

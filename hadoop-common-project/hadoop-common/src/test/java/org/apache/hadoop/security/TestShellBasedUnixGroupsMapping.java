@@ -19,6 +19,7 @@ package org.apache.hadoop.security;
 
 import java.io.IOException;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.CommonConfigurationKeys;
@@ -27,11 +28,15 @@ import org.apache.hadoop.util.ReflectionUtils;
 import org.apache.hadoop.util.Shell;
 import org.apache.hadoop.util.Shell.ExitCodeException;
 import org.apache.hadoop.util.Shell.ShellCommandExecutor;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.Timeout;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.fail;
 import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
@@ -189,19 +194,16 @@ public class TestShellBasedUnixGroupsMapping {
   public void testShellTimeOutConf() {
 
     // Test a 1 second max-runtime timeout
-    assertEquals(
-        "Expected the group names executor to carry the configured timeout",
-        1000L, getTimeoutInterval("1s"));
+    assertEquals(1000L, getTimeoutInterval("1s"),
+        "Expected the group names executor to carry the configured timeout");
 
     // Test a 1 minute max-runtime timeout
-    assertEquals(
-        "Expected the group names executor to carry the configured timeout",
-        60000L, getTimeoutInterval("1m"));
+    assertEquals(60000L, getTimeoutInterval("1m"),
+        "Expected the group names executor to carry the configured timeout");
 
     // Test a 1 millisecond max-runtime timeout
-    assertEquals(
-        "Expected the group names executor to carry the configured timeout",
-        1L, getTimeoutInterval("1"));
+    assertEquals(1L, getTimeoutInterval("1"),
+        "Expected the group names executor to carry the configured timeout");
   }
 
   private class TestGroupResolvable
@@ -274,7 +276,8 @@ public class TestShellBasedUnixGroupsMapping {
     }
   }
 
-  @Test(timeout=4000)
+  @Test
+  @Timeout(value=4000, unit=TimeUnit.MILLISECONDS)
   public void testFiniteGroupResolutionTime() throws Exception {
     Configuration conf = new Configuration();
     String userName = "foobarnonexistinguser";
@@ -293,25 +296,25 @@ public class TestShellBasedUnixGroupsMapping {
 
     ShellCommandExecutor executor = mapping.createGroupExecutor(userName);
     assertEquals(
-        "Expected the group names executor to carry the configured timeout",
         testTimeout,
-        executor.getTimeoutInterval());
+        executor.getTimeoutInterval(),
+        "Expected the group names executor to carry the configured timeout");
 
     executor = mapping.createGroupIDExecutor(userName);
     assertEquals(
-        "Expected the group ID executor to carry the configured timeout",
         testTimeout,
-        executor.getTimeoutInterval());
+            executor.getTimeoutInterval(),
+        "Expected the group ID executor to carry the configured timeout");
 
     assertEquals(
-        "Expected no groups to be returned given a shell command timeout",
         0,
-        mapping.getGroups(userName).size());
+        mapping.getGroups(userName).size(),
+        "Expected no groups to be returned given a shell command timeout");
     assertTrue(
+        shellMappingLog.getOutput().contains(commandTimeoutMessage),
         "Expected the logs to carry " +
             "a message about command timeout but was: " +
-            shellMappingLog.getOutput(),
-        shellMappingLog.getOutput().contains(commandTimeoutMessage));
+            shellMappingLog.getOutput());
     shellMappingLog.clearOutput();
 
     // Test also the parent Groups framework for expected behaviour
@@ -326,10 +329,10 @@ public class TestShellBasedUnixGroupsMapping {
               "have failed with a command timeout");
     } catch (IOException e) {
       assertTrue(
+          shellMappingLog.getOutput().contains(commandTimeoutMessage),
           "Expected the logs to carry " +
               "a message about command timeout but was: " +
-              shellMappingLog.getOutput(),
-          shellMappingLog.getOutput().contains(commandTimeoutMessage));
+              shellMappingLog.getOutput());
     }
     shellMappingLog.clearOutput();
 
@@ -344,21 +347,20 @@ public class TestShellBasedUnixGroupsMapping {
 
     executor = mapping.createGroupExecutor(userName);
     assertEquals(
-        "Expected the group names executor to carry the default timeout",
         defaultTimeout,
-        executor.getTimeoutInterval());
+        executor.getTimeoutInterval(),
+        "Expected the group names executor to carry the default timeout");
 
     executor = mapping.createGroupIDExecutor(userName);
     assertEquals(
-        "Expected the group ID executor to carry the default timeout",
         defaultTimeout,
-        executor.getTimeoutInterval());
+        executor.getTimeoutInterval(),
+        "Expected the group ID executor to carry the default timeout");
 
     mapping.getGroups(userName);
-    assertFalse(
+    assertFalse(shellMappingLog.getOutput().contains(commandTimeoutMessage),
         "Didn't expect a timeout of command in execution but logs carry it: " +
-            shellMappingLog.getOutput(),
-        shellMappingLog.getOutput().contains(commandTimeoutMessage));
+            shellMappingLog.getOutput());
   }
 }
 

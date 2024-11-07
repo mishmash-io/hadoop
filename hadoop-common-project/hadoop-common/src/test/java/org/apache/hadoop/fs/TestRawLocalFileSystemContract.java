@@ -17,6 +17,10 @@
  */
 package org.apache.hadoop.fs;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assumptions.assumeTrue;
+
 import java.io.File;
 import java.io.IOException;
 import java.util.regex.Pattern;
@@ -26,13 +30,8 @@ import org.apache.hadoop.test.GenericTestUtils;
 import org.apache.hadoop.test.StatUtils;
 import org.apache.hadoop.util.NativeCodeLoader;
 import org.apache.hadoop.util.Shell;
-
-import org.junit.Before;
-import org.junit.Test;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assume.assumeTrue;
-
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -60,7 +59,7 @@ public class TestRawLocalFileSystemContract extends FileSystemContractBaseTest {
     return HAS_DRIVE_LETTER_SPECIFIER.matcher(filesys).find();
   }
 
-  @Before
+  @BeforeEach
   public void setUp() throws Exception {
     Configuration conf = new Configuration();
     fs = FileSystem.getLocal(conf).getRawFileSystem();
@@ -129,8 +128,9 @@ public class TestRawLocalFileSystemContract extends FileSystemContractBaseTest {
   @Test
   @SuppressWarnings("deprecation")
   public void testPermission() throws Exception {
-    assumeTrue("No native library",
-        NativeCodeLoader.isNativeCodeLoaded());
+    assumeTrue(
+        NativeCodeLoader.isNativeCodeLoaded(),
+        "No native library");
     Path testDir = getTestBaseDir();
     String testFilename = "teststat2File";
     Path path = new Path(testDir, testFilename);

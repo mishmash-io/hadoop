@@ -17,11 +17,14 @@
  */
 package org.apache.hadoop.http;
 
-import static org.junit.Assert.*;
-
 import jakarta.servlet.http.HttpServletRequest;
 
-import org.junit.Test;
+import static org.junit.jupiter.api.Assertions.assertArrayEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
+import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 
 public class TestHtmlQuoting {
@@ -80,11 +83,12 @@ public class TestHtmlQuoting {
         null, quoter.getParameter("x"));
 
     Mockito.doReturn(new String[]{"a<b", "b"}).when(mockReq).getParameterValues("x");
-    assertArrayEquals("Test escaping of an array",
-        new String[]{"a&lt;b", "b"}, quoter.getParameterValues("x"));
+    assertArrayEquals(
+        new String[]{"a&lt;b", "b"}, quoter.getParameterValues("x"),
+        "Test escaping of an array");
 
     Mockito.doReturn(null).when(mockReq).getParameterValues("x");
-    assertArrayEquals("Test that missing parameters dont cause NPE for array",
-        null, quoter.getParameterValues("x"));
+    assertArrayEquals(null, quoter.getParameterValues("x"),
+        "Test that missing parameters dont cause NPE for array");
   }
 }

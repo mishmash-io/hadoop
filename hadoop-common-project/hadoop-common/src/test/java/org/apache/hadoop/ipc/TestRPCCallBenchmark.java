@@ -17,15 +17,19 @@
  */
 package org.apache.hadoop.ipc;
 
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+
+import java.util.concurrent.TimeUnit;
 
 import org.apache.hadoop.util.ToolRunner;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.Timeout;
 
 
 public class TestRPCCallBenchmark {
 
-  @Test(timeout=20000)
+  @Test
+  @Timeout(value=20000, unit=TimeUnit.MILLISECONDS)
   public void testBenchmarkWithProto() throws Exception {
     int rc = ToolRunner.run(new RPCCallBenchmark(),
         new String[] {

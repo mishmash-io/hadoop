@@ -18,6 +18,7 @@
 
 package org.apache.hadoop.http;
 
+import java.util.concurrent.TimeUnit;
 import java.util.function.Supplier;
 import java.io.File;
 import java.io.IOException;
@@ -27,10 +28,10 @@ import org.apache.hadoop.fs.FileUtil;
 import org.apache.hadoop.security.ssl.KeyStoreTestUtil;
 import org.apache.hadoop.security.ssl.SSLFactory;
 import org.apache.hadoop.test.GenericTestUtils;
-import org.junit.After;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.Timeout;
 
 import static org.apache.hadoop.http.TestSSLHttpServer.EXCLUDED_CIPHERS;
 import static org.apache.hadoop.http.TestSSLHttpServer.INCLUDED_PROTOCOLS;
@@ -39,6 +40,7 @@ import static org.apache.hadoop.http.TestSSLHttpServer.SSL_SERVER_TRUSTSTORE_PRO
 import static org.apache.hadoop.security.ssl.KeyStoreTestUtil.CLIENT_KEY_STORE_PASSWORD_DEFAULT;
 import static org.apache.hadoop.security.ssl.KeyStoreTestUtil.SERVER_KEY_STORE_PASSWORD_DEFAULT;
 import static org.apache.hadoop.security.ssl.KeyStoreTestUtil.TRUST_STORE_PASSWORD_DEFAULT;
+import static org.junit.jupiter.api.Assertions.fail;
 
 /**
  * Test suit for testing KeyStore and TrustStore password settings.
@@ -56,7 +58,7 @@ public class TestSSLHttpServerConfigs {
   private static final String CLIENT_PWD = CLIENT_KEY_STORE_PASSWORD_DEFAULT;
   private static final String TRUST_STORE_PWD = TRUST_STORE_PASSWORD_DEFAULT;
 
-  @Before
+  @BeforeEach
   public void start() throws Exception {
     TestSSLHttpServer.turnOnSSLDebugLogging();
     TestSSLHttpServer.storeHttpsCipherSuites();
@@ -71,7 +73,7 @@ public class TestSSLHttpServerConfigs {
     sslConfDir = KeyStoreTestUtil.getClasspathDir(TestSSLHttpServer.class);
   }
 
-  @After
+  @AfterEach
   public void shutdown() throws Exception {
     FileUtil.fullyDelete(new File(BASEDIR));
     KeyStoreTestUtil.cleanupSSLConfig(keystoreDir, sslConfDir);
@@ -136,38 +138,43 @@ public class TestSSLHttpServerConfigs {
     }
   }
 
-  @Test(timeout=120000)
+  @Test
+  @Timeout(value=120000, unit=TimeUnit.MILLISECONDS)
   public void testServerSetup() throws Exception {
     setupKeyStores(SERVER_PWD, CLIENT_PWD, TRUST_STORE_PWD);
     testServerStart(SERVER_PWD, SERVER_PWD, TRUST_STORE_PWD);
   }
 
-  @Test(timeout=120000)
+  @Test
+  @Timeout(value=120000, unit=TimeUnit.MILLISECONDS)
   public void testServerSetupWithoutTrustPassword() throws Exception {
     setupKeyStores(SERVER_PWD, CLIENT_PWD, TRUST_STORE_PWD);
     testServerStart(SERVER_PWD, SERVER_PWD, null);
   }
 
-  @Test(timeout=120000)
+  @Test
+  @Timeout(value=120000, unit=TimeUnit.MILLISECONDS)
   public void testServerSetupWithoutKeyStorePassword() throws Exception {
     setupKeyStores(SERVER_PWD, CLIENT_PWD, TRUST_STORE_PWD);
     testServerStart(SERVER_PWD, null, null);
   }
 
-  @Test(timeout=120000)
+  @Test
+  @Timeout(value=120000, unit=TimeUnit.MILLISECONDS)
   public void testServerSetupWithoutKeyStoreKeyPassword() throws Exception {
     setupKeyStores(SERVER_PWD, CLIENT_PWD, TRUST_STORE_PWD);
     testServerStart(null, SERVER_PWD, null);
   }
 
-  @Test(timeout=120000)
+  @Test
+  @Timeout(value=120000, unit=TimeUnit.MILLISECONDS)
   public void testServerSetupWithNoKeyStorePassword() throws Exception {
     setupKeyStores(SERVER_PWD, CLIENT_PWD, TRUST_STORE_PWD);
     // Accessing KeyStore without either of KeyStore.KeyPassword or KeyStore
     // .password should fail.
     try {
       testServerStart(null, null, null);
-      Assert.fail("Server should have failed to start without any " +
+      fail("Server should have failed to start without any " +
           "KeyStore password.");
     } catch (IOException e) {
       GenericTestUtils.assertExceptionContains("Problem starting http server",
@@ -175,14 +182,15 @@ public class TestSSLHttpServerConfigs {
     }
   }
 
-  @Test(timeout=120000)
+  @Test
+  @Timeout(value=120000, unit=TimeUnit.MILLISECONDS)
   public void testServerSetupWithWrongKeyStorePassword() throws Exception {
     setupKeyStores(SERVER_PWD, CLIENT_PWD, TRUST_STORE_PWD);
 
     // Accessing KeyStore with wrong keyStore password/ keyPassword should fail.
     try {
       testServerStart(SERVER_PWD, "wrongPassword", null);
-      Assert.fail("Server should have failed to start with wrong " +
+      fail("Server should have failed to start with wrong " +
           "KeyStore password.");
     } catch (IOException e) {
       GenericTestUtils.assertExceptionContains("Keystore was tampered with, " +
@@ -191,7 +199,7 @@ public class TestSSLHttpServerConfigs {
 
     try {
       testServerStart("wrongPassword", SERVER_PWD, null);
-      Assert.fail("Server should have failed to start with wrong " +
+      fail("Server should have failed to start with wrong " +
           "KeyStore password.");
     } catch (IOException e) {
       GenericTestUtils.assertExceptionContains("Problem starting http server",
@@ -201,7 +209,8 @@ public class TestSSLHttpServerConfigs {
     }
   }
 
-  @Test(timeout=120000)
+  @Test
+  @Timeout(value=120000, unit=TimeUnit.MILLISECONDS)
   public void testKeyStoreSetupWithoutTrustStorePassword() throws Exception {
     // Setup TrustStore without TrustStore password
     setupKeyStores(SERVER_PWD, CLIENT_PWD, "");
@@ -213,7 +222,7 @@ public class TestSSLHttpServerConfigs {
     // set) should fail.
     try {
       testServerStart(SERVER_PWD, SERVER_PWD, "wrongPassword");
-      Assert.fail("Server should have failed to start with wrong " +
+      fail("Server should have failed to start with wrong " +
           "TrustStore password.");
     } catch (IOException e) {
       GenericTestUtils.assertExceptionContains("Keystore was tampered with, " +
@@ -221,7 +230,8 @@ public class TestSSLHttpServerConfigs {
     }
   }
 
-  @Test(timeout=120000)
+  @Test
+  @Timeout(value=120000, unit=TimeUnit.MILLISECONDS)
   public void testKeyStoreSetupWithoutKeyStorePassword() throws Exception {
     // Setup KeyStore without KeyStore password
     setupKeyStores(SERVER_PWD, "", TRUST_STORE_PWD);
@@ -233,7 +243,7 @@ public class TestSSLHttpServerConfigs {
     // set) should fail.
     try {
       testServerStart(SERVER_PWD, "wrongPassword", TRUST_STORE_PWD);
-      Assert.fail("Server should have failed to start with wrong " +
+      fail("Server should have failed to start with wrong " +
           "KeyStore password.");
     } catch (IOException e) {
       GenericTestUtils.assertExceptionContains("Keystore was tampered with, " +
@@ -241,7 +251,8 @@ public class TestSSLHttpServerConfigs {
     }
   }
 
-  @Test(timeout=120000)
+  @Test
+  @Timeout(value=120000, unit=TimeUnit.MILLISECONDS)
   public void testKeyStoreSetupWithoutPassword() throws Exception {
     // Setup KeyStore without any password
     setupKeyStores("", "", "");
@@ -254,7 +265,7 @@ public class TestSSLHttpServerConfigs {
 
     try {
       testServerStart(null, null, null);
-      Assert.fail("Server should have failed to start without " +
+      fail("Server should have failed to start without " +
           "KeyStore password.");
     } catch (IOException e) {
       GenericTestUtils.assertExceptionContains("Problem starting http server",

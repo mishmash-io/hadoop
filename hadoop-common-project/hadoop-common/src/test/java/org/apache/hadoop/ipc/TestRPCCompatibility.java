@@ -19,18 +19,18 @@
 package org.apache.hadoop.ipc;
 
 import org.apache.hadoop.conf.Configuration;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 
 import java.io.IOException;
 import java.lang.reflect.Method;
 import java.net.InetSocketAddress;
-
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
 
 /** Unit test for supporting method-name based compatible RPCs. */
 public class TestRPCCompatibility {
@@ -109,7 +109,7 @@ public class TestRPCCompatibility {
 
   }
 
-  @Before
+  @BeforeEach
   public void setUp() {
     ProtocolSignature.resetCache();
 
@@ -129,7 +129,7 @@ public class TestRPCCompatibility {
         TestProtocol4.class, ProtobufRpcEngine2.class);
   }
   
-  @After
+  @AfterEach
   public void tearDown() {
     if (proxy != null) {
       RPC.stopProxy(proxy.getProxy());

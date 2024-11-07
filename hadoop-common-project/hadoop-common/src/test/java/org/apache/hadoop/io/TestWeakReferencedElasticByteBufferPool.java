@@ -24,41 +24,33 @@ import java.util.List;
 import java.util.Random;
 
 import org.assertj.core.api.Assertions;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.junit.runners.Parameterized;
-
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.MethodSource;
 import org.apache.hadoop.test.HadoopTestBase;
 
 /**
  * Unit tests for {@code WeakReferencedElasticByteBufferPool}.
  */
-@RunWith(Parameterized.class)
 public class TestWeakReferencedElasticByteBufferPool
         extends HadoopTestBase {
 
-  private final boolean isDirect;
-
-  private final String type;
-
-  @Parameterized.Parameters(name = "Buffer type : {0}")
   public static List<String> params() {
     return Arrays.asList("direct", "array");
   }
 
-  public TestWeakReferencedElasticByteBufferPool(String type) {
-    this.type = type;
-    this.isDirect = !"array".equals(type);
+  private boolean isDirect(String type) {
+    return !"array".equals(type);
   }
 
-  @Test
-  public void testGetAndPutBasic() {
+  @ParameterizedTest
+  @MethodSource("params")
+  public void testGetAndPutBasic(String type) {
     WeakReferencedElasticByteBufferPool pool = new WeakReferencedElasticByteBufferPool();
     int bufferSize = 5;
-    ByteBuffer buffer = pool.getBuffer(isDirect, bufferSize);
+    ByteBuffer buffer = pool.getBuffer(isDirect(type), bufferSize);
     Assertions.assertThat(buffer.isDirect())
             .describedAs("Buffered returned should be of correct type {}", type)
-            .isEqualTo(isDirect);
+            .isEqualTo(isDirect(type));
     Assertions.assertThat(buffer.capacity())
             .describedAs("Initial capacity of returned buffer from pool")
             .isEqualTo(bufferSize);
@@ -81,61 +73,63 @@ public class TestWeakReferencedElasticByteBufferPool
 
   }
 
-  @Test
-  public void testPoolingWithDifferentSizes() {
+  @ParameterizedTest
+  @MethodSource("params")
+  public void testPoolingWithDifferentSizes(String type) {
     WeakReferencedElasticByteBufferPool pool = new WeakReferencedElasticByteBufferPool();
-    ByteBuffer buffer = pool.getBuffer(isDirect, 5);
-    ByteBuffer buffer1 = pool.getBuffer(isDirect, 10);
-    ByteBuffer buffer2 = pool.getBuffer(isDirect, 15);
+    ByteBuffer buffer = pool.getBuffer(isDirect(type), 5);
+    ByteBuffer buffer1 = pool.getBuffer(isDirect(type), 10);
+    ByteBuffer buffer2 = pool.getBuffer(isDirect(type), 15);
 
-    Assertions.assertThat(pool.getCurrentBuffersCount(isDirect))
+    Assertions.assertThat(pool.getCurrentBuffersCount(isDirect(type)))
             .describedAs("Number of buffers in the pool")
             .isEqualTo(0);
 
     pool.putBuffer(buffer1);
     pool.putBuffer(buffer2);
-    Assertions.assertThat(pool.getCurrentBuffersCount(isDirect))
+    Assertions.assertThat(pool.getCurrentBuffersCount(isDirect(type)))
             .describedAs("Number of buffers in the pool")
             .isEqualTo(2);
-    ByteBuffer buffer3 = pool.getBuffer(isDirect, 12);
+    ByteBuffer buffer3 = pool.getBuffer(isDirect(type), 12);
     Assertions.assertThat(buffer3.capacity())
             .describedAs("Pooled buffer should have older capacity")
             .isEqualTo(15);
-    Assertions.assertThat(pool.getCurrentBuffersCount(isDirect))
+    Assertions.assertThat(pool.getCurrentBuffersCount(isDirect(type)))
             .describedAs("Number of buffers in the pool")
             .isEqualTo(1);
     pool.putBuffer(buffer);
-    ByteBuffer buffer4 = pool.getBuffer(isDirect, 6);
+    ByteBuffer buffer4 = pool.getBuffer(isDirect(type), 6);
     Assertions.assertThat(buffer4.capacity())
             .describedAs("Pooled buffer should have older capacity")
             .isEqualTo(10);
-    Assertions.assertThat(pool.getCurrentBuffersCount(isDirect))
+    Assertions.assertThat(pool.getCurrentBuffersCount(isDirect(type)))
             .describedAs("Number of buffers in the pool")
             .isEqualTo(1);
 
     pool.release();
-    Assertions.assertThat(pool.getCurrentBuffersCount(isDirect))
+    Assertions.assertThat(pool.getCurrentBuffersCount(isDirect(type)))
             .describedAs("Number of buffers in the pool post release")
             .isEqualTo(0);
   }
 
-  @Test
-  public void testPoolingWithDifferentInsertionTime() {
+  @ParameterizedTest
+  @MethodSource("params")
+  public void testPoolingWithDifferentInsertionTime(String type) {
     WeakReferencedElasticByteBufferPool pool = new WeakReferencedElasticByteBufferPool();
-    ByteBuffer buffer = pool.getBuffer(isDirect, 10);
-    ByteBuffer buffer1 = pool.getBuffer(isDirect, 10);
-    ByteBuffer buffer2 = pool.getBuffer(isDirect, 10);
+    ByteBuffer buffer = pool.getBuffer(isDirect(type), 10);
+    ByteBuffer buffer1 = pool.getBuffer(isDirect(type), 10);
+    ByteBuffer buffer2 = pool.getBuffer(isDirect(type), 10);
 
-    Assertions.assertThat(pool.getCurrentBuffersCount(isDirect))
+    Assertions.assertThat(pool.getCurrentBuffersCount(isDirect(type)))
             .describedAs("Number of buffers in the pool")
             .isEqualTo(0);
 
     pool.putBuffer(buffer1);
     pool.putBuffer(buffer2);
-    Assertions.assertThat(pool.getCurrentBuffersCount(isDirect))
+    Assertions.assertThat(pool.getCurrentBuffersCount(isDirect(type)))
             .describedAs("Number of buffers in the pool")
             .isEqualTo(2);
-    ByteBuffer buffer3 = pool.getBuffer(isDirect, 10);
+    ByteBuffer buffer3 = pool.getBuffer(isDirect(type), 10);
     // As buffer1 is returned to the pool before buffer2, it should
     // be returned when buffer of same size is asked again from
     // the pool. Memory references must match not just content
@@ -146,29 +140,30 @@ public class TestWeakReferencedElasticByteBufferPool
                     "insertion time")
             .isSameAs(buffer1);
     pool.putBuffer(buffer);
-    ByteBuffer buffer4 = pool.getBuffer(isDirect, 10);
+    ByteBuffer buffer4 = pool.getBuffer(isDirect(type), 10);
     Assertions.assertThat(buffer4)
             .describedAs("Buffers should be returned in order of their " +
                     "insertion time")
             .isSameAs(buffer2);
   }
 
-  @Test
-  public void testGarbageCollection() {
+  @ParameterizedTest
+  @MethodSource("params")
+  public void testGarbageCollection(String type) {
     WeakReferencedElasticByteBufferPool pool = new WeakReferencedElasticByteBufferPool();
-    ByteBuffer buffer = pool.getBuffer(isDirect, 5);
-    ByteBuffer buffer1 = pool.getBuffer(isDirect, 10);
-    ByteBuffer buffer2 = pool.getBuffer(isDirect, 15);
-    Assertions.assertThat(pool.getCurrentBuffersCount(isDirect))
+    ByteBuffer buffer = pool.getBuffer(isDirect(type), 5);
+    ByteBuffer buffer1 = pool.getBuffer(isDirect(type), 10);
+    ByteBuffer buffer2 = pool.getBuffer(isDirect(type), 15);
+    Assertions.assertThat(pool.getCurrentBuffersCount(isDirect(type)))
             .describedAs("Number of buffers in the pool")
             .isEqualTo(0);
     pool.putBuffer(buffer1);
     pool.putBuffer(buffer2);
-    Assertions.assertThat(pool.getCurrentBuffersCount(isDirect))
+    Assertions.assertThat(pool.getCurrentBuffersCount(isDirect(type)))
             .describedAs("Number of buffers in the pool")
             .isEqualTo(2);
     // Before GC.
-    ByteBuffer buffer4 = pool.getBuffer(isDirect, 12);
+    ByteBuffer buffer4 = pool.getBuffer(isDirect(type), 12);
     Assertions.assertThat(buffer4.capacity())
             .describedAs("Pooled buffer should have older capacity")
             .isEqualTo(15);
@@ -178,33 +173,34 @@ public class TestWeakReferencedElasticByteBufferPool
     buffer2 = null;
     buffer4 = null;
     System.gc();
-    ByteBuffer buffer3 = pool.getBuffer(isDirect, 12);
+    ByteBuffer buffer3 = pool.getBuffer(isDirect(type), 12);
     Assertions.assertThat(buffer3.capacity())
             .describedAs("After garbage collection new buffer should be " +
                     "returned with fixed capacity")
             .isEqualTo(12);
   }
 
-  @Test
-  public void testWeakReferencesPruning() {
+  @ParameterizedTest
+  @MethodSource("params")
+  public void testWeakReferencesPruning(String type) {
     WeakReferencedElasticByteBufferPool pool = new WeakReferencedElasticByteBufferPool();
-    ByteBuffer buffer1 = pool.getBuffer(isDirect, 5);
-    ByteBuffer buffer2 = pool.getBuffer(isDirect, 10);
-    ByteBuffer buffer3 = pool.getBuffer(isDirect, 15);
+    ByteBuffer buffer1 = pool.getBuffer(isDirect(type), 5);
+    ByteBuffer buffer2 = pool.getBuffer(isDirect(type), 10);
+    ByteBuffer buffer3 = pool.getBuffer(isDirect(type), 15);
 
     pool.putBuffer(buffer2);
     pool.putBuffer(buffer3);
-    Assertions.assertThat(pool.getCurrentBuffersCount(isDirect))
+    Assertions.assertThat(pool.getCurrentBuffersCount(isDirect(type)))
             .describedAs("Number of buffers in the pool")
             .isEqualTo(2);
 
     // marking only buffer2 to be garbage collected.
     buffer2 = null;
     System.gc();
-    ByteBuffer buffer4 = pool.getBuffer(isDirect, 10);
+    ByteBuffer buffer4 = pool.getBuffer(isDirect(type), 10);
     // Number of buffers in the pool is 0 as one got garbage
     // collected and other got returned in above call.
-    Assertions.assertThat(pool.getCurrentBuffersCount(isDirect))
+    Assertions.assertThat(pool.getCurrentBuffersCount(isDirect(type)))
             .describedAs("Number of buffers in the pool")
             .isEqualTo(0);
     Assertions.assertThat(buffer4.capacity())

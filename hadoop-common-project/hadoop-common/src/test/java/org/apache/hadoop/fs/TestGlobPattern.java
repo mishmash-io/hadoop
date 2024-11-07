@@ -18,8 +18,12 @@
 
 package org.apache.hadoop.fs;
 
-import org.junit.Test;
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
+import java.util.concurrent.TimeUnit;
+
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.Timeout;
 
 import com.google.re2j.PatternSyntaxException;
 /**
@@ -31,8 +35,8 @@ public class TestGlobPattern {
 
     for (String s : input) {
       boolean result = pattern.matches(s);
-      assertTrue(glob +" should"+ (yes ? "" : " not") +" match "+ s,
-                 yes ? result : !result);
+      assertTrue(yes ? result : !result,
+                 glob +" should"+ (yes ? "" : " not") +" match "+ s);
     }
   }
 
@@ -45,11 +49,12 @@ public class TestGlobPattern {
         e.printStackTrace();
         continue;
       }
-      assertTrue("glob "+ glob +" should throw", false);
+      assertTrue(false, "glob "+ glob +" should throw");
     }
   }
 
-  @Test public void testValidPatterns() {
+  @Test
+  public void testValidPatterns() {
     assertMatch(true, "*", "^$", "foo", "bar", "\n");
     assertMatch(true, "?", "?", "^", "[", "]", "$");
     assertMatch(true, "foo*", "foo", "food", "fool", "foo\n", "foo\nbar");
@@ -72,7 +77,9 @@ public class TestGlobPattern {
     shouldThrow("[", "[[]]", "{", "\\");
   }
 
-  @Test(timeout=10000) public void testPathologicalPatterns() {
+  @Test
+  @Timeout(value=10000, unit=TimeUnit.MILLISECONDS)
+  public void testPathologicalPatterns() {
     String badFilename = "job_1429571161900_4222-1430338332599-tda%2D%2D+******************************+++...%270%27%28Stage-1430338580443-39-2000-SUCCEEDED-production%2Dhigh-1430338340360.jhist";
     assertMatch(true, badFilename, badFilename);
   }

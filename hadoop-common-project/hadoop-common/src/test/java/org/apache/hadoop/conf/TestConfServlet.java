@@ -32,6 +32,8 @@ import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 
 import org.eclipse.jetty.util.ajax.JSON;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
@@ -43,13 +45,14 @@ import org.apache.hadoop.thirdparty.com.google.common.base.Strings;
 import org.apache.hadoop.http.HttpServer2;
 import org.apache.hadoop.util.XMLUtils;
 
-import org.junit.BeforeClass;
-import org.junit.Test;
 import org.mockito.Mockito;
 
 import static org.mockito.Mockito.when;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.fail;
 import static org.mockito.Mockito.mock;
-import static org.junit.Assert.*;
 
 /**
  * Basic test case that the ConfServlet can write configuration
@@ -64,7 +67,7 @@ public class TestConfServlet {
       new HashMap<String, String>();
   private static final Map<String, String> MASK_PROPERTIES = new HashMap<>();
 
-  @BeforeClass
+  @BeforeAll
   public static void initTestProperties() {
     TEST_PROPERTIES.put("test.key1", "value1");
     TEST_PROPERTIES.put("test.key2", "value2");

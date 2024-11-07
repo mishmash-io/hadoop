@@ -19,14 +19,17 @@
 package org.apache.hadoop.fs;
 
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+
 import java.io.IOException;
 import java.util.Set;
+import java.util.concurrent.TimeUnit;
 
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.test.GenericTestUtils;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.Timeout;
 
 /**
  * Tests resolution of AbstractFileSystems for a given path with symlinks.
@@ -42,12 +45,13 @@ public class TestFileContextResolveAfs {
   private FileContext fc;
   private FileSystem localFs;
   
-  @Before
+  @BeforeEach
   public void setup() throws IOException {
     fc = FileContext.getFileContext();
   }
   
-  @Test (timeout = 30000)
+  @Test
+  @Timeout(value=30000, unit=TimeUnit.MILLISECONDS)
   public void testFileContextResolveAfs() throws IOException {
     Configuration conf = new Configuration();
     localFs = FileSystem.get(conf);
@@ -60,7 +64,7 @@ public class TestFileContextResolveAfs {
     
     fc.createSymlink(localPath, linkPath, true);
     Set<AbstractFileSystem> afsList = fc.resolveAbstractFileSystems(linkPath);
-    Assert.assertEquals(1, afsList.size());
+    assertEquals(1, afsList.size());
     localFs.delete(linkPath, true);
     localFs.delete(localPath, true);
     localFs.close();

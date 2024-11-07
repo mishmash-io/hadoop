@@ -17,24 +17,21 @@
  */
 package org.apache.hadoop.util;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+
 import java.io.IOException;
 import java.util.Random;
 import java.util.concurrent.TimeUnit;
 
 import org.apache.hadoop.test.LambdaTestUtils;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.Timeout;
-
-import static org.junit.Assert.*;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.Timeout;
 
 /**
  * Unittests for CrcUtil.
  */
+@Timeout(value=10000, unit=TimeUnit.MILLISECONDS)
 public class TestCrcUtil {
-  @Rule
-  public Timeout globalTimeout = new Timeout(10000, TimeUnit.MILLISECONDS);
-
   private Random rand = new Random(1234);
 
   @Test
@@ -133,12 +130,12 @@ public class TestCrcUtil {
           compositeCrc, partialCrc, partialChunkSize, crcPolynomial);
     }
     assertEquals(
+        fullCrc,
+        compositeCrc,
         String.format(
             "Using CRC type '%s' with crcPolynomial '0x%08x' and chunkSize '%d'"
             + ", expected '0x%08x', got '0x%08x'",
-            type, crcPolynomial, chunkSize, fullCrc, compositeCrc),
-        fullCrc,
-        compositeCrc);
+            type, crcPolynomial, chunkSize, fullCrc, compositeCrc));
   }
 
   /**

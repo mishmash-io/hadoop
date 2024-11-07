@@ -17,8 +17,8 @@
  */
 package org.apache.hadoop.security.authorize;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.fail;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.fail;
 
 import java.lang.annotation.Annotation;
 import java.net.InetAddress;
@@ -32,7 +32,7 @@ import org.apache.hadoop.security.SecurityInfo;
 import org.apache.hadoop.security.SecurityUtil;
 import org.apache.hadoop.security.UserGroupInformation;
 import org.apache.hadoop.security.token.TokenInfo;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 public class TestServiceAuthorization {
 
@@ -145,7 +145,7 @@ public class TestServiceAuthorization {
       serviceAuthorizationManager.authorize(drwho, TestProtocol.class, conf,
           InetAddress.getByName(ADDRESS));
     } catch (AuthorizationException e) {
-      fail();
+      fail(e);
     }
     // now set a blocked acl with another user and another group
     conf.set(ACL_CONFIG + ServiceAuthorizationManager.BLOCKED, "drwho2 group3");
@@ -154,7 +154,7 @@ public class TestServiceAuthorization {
       serviceAuthorizationManager.authorize(drwho, TestProtocol.class, conf,
           InetAddress.getByName(ADDRESS));
     } catch (AuthorizationException e) {
-      fail();
+      fail(e);
     }
     // now set a blocked acl with the user and another group
     conf.set(ACL_CONFIG + ServiceAuthorizationManager.BLOCKED, "drwho group3");
@@ -173,7 +173,7 @@ public class TestServiceAuthorization {
       serviceAuthorizationManager.authorize(drwho, TestProtocol.class, conf,
           InetAddress.getByName(ADDRESS));
     } catch (AuthorizationException e) {
-      fail();
+      fail(e);
     }
     // now set a blocked acl with another user and group that the user belongs to
     conf.set(ACL_CONFIG + ServiceAuthorizationManager.BLOCKED, "drwho2 group2");
@@ -192,7 +192,7 @@ public class TestServiceAuthorization {
       serviceAuthorizationManager.authorize(drwho, TestProtocol.class, conf,
           InetAddress.getByName(ADDRESS));
     } catch (AuthorizationException e) {
-      fail();
+      fail(e);
     }
   }
 
@@ -212,7 +212,7 @@ public class TestServiceAuthorization {
       serviceAuthorizationManager.authorize(drwho, TestProtocol1.class, conf,
           InetAddress.getByName(ADDRESS));
     } catch (AuthorizationException e) {
-      fail();
+      fail(e);
     }
 
     // set a restrictive default blocked acl and an non-restricting blocked acl for TestProtocol
@@ -226,7 +226,7 @@ public class TestServiceAuthorization {
       serviceAuthorizationManager.authorize(drwho, TestProtocol.class, conf,
           InetAddress.getByName(ADDRESS));
     } catch (AuthorizationException e) {
-      fail();
+      fail(e);
     }
     // drwho is not authorized to access TestProtocol1 because it uses the default blocked acl.
     try {
@@ -252,7 +252,7 @@ public class TestServiceAuthorization {
       serviceAuthorizationManager.authorize(drwho, TestProtocol.class, conf,
           InetAddress.getByName(AUTHORIZED_IP));
     } catch (AuthorizationException e) {
-      fail();
+      fail(e);
     }
     try {
       serviceAuthorizationManager.authorize(drwho, TestProtocol.class, conf,
@@ -295,7 +295,7 @@ public class TestServiceAuthorization {
       serviceAuthorizationManager.authorize(drwho, TestProtocol.class, conf,
           InetAddress.getByName("10.222.0.0"));
     } catch (AuthorizationException e) {
-      fail();
+      fail(e);
     }
   }
 
@@ -315,7 +315,7 @@ public class TestServiceAuthorization {
       serviceAuthorizationManager.authorize(drwho,
           TestProtocol.class, conf, InetAddress.getByName("10.222.0.0"));
     } catch (AuthorizationException e) {
-      fail();
+      fail(e);
     }
     // now set a blocked MachineList
     conf.set(BLOCKED_HOST_CONFIG, IP_RANGE);
@@ -334,7 +334,7 @@ public class TestServiceAuthorization {
       serviceAuthorizationManager.authorize(drwho,
           TestProtocol.class, conf, InetAddress.getByName("10.222.0.0"));
     } catch (AuthorizationException e) {
-      fail();
+      fail(e);
     }
   }
 
@@ -354,7 +354,7 @@ public class TestServiceAuthorization {
       serviceAuthorizationManager.authorize(drwho,
           TestProtocol1.class, conf, InetAddress.getByName("10.222.0.0"));
     } catch (AuthorizationException e) {
-      fail();
+      fail(e);
     }
     // set a  default blocked MachineList and a blocked MachineList for TestProtocol
     conf.set(
@@ -367,7 +367,7 @@ public class TestServiceAuthorization {
       serviceAuthorizationManager.authorize(drwho,
           TestProtocol.class, conf, InetAddress.getByName("10.222.0.0"));
     } catch (AuthorizationException e) {
-      fail();
+      fail(e);
     }
     // TestProtocol cannot be accessed from  "1.2.3.4"
     try {
@@ -382,7 +382,7 @@ public class TestServiceAuthorization {
       serviceAuthorizationManager.authorize(drwho,
          TestProtocol1.class, conf, InetAddress.getByName("1.2.3.4"));
     } catch (AuthorizationException e) {
-      fail();
+      fail(e);
     }
     // TestProtocol1 cannot be accessed from "10.222.0.0", 
     // because "10.222.0.0" is in default block list

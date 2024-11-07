@@ -18,6 +18,10 @@
 
 package org.apache.hadoop.security.http;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
 import java.io.IOException;
 import java.util.Collections;
 import java.util.Enumeration;
@@ -32,8 +36,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 
 import org.apache.hadoop.security.http.CrossOriginFilter;
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 
 public class TestCrossOriginFilter {
@@ -74,28 +77,28 @@ public class TestCrossOriginFilter {
     // Object under test
     CrossOriginFilter filter = new CrossOriginFilter();
     filter.init(filterConfig);
-    Assert.assertTrue(filter.areOriginsAllowed("example.com"));
+    assertTrue(filter.areOriginsAllowed("example.com"));
   }
 
   @Test
   public void testEncodeHeaders() {
     String validOrigin = "http://localhost:12345";
     String encodedValidOrigin = CrossOriginFilter.encodeHeader(validOrigin);
-    Assert.assertEquals("Valid origin encoding should match exactly",
-        validOrigin, encodedValidOrigin);
+    assertEquals(validOrigin, encodedValidOrigin,
+        "Valid origin encoding should match exactly");
 
     String httpResponseSplitOrigin = validOrigin + " \nSecondHeader: value";
     String encodedResponseSplitOrigin =
       CrossOriginFilter.encodeHeader(httpResponseSplitOrigin);
-    Assert.assertEquals("Http response split origin should be protected against",
-        validOrigin, encodedResponseSplitOrigin);
+    assertEquals(validOrigin, encodedResponseSplitOrigin,
+        "Http response split origin should be protected against");
 
     // Test Origin List
     String validOriginList = "http://foo.example.com:12345 http://bar.example.com:12345";
     String encodedValidOriginList = CrossOriginFilter
         .encodeHeader(validOriginList);
-    Assert.assertEquals("Valid origin list encoding should match exactly",
-        validOriginList, encodedValidOriginList);
+    assertEquals(validOriginList, encodedValidOriginList,
+        "Valid origin list encoding should match exactly");
   }
 
   @Test
@@ -111,17 +114,17 @@ public class TestCrossOriginFilter {
     filter.init(filterConfig);
 
     // match multiple sub-domains
-    Assert.assertFalse(filter.areOriginsAllowed("example.com"));
-    Assert.assertFalse(filter.areOriginsAllowed("foo:example.com"));
-    Assert.assertTrue(filter.areOriginsAllowed("foo.example.com"));
-    Assert.assertTrue(filter.areOriginsAllowed("foo.bar.example.com"));
+    assertFalse(filter.areOriginsAllowed("example.com"));
+    assertFalse(filter.areOriginsAllowed("foo:example.com"));
+    assertTrue(filter.areOriginsAllowed("foo.example.com"));
+    assertTrue(filter.areOriginsAllowed("foo.bar.example.com"));
 
     // First origin is allowed
-    Assert.assertTrue(filter.areOriginsAllowed("foo.example.com foo.nomatch.com"));
+    assertTrue(filter.areOriginsAllowed("foo.example.com foo.nomatch.com"));
     // Second origin is allowed
-    Assert.assertTrue(filter.areOriginsAllowed("foo.nomatch.com foo.example.com"));
+    assertTrue(filter.areOriginsAllowed("foo.nomatch.com foo.example.com"));
     // No origin in list is allowed
-    Assert.assertFalse(filter.areOriginsAllowed("foo.nomatch1.com foo.nomatch2.com"));
+    assertFalse(filter.areOriginsAllowed("foo.nomatch1.com foo.nomatch2.com"));
   }
 
   @Test
@@ -137,17 +140,17 @@ public class TestCrossOriginFilter {
     filter.init(filterConfig);
 
     // match multiple sub-domains
-    Assert.assertFalse(filter.areOriginsAllowed("example.com"));
-    Assert.assertFalse(filter.areOriginsAllowed("foo:example.com"));
-    Assert.assertTrue(filter.areOriginsAllowed("foo.example.com"));
-    Assert.assertTrue(filter.areOriginsAllowed("foo.bar.example.com"));
+    assertFalse(filter.areOriginsAllowed("example.com"));
+    assertFalse(filter.areOriginsAllowed("foo:example.com"));
+    assertTrue(filter.areOriginsAllowed("foo.example.com"));
+    assertTrue(filter.areOriginsAllowed("foo.bar.example.com"));
 
     // First origin is allowed
-    Assert.assertTrue(filter.areOriginsAllowed("foo.example.com foo.nomatch.com"));
+    assertTrue(filter.areOriginsAllowed("foo.example.com foo.nomatch.com"));
     // Second origin is allowed
-    Assert.assertTrue(filter.areOriginsAllowed("foo.nomatch.com foo.example.com"));
+    assertTrue(filter.areOriginsAllowed("foo.nomatch.com foo.example.com"));
     // No origin in list is allowed
-    Assert.assertFalse(filter.areOriginsAllowed("foo.nomatch1.com foo.nomatch2.com"));
+    assertFalse(filter.areOriginsAllowed("foo.nomatch1.com foo.nomatch2.com"));
   }
 
   @Test
@@ -162,13 +165,13 @@ public class TestCrossOriginFilter {
     CrossOriginFilter filter = new CrossOriginFilter();
     filter.init(filterConfig);
 
-    Assert.assertTrue(filter.areOriginsAllowed("http://sub1.example.com"));
-    Assert.assertTrue(filter.areOriginsAllowed("https://sub1.example.com"));
-    Assert.assertTrue(filter.areOriginsAllowed("http://sub1.example.com:1234"));
-    Assert.assertTrue(filter.areOriginsAllowed("https://sub1.example.com:8080"));
+    assertTrue(filter.areOriginsAllowed("http://sub1.example.com"));
+    assertTrue(filter.areOriginsAllowed("https://sub1.example.com"));
+    assertTrue(filter.areOriginsAllowed("http://sub1.example.com:1234"));
+    assertTrue(filter.areOriginsAllowed("https://sub1.example.com:8080"));
 
     // No origin in list is allowed
-    Assert.assertFalse(filter.areOriginsAllowed("foo.nomatch1.com foo.nomatch2.com"));
+    assertFalse(filter.areOriginsAllowed("foo.nomatch1.com foo.nomatch2.com"));
   }
 
   @Test
@@ -184,23 +187,23 @@ public class TestCrossOriginFilter {
     CrossOriginFilter filter = new CrossOriginFilter();
     filter.init(filterConfig);
 
-    Assert.assertTrue(filter.areOriginsAllowed("http://sub1.example.com"));
-    Assert.assertTrue(filter.areOriginsAllowed("https://sub1.example.com"));
-    Assert.assertTrue(filter.areOriginsAllowed("http://sub1.example.com:1234"));
-    Assert.assertTrue(filter.areOriginsAllowed("https://sub1.example.com:8080"));
+    assertTrue(filter.areOriginsAllowed("http://sub1.example.com"));
+    assertTrue(filter.areOriginsAllowed("https://sub1.example.com"));
+    assertTrue(filter.areOriginsAllowed("http://sub1.example.com:1234"));
+    assertTrue(filter.areOriginsAllowed("https://sub1.example.com:8080"));
 
     // match multiple sub-domains
-    Assert.assertFalse(filter.areOriginsAllowed("example2.com"));
-    Assert.assertFalse(filter.areOriginsAllowed("foo:example2.com"));
-    Assert.assertTrue(filter.areOriginsAllowed("foo.example2.com"));
-    Assert.assertTrue(filter.areOriginsAllowed("foo.bar.example2.com"));
+    assertFalse(filter.areOriginsAllowed("example2.com"));
+    assertFalse(filter.areOriginsAllowed("foo:example2.com"));
+    assertTrue(filter.areOriginsAllowed("foo.example2.com"));
+    assertTrue(filter.areOriginsAllowed("foo.bar.example2.com"));
 
     // First origin is allowed
-    Assert.assertTrue(filter.areOriginsAllowed("foo.example2.com foo.nomatch.com"));
+    assertTrue(filter.areOriginsAllowed("foo.example2.com foo.nomatch.com"));
     // Second origin is allowed
-    Assert.assertTrue(filter.areOriginsAllowed("foo.nomatch.com foo.example2.com"));
+    assertTrue(filter.areOriginsAllowed("foo.nomatch.com foo.example2.com"));
     // No origin in list is allowed
-    Assert.assertFalse(filter.areOriginsAllowed("foo.nomatch1.com foo.nomatch2.com"));
+    assertFalse(filter.areOriginsAllowed("foo.nomatch1.com foo.nomatch2.com"));
   }
 
   @Test
@@ -341,13 +344,13 @@ public class TestCrossOriginFilter {
     filter.init(filterConfig);
 
     //verify filter values
-    Assert.assertTrue("Allowed headers do not match",
-        filter.getAllowedHeadersHeader()
-        .compareTo("X-Requested-With,Accept") == 0);
-    Assert.assertTrue("Allowed methods do not match",
-        filter.getAllowedMethodsHeader()
-        .compareTo("GET,POST") == 0);
-    Assert.assertTrue(filter.areOriginsAllowed("example.com"));
+    assertTrue(filter.getAllowedHeadersHeader()
+        .compareTo("X-Requested-With,Accept") == 0,
+        "Allowed headers do not match");
+    assertTrue(filter.getAllowedMethodsHeader()
+        .compareTo("GET,POST") == 0,
+        "Allowed methods do not match");
+    assertTrue(filter.areOriginsAllowed("example.com"));
 
     //destroy filter values and clear conf
     filter.destroy();
@@ -363,13 +366,13 @@ public class TestCrossOriginFilter {
     filter.init(filterConfig);
 
     //verify filter values
-    Assert.assertTrue("Allowed headers do not match",
-        filter.getAllowedHeadersHeader()
-        .compareTo("Content-Type,Origin") == 0);
-    Assert.assertTrue("Allowed methods do not match",
-        filter.getAllowedMethodsHeader()
-        .compareTo("GET,HEAD") == 0);
-    Assert.assertTrue(filter.areOriginsAllowed("newexample.com"));
+    assertTrue(filter.getAllowedHeadersHeader()
+        .compareTo("Content-Type,Origin") == 0,
+        "Allowed headers do not match");
+    assertTrue(filter.getAllowedMethodsHeader()
+        .compareTo("GET,HEAD") == 0,
+        "Allowed methods do not match");
+    assertTrue(filter.areOriginsAllowed("newexample.com"));
 
     //destroy filter values
     filter.destroy();

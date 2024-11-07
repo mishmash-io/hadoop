@@ -17,21 +17,16 @@
  */
 package org.apache.hadoop.test;
 
-import org.junit.Rule;
-import org.junit.rules.TestRule;
-import org.junit.rules.Timeout;
-
-import java.util.concurrent.TimeUnit;
-
 /**
  * Class for test units to extend in order that their individual tests will
  * be timed out and fail automatically should they run more than 10 seconds.
  * This provides an automatic regression check for tests that begin running
  * longer than expected.
+ *
+ * Deprecated - add a Timeout annotation directly to your class.
  */
+@Deprecated
 public class UnitTestcaseTimeLimit {
   public final int timeOutSecs = 10;
   
-  @Rule public TestRule globalTimeout =
-      new Timeout(timeOutSecs, TimeUnit.SECONDS);
 }

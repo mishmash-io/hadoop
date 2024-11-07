@@ -16,6 +16,8 @@
  */
 package org.apache.hadoop.io.file.tfile;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+
 import java.io.DataOutputStream;
 import java.io.IOException;
 
@@ -28,9 +30,7 @@ import org.apache.hadoop.io.BytesWritable;
 import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.io.file.tfile.TFile.Writer;
 import org.apache.hadoop.test.GenericTestUtils;
-import org.junit.Test;
-
-import static org.junit.Assert.*;
+import org.junit.jupiter.api.Test;
 
 public class TestTFileComparator2 {
   private static String ROOT = GenericTestUtils.getTestDir().getAbsolutePath();

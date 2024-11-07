@@ -18,10 +18,11 @@
 
 package org.apache.hadoop.util;
 
-import static org.junit.Assert.*;
 import static org.apache.hadoop.util.StringInterner.*;
+import static org.junit.jupiter.api.Assertions.assertNotSame;
+import static org.junit.jupiter.api.Assertions.assertSame;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 /**
  * 

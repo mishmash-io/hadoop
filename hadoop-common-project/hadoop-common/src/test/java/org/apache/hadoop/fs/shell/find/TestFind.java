@@ -17,7 +17,10 @@
  */
 package org.apache.hadoop.fs.shell.find;
 
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.fail;
 import static org.mockito.Mockito.*;
 
 import java.io.IOException;
@@ -34,29 +37,21 @@ import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.fs.RemoteIterator;
 import org.apache.hadoop.fs.shell.PathData;
-import org.apache.hadoop.fs.shell.find.BaseExpression;
-import org.apache.hadoop.fs.shell.find.Expression;
-import org.apache.hadoop.fs.shell.find.Find;
-import org.apache.hadoop.fs.shell.find.FindOptions;
-import org.apache.hadoop.fs.shell.find.Result;
-import org.junit.Before;
-import org.junit.Rule;
-import org.junit.rules.Timeout;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.Timeout;
 import org.mockito.InOrder;
 import org.mockito.Mockito;
 import org.mockito.invocation.InvocationOnMock;
 import org.mockito.stubbing.Answer;
 
+@Timeout(value=10000, unit=TimeUnit.MILLISECONDS)
 public class TestFind {
-
-  @Rule
-  public Timeout timeout = new Timeout(10000, TimeUnit.MILLISECONDS);
 
   private static FileSystem mockFs;
   private static Configuration conf;
 
-  @Before
+  @BeforeEach
   public void setup() throws IOException {
     mockFs = MockFileSystem.setup();
     conf = mockFs.getConf();

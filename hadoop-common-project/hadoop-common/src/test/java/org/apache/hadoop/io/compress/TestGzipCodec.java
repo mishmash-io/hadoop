@@ -17,6 +17,9 @@
  */
 package org.apache.hadoop.io.compress;
 
+import static org.junit.jupiter.api.Assertions.assertArrayEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -28,14 +31,10 @@ import java.util.zip.GZIPInputStream;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.io.DataInputBuffer;
 import org.apache.hadoop.io.DataOutputBuffer;
-
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import org.junit.Before;
-import org.junit.Test;
-import static org.junit.Assert.assertArrayEquals;
-import static org.junit.Assert.assertEquals;
 
 /**
  * Verify resettable compressor.
@@ -49,7 +48,7 @@ public class TestGzipCodec {
   private static final String DATA2 = "It's baconnnn!!\n";
   private GzipCodec codec = new GzipCodec();
 
-  @Before
+  @BeforeEach
   public void setUp() {
     codec.setConf(new Configuration(false));
   }
@@ -68,7 +67,7 @@ public class TestGzipCodec {
     byte[] buf = new byte[1024];
     int len = cmpIn.read(buf);
     String result = new String(buf, 0, len, StandardCharsets.UTF_8);
-    assertEquals("Input must match output", DATA1, result);
+    assertEquals(DATA1, result, "Input must match output");
   }
 
   // Test multi-member gzip file created via finish(), resetState().

@@ -18,8 +18,12 @@
 
 package org.apache.hadoop.util;
 
-import org.junit.Test;
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+
+import java.util.concurrent.TimeUnit;
+
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.Timeout;
 
 public class TestSysInfoWindows {
 
@@ -43,7 +47,8 @@ public class TestSysInfoWindows {
     }
   }
 
-  @Test(timeout = 10000)
+  @Test
+  @Timeout(value=10000, unit=TimeUnit.MILLISECONDS)
   public void parseSystemInfoString() {
     SysInfoWindowsMock tester = new SysInfoWindowsMock();
     tester.setSysinfoString(
@@ -69,7 +74,8 @@ public class TestSysInfoWindows {
         tester.getNumVCoresUsed(), 0.0);
   }
 
-  @Test(timeout = 10000)
+  @Test
+  @Timeout(value=10000, unit=TimeUnit.MILLISECONDS)
   public void refreshAndCpuUsage() throws InterruptedException {
     SysInfoWindowsMock tester = new SysInfoWindowsMock();
     tester.setSysinfoString(
@@ -108,7 +114,8 @@ public class TestSysInfoWindows {
                  tester.getNumVCoresUsed(), 0.0);
   }
 
-  @Test(timeout = 10000)
+  @Test
+  @Timeout(value=10000, unit=TimeUnit.MILLISECONDS)
   public void refreshAndCpuUsageMulticore() throws InterruptedException {
     // test with 12 cores
     SysInfoWindowsMock tester = new SysInfoWindowsMock();
@@ -138,7 +145,8 @@ public class TestSysInfoWindows {
                  tester.getNumVCoresUsed(), 0.0);
   }
 
-  @Test(timeout = 10000)
+  @Test
+  @Timeout(value=10000, unit=TimeUnit.MILLISECONDS)
   public void errorInGetSystemInfo() {
     SysInfoWindowsMock tester = new SysInfoWindowsMock();
     // info str derived from windows shell command is null

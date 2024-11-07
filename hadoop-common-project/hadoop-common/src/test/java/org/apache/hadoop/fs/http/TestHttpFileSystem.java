@@ -18,16 +18,18 @@
 
 package org.apache.hadoop.fs.http;
 
-import okhttp3.mockwebserver.MockResponse;
-import okhttp3.mockwebserver.MockWebServer;
-import okhttp3.mockwebserver.RecordedRequest;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.io.IOUtils;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
+import mockwebserver3.MockResponse;
+import mockwebserver3.MockWebServer;
+import mockwebserver3.RecordedRequest;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -37,15 +39,13 @@ import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.util.stream.IntStream;
 
-import static org.junit.Assert.assertEquals;
-
 /**
  * Testing HttpFileSystem.
  */
 public class TestHttpFileSystem {
   private final Configuration conf = new Configuration(false);
 
-  @Before
+  @BeforeEach
   public void setUp() {
     conf.set("fs.http.impl", HttpFileSystem.class.getCanonicalName());
   }

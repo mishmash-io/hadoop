@@ -18,12 +18,15 @@
 package org.apache.hadoop.crypto.random;
 
 import java.util.Arrays;
+import java.util.concurrent.TimeUnit;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.Timeout;
 
 public class TestOpensslSecureRandom {
   
-  @Test(timeout=120000)
+  @Test
+  @Timeout(value=120000, unit=TimeUnit.MILLISECONDS)
   public void testRandomBytes() throws Exception {
     OpensslSecureRandom random = new OpensslSecureRandom();
     
@@ -56,7 +59,8 @@ public class TestOpensslSecureRandom {
    * Test will timeout if secure random implementation always returns a 
    * constant value.
    */
-  @Test(timeout=120000)
+  @Test
+  @Timeout(value=120000, unit=TimeUnit.MILLISECONDS)
   public void testRandomInt() throws Exception {
     OpensslSecureRandom random = new OpensslSecureRandom();
     
@@ -71,7 +75,8 @@ public class TestOpensslSecureRandom {
    * Test will timeout if secure random implementation always returns a 
    * constant value.
    */
-  @Test(timeout=120000)
+  @Test
+  @Timeout(value=120000, unit=TimeUnit.MILLISECONDS)
   public void testRandomLong() throws Exception {
     OpensslSecureRandom random = new OpensslSecureRandom();
     
@@ -86,7 +91,8 @@ public class TestOpensslSecureRandom {
    * Test will timeout if secure random implementation always returns a 
    * constant value.
    */
-  @Test(timeout=120000)
+  @Test
+  @Timeout(value=120000, unit=TimeUnit.MILLISECONDS)
   public void testRandomFloat() throws Exception {
     OpensslSecureRandom random = new OpensslSecureRandom();
     
@@ -101,7 +107,8 @@ public class TestOpensslSecureRandom {
    * Test will timeout if secure random implementation always returns a 
    * constant value.
    */
-  @Test(timeout=120000)
+  @Test
+  @Timeout(value=120000, unit=TimeUnit.MILLISECONDS)
   public void testRandomDouble() throws Exception {
     OpensslSecureRandom random = new OpensslSecureRandom();
     

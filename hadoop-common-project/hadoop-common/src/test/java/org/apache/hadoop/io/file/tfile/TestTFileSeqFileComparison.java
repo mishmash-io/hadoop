@@ -23,11 +23,6 @@ import java.text.SimpleDateFormat;
 import java.util.Random;
 import java.util.StringTokenizer;
 
-
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
-
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.CommandLineParser;
 import org.apache.commons.cli.DefaultParser;
@@ -46,6 +41,9 @@ import org.apache.hadoop.io.compress.CompressionCodec;
 import org.apache.hadoop.io.file.tfile.TFile.Reader.Scanner.Entry;
 import org.apache.hadoop.test.GenericTestUtils;
 import org.apache.hadoop.util.Time;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 public class TestTFileSeqFileComparison {
   MyOptions options;
@@ -57,7 +55,7 @@ public class TestTFileSeqFileComparison {
   private DateFormat formatter;
   byte[][] dictionary;
 
-  @Before
+  @BeforeEach
   public void setUp() throws IOException {
     if (options == null) {
       options = new MyOptions(new String[0]);
@@ -84,7 +82,7 @@ public class TestTFileSeqFileComparison {
     }
   }
 
-  @After
+  @AfterEach
   public void tearDown() throws IOException {
     // do nothing
   }

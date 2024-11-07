@@ -17,6 +17,13 @@
  */
 package org.apache.hadoop.security.alias;
 
+import static org.junit.jupiter.api.Assertions.assertArrayEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.fail;
+
 import java.io.File;
 import java.io.IOException;
 import java.net.URI;
@@ -33,28 +40,19 @@ import org.apache.hadoop.security.Credentials;
 import org.apache.hadoop.security.ProviderUtils;
 import org.apache.hadoop.security.UserGroupInformation;
 import org.apache.hadoop.test.GenericTestUtils;
-import org.junit.Before;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.TestName;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.TestInfo;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import static org.junit.Assert.assertArrayEquals;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertThrows;
-import static org.junit.Assert.assertTrue;
 
 public class TestCredentialProviderFactory {
   public static final Logger LOG =
       LoggerFactory.getLogger(TestCredentialProviderFactory.class);
 
-  @Rule
-  public final TestName test = new TestName();
-
-  @Before
-  public void announce() {
-    LOG.info("Running test " + test.getMethodName());
+  @BeforeEach
+  public void announce(TestInfo info) {
+    LOG.info("Running test " + info.getDisplayName());
   }
 
   private static char[] chars = { 'a', 'b', 'c', 'd', 'e', 'f', 'g',
@@ -90,7 +88,7 @@ public class TestCredentialProviderFactory {
     try {
       List<CredentialProvider> providers = 
           CredentialProviderFactory.getProviders(conf);
-      assertTrue("should throw!", false);
+      fail("should throw!");
     } catch (IOException e) {
       assertEquals("No CredentialProviderFactory for unknown:/// in " +
           CredentialProviderFactory.CREDENTIAL_PROVIDER_PATH,
@@ -105,7 +103,7 @@ public class TestCredentialProviderFactory {
     try {
       List<CredentialProvider> providers = 
           CredentialProviderFactory.getProviders(conf);
-      assertTrue("should throw!", false);
+      fail("should throw!");
     } catch (IOException e) {
       assertEquals("Bad configuration of " +
           CredentialProviderFactory.CREDENTIAL_PROVIDER_PATH +
@@ -129,8 +127,8 @@ public class TestCredentialProviderFactory {
     char[] passwd = generatePassword(16);
 
     // ensure that we get nulls when the key isn't there
-    assertEquals(null, provider.getCredentialEntry("no-such-key"));
-    assertEquals(null, provider.getCredentialEntry("key"));
+    assertNull(provider.getCredentialEntry("no-such-key"));
+    assertNull(provider.getCredentialEntry("key"));
     // create a new key
     try {
       provider.createCredentialEntry("pass", passwd);
@@ -143,14 +141,14 @@ public class TestCredentialProviderFactory {
     // try recreating pass
     try {
       provider.createCredentialEntry("pass", passwd);
-      assertTrue("should throw", false);
+      fail("should throw");
     } catch (IOException e) {
       assertEquals("Credential pass already exists in " + ourUrl, e.getMessage());
     }
     provider.deleteCredentialEntry("pass");
     try {
       provider.deleteCredentialEntry("pass");
-      assertTrue("should throw", false);
+      fail("should throw");
     } catch (IOException e) {
       assertEquals("Credential pass does not exist in " + ourUrl, e.getMessage());
     }
@@ -183,9 +181,9 @@ public class TestCredentialProviderFactory {
     assertArrayEquals(passwd, provider.getCredentialEntry("pass").getCredential());
 
     List<String> creds = provider.getAliases();
-    assertTrue("Credentials should have been returned.", creds.size() == 2);
-    assertTrue("Returned Credentials should have included pass.", creds.contains("pass"));
-    assertTrue("Returned Credentials should have included pass2.", creds.contains("pass2"));
+    assertTrue(creds.size() == 2, "Credentials should have been returned.");
+    assertTrue(creds.contains("pass"), "Returned Credentials should have included pass.");
+    assertTrue(creds.contains("pass2"), "Returned Credentials should have included pass2.");
   }
 
   @Test
@@ -216,7 +214,7 @@ public class TestCredentialProviderFactory {
     FileSystem fs = path.getFileSystem(conf);
     FileStatus s = fs.getFileStatus(path);
     assertEquals("rw-------", s.getPermission().toString());
-    assertTrue(file + " should exist", file.isFile());
+    assertTrue(file.isFile(), file + " should exist");
 
     // check permission retention after explicit change
     fs.setPermission(path, new FsPermission("777"));
@@ -237,9 +235,9 @@ public class TestCredentialProviderFactory {
     Path path = ProviderUtils.unnestUri(new URI(ourUrl));
     FileSystem fs = path.getFileSystem(conf);
     FileStatus s = fs.getFileStatus(path);
-    assertEquals("Unexpected permissions: " + s.getPermission().toString(),
-        "rw-------", s.getPermission().toString());
-    assertTrue(file + " should exist", file.isFile());
+    assertEquals("rw-------", s.getPermission().toString(),
+        "Unexpected permissions: " + s.getPermission().toString());
+    assertTrue(file.isFile(), file + " should exist");
 
     // check permission retention after explicit change
     fs.setPermission(path, new FsPermission("777"));
@@ -280,7 +278,8 @@ public class TestCredentialProviderFactory {
 
     FileSystem fs = path.getFileSystem(conf);
     FileStatus s = fs.getFileStatus(path);
-    assertEquals("Permissions should have been retained from the preexisting " +
-        "keystore.", "rwxrwxrwx", s.getPermission().toString());
+    assertEquals("rwxrwxrwx", s.getPermission().toString(),
+        "Permissions should have been retained from the preexisting " +
+        "keystore.");
   }
 }

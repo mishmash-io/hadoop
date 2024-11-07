@@ -18,15 +18,18 @@
 
 package org.apache.hadoop.metrics2.lib;
 
-import org.junit.Ignore;
-import org.junit.Test;
-import static org.junit.Assert.*;
 import static org.mockito.Mockito.*;
 
 import org.apache.hadoop.metrics2.MetricsException;
 import org.apache.hadoop.metrics2.MetricsRecordBuilder;
+import org.junit.jupiter.api.Disabled;
+import org.junit.jupiter.api.Test;
+
 import static org.apache.hadoop.metrics2.lib.Interns.*;
 import static org.apache.hadoop.test.MetricsAsserts.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.fail;
 
 /**
  * Test the metric registry class
@@ -45,13 +48,13 @@ public class TestMetricsRegistry {
     r.newGauge("g3", "g3 desc", 5f);
     r.newStat("s1", "s1 desc", "ops", "time");
 
-    assertEquals("num metrics in registry", 6, r.metrics().size());
-    assertTrue("c1 found", r.get("c1") instanceof MutableCounterInt);
-    assertTrue("c2 found", r.get("c2") instanceof MutableCounterLong);
-    assertTrue("g1 found", r.get("g1") instanceof MutableGaugeInt);
-    assertTrue("g2 found", r.get("g2") instanceof MutableGaugeLong);
-    assertTrue("g3 found", r.get("g3") instanceof MutableGaugeFloat);
-    assertTrue("s1 found", r.get("s1") instanceof MutableStat);
+    assertEquals(6, r.metrics().size(), "num metrics in registry");
+    assertTrue(r.get("c1") instanceof MutableCounterInt, "c1 found");
+    assertTrue(r.get("c2") instanceof MutableCounterLong, "c2 found");
+    assertTrue(r.get("g1") instanceof MutableGaugeInt, "g1 found");
+    assertTrue(r.get("g2") instanceof MutableGaugeLong, "g2 found");
+    assertTrue(r.get("g3") instanceof MutableGaugeFloat, "g3 found");
+    assertTrue(r.get("s1") instanceof MutableStat, "s1 found");
 
     expectMetricsException("Metric name c1 already exists", new Runnable() {
       @Override
@@ -96,7 +99,7 @@ public class TestMetricsRegistry {
       public void run() { r.newCounter("withnewline6\n", "c6 desc", 6); }
     });
     // Final validation
-    assertEquals("num metrics in registry", 3, r.metrics().size());
+    assertEquals(3, r.metrics().size(), "num metrics in registry");
   }
 
   /**
@@ -140,13 +143,13 @@ public class TestMetricsRegistry {
     });
   }
 
-  @Ignore
+  @Disabled
   private void expectMetricsException(String prefix, Runnable fun) {
     try {
       fun.run();
     }
     catch (MetricsException e) {
-      assertTrue("expected exception", e.getMessage().startsWith(prefix));
+      assertTrue(e.getMessage().startsWith(prefix), "expected exception");
       return;
     }
     fail("should've thrown '"+ prefix +"...'");

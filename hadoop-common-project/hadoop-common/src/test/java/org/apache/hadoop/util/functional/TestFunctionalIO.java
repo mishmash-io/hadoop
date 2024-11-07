@@ -24,8 +24,7 @@ import java.io.UncheckedIOException;
 import java.util.function.Function;
 
 import org.assertj.core.api.Assertions;
-import org.junit.Test;
-
+import org.junit.jupiter.api.Test;
 import org.apache.hadoop.test.AbstractHadoopTestBase;
 
 import static org.apache.hadoop.test.LambdaTestUtils.intercept;

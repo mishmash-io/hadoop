@@ -19,10 +19,11 @@ package org.apache.hadoop.test;
 
 import java.util.concurrent.TimeUnit;
 
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.BeforeClass;
 import org.junit.Rule;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.TestInfo;
 import org.junit.rules.TestName;
 import org.junit.rules.Timeout;
 
@@ -33,7 +34,7 @@ import org.junit.rules.Timeout;
  * Threads are named to the method being executed, for ease of diagnostics
  * in logs and thread dumps.
  */
-public abstract class HadoopTestBase extends Assert {
+public abstract class HadoopTestBase extends Assertions {
 
   /**
    * System property name to set the test timeout: {@value}.
@@ -78,8 +79,7 @@ public abstract class HadoopTestBase extends Assert {
   /**
    * The method name.
    */
-  @Rule
-  public TestName methodName = new TestName();
+  private String methodName;
 
   /**
    * Get the method name; defaults to the value of {@link #methodName}.
@@ -87,22 +87,25 @@ public abstract class HadoopTestBase extends Assert {
    * @return the name of the method.
    */
   protected String getMethodName() {
-    return methodName.getMethodName();
+    return methodName;
   }
 
   /**
    * Static initializer names this thread "JUnit".
    */
-  @BeforeClass
+  @BeforeAll
   public static void nameTestThread() {
     Thread.currentThread().setName("JUnit");
   }
 
   /**
    * Before each method, the thread is renamed to match the method name.
+   *
+   * @param info the test info
    */
-  @Before
-  public void nameThreadToMethod() {
+  @BeforeEach
+  public void nameThreadToMethod(TestInfo info) {
+    methodName = info.getDisplayName();
     Thread.currentThread().setName("JUnit-" + getMethodName());
   }
 }

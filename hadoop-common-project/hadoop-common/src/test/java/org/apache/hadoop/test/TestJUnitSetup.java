@@ -18,8 +18,9 @@
 
 package org.apache.hadoop.test;
 
-import org.junit.Assert;
-import org.junit.Test;
+import static org.junit.jupiter.api.Assertions.fail;
+
+import org.junit.jupiter.api.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -35,6 +36,6 @@ public class TestJUnitSetup {
       LOG.info("The AssertionError is expected.", ae);
       return;
     }
-    Assert.fail("Java assert does not work.");
+    fail("Java assert does not work.");
   }
 }

@@ -20,11 +20,10 @@ package org.apache.hadoop.ipc;
 
 import java.io.IOException;
 
-import org.junit.Test;
-
 import org.apache.hadoop.ipc.internal.ShadedProtobufHelper;
 import org.apache.hadoop.test.AbstractHadoopTestBase;
 import org.apache.hadoop.thirdparty.protobuf.ServiceException;
+import org.junit.jupiter.api.Test;
 
 import static org.apache.hadoop.ipc.internal.ShadedProtobufHelper.ipc;
 import static org.apache.hadoop.test.LambdaTestUtils.intercept;

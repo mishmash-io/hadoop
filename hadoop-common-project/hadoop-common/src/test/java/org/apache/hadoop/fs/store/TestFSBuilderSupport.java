@@ -22,12 +22,11 @@ import java.io.IOException;
 
 import javax.annotation.Nonnull;
 
-import org.junit.Test;
-
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FSBuilder;
 import org.apache.hadoop.fs.impl.FSBuilderSupport;
 import org.apache.hadoop.test.AbstractHadoopTestBase;
+import org.junit.jupiter.api.Test;
 
 import static org.assertj.core.api.Assertions.assertThat;
 

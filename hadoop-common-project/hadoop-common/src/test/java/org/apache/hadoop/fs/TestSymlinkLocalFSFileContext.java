@@ -17,15 +17,15 @@
  */
 package org.apache.hadoop.fs;
 
-import org.junit.BeforeClass;
-
 import java.io.IOException;
+
+import org.junit.jupiter.api.BeforeAll;
 
 import static org.apache.hadoop.test.PlatformAssumptions.assumeNotWindows;
 
 public class TestSymlinkLocalFSFileContext extends TestSymlinkLocalFS {
 
-  @BeforeClass
+  @BeforeAll
   public static void testSetup() throws Exception {
     FileContext context = FileContext.getLocalFSFileContext();
     wrapper = new FileContextTestWrapper(context);

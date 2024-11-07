@@ -21,12 +21,6 @@ import java.io.IOException;
 import java.util.Random;
 import java.util.StringTokenizer;
 
-
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
-
-
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.CommandLineParser;
 import org.apache.commons.cli.DefaultParser;
@@ -45,6 +39,9 @@ import org.apache.hadoop.io.file.tfile.TFile.Reader;
 import org.apache.hadoop.io.file.tfile.TFile.Writer;
 import org.apache.hadoop.io.file.tfile.TFile.Reader.Scanner;
 import org.apache.hadoop.test.GenericTestUtils;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 /**
  * test the performance for seek.
@@ -60,7 +57,7 @@ public class TestTFileSeek {
   private DiscreteRNG keyLenGen;
   private KVGenerator kvGen;
 
-  @Before
+  @BeforeEach
   public void setUp() throws IOException {
     if (options == null) {
       options = new MyOptions(new String[0]);
@@ -87,7 +84,7 @@ public class TestTFileSeek {
             options.dictSize);
   }
   
-  @After
+  @AfterEach
   public void tearDown() throws IOException {
     fs.delete(path, true);
   }

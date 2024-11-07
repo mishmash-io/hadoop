@@ -17,15 +17,15 @@
  */
 package org.apache.hadoop.io;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import java.io.IOException;
 
 import org.apache.hadoop.conf.Configuration;
-import org.junit.Test;
 
 import org.apache.hadoop.thirdparty.protobuf.DescriptorProtos;
 import org.apache.hadoop.thirdparty.protobuf.Message;
+import org.junit.jupiter.api.Test;
 
 /**
  * Test case for the use of Protocol Buffers within ObjectWritable.

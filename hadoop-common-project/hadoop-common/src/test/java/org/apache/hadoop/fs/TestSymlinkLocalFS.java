@@ -18,21 +18,23 @@
 package org.apache.hadoop.fs;
 
 import static org.apache.hadoop.test.PlatformAssumptions.assumeNotWindows;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
-import static org.junit.Assume.assumeTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.fail;
+import static org.junit.jupiter.api.Assumptions.assumeTrue;
 
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.util.concurrent.TimeUnit;
 
 import org.apache.hadoop.util.Shell;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.Timeout;
 import org.apache.hadoop.security.UserGroupInformation;
-import org.junit.Test;
 
 /**
  * Test symbolic links using LocalFs.
@@ -105,7 +107,8 @@ abstract public class TestSymlinkLocalFS extends SymlinkBaseTest {
     super.testStatDanglingLink();
   }
 
-  @Test(timeout=10000)
+  @Test
+  @Timeout(value=10000, unit=TimeUnit.MILLISECONDS)
   /** lstat a non-existant file using a partially qualified path */
   public void testDanglingLinkFilePartQual() throws IOException {
     Path filePartQual = new Path(getScheme()+":///doesNotExist");
@@ -123,7 +126,8 @@ abstract public class TestSymlinkLocalFS extends SymlinkBaseTest {
     }
   }
   
-  @Test(timeout=10000)
+  @Test
+  @Timeout(value=10000, unit=TimeUnit.MILLISECONDS)
   /** Stat and lstat a dangling link */
   public void testDanglingLink() throws IOException {
     assumeNotWindows();
@@ -169,7 +173,8 @@ abstract public class TestSymlinkLocalFS extends SymlinkBaseTest {
     wrapper.getFileStatus(link);
   }
 
-  @Test(timeout=10000)
+  @Test
+  @Timeout(value=10000, unit=TimeUnit.MILLISECONDS)
   /** 
    * Test getLinkTarget with a partially qualified target. 
    * NB: Hadoop does not support fully qualified URIs for the 

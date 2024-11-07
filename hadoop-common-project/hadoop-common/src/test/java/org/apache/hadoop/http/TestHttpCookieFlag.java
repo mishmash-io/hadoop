@@ -13,7 +13,6 @@
  */
 package org.apache.hadoop.http;
 
-import org.junit.Assert;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileUtil;
 import org.apache.hadoop.net.NetUtils;
@@ -21,13 +20,16 @@ import org.apache.hadoop.security.authentication.server.AuthenticationFilter;
 import org.apache.hadoop.security.ssl.KeyStoreTestUtil;
 import org.apache.hadoop.security.ssl.SSLFactory;
 import org.apache.hadoop.test.GenericTestUtils;
-import org.junit.AfterClass;
-import org.junit.BeforeClass;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
 
 import javax.net.ssl.HttpsURLConnection;
 import jakarta.servlet.*;
 import jakarta.servlet.http.HttpServletResponse;
+
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
 import java.io.File;
 import java.io.IOException;
 import java.net.HttpURLConnection;
@@ -74,7 +76,7 @@ public class TestHttpCookieFlag {
     }
   }
 
-  @BeforeClass
+  @BeforeAll
   public static void setUp() throws Exception {
     Configuration conf = new Configuration();
     conf.set(HttpServer2.FILTER_INITIALIZER_PROPERTY,
@@ -120,9 +122,9 @@ public class TestHttpCookieFlag {
 
     String header = conn.getHeaderField("Set-Cookie");
     List<HttpCookie> cookies = HttpCookie.parse(header);
-    Assert.assertTrue(!cookies.isEmpty());
-    Assert.assertTrue(header.contains("; HttpOnly"));
-    Assert.assertTrue("token".equals(cookies.get(0).getValue()));
+    assertTrue(!cookies.isEmpty());
+    assertTrue(header.contains("; HttpOnly"));
+    assertTrue("token".equals(cookies.get(0).getValue()));
   }
 
   @Test
@@ -135,13 +137,13 @@ public class TestHttpCookieFlag {
 
     String header = conn.getHeaderField("Set-Cookie");
     List<HttpCookie> cookies = HttpCookie.parse(header);
-    Assert.assertTrue(!cookies.isEmpty());
-    Assert.assertTrue(header.contains("; HttpOnly"));
-    Assert.assertTrue(cookies.get(0).getSecure());
-    Assert.assertTrue("token".equals(cookies.get(0).getValue()));
+    assertTrue(!cookies.isEmpty());
+    assertTrue(header.contains("; HttpOnly"));
+    assertTrue(cookies.get(0).getSecure());
+    assertTrue("token".equals(cookies.get(0).getValue()));
   }
 
-  @AfterClass
+  @AfterAll
   public static void cleanup() throws Exception {
     server.stop();
     FileUtil.fullyDelete(new File(BASEDIR));

@@ -18,12 +18,13 @@
 
 package org.apache.hadoop.io;
 
-import org.junit.Test;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.nio.charset.MalformedInputException;
 import java.util.Arrays;
+
+import org.junit.jupiter.api.Test;
 
 /** Unit tests for NonUTF8. */
 public class TestTextNonUTF8 {

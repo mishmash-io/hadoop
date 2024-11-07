@@ -18,7 +18,8 @@
 
 package org.apache.hadoop.fs.shell;
 
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.io.File;
 import java.io.FileOutputStream;
@@ -28,13 +29,15 @@ import java.io.StringWriter;
 import java.net.URI;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
+import java.util.concurrent.TimeUnit;
 
 import org.apache.commons.io.IOUtils;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.io.SequenceFile;
 import org.apache.hadoop.test.GenericTestUtils;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.Timeout;
 
 /**
  * This class tests the logic for displaying the binary formats supported
@@ -53,7 +56,8 @@ public class TestTextCommand {
   /**
    * Tests whether binary Avro data files are displayed correctly.
    */
-  @Test (timeout = 30000)
+  @Test
+  @Timeout(value=30000, unit=TimeUnit.MILLISECONDS)
   public void testDisplayForAvroFiles() throws Exception {
     String expectedOutput =
         "{\"station\":\"011990-99999\",\"time\":-619524000000,\"temp\":0}" + SEPARATOR
@@ -70,7 +74,8 @@ public class TestTextCommand {
   /**
    * Tests that a zero-length file is displayed correctly.
    */
-  @Test (timeout = 30000)
+  @Test
+  @Timeout(value=30000, unit=TimeUnit.MILLISECONDS)
   public void testEmptyTextFil() throws Exception {
     byte[] emptyContents = { };
     String output = readUsingTextCommand(TEXT_FILENAME, emptyContents);
@@ -80,7 +85,8 @@ public class TestTextCommand {
   /**
    * Tests that a one-byte file is displayed correctly.
    */
-  @Test (timeout = 30000)
+  @Test
+  @Timeout(value=30000, unit=TimeUnit.MILLISECONDS)
   public void testOneByteTextFil() throws Exception {
     byte[] oneByteContents = { 'x' };
     String output = readUsingTextCommand(TEXT_FILENAME, oneByteContents);
@@ -90,7 +96,8 @@ public class TestTextCommand {
   /**
    * Tests that a one-byte file is displayed correctly.
    */
-  @Test (timeout = 30000)
+  @Test
+  @Timeout(value=30000, unit=TimeUnit.MILLISECONDS)
   public void testTwoByteTextFil() throws Exception {
     byte[] twoByteContents = { 'x', 'y' };
     String output = readUsingTextCommand(TEXT_FILENAME, twoByteContents);

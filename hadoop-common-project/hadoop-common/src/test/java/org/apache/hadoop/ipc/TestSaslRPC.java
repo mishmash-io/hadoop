@@ -19,6 +19,10 @@
 package org.apache.hadoop.ipc;
 
 import org.apache.hadoop.thirdparty.protobuf.ServiceException;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Timeout;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.MethodSource;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.CommonConfigurationKeys;
@@ -34,13 +38,6 @@ import org.apache.hadoop.security.UserGroupInformation.AuthenticationMethod;
 import org.apache.hadoop.security.token.*;
 import org.apache.hadoop.security.token.SecretManager.InvalidToken;
 import org.apache.hadoop.test.GenericTestUtils;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.BeforeClass;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.junit.runners.Parameterized;
-import org.junit.runners.Parameterized.Parameters;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.slf4j.event.Level;
@@ -81,18 +78,17 @@ import static org.apache.hadoop.fs.CommonConfigurationKeysPublic.HADOOP_SECURITY
 import static org.apache.hadoop.security.SaslRpcServer.AuthMethod.KERBEROS;
 import static org.apache.hadoop.security.SaslRpcServer.AuthMethod.SIMPLE;
 import static org.apache.hadoop.security.SaslRpcServer.AuthMethod.TOKEN;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNotSame;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNotSame;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.fail;
 
 /** Unit tests for using Sasl over RPC. */
-@RunWith(Parameterized.class)
 public class TestSaslRPC extends TestRpcBase {
-  @Parameters
+
   public static Collection<Object[]> data() {
     Collection<Object[]> params = new ArrayList<>();
     for (QualityOfProtection qop : QualityOfProtection.values()) {
@@ -107,18 +103,6 @@ public class TestSaslRPC extends TestRpcBase {
         "org.apache.hadoop.ipc.TestSaslRPC$AuthSaslPropertiesResolver" });
 
     return params;
-  }
-
-  QualityOfProtection[] qop;
-  QualityOfProtection expectedQop;
-  String saslPropertiesResolver ;
-  
-  public TestSaslRPC(QualityOfProtection[] qop,
-      QualityOfProtection expectedQop,
-      String saslPropertiesResolver) {
-    this.qop=qop;
-    this.expectedQop = expectedQop;
-    this.saslPropertiesResolver = saslPropertiesResolver;
   }
 
   public static final Logger LOG = LoggerFactory.getLogger(TestSaslRPC.class);
@@ -142,15 +126,16 @@ public class TestSaslRPC extends TestRpcBase {
     OTHER()
   }
   
-  @BeforeClass
+  @BeforeAll
   public static void setupKerb() {
     System.setProperty("java.security.krb5.kdc", "");
     System.setProperty("java.security.krb5.realm", "NONE");
     Security.addProvider(new SaslPlainServer.SecurityProvider());
   }    
 
-  @Before
-  public void setup() {
+  public void setup(QualityOfProtection[] qop,
+          QualityOfProtection expectedQop,
+          String saslPropertiesResolver) {
     LOG.info("---------------------------------");
     LOG.info("Testing QOP:"+ getQOPNames(qop));
     LOG.info("---------------------------------");
@@ -239,34 +224,46 @@ public class TestSaslRPC extends TestRpcBase {
     }
   }
 
-  @Test
-  public void testDigestRpc() throws Exception {
+  @ParameterizedTest
+  @MethodSource("data")
+  public void testDigestRpc(QualityOfProtection[] qop,
+          QualityOfProtection expectedQop,
+          String saslPropertiesResolver) throws Exception {
+    setup(qop, expectedQop, saslPropertiesResolver);
     TestTokenSecretManager sm = new TestTokenSecretManager();
     final Server server = setupTestServer(conf, 5, sm);
     
-    doDigestRpc(server, sm);
+    doDigestRpc(server, sm, expectedQop);
   }
 
-  @Test
-  public void testDigestRpcWithoutAnnotation() throws Exception {
+  @ParameterizedTest
+  @MethodSource("data")
+  public void testDigestRpcWithoutAnnotation(QualityOfProtection[] qop,
+          QualityOfProtection expectedQop,
+          String saslPropertiesResolver) throws Exception {
+    setup(qop, expectedQop, saslPropertiesResolver);
     TestTokenSecretManager sm = new TestTokenSecretManager();
     try {
       SecurityUtil.setSecurityInfoProviders(new CustomSecurityInfo());
       final Server server = setupTestServer(conf, 5, sm);
-      doDigestRpc(server, sm);
+      doDigestRpc(server, sm, expectedQop);
     } finally {
       SecurityUtil.setSecurityInfoProviders();
     }
   }
 
-  @Test
-  public void testErrorMessage() throws Exception {
+  @ParameterizedTest
+  @MethodSource("data")
+  public void testErrorMessage(QualityOfProtection[] qop,
+          QualityOfProtection expectedQop,
+          String saslPropertiesResolver) throws Exception {
+    setup(qop, expectedQop, saslPropertiesResolver);
     BadTokenSecretManager sm = new BadTokenSecretManager();
     final Server server = setupTestServer(conf, 5, sm);
 
     boolean succeeded = false;
     try {
-      doDigestRpc(server, sm);
+      doDigestRpc(server, sm, expectedQop);
     } catch (ServiceException e) {
       assertTrue(e.getCause() instanceof RemoteException);
       RemoteException re = (RemoteException) e.getCause();
@@ -278,7 +275,7 @@ public class TestSaslRPC extends TestRpcBase {
     assertTrue(succeeded);
   }
   
-  private void doDigestRpc(Server server, TestTokenSecretManager sm)
+  private void doDigestRpc(Server server, TestTokenSecretManager sm, QualityOfProtection expectedQop)
       throws Exception {
     final UserGroupInformation current = UserGroupInformation.getCurrentUser();
     addr = NetUtils.getConnectAddress(server);
@@ -301,8 +298,8 @@ public class TestSaslRPC extends TestRpcBase {
       for (Connection connection : server.getConnections()) {
         // only qop auth should dispose of the sasl server
         boolean hasServer = (connection.saslServer != null);
-        assertTrue("qop:" + expectedQop + " hasServer:" + hasServer,
-            (expectedQop == QualityOfProtection.AUTHENTICATION) ^ hasServer);
+        assertTrue((expectedQop == QualityOfProtection.AUTHENTICATION) ^ hasServer,
+            "qop:" + expectedQop + " hasServer:" + hasServer);
         n++;
       }
       assertTrue(n > 0);
@@ -312,8 +309,12 @@ public class TestSaslRPC extends TestRpcBase {
     }
   }
 
-  @Test
-  public void testPingInterval() throws Exception {
+  @ParameterizedTest
+  @MethodSource("data")
+  public void testPingInterval(QualityOfProtection[] qop,
+          QualityOfProtection expectedQop,
+          String saslPropertiesResolver) throws Exception {
+    setup(qop, expectedQop, saslPropertiesResolver);
     Configuration newConf = new Configuration(conf);
     newConf.set(SERVER_PRINCIPAL_KEY, SERVER_PRINCIPAL_1);
     conf.setInt(CommonConfigurationKeys.IPC_PING_INTERVAL_KEY,
@@ -332,8 +333,12 @@ public class TestSaslRPC extends TestRpcBase {
     assertEquals(0, remoteId.getPingInterval());
   }
   
-  @Test
-  public void testPerConnectionConf() throws Exception {
+  @ParameterizedTest
+  @MethodSource("data")
+  public void testPerConnectionConf(QualityOfProtection[] qop,
+          QualityOfProtection expectedQop,
+          String saslPropertiesResolver) throws Exception {
+    setup(qop, expectedQop, saslPropertiesResolver);
     TestTokenSecretManager sm = new TestTokenSecretManager();
     final Server server = setupTestServer(conf, 5, sm);
     final UserGroupInformation current = UserGroupInformation.getCurrentUser();
@@ -359,16 +364,16 @@ public class TestSaslRPC extends TestRpcBase {
       proxy1.getAuthMethod(null, newEmptyRequest());
       client = ProtobufRpcEngine2.getClient(newConf);
       Set<ConnectionId> conns = client.getConnectionIds();
-      assertEquals("number of connections in cache is wrong", 1, conns.size());
+      assertEquals(1, conns.size(), "number of connections in cache is wrong");
       // same conf, connection should be re-used
       proxy2 = getClient(addr, newConf);
       proxy2.getAuthMethod(null, newEmptyRequest());
-      assertEquals("number of connections in cache is wrong", 1, conns.size());
+      assertEquals(1, conns.size(), "number of connections in cache is wrong");
       // different conf, new connection should be set up
       newConf.setInt(CommonConfigurationKeysPublic.IPC_CLIENT_CONNECTION_MAXIDLETIME_KEY, timeouts[1]);
       proxy3 = getClient(addr, newConf);
       proxy3.getAuthMethod(null, newEmptyRequest());
-      assertEquals("number of connections in cache is wrong", 2, conns.size());
+      assertEquals(2, conns.size(), "number of connections in cache is wrong");
       // now verify the proxies have the correct connection ids and timeouts
       ConnectionId[] connsArray = {
           RPC.getConnectionIdForProxy(proxy1),
@@ -412,15 +417,23 @@ public class TestSaslRPC extends TestRpcBase {
     System.out.println("Test is successful.");
   }
 
-  @Test
-  public void testSaslPlainServer() throws IOException {
+  @ParameterizedTest
+  @MethodSource("data")
+  public void testSaslPlainServer(QualityOfProtection[] qop,
+          QualityOfProtection expectedQop,
+          String saslPropertiesResolver) throws IOException {
+    setup(qop, expectedQop, saslPropertiesResolver);
     runNegotiation(
         new TestPlainCallbacks.Client("user", "pass"),
         new TestPlainCallbacks.Server("user", "pass"));
   }
 
-  @Test
-  public void testSaslPlainServerBadPassword() {
+  @ParameterizedTest
+  @MethodSource("data")
+  public void testSaslPlainServerBadPassword(QualityOfProtection[] qop,
+          QualityOfProtection expectedQop,
+          String saslPropertiesResolver) {
+    setup(qop, expectedQop, saslPropertiesResolver);
     SaslException e = null;
     try {
       runNegotiation(
@@ -436,9 +449,9 @@ public class TestSaslRPC extends TestRpcBase {
   }
 
   private void assertContains(String expected, String text) {
-    assertNotNull("null text", text );
-    assertTrue("No {" + expected + "} in {" + text + "}",
-        text.contains(expected));
+    assertNotNull(text, "null text");
+    assertTrue(text.contains(expected),
+        "No {" + expected + "} in {" + text + "}");
   }
 
   private void runNegotiation(CallbackHandler clientCbh,
@@ -452,7 +465,7 @@ public class TestSaslRPC extends TestRpcBase {
 
     SaslServer saslServer = Sasl.createSaslServer(
         mechanism, null, "localhost", null, serverCbh);
-    assertNotNull("failed to find PLAIN server", saslServer);
+    assertNotNull(saslServer, "failed to find PLAIN server");
     
     byte[] response = saslClient.evaluateChallenge(new byte[0]);
     assertNotNull(response);
@@ -561,13 +574,17 @@ public class TestSaslRPC extends TestRpcBase {
   /*
    *  simple server
    */
-  @Test
-  public void testSimpleServer() throws Exception {
-    assertAuthEquals(SIMPLE,    getAuthMethod(SIMPLE,   SIMPLE));
-    assertAuthEquals(SIMPLE,    getAuthMethod(SIMPLE,   SIMPLE, UseToken.OTHER));
+  @ParameterizedTest
+  @MethodSource("data")
+  public void testSimpleServer(QualityOfProtection[] qop,
+          QualityOfProtection expectedQop,
+          String saslPropertiesResolver) throws Exception {
+    setup(qop, expectedQop, saslPropertiesResolver);
+    assertAuthEquals(SIMPLE,    getAuthMethod(SIMPLE,   SIMPLE, expectedQop));
+    assertAuthEquals(SIMPLE,    getAuthMethod(SIMPLE,   SIMPLE, UseToken.OTHER, expectedQop));
     // SASL methods are normally reverted to SIMPLE
-    assertAuthEquals(SIMPLE,    getAuthMethod(KERBEROS, SIMPLE));
-    assertAuthEquals(SIMPLE,    getAuthMethod(KERBEROS, SIMPLE, UseToken.OTHER));
+    assertAuthEquals(SIMPLE,    getAuthMethod(KERBEROS, SIMPLE, expectedQop));
+    assertAuthEquals(SIMPLE,    getAuthMethod(KERBEROS, SIMPLE, UseToken.OTHER, expectedQop));
   }
 
   /**
@@ -581,8 +598,12 @@ public class TestSaslRPC extends TestRpcBase {
    * This test mimics this behaviour, and asserts the fallback whether it is set correctly.
    * @see <a href="https://issues.apache.org/jira/browse/HADOOP-17975">HADOOP-17975</a>
    */
-  @Test
-  public void testClientFallbackToSimpleAuthForASecondClient() throws Exception {
+  @ParameterizedTest
+  @MethodSource("data")
+  public void testClientFallbackToSimpleAuthForASecondClient(QualityOfProtection[] qop,
+          QualityOfProtection expectedQop,
+          String saslPropertiesResolver) throws Exception {
+    setup(qop, expectedQop, saslPropertiesResolver);
     Configuration serverConf = createConfForAuth(SIMPLE);
     Server server = startServer(serverConf,
         setupServerUgi(SIMPLE, serverConf),
@@ -632,164 +653,205 @@ public class TestSaslRPC extends TestRpcBase {
       server.stop();
     }
 
-    assertTrue("First client does not set to fall back properly.", fallbackToSimpleAuth1.get());
-    assertTrue("Second client does not set to fall back properly.", fallbackToSimpleAuth2.get());
+    assertTrue(fallbackToSimpleAuth1.get(), "First client does not set to fall back properly.");
+    assertTrue(fallbackToSimpleAuth2.get(), "Second client does not set to fall back properly.");
   }
 
-  @Test
-  public void testNoClientFallbackToSimple()
+  @ParameterizedTest
+  @MethodSource("data")
+  public void testNoClientFallbackToSimple(QualityOfProtection[] qop,
+          QualityOfProtection expectedQop,
+          String saslPropertiesResolver)
       throws Exception {
+    setup(qop, expectedQop, saslPropertiesResolver);
     clientFallBackToSimpleAllowed = false;
     // tokens are irrelevant w/o secret manager enabled
-    assertAuthEquals(SIMPLE,     getAuthMethod(SIMPLE, SIMPLE));
-    assertAuthEquals(SIMPLE,     getAuthMethod(SIMPLE, SIMPLE, UseToken.OTHER));
-    assertAuthEquals(SIMPLE,     getAuthMethod(SIMPLE, SIMPLE, UseToken.VALID));
-    assertAuthEquals(SIMPLE,     getAuthMethod(SIMPLE, SIMPLE, UseToken.INVALID));
+    assertAuthEquals(SIMPLE,     getAuthMethod(SIMPLE, SIMPLE, expectedQop));
+    assertAuthEquals(SIMPLE,     getAuthMethod(SIMPLE, SIMPLE, UseToken.OTHER, expectedQop));
+    assertAuthEquals(SIMPLE,     getAuthMethod(SIMPLE, SIMPLE, UseToken.VALID, expectedQop));
+    assertAuthEquals(SIMPLE,     getAuthMethod(SIMPLE, SIMPLE, UseToken.INVALID, expectedQop));
 
     // A secure client must not fallback
-    assertAuthEquals(NoFallback, getAuthMethod(KERBEROS, SIMPLE));
-    assertAuthEquals(NoFallback, getAuthMethod(KERBEROS, SIMPLE, UseToken.OTHER));
-    assertAuthEquals(NoFallback, getAuthMethod(KERBEROS, SIMPLE, UseToken.VALID));
-    assertAuthEquals(NoFallback, getAuthMethod(KERBEROS, SIMPLE, UseToken.INVALID));
+    assertAuthEquals(NoFallback, getAuthMethod(KERBEROS, SIMPLE, expectedQop));
+    assertAuthEquals(NoFallback, getAuthMethod(KERBEROS, SIMPLE, UseToken.OTHER, expectedQop));
+    assertAuthEquals(NoFallback, getAuthMethod(KERBEROS, SIMPLE, UseToken.VALID, expectedQop));
+    assertAuthEquals(NoFallback, getAuthMethod(KERBEROS, SIMPLE, UseToken.INVALID, expectedQop));
 
     // Now set server to simple and also force the secret-manager. Now server
     // should have both simple and token enabled.
     forceSecretManager = true;
-    assertAuthEquals(SIMPLE,     getAuthMethod(SIMPLE, SIMPLE));
-    assertAuthEquals(SIMPLE,     getAuthMethod(SIMPLE, SIMPLE, UseToken.OTHER));
-    assertAuthEquals(TOKEN,      getAuthMethod(SIMPLE, SIMPLE, UseToken.VALID));
-    assertAuthEquals(BadToken,   getAuthMethod(SIMPLE, SIMPLE, UseToken.INVALID));
+    assertAuthEquals(SIMPLE,     getAuthMethod(SIMPLE, SIMPLE, expectedQop));
+    assertAuthEquals(SIMPLE,     getAuthMethod(SIMPLE, SIMPLE, UseToken.OTHER, expectedQop));
+    assertAuthEquals(TOKEN,      getAuthMethod(SIMPLE, SIMPLE, UseToken.VALID, expectedQop));
+    assertAuthEquals(BadToken,   getAuthMethod(SIMPLE, SIMPLE, UseToken.INVALID, expectedQop));
 
     // A secure client must not fallback
-    assertAuthEquals(NoFallback, getAuthMethod(KERBEROS, SIMPLE));
-    assertAuthEquals(NoFallback, getAuthMethod(KERBEROS, SIMPLE, UseToken.OTHER));
-    assertAuthEquals(TOKEN,      getAuthMethod(KERBEROS, SIMPLE, UseToken.VALID));
-    assertAuthEquals(BadToken,   getAuthMethod(KERBEROS, SIMPLE, UseToken.INVALID));
+    assertAuthEquals(NoFallback, getAuthMethod(KERBEROS, SIMPLE, expectedQop));
+    assertAuthEquals(NoFallback, getAuthMethod(KERBEROS, SIMPLE, UseToken.OTHER, expectedQop));
+    assertAuthEquals(TOKEN,      getAuthMethod(KERBEROS, SIMPLE, UseToken.VALID, expectedQop));
+    assertAuthEquals(BadToken,   getAuthMethod(KERBEROS, SIMPLE, UseToken.INVALID, expectedQop));
     
     // doesn't try SASL
-    assertAuthEquals(Denied(SIMPLE), getAuthMethod(SIMPLE, TOKEN));
+    assertAuthEquals(Denied(SIMPLE), getAuthMethod(SIMPLE, TOKEN, expectedQop));
     // does try SASL
-    assertAuthEquals(No(TOKEN),      getAuthMethod(SIMPLE, TOKEN, UseToken.OTHER));
-    assertAuthEquals(TOKEN,          getAuthMethod(SIMPLE, TOKEN, UseToken.VALID));
-    assertAuthEquals(BadToken,       getAuthMethod(SIMPLE, TOKEN, UseToken.INVALID));
+    assertAuthEquals(No(TOKEN),      getAuthMethod(SIMPLE, TOKEN, UseToken.OTHER, expectedQop));
+    assertAuthEquals(TOKEN,          getAuthMethod(SIMPLE, TOKEN, UseToken.VALID, expectedQop));
+    assertAuthEquals(BadToken,       getAuthMethod(SIMPLE, TOKEN, UseToken.INVALID, expectedQop));
     
-    assertAuthEquals(No(TOKEN),      getAuthMethod(KERBEROS, TOKEN));
-    assertAuthEquals(No(TOKEN),      getAuthMethod(KERBEROS, TOKEN, UseToken.OTHER));
-    assertAuthEquals(TOKEN,          getAuthMethod(KERBEROS, TOKEN, UseToken.VALID));
-    assertAuthEquals(BadToken,       getAuthMethod(KERBEROS, TOKEN, UseToken.INVALID));
+    assertAuthEquals(No(TOKEN),      getAuthMethod(KERBEROS, TOKEN, expectedQop));
+    assertAuthEquals(No(TOKEN),      getAuthMethod(KERBEROS, TOKEN, UseToken.OTHER, expectedQop));
+    assertAuthEquals(TOKEN,          getAuthMethod(KERBEROS, TOKEN, UseToken.VALID, expectedQop));
+    assertAuthEquals(BadToken,       getAuthMethod(KERBEROS, TOKEN, UseToken.INVALID, expectedQop));
   }
 
-  @Test
-  public void testSimpleServerWithTokens() throws Exception {
+  @ParameterizedTest
+  @MethodSource("data")
+  public void testSimpleServerWithTokens(QualityOfProtection[] qop,
+          QualityOfProtection expectedQop,
+          String saslPropertiesResolver) throws Exception {
+    setup(qop, expectedQop, saslPropertiesResolver);
     // Client not using tokens
-    assertAuthEquals(SIMPLE, getAuthMethod(SIMPLE,   SIMPLE));
+    assertAuthEquals(SIMPLE, getAuthMethod(SIMPLE,   SIMPLE, expectedQop));
     // SASL methods are reverted to SIMPLE
-    assertAuthEquals(SIMPLE, getAuthMethod(KERBEROS, SIMPLE));
+    assertAuthEquals(SIMPLE, getAuthMethod(KERBEROS, SIMPLE, expectedQop));
 
     // Use tokens. But tokens are ignored because client is reverted to simple
     // due to server not using tokens
-    assertAuthEquals(SIMPLE, getAuthMethod(KERBEROS, SIMPLE, UseToken.VALID));
-    assertAuthEquals(SIMPLE, getAuthMethod(KERBEROS, SIMPLE, UseToken.OTHER));
+    assertAuthEquals(SIMPLE, getAuthMethod(KERBEROS, SIMPLE, UseToken.VALID, expectedQop));
+    assertAuthEquals(SIMPLE, getAuthMethod(KERBEROS, SIMPLE, UseToken.OTHER, expectedQop));
 
     // server isn't really advertising tokens
     enableSecretManager = true;
-    assertAuthEquals(SIMPLE, getAuthMethod(SIMPLE,   SIMPLE, UseToken.VALID));
-    assertAuthEquals(SIMPLE, getAuthMethod(SIMPLE,   SIMPLE, UseToken.OTHER));
+    assertAuthEquals(SIMPLE, getAuthMethod(SIMPLE,   SIMPLE, UseToken.VALID, expectedQop));
+    assertAuthEquals(SIMPLE, getAuthMethod(SIMPLE,   SIMPLE, UseToken.OTHER, expectedQop));
     
-    assertAuthEquals(SIMPLE, getAuthMethod(KERBEROS, SIMPLE, UseToken.VALID));
-    assertAuthEquals(SIMPLE, getAuthMethod(KERBEROS, SIMPLE, UseToken.OTHER));
+    assertAuthEquals(SIMPLE, getAuthMethod(KERBEROS, SIMPLE, UseToken.VALID, expectedQop));
+    assertAuthEquals(SIMPLE, getAuthMethod(KERBEROS, SIMPLE, UseToken.OTHER, expectedQop));
     
     // now the simple server takes tokens
     forceSecretManager = true;
-    assertAuthEquals(TOKEN,  getAuthMethod(SIMPLE,   SIMPLE, UseToken.VALID));
-    assertAuthEquals(SIMPLE, getAuthMethod(SIMPLE,   SIMPLE, UseToken.OTHER));
+    assertAuthEquals(TOKEN,  getAuthMethod(SIMPLE,   SIMPLE, UseToken.VALID, expectedQop));
+    assertAuthEquals(SIMPLE, getAuthMethod(SIMPLE,   SIMPLE, UseToken.OTHER, expectedQop));
     
-    assertAuthEquals(TOKEN,  getAuthMethod(KERBEROS, SIMPLE, UseToken.VALID));
-    assertAuthEquals(SIMPLE, getAuthMethod(KERBEROS, SIMPLE, UseToken.OTHER));
+    assertAuthEquals(TOKEN,  getAuthMethod(KERBEROS, SIMPLE, UseToken.VALID, expectedQop));
+    assertAuthEquals(SIMPLE, getAuthMethod(KERBEROS, SIMPLE, UseToken.OTHER, expectedQop));
   }
 
-  @Test
-  public void testSimpleServerWithInvalidTokens() throws Exception {
+  @ParameterizedTest
+  @MethodSource("data")
+  public void testSimpleServerWithInvalidTokens(QualityOfProtection[] qop,
+          QualityOfProtection expectedQop,
+          String saslPropertiesResolver) throws Exception {
+    setup(qop, expectedQop, saslPropertiesResolver);
     // Tokens are ignored because client is reverted to simple
-    assertAuthEquals(SIMPLE, getAuthMethod(SIMPLE,   SIMPLE, UseToken.INVALID));
-    assertAuthEquals(SIMPLE, getAuthMethod(KERBEROS, SIMPLE, UseToken.INVALID));
+    assertAuthEquals(SIMPLE, getAuthMethod(SIMPLE,   SIMPLE, UseToken.INVALID, expectedQop));
+    assertAuthEquals(SIMPLE, getAuthMethod(KERBEROS, SIMPLE, UseToken.INVALID, expectedQop));
     enableSecretManager = true;
-    assertAuthEquals(SIMPLE, getAuthMethod(SIMPLE,   SIMPLE, UseToken.INVALID));
-    assertAuthEquals(SIMPLE, getAuthMethod(KERBEROS, SIMPLE, UseToken.INVALID));
+    assertAuthEquals(SIMPLE, getAuthMethod(SIMPLE,   SIMPLE, UseToken.INVALID, expectedQop));
+    assertAuthEquals(SIMPLE, getAuthMethod(KERBEROS, SIMPLE, UseToken.INVALID, expectedQop));
     forceSecretManager = true;
-    assertAuthEquals(BadToken, getAuthMethod(SIMPLE,   SIMPLE, UseToken.INVALID));
-    assertAuthEquals(BadToken, getAuthMethod(KERBEROS, SIMPLE, UseToken.INVALID));
+    assertAuthEquals(BadToken, getAuthMethod(SIMPLE,   SIMPLE, UseToken.INVALID, expectedQop));
+    assertAuthEquals(BadToken, getAuthMethod(KERBEROS, SIMPLE, UseToken.INVALID, expectedQop));
   }
   
   /*
    *  token server
    */
-  @Test
-  public void testTokenOnlyServer() throws Exception {
+  @ParameterizedTest
+  @MethodSource("data")
+  public void testTokenOnlyServer(QualityOfProtection[] qop,
+          QualityOfProtection expectedQop,
+          String saslPropertiesResolver) throws Exception {
+    setup(qop, expectedQop, saslPropertiesResolver);
     // simple client w/o tokens won't try SASL, so server denies
-    assertAuthEquals(Denied(SIMPLE), getAuthMethod(SIMPLE,   TOKEN));
-    assertAuthEquals(No(TOKEN),      getAuthMethod(SIMPLE,   TOKEN, UseToken.OTHER));
-    assertAuthEquals(No(TOKEN),      getAuthMethod(KERBEROS, TOKEN));
-    assertAuthEquals(No(TOKEN),      getAuthMethod(KERBEROS, TOKEN, UseToken.OTHER));
+    assertAuthEquals(Denied(SIMPLE), getAuthMethod(SIMPLE,   TOKEN, expectedQop));
+    assertAuthEquals(No(TOKEN),      getAuthMethod(SIMPLE,   TOKEN, UseToken.OTHER, expectedQop));
+    assertAuthEquals(No(TOKEN),      getAuthMethod(KERBEROS, TOKEN, expectedQop));
+    assertAuthEquals(No(TOKEN),      getAuthMethod(KERBEROS, TOKEN, UseToken.OTHER, expectedQop));
   }
 
-  @Test
-  public void testTokenOnlyServerWithTokens() throws Exception {
-    assertAuthEquals(TOKEN,       getAuthMethod(SIMPLE,   TOKEN, UseToken.VALID));
-    assertAuthEquals(TOKEN,       getAuthMethod(KERBEROS, TOKEN, UseToken.VALID));
+  @ParameterizedTest
+  @MethodSource("data")
+  public void testTokenOnlyServerWithTokens(QualityOfProtection[] qop,
+          QualityOfProtection expectedQop,
+          String saslPropertiesResolver) throws Exception {
+    setup(qop, expectedQop, saslPropertiesResolver);
+    assertAuthEquals(TOKEN,       getAuthMethod(SIMPLE,   TOKEN, UseToken.VALID, expectedQop));
+    assertAuthEquals(TOKEN,       getAuthMethod(KERBEROS, TOKEN, UseToken.VALID, expectedQop));
     enableSecretManager = false;
-    assertAuthEquals(NoTokenAuth, getAuthMethod(SIMPLE,   TOKEN, UseToken.VALID));
-    assertAuthEquals(NoTokenAuth, getAuthMethod(KERBEROS, TOKEN, UseToken.VALID));
+    assertAuthEquals(NoTokenAuth, getAuthMethod(SIMPLE,   TOKEN, UseToken.VALID, expectedQop));
+    assertAuthEquals(NoTokenAuth, getAuthMethod(KERBEROS, TOKEN, UseToken.VALID, expectedQop));
   }
 
-  @Test
-  public void testTokenOnlyServerWithInvalidTokens() throws Exception {
-    assertAuthEquals(BadToken,    getAuthMethod(SIMPLE,   TOKEN, UseToken.INVALID));
-    assertAuthEquals(BadToken,    getAuthMethod(KERBEROS, TOKEN, UseToken.INVALID));
+  @ParameterizedTest
+  @MethodSource("data")
+  public void testTokenOnlyServerWithInvalidTokens(QualityOfProtection[] qop,
+          QualityOfProtection expectedQop,
+          String saslPropertiesResolver) throws Exception {
+    setup(qop, expectedQop, saslPropertiesResolver);
+    assertAuthEquals(BadToken,    getAuthMethod(SIMPLE,   TOKEN, UseToken.INVALID, expectedQop));
+    assertAuthEquals(BadToken,    getAuthMethod(KERBEROS, TOKEN, UseToken.INVALID, expectedQop));
     enableSecretManager = false;
-    assertAuthEquals(NoTokenAuth, getAuthMethod(SIMPLE,   TOKEN, UseToken.INVALID));
-    assertAuthEquals(NoTokenAuth, getAuthMethod(KERBEROS, TOKEN, UseToken.INVALID));
+    assertAuthEquals(NoTokenAuth, getAuthMethod(SIMPLE,   TOKEN, UseToken.INVALID, expectedQop));
+    assertAuthEquals(NoTokenAuth, getAuthMethod(KERBEROS, TOKEN, UseToken.INVALID, expectedQop));
   }
 
   /*
    * kerberos server
    */
-  @Test
-  public void testKerberosServer() throws Exception {
+  @ParameterizedTest
+  @MethodSource("data")
+  public void testKerberosServer(QualityOfProtection[] qop,
+          QualityOfProtection expectedQop,
+          String saslPropertiesResolver) throws Exception {
+    setup(qop, expectedQop, saslPropertiesResolver);
     // doesn't try SASL
-    assertAuthEquals(Denied(SIMPLE),     getAuthMethod(SIMPLE,   KERBEROS));
+    assertAuthEquals(Denied(SIMPLE),     getAuthMethod(SIMPLE,   KERBEROS, expectedQop));
     // does try SASL
-    assertAuthEquals(No(TOKEN,KERBEROS), getAuthMethod(SIMPLE,   KERBEROS, UseToken.OTHER));
+    assertAuthEquals(No(TOKEN,KERBEROS), getAuthMethod(SIMPLE,   KERBEROS, UseToken.OTHER, expectedQop));
     // no tgt
-    assertAuthEquals(KrbFailed,          getAuthMethod(KERBEROS, KERBEROS));
-    assertAuthEquals(KrbFailed,          getAuthMethod(KERBEROS, KERBEROS, UseToken.OTHER));
+    assertAuthEquals(KrbFailed,          getAuthMethod(KERBEROS, KERBEROS, expectedQop));
+    assertAuthEquals(KrbFailed,          getAuthMethod(KERBEROS, KERBEROS, UseToken.OTHER, expectedQop));
   }
 
-  @Test
-  public void testKerberosServerWithTokens() throws Exception {
+  @ParameterizedTest
+  @MethodSource("data")
+  public void testKerberosServerWithTokens(QualityOfProtection[] qop,
+          QualityOfProtection expectedQop,
+          String saslPropertiesResolver) throws Exception {
+    setup(qop, expectedQop, saslPropertiesResolver);
     // can use tokens regardless of auth
-    assertAuthEquals(TOKEN,        getAuthMethod(SIMPLE,   KERBEROS, UseToken.VALID));
-    assertAuthEquals(TOKEN,        getAuthMethod(KERBEROS, KERBEROS, UseToken.VALID));
+    assertAuthEquals(TOKEN,        getAuthMethod(SIMPLE,   KERBEROS, UseToken.VALID, expectedQop));
+    assertAuthEquals(TOKEN,        getAuthMethod(KERBEROS, KERBEROS, UseToken.VALID, expectedQop));
     enableSecretManager = false;
     // shouldn't even try token because server didn't tell us to
-    assertAuthEquals(No(KERBEROS), getAuthMethod(SIMPLE,   KERBEROS, UseToken.VALID));
-    assertAuthEquals(KrbFailed,    getAuthMethod(KERBEROS, KERBEROS, UseToken.VALID));
+    assertAuthEquals(No(KERBEROS), getAuthMethod(SIMPLE,   KERBEROS, UseToken.VALID, expectedQop));
+    assertAuthEquals(KrbFailed,    getAuthMethod(KERBEROS, KERBEROS, UseToken.VALID, expectedQop));
   }
 
-  @Test
-  public void testKerberosServerWithInvalidTokens() throws Exception {
-    assertAuthEquals(BadToken,     getAuthMethod(SIMPLE,   KERBEROS, UseToken.INVALID));
-    assertAuthEquals(BadToken,     getAuthMethod(KERBEROS, KERBEROS, UseToken.INVALID));
+  @ParameterizedTest
+  @MethodSource("data")
+  public void testKerberosServerWithInvalidTokens(QualityOfProtection[] qop,
+          QualityOfProtection expectedQop,
+          String saslPropertiesResolver) throws Exception {
+    setup(qop, expectedQop, saslPropertiesResolver);
+    assertAuthEquals(BadToken,     getAuthMethod(SIMPLE,   KERBEROS, UseToken.INVALID, expectedQop));
+    assertAuthEquals(BadToken,     getAuthMethod(KERBEROS, KERBEROS, UseToken.INVALID, expectedQop));
     enableSecretManager = false;
-    assertAuthEquals(No(KERBEROS), getAuthMethod(SIMPLE,   KERBEROS, UseToken.INVALID));
-    assertAuthEquals(KrbFailed,    getAuthMethod(KERBEROS, KERBEROS, UseToken.INVALID));
+    assertAuthEquals(No(KERBEROS), getAuthMethod(SIMPLE,   KERBEROS, UseToken.INVALID, expectedQop));
+    assertAuthEquals(KrbFailed,    getAuthMethod(KERBEROS, KERBEROS, UseToken.INVALID, expectedQop));
   }
 
   // ensure that for all qop settings, client can handle postponed rpc
   // responses.  basically ensures that the rpc server isn't encrypting
   // and queueing the responses out of order.
-  @Test(timeout=10000)
-  public void testSaslResponseOrdering() throws Exception {
+  @ParameterizedTest
+  @MethodSource("data")
+  @Timeout(value=10000, unit=TimeUnit.MILLISECONDS)
+  public void testSaslResponseOrdering(QualityOfProtection[] qop,
+          QualityOfProtection expectedQop,
+          String saslPropertiesResolver) throws Exception {
+    setup(qop, expectedQop, saslPropertiesResolver);
     SecurityUtil.setAuthenticationMethod(
         AuthenticationMethod.TOKEN, conf);
     UserGroupInformation.setConfiguration(conf);
@@ -834,7 +896,7 @@ public class TestSaslRPC extends TestRpcBase {
               } catch (TimeoutException te) {
                 continue; // expected.
               }
-              Assert.fail("future"+i+" did not block");
+              fail("future"+i+" did not block");
             }
             // triggers responses to be unblocked in a random order.  having
             // only 1 handler ensures that the prior calls are already
@@ -862,9 +924,10 @@ public class TestSaslRPC extends TestRpcBase {
 
   private String getAuthMethod(
       final AuthMethod clientAuth,
-      final AuthMethod serverAuth) throws Exception {
+      final AuthMethod serverAuth,
+      final QualityOfProtection expectedQop) throws Exception {
     try {
-      return internalGetAuthMethod(clientAuth, serverAuth, UseToken.NONE);
+      return internalGetAuthMethod(clientAuth, serverAuth, UseToken.NONE, expectedQop);
     } catch (Exception e) {
       LOG.warn("Auth method failure", e);
       return e.toString();
@@ -874,9 +937,10 @@ public class TestSaslRPC extends TestRpcBase {
   private String getAuthMethod(
       final AuthMethod clientAuth,
       final AuthMethod serverAuth,
-      final UseToken tokenType) throws Exception {
+      final UseToken tokenType,
+      final QualityOfProtection expectedQop) throws Exception {
     try {
-      return internalGetAuthMethod(clientAuth, serverAuth, tokenType);
+      return internalGetAuthMethod(clientAuth, serverAuth, tokenType, expectedQop);
     } catch (Exception e) {
       LOG.warn("Auth method failure", e);
       return e.toString();
@@ -886,7 +950,8 @@ public class TestSaslRPC extends TestRpcBase {
   private String internalGetAuthMethod(
       final AuthMethod clientAuth,
       final AuthMethod serverAuth,
-      final UseToken tokenType) throws Exception {
+      final UseToken tokenType,
+      final QualityOfProtection expectedQop) throws Exception {
 
     final TestTokenSecretManager sm = new TestTokenSecretManager();
 
@@ -903,7 +968,7 @@ public class TestSaslRPC extends TestRpcBase {
     setupTokenIfNeeded(tokenType, sm, clientUgi, serverAddress);
 
     try {
-      return createClientAndQueryAuthMethod(serverAddress, clientConf, clientUgi, null);
+      return createClientAndQueryAuthMethod(serverAddress, clientConf, clientUgi, null, expectedQop);
     } finally {
       server.stop();
     }
@@ -990,7 +1055,8 @@ public class TestSaslRPC extends TestRpcBase {
   }
 
   private String createClientAndQueryAuthMethod(InetSocketAddress serverAddress,
-      Configuration clientConf, UserGroupInformation clientUgi, AtomicBoolean fallbackToSimpleAuth)
+      Configuration clientConf, UserGroupInformation clientUgi, AtomicBoolean fallbackToSimpleAuth,
+      QualityOfProtection expectedQop)
       throws IOException, InterruptedException {
     LOG.info("trying ugi:"+ clientUgi +" tokens:"+ clientUgi.getTokens());
     return clientUgi.doAs(new PrivilegedExceptionAction<String>() {

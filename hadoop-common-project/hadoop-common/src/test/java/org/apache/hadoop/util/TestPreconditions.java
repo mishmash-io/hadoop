@@ -20,9 +20,8 @@ package org.apache.hadoop.util;
 
 import java.util.function.Supplier;
 
-import org.junit.Test;
-
 import org.apache.hadoop.test.LambdaTestUtils;
+import org.junit.jupiter.api.Test;
 
 public class TestPreconditions {
   private static final String NON_NULL_STRING = "NON_NULL_OBJECT";

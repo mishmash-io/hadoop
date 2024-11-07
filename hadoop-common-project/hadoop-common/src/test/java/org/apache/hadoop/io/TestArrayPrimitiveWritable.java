@@ -18,15 +18,16 @@
 
 package org.apache.hadoop.io;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.fail;
+
 import java.io.*;
 import java.util.Arrays;
 
 import org.apache.hadoop.util.StringUtils;
-import org.junit.Test;
-import org.junit.Before;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 
 /** Unit tests for {@link ArrayPrimitiveWritable} */
@@ -48,7 +49,7 @@ public class TestArrayPrimitiveWritable {
   final DataOutputBuffer out = new DataOutputBuffer();
   final DataInputBuffer in = new DataInputBuffer();
 
-  @Before
+  @BeforeEach
   public void resetBuffers() throws IOException {
     out.reset();
     in.reset();
@@ -79,12 +80,13 @@ public class TestArrayPrimitiveWritable {
     //validate data structures and values
     assertEquals(expectedResultSet.length, resultSet.length);
     for (int x = 0; x < resultSet.length; x++) {
-      assertEquals("ComponentType of array " + x,
+      assertEquals(
           expectedResultSet[x].getClass().getComponentType(), 
-          resultSet[x].getClass().getComponentType());
+          resultSet[x].getClass().getComponentType(),
+          "ComponentType of array " + x);
     }
-    assertTrue("In and Out arrays didn't match values", 
-        Arrays.deepEquals(expectedResultSet, resultSet));
+    assertTrue(Arrays.deepEquals(expectedResultSet, resultSet),
+        "In and Out arrays didn't match values");
   }
   
   @Test
@@ -113,30 +115,30 @@ public class TestArrayPrimitiveWritable {
     ArrayPrimitiveWritable.Internal apwi = 
         new ArrayPrimitiveWritable.Internal();
     apwi.readFields(in);
-    assertEquals("The ArrayPrimitiveWritable.Internal component type was corrupted",
-        int.class, apw.getComponentType());
-    assertTrue("The int[] written by ObjectWritable as "
-        + "ArrayPrimitiveWritable.Internal was corrupted",
-        Arrays.equals(i, (int[])(apwi.get())));
+    assertEquals(int.class, apw.getComponentType(),
+        "The ArrayPrimitiveWritable.Internal component type was corrupted");
+    assertTrue(Arrays.equals(i, (int[])(apwi.get())),
+        "The int[] written by ObjectWritable as "
+        + "ArrayPrimitiveWritable.Internal was corrupted");
     
     //Read the APW object as written by ObjectWritable, but
     //"going around" ObjectWritable
     String declaredClassName = UTF8.readString(in);
-    assertEquals("The APW written by ObjectWritable was not labelled as "
-        + "declaredClass ArrayPrimitiveWritable",
-        ArrayPrimitiveWritable.class.getName(), declaredClassName);
+    assertEquals(ArrayPrimitiveWritable.class.getName(), declaredClassName,
+        "The APW written by ObjectWritable was not labelled as "
+        + "declaredClass ArrayPrimitiveWritable");
     className = UTF8.readString(in);
-    assertEquals("The APW written by ObjectWritable was not labelled as "
-        + "class ArrayPrimitiveWritable",
-        ArrayPrimitiveWritable.class.getName(), className);
+    assertEquals(ArrayPrimitiveWritable.class.getName(), className,
+        "The APW written by ObjectWritable was not labelled as "
+        + "class ArrayPrimitiveWritable");
     ArrayPrimitiveWritable apw2 = 
         new ArrayPrimitiveWritable();
     apw2.readFields(in);
-    assertEquals("The ArrayPrimitiveWritable component type was corrupted",
-        int.class, apw2.getComponentType());
-    assertTrue("The int[] written by ObjectWritable as "
-        + "ArrayPrimitiveWritable was corrupted",
-        Arrays.equals(i, (int[])(apw2.get())));
+    assertEquals(int.class, apw2.getComponentType(),
+        "The ArrayPrimitiveWritable component type was corrupted");
+    assertTrue(Arrays.equals(i, (int[])(apw2.get())),
+        "The int[] written by ObjectWritable as "
+        + "ArrayPrimitiveWritable was corrupted");
   }
   
   @Test
@@ -159,8 +161,9 @@ public class TestArrayPrimitiveWritable {
         i.getClass().getName(), className);
     
     int length = in.readInt();
-    assertEquals("The int[] written by ObjectWritable as a non-compact array "
-        + "was not expected length", i.length, length);
+    assertEquals(i.length, length,
+        "The int[] written by ObjectWritable as a non-compact array "
+        + "was not expected length");
     
     int[] readValue = new int[length];
     try {
@@ -173,8 +176,9 @@ public class TestArrayPrimitiveWritable {
           + length + ". Got exception:\n"
           + StringUtils.stringifyException(e));
     }
-    assertTrue("The int[] written by ObjectWritable as a non-compact array "
-        + "was corrupted.", Arrays.equals(i, readValue));
+    assertTrue(Arrays.equals(i, readValue),
+        "The int[] written by ObjectWritable as a non-compact array "
+        + "was corrupted.");
     
   }
 }

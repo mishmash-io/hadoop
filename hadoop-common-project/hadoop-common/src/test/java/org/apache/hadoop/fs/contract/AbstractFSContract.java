@@ -22,9 +22,10 @@ import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.conf.Configured;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
-import org.junit.Assert;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.io.IOException;
 import java.net.URI;
@@ -84,7 +85,7 @@ public abstract class AbstractFSContract extends Configured {
    */
   protected void addConfResource(String resource) {
     boolean found = maybeAddConfResource(resource);
-    Assert.assertTrue("Resource not found " + resource, found);
+    assertTrue(found, "Resource not found " + resource);
   }
 
   /**

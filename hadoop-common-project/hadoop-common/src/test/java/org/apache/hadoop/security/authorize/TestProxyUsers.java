@@ -17,8 +17,9 @@
  */
 package org.apache.hadoop.security.authorize;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.fail;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.fail;
 
 import java.io.IOException;
 import java.net.InetAddress;
@@ -33,7 +34,7 @@ import org.apache.hadoop.security.Groups;
 import org.apache.hadoop.security.UserGroupInformation;
 import org.apache.hadoop.util.NativeCodeLoader;
 import org.apache.hadoop.util.StringUtils;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -336,7 +337,7 @@ public class TestProxyUsers {
     assertNotAuthorized(proxyUserUgi, "10.221.0.0");
   }
 
-  @Test(expected = IllegalArgumentException.class)
+  @Test
   public void testNullUser() throws Exception {
     Configuration conf = new Configuration();
     conf.set(
@@ -349,10 +350,12 @@ public class TestProxyUsers {
         PROXY_IP_RANGE);
     ProxyUsers.refreshSuperUserGroupsConfiguration(conf);
     // user is null
-    ProxyUsers.authorize(null, "10.222.0.0");
+    assertThrows(IllegalArgumentException.class, () -> {
+      ProxyUsers.authorize(null, "10.222.0.0");
+    });
   }
 
-  @Test(expected = IllegalArgumentException.class)
+  @Test
   public void testNullIpAddress() throws Exception {
     Configuration conf = new Configuration();
     conf.set(
@@ -372,7 +375,9 @@ public class TestProxyUsers {
         PROXY_USER_NAME, realUserUgi, GROUP_NAMES);
 
     // remote address is null
-    ProxyUsers.authorize(proxyUserUgi, (InetAddress) null);
+    assertThrows(IllegalArgumentException.class, () -> {
+      ProxyUsers.authorize(proxyUserUgi, (InetAddress) null);
+    });
   }
 
   @Test
@@ -476,16 +481,20 @@ public class TestProxyUsers {
     assertEquals (GROUP_NAMES.length, groupsToBeProxied.size());
   }
 
-  @Test(expected = IllegalArgumentException.class)
+  @Test
   public void testProxyUsersWithNullPrefix() throws Exception {
-    ProxyUsers.refreshSuperUserGroupsConfiguration(new Configuration(false), 
+    assertThrows(IllegalArgumentException.class, () -> {
+      ProxyUsers.refreshSuperUserGroupsConfiguration(new Configuration(false), 
         null);
+    });
   }
 
-  @Test(expected = IllegalArgumentException.class)
+  @Test
   public void testProxyUsersWithEmptyPrefix() throws Exception {
-    ProxyUsers.refreshSuperUserGroupsConfiguration(new Configuration(false), 
+    assertThrows(IllegalArgumentException.class, () -> {
+      ProxyUsers.refreshSuperUserGroupsConfiguration(new Configuration(false), 
         "");
+    });
   }
 
   @Test

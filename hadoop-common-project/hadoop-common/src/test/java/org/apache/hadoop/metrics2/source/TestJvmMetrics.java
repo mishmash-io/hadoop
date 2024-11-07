@@ -20,14 +20,12 @@ package org.apache.hadoop.metrics2.source;
 
 import org.apache.hadoop.metrics2.impl.MetricsCollectorImpl;
 import org.apache.hadoop.util.GcTimeMonitor;
-import org.junit.After;
-import org.junit.Assert;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.Timeout;
 
 import static org.mockito.Mockito.*;
 import static org.apache.hadoop.test.MetricsAsserts.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.fail;
 
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.metrics2.MetricsCollector;
@@ -36,6 +34,9 @@ import org.apache.hadoop.service.ServiceOperations;
 import org.apache.hadoop.service.ServiceStateException;
 import org.apache.hadoop.test.GenericTestUtils;
 import org.apache.hadoop.util.JvmPauseMonitor;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.Timeout;
 
 import java.util.ArrayList;
 import java.util.Iterator;
@@ -45,17 +46,16 @@ import java.util.concurrent.TimeUnit;
 import static org.apache.hadoop.metrics2.source.JvmMetricsInfo.*;
 import static org.apache.hadoop.metrics2.impl.MsInfo.*;
 
+@Timeout(value=30000, unit=TimeUnit.MILLISECONDS)
 public class TestJvmMetrics {
 
-  @Rule
-  public Timeout timeout = new Timeout(30000, TimeUnit.MILLISECONDS);
   private JvmPauseMonitor pauseMonitor;
   private GcTimeMonitor gcTimeMonitor;
 
   /**
    * Robust shutdown of the monitors if they haven't been stopped already.
    */
-  @After
+  @AfterEach
   public void teardown() {
     ServiceOperations.stop(pauseMonitor);
     if (gcTimeMonitor != null) {
@@ -129,7 +129,7 @@ public class TestJvmMetrics {
       pauseMonitor.init(new Configuration());
       pauseMonitor.stop();
       pauseMonitor.start();
-      Assert.fail("Expected an exception, got " + pauseMonitor);
+      fail("Expected an exception, got " + pauseMonitor);
     } catch (ServiceStateException e) {
       GenericTestUtils.assertExceptionContains("cannot enter state", e);
     }
@@ -141,7 +141,7 @@ public class TestJvmMetrics {
     try {
       pauseMonitor.stop();
       pauseMonitor.init(new Configuration());
-      Assert.fail("Expected an exception, got " + pauseMonitor);
+      fail("Expected an exception, got " + pauseMonitor);
     } catch (ServiceStateException e) {
       GenericTestUtils.assertExceptionContains("cannot enter state", e);
     }
@@ -193,10 +193,10 @@ public class TestJvmMetrics {
       gcCount = gcData.getAccumulatedGcCount();
     }
 
-    Assert.assertTrue(maxGcTimePercentage > 0);
-    Assert.assertTrue(gcCount > 0);
-    Assert.assertTrue(alerter.numAlerts > 0);
-    Assert.assertTrue(alerter.maxGcTimePercentage >= alertGcPerc);
+    assertTrue(maxGcTimePercentage > 0);
+    assertTrue(gcCount > 0);
+    assertTrue(alerter.numAlerts > 0);
+    assertTrue(alerter.maxGcTimePercentage >= alertGcPerc);
   }
 
   @Test
@@ -205,8 +205,8 @@ public class TestJvmMetrics {
         .initSingleton("test", null);
     JvmMetrics jvmMetrics2 = org.apache.hadoop.metrics2.source.JvmMetrics
         .initSingleton("test", null);
-    Assert.assertEquals("initSingleton should return the singleton instance",
-        jvmMetrics1, jvmMetrics2);
+    assertEquals(jvmMetrics1, jvmMetrics2,
+        "initSingleton should return the singleton instance");
   }
 
   @Test
@@ -217,12 +217,12 @@ public class TestJvmMetrics {
     final String process2Name = "process2";
     JvmMetrics jvmMetrics2 = org.apache.hadoop.metrics2.source.JvmMetrics
         .initSingleton(process2Name, null);
-    Assert.assertEquals("initSingleton should return the singleton instance",
-        jvmMetrics1, jvmMetrics2);
-    Assert.assertEquals("unexpected process name of the singleton instance",
-        process1Name, jvmMetrics1.processName);
-    Assert.assertEquals("unexpected process name of the singleton instance",
-        process1Name, jvmMetrics2.processName);
+    assertEquals(jvmMetrics1, jvmMetrics2,
+        "initSingleton should return the singleton instance");
+    assertEquals(process1Name, jvmMetrics1.processName,
+        "unexpected process name of the singleton instance");
+    assertEquals(process1Name, jvmMetrics2.processName,
+        "unexpected process name of the singleton instance");
   }
 
   /**

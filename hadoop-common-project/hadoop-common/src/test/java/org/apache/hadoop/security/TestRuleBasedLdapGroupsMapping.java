@@ -18,8 +18,7 @@
 package org.apache.hadoop.security;
 
 import org.apache.hadoop.conf.Configuration;
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 
 import javax.naming.NamingException;
@@ -30,6 +29,7 @@ import java.util.Set;
 
 import static org.apache.hadoop.security.RuleBasedLdapGroupsMapping
     .CONVERSION_RULE_KEY;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.ArgumentMatchers.eq;
 
@@ -56,7 +56,7 @@ public class TestRuleBasedLdapGroupsMapping  {
     List<String> groupsUpper = new ArrayList<>();
     groupsUpper.add("GROUP1");
     groupsUpper.add("GROUP2");
-    Assert.assertEquals(groupsUpper, groupsMapping.getGroups("admin"));
+    assertEquals(groupsUpper, groupsMapping.getGroups("admin"));
   }
 
   @Test
@@ -77,7 +77,7 @@ public class TestRuleBasedLdapGroupsMapping  {
     List<String> groupsLower = new ArrayList<>();
     groupsLower.add("group1");
     groupsLower.add("group2");
-    Assert.assertEquals(groupsLower, groupsMapping.getGroups("admin"));
+    assertEquals(groupsLower, groupsMapping.getGroups("admin"));
   }
 
   @Test
@@ -95,7 +95,7 @@ public class TestRuleBasedLdapGroupsMapping  {
     conf.set(CONVERSION_RULE_KEY, "none");
     groupsMapping.setConf(conf);
 
-    Assert.assertEquals(groups, groupsMapping.getGroupsSet("admin"));
+    assertEquals(groups, groupsMapping.getGroupsSet("admin"));
   }
 
 }

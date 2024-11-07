@@ -17,13 +17,13 @@
  */
 package org.apache.hadoop.io.erasurecode.codec;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.io.erasurecode.ECSchema;
 import org.apache.hadoop.io.erasurecode.ErasureCodecOptions;
 import org.apache.hadoop.io.erasurecode.coder.ErasureCoder;
-import org.junit.Test;
-
-import static org.junit.Assert.assertEquals;
+import org.junit.jupiter.api.Test;
 
 public class TestHHXORErasureCodec {
   private ECSchema schema = new ECSchema("hhxor", 10, 4);

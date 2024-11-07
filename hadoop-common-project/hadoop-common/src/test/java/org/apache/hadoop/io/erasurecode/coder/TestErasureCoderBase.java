@@ -23,10 +23,10 @@ import org.apache.hadoop.io.erasurecode.ECChunk;
 import org.apache.hadoop.io.erasurecode.ErasureCoderOptions;
 import org.apache.hadoop.io.erasurecode.TestCoderBase;
 
+import static org.junit.jupiter.api.Assertions.fail;
+
 import java.io.IOException;
 import java.lang.reflect.Constructor;
-
-import static org.junit.Assert.fail;
 
 /**
  * Erasure coder test base with utilities.
@@ -91,7 +91,7 @@ public abstract class TestErasureCoderBase extends TestCoderBase {
     try {
       performCodingStep(codingStep);
     } catch (IOException e) {
-      fail("Should not expect IOException: " + e.getMessage());
+      fail("Should not expect IOException", e);
     }
     // Erase specified sources but return copies of them for later comparing
     TestBlock[] backupBlocks = backupAndEraseBlocks(clonedDataBlocks, parityBlocks);
@@ -102,7 +102,7 @@ public abstract class TestErasureCoderBase extends TestCoderBase {
     try {
       performCodingStep(codingStep);
     } catch (IOException e) {
-      fail("Should not expect IOException: " + e.getMessage());
+      fail("Should not expect IOException", e);
     }
 
     // Compare

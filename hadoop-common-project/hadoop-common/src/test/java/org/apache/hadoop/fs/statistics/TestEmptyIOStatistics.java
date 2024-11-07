@@ -18,10 +18,9 @@
 
 package org.apache.hadoop.fs.statistics;
 
-import org.junit.Test;
-
 import org.apache.hadoop.fs.statistics.impl.IOStatisticsBinding;
 import org.apache.hadoop.test.AbstractHadoopTestBase;
+import org.junit.jupiter.api.Test;
 
 import static org.apache.hadoop.fs.statistics.IOStatisticAssertions.assertStatisticCounterIsTracked;
 import static org.apache.hadoop.fs.statistics.IOStatisticAssertions.assertStatisticCounterIsUntracked;

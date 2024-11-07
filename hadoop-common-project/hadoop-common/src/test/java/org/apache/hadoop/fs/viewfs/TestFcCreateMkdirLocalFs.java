@@ -19,24 +19,22 @@ package org.apache.hadoop.fs.viewfs;
 
 
 import org.apache.hadoop.fs.FileContextCreateMkdirBaseTest;
-
-import org.junit.After;
-import org.junit.Before;
-
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
 
 public class TestFcCreateMkdirLocalFs  extends 
   FileContextCreateMkdirBaseTest {
 
 
   @Override
-  @Before
+  @BeforeEach
   public void setUp() throws Exception {
     fc = ViewFsTestSetup.setupForViewFsLocalFs(fileContextTestHelper);
     super.setUp();
   }
   
   @Override
-  @After
+  @AfterEach
   public void tearDown() throws Exception {
     super.tearDown();
     ViewFsTestSetup.tearDownForViewFsLocalFs(fileContextTestHelper);

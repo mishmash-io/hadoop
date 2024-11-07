@@ -17,16 +17,18 @@
 
 package org.apache.hadoop.security;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+
 import java.io.IOException;
-import org.junit.Assert;
-import org.junit.Test;
+
+import org.junit.jupiter.api.Test;
 
 public class TestUserFromEnv {
 
   @Test
   public void testUserFromEnvironment() throws IOException {
     System.setProperty(UserGroupInformation.HADOOP_USER_NAME, "randomUser");
-    Assert.assertEquals("randomUser", UserGroupInformation.getLoginUser()
+    assertEquals("randomUser", UserGroupInformation.getLoginUser()
         .getUserName());
   }
 }

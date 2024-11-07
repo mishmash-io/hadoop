@@ -20,16 +20,15 @@ package org.apache.hadoop.fs.store;
 
 import java.io.IOException;
 
-import org.junit.Assert;
-import org.junit.Test;
-
 import org.apache.hadoop.io.DataInputBuffer;
 import org.apache.hadoop.io.DataOutputBuffer;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 
 /**
  * Unit test of etag operations.
  */
-public class TestEtagChecksum extends Assert {
+public class TestEtagChecksum extends Assertions {
 
   private final EtagChecksum empty1 = tag("");
   private final EtagChecksum empty2 = tag("");
