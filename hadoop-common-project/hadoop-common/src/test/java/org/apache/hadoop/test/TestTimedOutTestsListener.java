@@ -24,11 +24,13 @@ import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.util.concurrent.CyclicBarrier;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.Timeout;
+import org.junit.platform.engine.TestExecutionResult;
 
 public class TestTimedOutTestsListener {
 
@@ -160,10 +162,10 @@ public class TestTimedOutTestsListener {
     
     assertEquals(3, countStringOccurrences(s, "BLOCKED"));
     
-    Failure failure = new Failure(
-        null, new Exception(TimedOutTestsListener.TEST_TIMED_OUT_PREFIX));
     StringWriter writer = new StringWriter();
-    new TimedOutTestsListener(new PrintWriter(writer)).testFailure(failure);
+    new TimedOutTestsListener(new PrintWriter(writer))
+      .executionFinished(null,
+         TestExecutionResult.failed(new TimeoutException()));
     String out = writer.toString();
     
     assertTrue(out.contains("THREAD DUMP"));

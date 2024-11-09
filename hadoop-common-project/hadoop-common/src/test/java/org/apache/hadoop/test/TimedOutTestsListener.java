@@ -28,14 +28,18 @@ import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Map;
+import java.util.concurrent.TimeoutException;
 
 import org.apache.hadoop.util.StringUtils;
+import org.junit.platform.engine.TestExecutionResult;
+import org.junit.platform.launcher.TestExecutionListener;
+import org.junit.platform.launcher.TestIdentifier;
 
 /**
  * JUnit run listener which prints full thread dump into System.err
  * in case a test is failed due to timeout.
  */
-public class TimedOutTestsListener extends RunListener {
+public class TimedOutTestsListener implements TestExecutionListener {
 
   static final String TEST_TIMED_OUT_PREFIX = "test timed out after";
   
@@ -52,15 +56,16 @@ public class TimedOutTestsListener extends RunListener {
   }
 
   @Override
-  public void testFailure(Failure failure) throws Exception {
-    if (failure != null && failure.getMessage() != null 
-        && failure.getMessage().startsWith(TEST_TIMED_OUT_PREFIX)) {
+  public void executionFinished(TestIdentifier test, TestExecutionResult result) {
+    if (result.getStatus() == TestExecutionResult.Status.FAILED
+        && result.getThrowable().isPresent()
+        && result.getThrowable().get() instanceof TimeoutException) {
       output.println("====> TEST TIMED OUT. PRINTING THREAD DUMP. <====");
       output.println();
       output.print(buildThreadDiagnosticString());
     }
   }
-  
+
   public static String buildThreadDiagnosticString() {
     StringWriter sw = new StringWriter();
     PrintWriter output = new PrintWriter(sw);
