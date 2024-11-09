@@ -34,6 +34,8 @@ import org.apache.hadoop.ipc.protobuf.RpcHeaderProtos.RpcRequestHeaderProto.Oper
 import org.apache.hadoop.thirdparty.protobuf.CodedOutputStream;
 import org.junit.jupiter.api.Test;
 
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
 public class TestProtoUtil {
   
   /**

@@ -41,7 +41,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.apache.commons.configuration2.SubsetConfiguration;
 import org.apache.hadoop.metrics2.MetricsException;
 import org.apache.hadoop.test.GenericTestUtils;
-import static org.apache.hadoop.test.MoreAsserts.*;
+import org.apache.hadoop.test.MoreAsserts;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
@@ -134,7 +134,7 @@ public class TestMetricsSystemImpl {
     List<MetricsRecord> mr2 = r2.getAllValues();
     if (mr1.size() != 0 && mr2.size() != 0) {
       checkMetricsRecords(mr1);
-      assertEquals("output", mr1, mr2);
+      MoreAsserts.assertEquals("output", mr1, mr2);
     } else if (mr1.size() != 0) {
       checkMetricsRecords(mr1);
     } else if (mr2.size() != 0) {
@@ -178,7 +178,7 @@ public class TestMetricsSystemImpl {
     List<MetricsRecord> mr1 = r1.getAllValues();
     List<MetricsRecord> mr2 = r2.getAllValues();
     checkMetricsRecords(mr1);
-    assertEquals("output", mr1, mr2);
+    MoreAsserts.assertEquals("output", mr1, mr2);
 
   }
   
@@ -434,11 +434,11 @@ public class TestMetricsSystemImpl {
   private void checkMetricsRecords(List<MetricsRecord> recs) {
     LOG.debug(recs.toString());
     MetricsRecord r = recs.get(0);
-    assertEquals("name", "s1rec", r.name());
-    assertEquals("tags", new MetricsTag[] {
+    assertEquals("s1rec", r.name(), "name");
+    MoreAsserts.assertEquals("tags", new MetricsTag[] {
       tag(MsInfo.Context, "test"),
       tag(MsInfo.Hostname, hostname)}, r.tags());
-    assertEquals("metrics", MetricsLists.builder("")
+    MoreAsserts.assertEquals("metrics", MetricsLists.builder("")
       .addCounter(info("C1", "C1 desc"), 1L)
       .addGauge(info("G1", "G1 desc"), 2L)
       .addCounter(info("S1NumOps", "Number of ops for s1"), 1L)

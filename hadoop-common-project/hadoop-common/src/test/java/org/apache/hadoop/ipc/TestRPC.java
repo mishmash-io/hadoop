@@ -660,8 +660,8 @@ public class TestRPC extends TestRpcBase {
       if (expectFailure) {
         RemoteException re = (RemoteException) e.getCause();
         assertTrue(re.unwrapRemoteException() instanceof AuthorizationException);
-        assertEquals("RPC error code should be UNAUTHORIZED",
-            RpcErrorCodeProto.FATAL_UNAUTHORIZED, re.getErrorCode());
+        assertEquals(RpcErrorCodeProto.FATAL_UNAUTHORIZED, re.getErrorCode(),
+            "RPC error code should be UNAUTHORIZED");
       } else {
         throw e;
       }
@@ -803,8 +803,8 @@ public class TestRPC extends TestRpcBase {
       assertTrue(e.getCause() instanceof RemoteException);
       RemoteException re = (RemoteException) e.getCause();
       LOG.info("LOGGING MESSAGE: " + re.getLocalizedMessage());
-      assertEquals("RPC error code should be UNAUTHORIZED",
-          RpcErrorCodeProto.FATAL_UNAUTHORIZED, re.getErrorCode());
+      assertEquals(RpcErrorCodeProto.FATAL_UNAUTHORIZED, re.getErrorCode(),
+          "RPC error code should be UNAUTHORIZED");
       assertTrue(re.unwrapRemoteException() instanceof AccessControlException);
       succeeded = true;
     } finally {
@@ -825,8 +825,8 @@ public class TestRPC extends TestRpcBase {
     } catch (ServiceException e) {
       RemoteException re = (RemoteException) e.getCause();
       LOG.info("LOGGING MESSAGE: " + re.getLocalizedMessage());
-      assertEquals("RPC error code should be UNAUTHORIZED",
-          RpcErrorCodeProto.FATAL_UNAUTHORIZED, re.getErrorCode());
+      assertEquals(RpcErrorCodeProto.FATAL_UNAUTHORIZED, re.getErrorCode(),
+          "RPC error code should be UNAUTHORIZED");
       assertTrue(re.unwrapRemoteException() instanceof AccessControlException);
       succeeded = true;
     } finally {
