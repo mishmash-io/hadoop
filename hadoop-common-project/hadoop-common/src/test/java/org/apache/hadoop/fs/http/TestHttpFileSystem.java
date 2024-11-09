@@ -55,7 +55,8 @@ public class TestHttpFileSystem {
       InterruptedException {
     final String data = "foo";
     try (MockWebServer server = new MockWebServer()) {
-      IntStream.rangeClosed(1, 3).forEach(i -> server.enqueue(new MockResponse().setBody(data)));
+      IntStream.rangeClosed(1, 3).forEach(i -> server.enqueue(
+          new MockResponse.Builder().body(data).build()));
       server.start();
       URI uri = URI.create(String.format("http://%s:%d", server.getHostName(),
           server.getPort()));
