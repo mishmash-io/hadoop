@@ -330,7 +330,8 @@ public abstract class AbstractContractCopyFromLocalTest extends
 
   private void assertFileTextEquals(Path path, String expected)
       throws IOException {
-    assertEquals("Wrong data in " + path,
-        expected, IOUtils.toString(getFileSystem().open(path), ASCII));
+    assertEquals(
+        expected, IOUtils.toString(getFileSystem().open(path), ASCII),
+        "Wrong data in " + path);
   }
 }

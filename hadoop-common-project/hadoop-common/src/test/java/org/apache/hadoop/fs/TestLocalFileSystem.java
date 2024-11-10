@@ -767,8 +767,8 @@ public class TestLocalFileSystem {
     builder.must("strM", "value");
     builder.must("unsupported", 12.34);
 
-    assertEquals("Optional value should be overwrite by a mandatory value",
-        "value", builder.getOptions().get("strM"));
+    assertEquals("value", builder.getOptions().get("strM"),
+        "Optional value should be overwrite by a mandatory value");
 
     Set<String> mandatoryKeys = builder.getMandatoryKeys();
     Set<String> expectedKeys = new HashSet<>();
