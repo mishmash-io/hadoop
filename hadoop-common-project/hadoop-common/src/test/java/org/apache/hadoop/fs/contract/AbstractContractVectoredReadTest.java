@@ -33,6 +33,8 @@ import java.util.concurrent.TimeoutException;
 import java.util.function.IntFunction;
 
 import org.assertj.core.api.Assertions;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.TestInfo;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.MethodSource;
@@ -104,6 +106,7 @@ public abstract class AbstractContractVectoredReadTest extends AbstractFSContrac
     return pool;
   }
 
+  @BeforeEach
   @Override
   public void setup(TestInfo info) throws Exception {
     super.setup(info);
@@ -112,6 +115,7 @@ public abstract class AbstractContractVectoredReadTest extends AbstractFSContrac
     createFile(fs, vectorPath, true, DATASET);
   }
 
+  @AfterEach
   @Override
   public void teardown() throws Exception {
     pool.release();

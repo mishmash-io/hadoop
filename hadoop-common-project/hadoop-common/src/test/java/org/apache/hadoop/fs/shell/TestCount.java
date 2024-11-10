@@ -439,7 +439,7 @@ public class TestCount {
     Count count = new Count();
     String actual = count.getCommandName();
     String expected = "count";
-    assertEquals("Count.getCommandName", expected, actual);
+    assertEquals(expected, actual, "Count.getCommandName");
   }
 
   @Test
@@ -473,7 +473,7 @@ public class TestCount {
     String expected =
         "-count [-q] [-h] [-v] [-t [<storage type>]]"
         + " [-u] [-x] [-e] [-s] <path> ...";
-    assertEquals("Count.getUsage", expected, actual);
+    assertEquals(expected, actual, "Count.getUsage");
   }
 
   // check the correct description is returned
@@ -507,7 +507,7 @@ public class TestCount {
         + "The -e option shows the erasure coding policy."
         + "The -s option shows snapshot counts.";
 
-    assertEquals("Count.getDescription", expected, actual);
+    assertEquals(expected, actual, "Count.getDescription");
   }
 
   @Test

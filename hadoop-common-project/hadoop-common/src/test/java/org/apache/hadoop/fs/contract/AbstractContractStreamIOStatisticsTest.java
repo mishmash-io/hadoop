@@ -23,6 +23,7 @@ import java.util.List;
 
 import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -65,6 +66,7 @@ public abstract class AbstractContractStreamIOStatisticsTest
   protected static final IOStatisticsSnapshot FILESYSTEM_IOSTATS =
       snapshotIOStatistics();
 
+  @AfterEach
   @Override
   public void teardown() throws Exception {
     final FileSystem fs = getFileSystem();

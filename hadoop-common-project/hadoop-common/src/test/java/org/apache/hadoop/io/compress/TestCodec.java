@@ -261,9 +261,9 @@ public class TestCodec {
         m.put(k1, k1.toString());
         m.put(v1, v1.toString());
         String result = m.get(k2);
-        assertEquals("k1 and k2 hashcode not equal", result, k1.toString());
+        assertEquals(result, k1.toString(), "k1 and k2 hashcode not equal");
         result = m.get(v2);
-        assertEquals("v1 and v2 hashcode not equal", result, v1.toString());
+        assertEquals(result, v1.toString(), "v1 and v2 hashcode not equal");
       }
     }
     assertEquals(leasedDecompressorsBefore,
@@ -985,7 +985,7 @@ public class TestCodec {
     is = codec.createInputStream(is, decompressor);
     BufferedReader br = new BufferedReader(new InputStreamReader(is));
     String line = br.readLine();
-    assertEquals("Didn't get the same message back!", msg, line);
+    assertEquals(msg, line, "Didn't get the same message back!");
     br.close();
   }
 
@@ -994,7 +994,7 @@ public class TestCodec {
         new GZIPInputStream(new FileInputStream(filename))));
     try {
       String line = r.readLine();
-      assertEquals("Got invalid line back from " + filename, msg, line);
+      assertEquals(msg, line, "Got invalid line back from " + filename);
     } finally {
       r.close();
       new File(filename).delete();

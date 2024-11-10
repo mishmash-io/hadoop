@@ -23,6 +23,7 @@ import java.util.Arrays;
 
 import org.apache.hadoop.fs.FSDataInputStream;
 import org.apache.hadoop.fs.Path;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInfo;
 
@@ -37,6 +38,7 @@ public abstract class AbstractContractUnbufferTest extends AbstractFSContractTes
   private Path file;
   private byte[] fileBytes;
 
+  @BeforeEach
   @Override
   public void setup(TestInfo info) throws Exception {
     super.setup(info);

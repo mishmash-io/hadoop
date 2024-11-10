@@ -22,6 +22,7 @@ import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.LocatedFileStatus;
 import org.apache.hadoop.fs.Path;
 import org.assertj.core.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInfo;
 import org.slf4j.Logger;
@@ -57,6 +58,7 @@ public abstract class AbstractContractRootDirectoryTest extends AbstractFSContra
       LoggerFactory.getLogger(AbstractContractRootDirectoryTest.class);
   public static final int OBJECTSTORE_RETRY_TIMEOUT = 30000;
 
+  @BeforeEach
   @Override
   public void setup(TestInfo info) throws Exception {
     super.setup(info);

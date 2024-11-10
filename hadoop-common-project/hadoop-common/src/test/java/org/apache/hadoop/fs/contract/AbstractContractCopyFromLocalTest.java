@@ -32,6 +32,7 @@ import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.fs.PathExistsException;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
 
 import static org.apache.hadoop.test.LambdaTestUtils.intercept;
@@ -42,6 +43,7 @@ public abstract class AbstractContractCopyFromLocalTest extends
   private static final Charset ASCII = StandardCharsets.US_ASCII;
   private File file;
 
+  @AfterEach
   @Override
   public void teardown() throws Exception {
     super.teardown();

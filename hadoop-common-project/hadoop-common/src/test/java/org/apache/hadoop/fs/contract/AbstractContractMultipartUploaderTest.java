@@ -30,6 +30,8 @@ import java.util.Random;
 import java.util.concurrent.CompletableFuture;
 
 import org.assertj.core.api.Assertions;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInfo;
 import org.slf4j.Logger;
@@ -84,6 +86,7 @@ public abstract class AbstractContractMultipartUploaderTest extends
   private UploadHandle activeUpload;
   private Path activeUploadPath;
 
+  @BeforeEach
   @Override
   public void setup(TestInfo info) throws Exception {
     super.setup(info);
@@ -98,6 +101,7 @@ public abstract class AbstractContractMultipartUploaderTest extends
     uploader1 = fs.createMultipartUploader(testPath).build();
   }
 
+  @AfterEach
   @Override
   public void teardown() throws Exception {
     MultipartUploader uploader = getUploader(1);

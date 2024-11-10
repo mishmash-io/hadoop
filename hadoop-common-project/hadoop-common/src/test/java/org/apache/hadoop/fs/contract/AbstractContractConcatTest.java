@@ -19,6 +19,7 @@
 package org.apache.hadoop.fs.contract;
 
 import org.apache.hadoop.fs.Path;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInfo;
 import org.slf4j.Logger;
@@ -44,6 +45,7 @@ public abstract class AbstractContractConcatTest extends AbstractFSContractTestB
   private Path zeroByteFile;
   private Path target;
 
+  @BeforeEach
   @Override
   public void setup(TestInfo info) throws Exception {
     super.setup(info);

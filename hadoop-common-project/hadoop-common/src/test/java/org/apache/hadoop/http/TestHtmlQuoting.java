@@ -75,12 +75,12 @@ public class TestHtmlQuoting {
       new HttpServer2.QuotingInputFilter.RequestQuoter(mockReq);
     
     Mockito.doReturn("a<b").when(mockReq).getParameter("x");
-    assertEquals("Test simple param quoting",
-        "a&lt;b", quoter.getParameter("x"));
+    assertEquals("a&lt;b", quoter.getParameter("x"),
+        "Test simple param quoting");
     
     Mockito.doReturn(null).when(mockReq).getParameter("x");
-    assertEquals("Test that missing parameters dont cause NPE",
-        null, quoter.getParameter("x"));
+    assertEquals(null, quoter.getParameter("x"),
+        "Test that missing parameters dont cause NPE");
 
     Mockito.doReturn(new String[]{"a<b", "b"}).when(mockReq).getParameterValues("x");
     assertArrayEquals(

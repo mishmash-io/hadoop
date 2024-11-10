@@ -25,6 +25,7 @@ import java.util.List;
 import java.util.UUID;
 
 import org.assertj.core.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInfo;
 import org.apache.hadoop.fs.FileStatus;
@@ -55,6 +56,7 @@ public abstract class AbstractContractGetFileStatusTest extends
   private static final int TREE_FILES = 4;
   private static final int TREE_FILESIZE = 512;
 
+  @BeforeEach
   @Override
   public void setup(TestInfo info) throws Exception {
     super.setup(info);

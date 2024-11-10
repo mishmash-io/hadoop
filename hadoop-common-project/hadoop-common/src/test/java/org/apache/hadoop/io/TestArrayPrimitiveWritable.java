@@ -109,9 +109,9 @@ public class TestArrayPrimitiveWritable {
     //Read the int[] object as written by ObjectWritable, but
     //"going around" ObjectWritable
     String className = UTF8.readString(in);
-    assertEquals("The int[] written by ObjectWritable was not labelled as "
-        + "an ArrayPrimitiveWritable.Internal",
-        ArrayPrimitiveWritable.Internal.class.getName(), className);
+    assertEquals(ArrayPrimitiveWritable.Internal.class.getName(), className,
+        "The int[] written by ObjectWritable was not labelled as "
+        + "an ArrayPrimitiveWritable.Internal");
     ArrayPrimitiveWritable.Internal apwi = 
         new ArrayPrimitiveWritable.Internal();
     apwi.readFields(in);
@@ -156,9 +156,9 @@ public class TestArrayPrimitiveWritable {
     //"going around" ObjectWritable
     @SuppressWarnings("deprecation")
     String className = UTF8.readString(in);
-    assertEquals("The int[] written by ObjectWritable as a non-compact array "
-        + "was not labelled as an array of int", 
-        i.getClass().getName(), className);
+    assertEquals(i.getClass().getName(), className,
+        "The int[] written by ObjectWritable as a non-compact array "
+        + "was not labelled as an array of int");
     
     int length = in.readInt();
     assertEquals(i.length, length,

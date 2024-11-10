@@ -333,8 +333,8 @@ public class TestUGILoginFromKeytab {
   // the expected principal.
   private static KerberosTicket checkTicketAndKeytab(UserGroupInformation ugi,
       KerberosPrincipal principal, boolean expectIsKeytab) {
-    assertEquals("wrong principal",
-      principal.getName(), ugi.getUserName());
+    assertEquals(principal.getName(), ugi.getUserName(),
+      "wrong principal");
     assertEquals(expectIsKeytab, ugi.isFromKeytab(),
       "is not keytab");
     KerberosTicket ticket = getTicket(ugi);

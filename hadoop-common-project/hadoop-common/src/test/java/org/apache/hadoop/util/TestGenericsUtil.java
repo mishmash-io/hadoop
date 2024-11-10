@@ -120,8 +120,8 @@ public class TestGenericsUtil {
       new GenericOptionsParser(new Configuration(),
                                new String[] {"-Dx=y=z"});
     assertEquals(
-            "Options parser gets entire ='s expresion",
-            "y=z", parser.getConfiguration().get("x"));
+            "y=z", parser.getConfiguration().get("x"),
+            "Options parser gets entire ='s expresion");
   }
 
   @Test

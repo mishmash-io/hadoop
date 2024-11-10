@@ -266,8 +266,8 @@ public class TestMapFile {
       MapFile.rename(spyFs, oldDir.toString(), newDir.toString());
       fail("testRenameWithException no exception error !!!");
     } catch (IOException ex) {
-      assertEquals("testRenameWithException invalid IOExceptionMessage !!!",
-          ex.getMessage(), ERROR_MESSAGE);
+      assertEquals(ex.getMessage(), ERROR_MESSAGE,
+          "testRenameWithException invalid IOExceptionMessage !!!");
     } finally {
       IOUtils.cleanupWithLogger(LOG, writer);
     }
@@ -636,8 +636,8 @@ public class TestMapFile {
           MapFile.Writer.valueClass(IntWritable.class));
       fail("fail in testPathExplosionWriterCreation !!!");
     } catch (IOException ex) {
-      assertEquals("testPathExplosionWriterCreation ex message error !!!",
-          ex.getMessage(), TEST_ERROR_MESSAGE);
+      assertEquals(ex.getMessage(), TEST_ERROR_MESSAGE,
+          "testPathExplosionWriterCreation ex message error !!!");
     } catch (Exception e) {
       fail("fail in testPathExplosionWriterCreation. Other ex !!!");
     } finally {
