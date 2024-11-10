@@ -548,8 +548,9 @@ public class TestLocalDirAllocator {
       dirAllocator.getLocalPathForWrite("/test", conf);
       fail("not throwing the exception");
     } catch (IOException e) {
-      assertEquals("Incorrect exception message",
-          "No space available in any of the local directories.", e.getMessage());
+      assertEquals("No space available in any of the local directories.",
+          e.getMessage(),
+          "Incorrect exception message");
     }
   }
 

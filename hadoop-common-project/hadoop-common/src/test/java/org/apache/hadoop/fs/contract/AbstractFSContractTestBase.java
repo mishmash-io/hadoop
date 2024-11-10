@@ -180,8 +180,8 @@ public abstract class AbstractFSContractTestBase extends Assertions
     //sanity check to make sure that the test FS picked up really matches
     //the scheme chosen. This is to avoid defaulting back to the localFS
     //which would be drastic for root FS tests
-    assertEquals("wrong filesystem of " + fsURI,
-                 contract.getScheme(), fsURI.getScheme());
+    assertEquals(contract.getScheme(), fsURI.getScheme(),
+                 "wrong filesystem of " + fsURI);
     //create the test path
     testPath = getContract().getTestPath();
     mkdirs(testPath);
