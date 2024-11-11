@@ -59,8 +59,8 @@ public class TestDurationInfo {
 
   @Test
   public void testDurationInfoCreationWithNullMsg() {
-    DurationInfo info = new DurationInfo(log, null);
     assertThrows(NullPointerException.class, () -> {
+      DurationInfo info = new DurationInfo(log, null);
       info.close();
     });
   }

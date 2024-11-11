@@ -20,7 +20,6 @@ package org.apache.hadoop.io.erasurecode.rawcoder;
 import org.apache.hadoop.io.erasurecode.ECChunk;
 import org.apache.hadoop.io.erasurecode.ErasureCodeNative;
 import org.apache.hadoop.test.GenericTestUtils;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.MethodSource;
 
@@ -56,7 +55,7 @@ public class TestDecodingValidator extends TestRawCoderBase {
     });
   }
 
-  public TestDecodingValidator(
+  public void init(
       Class<? extends RawErasureCoderFactory> factoryClass, int numDataUnits,
       int numParityUnits, int[] erasedDataIndexes, int[] erasedParityIndexes) {
     this.encoderFactoryClass = factoryClass;
@@ -83,6 +82,7 @@ public class TestDecodingValidator extends TestRawCoderBase {
   public void testValidate(
           Class<? extends RawErasureCoderFactory> factoryClass, int numDataUnits,
           int numParityUnits, int[] erasedDataIndexes, int[] erasedParityIndexes) {
+    init(factoryClass, numDataUnits, numParityUnits, erasedDataIndexes, erasedParityIndexes);
     setup(factoryClass);
     prepare(null, numDataUnits, numParityUnits, erasedDataIndexes,
         erasedParityIndexes);
@@ -194,6 +194,7 @@ public class TestDecodingValidator extends TestRawCoderBase {
   public void testValidateWithBadDecoding(
           Class<? extends RawErasureCoderFactory> factoryClass, int numDataUnits,
           int numParityUnits, int[] erasedDataIndexes, int[] erasedParityIndexes) throws IOException {
+    init(factoryClass, numDataUnits, numParityUnits, erasedDataIndexes, erasedParityIndexes);
     setup(factoryClass);
     prepare(null, numDataUnits, numParityUnits, erasedDataIndexes,
         erasedParityIndexes);

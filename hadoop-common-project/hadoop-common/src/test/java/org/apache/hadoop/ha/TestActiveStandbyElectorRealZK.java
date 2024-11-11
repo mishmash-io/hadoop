@@ -34,6 +34,7 @@ import org.apache.zookeeper.CreateMode;
 import org.apache.zookeeper.ZooDefs.Ids;
 import org.apache.zookeeper.ZooKeeper;
 import org.apache.zookeeper.server.ZooKeeperServer;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.Timeout;
 import org.mockito.AdditionalMatchers;
@@ -60,7 +61,7 @@ public class TestActiveStandbyElectorRealZK extends ClientBaseWithFixes {
       new ActiveStandbyElectorCallback[NUM_ELECTORS];
   private ZooKeeperServer zkServer;
 
-  
+  @BeforeEach
   @Override
   public void setUp() throws Exception {
     super.setUp();
