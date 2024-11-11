@@ -164,10 +164,11 @@ public class TestShell extends Assertions {
     customEnv.put("AAA" + System.currentTimeMillis(), "AAA");
     customEnv.put("BBB" + System.currentTimeMillis(), "BBB");
     customEnv.put("CCC" + System.currentTimeMillis(), "CCC");
+    // environment variables can contain new lines in them, so, tell env to separate them by NUL instead
     Shell.ShellCommandExecutor command = new ShellCommandExecutor(
-        new String[]{"env"}, null, customEnv, 0L, inheritParentEnv);
+        new String[]{"env", "--null"}, null, customEnv, 0L, inheritParentEnv);
     command.execute();
-    String[] varsArr = command.getOutput().split("\n");
+    String[] varsArr = command.getOutput().split("\0");
     Map<String, String> vars = new HashMap<>();
     for (String var : varsArr) {
       int eqIndex = var.indexOf('=');
