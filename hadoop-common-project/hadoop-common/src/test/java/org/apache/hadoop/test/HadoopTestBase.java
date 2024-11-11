@@ -19,13 +19,11 @@ package org.apache.hadoop.test;
 
 import java.util.concurrent.TimeUnit;
 
-import org.junit.Rule;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.TestInfo;
-import org.junit.rules.TestName;
-import org.junit.rules.Timeout;
+import org.junit.jupiter.api.Timeout;
 
 /**
  * A base class for JUnit4 tests that sets a default timeout for all tests
@@ -34,6 +32,7 @@ import org.junit.rules.Timeout;
  * Threads are named to the method being executed, for ease of diagnostics
  * in logs and thread dumps.
  */
+@Timeout(value=HadoopTestBase.TEST_DEFAULT_TIMEOUT_VALUE, unit=TimeUnit.MILLISECONDS)
 public abstract class HadoopTestBase extends Assertions {
 
   /**
@@ -50,19 +49,17 @@ public abstract class HadoopTestBase extends Assertions {
   public static final int TEST_DEFAULT_TIMEOUT_VALUE = 100000;
 
   /**
-   * The JUnit rule that sets the default timeout for tests.
-   */
-  @Rule
-  public Timeout defaultTimeout = retrieveTestTimeout();
-
-  /**
    * Retrieve the test timeout from the system property
    * {@link #PROPERTY_TEST_DEFAULT_TIMEOUT}, falling back to
    * the value in {@link #TEST_DEFAULT_TIMEOUT_VALUE} if the
    * property is not defined.
-   * @return the recommended timeout for tests
+   *
+   * Deprecated - use a Timeout annotation instead
+   *
+   * @return the recommended timeout for tests, in millisec
    */
-  protected Timeout retrieveTestTimeout() {
+  @Deprecated
+  protected int retrieveTestTimeout() {
     String propval = System.getProperty(PROPERTY_TEST_DEFAULT_TIMEOUT,
                                          Integer.toString(
                                            TEST_DEFAULT_TIMEOUT_VALUE));
@@ -73,7 +70,7 @@ public abstract class HadoopTestBase extends Assertions {
       //fall back to the default value, as the property cannot be parsed
       millis = TEST_DEFAULT_TIMEOUT_VALUE;
     }
-    return new Timeout(millis, TimeUnit.MILLISECONDS);
+    return millis;
   }
 
   /**
