@@ -558,6 +558,7 @@ public class TestZKDelegationTokenSecretManager {
     assertNotNull(stat);
 
     tm1.destroy();
+    ZKDelegationTokenSecretManager.setCurator(null);
     curatorFramework.close();
   }
 
@@ -629,6 +630,7 @@ public class TestZKDelegationTokenSecretManager {
     assertTrue(executorService.awaitTermination(1, TimeUnit.SECONDS));
     tm1.destroy();
     tm2.destroy();
+    ZKDelegationTokenSecretManager.setCurator(null);
 
     String workingPath = "/" + conf.get(ZKDelegationTokenSecretManager.ZK_DTSM_ZNODE_WORKING_PATH,
         ZKDelegationTokenSecretManager.ZK_DTSM_ZNODE_WORKING_PATH_DEAFULT) + "/ZKDTSMRoot";
