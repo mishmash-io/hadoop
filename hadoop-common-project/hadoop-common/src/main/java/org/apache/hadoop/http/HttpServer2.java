@@ -1461,7 +1461,7 @@ public final class HttpServer2 implements FilterContainer {
       }
     }
     try {
-      serverChannel.bind(bindAddress, getAcceptQueueSize());
+      serverChannel.bind(bindAddress, listener.getAcceptQueueSize());
     } catch (Throwable e) {
       IO.close(serverChannel);
       throw new IOException("Failed to bind to " + bindAddress, e);
@@ -1475,6 +1475,7 @@ public final class HttpServer2 implements FilterContainer {
    * @throws Exception
    */
   private static void bindListener(ServerConnector listener) throws Exception {
+    listener.close();
     listener.open(tryBind(listener));
     LOG.info("Jetty bound to port " + listener.getLocalPort());
   }
