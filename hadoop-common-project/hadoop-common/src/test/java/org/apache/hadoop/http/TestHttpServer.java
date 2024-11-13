@@ -36,6 +36,7 @@ import org.eclipse.jetty.server.handler.StatisticsHandler;
 import org.eclipse.jetty.util.ajax.JSON;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 import org.slf4j.Logger;
@@ -289,7 +290,11 @@ public class TestHttpServer extends HttpServerFunctionalTest {
    * Jetty StatisticsHandler must be inserted via Server#insertHandler
    * instead of Server#setHandler. The server fails to start if
    * the handler is added by setHandler.
+   *
+   * NOTE: this test was disabled during an upgrade to Jetty 12.
+   * This version of jetty allows using setHandler(StatisticsHandler).
    */
+  @Disabled
   @Test
   public void testSetStatisticsHandler() throws Exception {
     final Configuration conf = new Configuration();
