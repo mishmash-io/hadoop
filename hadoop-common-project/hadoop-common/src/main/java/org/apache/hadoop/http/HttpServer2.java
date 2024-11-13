@@ -25,8 +25,10 @@ import java.io.PrintStream;
 import java.net.BindException;
 import java.net.InetSocketAddress;
 import java.net.MalformedURLException;
+import java.net.StandardSocketOptions;
 import java.net.URI;
 import java.net.URL;
+import java.nio.channels.ServerSocketChannel;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -109,6 +111,7 @@ import org.eclipse.jetty.ee10.servlet.ServletHandler;
 import org.eclipse.jetty.ee10.servlet.ServletHolder;
 import org.eclipse.jetty.ee10.servlet.ServletMapping;
 import org.eclipse.jetty.util.ArrayUtil;
+import org.eclipse.jetty.util.IO;
 import org.eclipse.jetty.util.ExceptionUtil.MultiException;
 import org.eclipse.jetty.util.ssl.SslContextFactory;
 import org.eclipse.jetty.util.thread.QueuedThreadPool;
@@ -1437,15 +1440,42 @@ public final class HttpServer2 implements FilterContainer {
   }
 
   /**
+   * Mimics Jetty's behavior when opening connectors, in order to give {@link #bindListener(ServerConnector)}
+   * a chance to reopen a closed channel.
+   *
+   * @param listener - the listener
+   * @return a channel
+   * @throws Exception if bind fails
+   */
+  private static ServerSocketChannel tryBind(ServerConnector listener) throws Exception {
+    InetSocketAddress bindAddress = listener.getHost() == null
+        ? new InetSocketAddress(listener.getPort())
+          : new InetSocketAddress(listener.getHost(), listener.getPort());
+    ServerSocketChannel serverChannel = ServerSocketChannel.open();
+    try {
+      serverChannel.setOption(StandardSocketOptions.SO_REUSEADDR, listener.getReuseAddress());
+      serverChannel.setOption(StandardSocketOptions.SO_REUSEPORT, listener.isReusePort());
+    } catch (Exception e) {
+      if (LOG.isDebugEnabled()) {
+        LOG.debug("Could not set socket options on " + serverChannel, e);
+      }
+    }
+    try {
+      serverChannel.bind(bindAddress, getAcceptQueueSize());
+    } catch (Throwable e) {
+      IO.close(serverChannel);
+      throw new IOException("Failed to bind to " + bindAddress, e);
+    }
+    return serverChannel;
+  }
+
+  /**
    * Bind listener by closing and opening the listener.
    * @param listener
    * @throws Exception
    */
   private static void bindListener(ServerConnector listener) throws Exception {
-    // jetty has a bug where you can't reopen a listener that previously
-    // failed to open w/o issuing a close first, even if the port is changed
-    //listener.close();
-    listener.open();
+    listener.open(tryBind(listener));
     LOG.info("Jetty bound to port " + listener.getLocalPort());
   }
 
