@@ -1475,6 +1475,10 @@ public final class HttpServer2 implements FilterContainer {
    * @throws Exception
    */
   private static void bindListener(ServerConnector listener) throws Exception {
+    // to allow HttpServer2 to be stopped (closing all its listeners) and
+    // reopened again (re-binding its listeners) - we need to provide
+    // jetty with a new ServerSocketChannel (as it won't reopen a channel
+    // that was successfully bound and then closed).
     listener.close();
     listener.open(tryBind(listener));
     LOG.info("Jetty bound to port " + listener.getLocalPort());
