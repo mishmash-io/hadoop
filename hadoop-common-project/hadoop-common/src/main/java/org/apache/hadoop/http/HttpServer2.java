@@ -1031,9 +1031,6 @@ public final class HttpServer2 implements FilterContainer {
     LOG.info("addJerseyResourcePackage: packageName=" + packageName
         + ", pathSpec=" + pathSpec);
     final ServletHolder sh = new ServletHolder(ServletContainer.class);
-    //sh.setInitParameter("com.sun.jersey.config.property.resourceConfigClass",
-    //    "com.sun.jersey.api.core.PackagesResourceConfig");
-    //sh.setInitParameter("com.sun.jersey.config.property.packages", packageName);
     sh.setInitParameter("jersey.config.server.provider.packages", packageName);
     for (Map.Entry<String, String> entry : params.entrySet()) {
       sh.setInitParameter(entry.getKey(), entry.getValue());
@@ -1447,7 +1444,7 @@ public final class HttpServer2 implements FilterContainer {
   private static void bindListener(ServerConnector listener) throws Exception {
     // jetty has a bug where you can't reopen a listener that previously
     // failed to open w/o issuing a close first, even if the port is changed
-    listener.close();
+    //listener.close();
     listener.open();
     LOG.info("Jetty bound to port " + listener.getLocalPort());
   }
