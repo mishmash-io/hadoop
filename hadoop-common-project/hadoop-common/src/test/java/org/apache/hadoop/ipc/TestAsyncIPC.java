@@ -30,7 +30,10 @@ import org.apache.hadoop.net.NetUtils;
 import org.apache.hadoop.util.StringUtils;
 import org.apache.hadoop.util.concurrent.AsyncGetFuture;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.MethodOrderer.OrderAnnotation;
+import org.junit.jupiter.api.Order;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.TestMethodOrder;
 import org.junit.jupiter.api.Timeout;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -46,6 +49,7 @@ import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 
+@TestMethodOrder(OrderAnnotation.class)
 public class TestAsyncIPC {
 
   private static Configuration conf;
@@ -454,11 +458,20 @@ public class TestAsyncIPC {
   /**
    * Test if the rpc server gets the default retry count (0) from client.
    *
+   * This test should run before other tests, because it relies on the
+   * retry count not being set (remaining as 'default').
+   *
+   * As the retry count is effectively stored
+   * in thread-local storage, and other tests manipulate it - it could
+   * be that when this test starts the retry count has already been
+   * set to a non-default value.
+   * 
    * @throws ExecutionException
    * @throws InterruptedException
    */
   @Test
   @Timeout(value=60000, unit=TimeUnit.MILLISECONDS)
+  @Order(1)
   public void testInitialCallRetryCount() throws IOException,
       InterruptedException, ExecutionException {
     // Override client to store the call id
