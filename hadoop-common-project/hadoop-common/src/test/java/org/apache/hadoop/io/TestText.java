@@ -320,7 +320,7 @@ public class TestText {
           in.reset(out.getData(), out.getLength());
           String s = WritableUtils.readString(in);
           
-          assertEquals("input buffer reset contents = " + name, name, s);
+          assertEquals(name, s, "input buffer reset contents = " + name);
         } catch (Exception ioe) {
           throw new RuntimeException(ioe);
         }
