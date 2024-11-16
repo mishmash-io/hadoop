@@ -21,6 +21,7 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.TimeUnit;
 
 import org.apache.hadoop.security.SecurityUtil;
 
@@ -36,6 +37,7 @@ import org.apache.zookeeper.server.NettyServerCnxnFactory;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.Timeout;
 
 import static org.apache.hadoop.fs.FileContext.LOG;
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -51,6 +53,7 @@ public class TestSecureZKCuratorManager {
   private ZKCuratorManager curator;
   private Configuration hadoopConf;
   static final int SECURE_CLIENT_PORT = 2281;
+  static final int INSECURE_CLIENT_PORT = 2381;
   static final int JUTE_MAXBUFFER = 400000000;
   static final File ZK_DATA_DIR = new File("testZkSSLClientConnectionDataDir");
   private static final int SERVER_ID = 1;
@@ -67,7 +70,7 @@ public class TestSecureZKCuratorManager {
     customConfiguration.put("audit.enable", "true");
     this.hadoopConf = setUpSecureConfig();
     InstanceSpec spec =
-        new InstanceSpec(ZK_DATA_DIR, SECURE_CLIENT_PORT, ELECTION_PORT, QUORUM_PORT,
+        new InstanceSpec(ZK_DATA_DIR, INSECURE_CLIENT_PORT, ELECTION_PORT, QUORUM_PORT,
             DELETE_DATA_DIRECTORY_ON_CLOSE, SERVER_ID, TICK_TIME, MAX_CLIENT_CNXNS,
             customConfiguration);
     this.server = new TestingServer(spec, true);
@@ -142,6 +145,7 @@ public class TestSecureZKCuratorManager {
   }
 
   @Test
+  @Timeout(value=30000, unit=TimeUnit.MILLISECONDS)
   public void testSecureZKConfiguration() throws Exception {
     LOG.info("Entered to the testSecureZKConfiguration test case.");
     // Validate that HadoopZooKeeperFactory will set ZKConfig with given principals
@@ -183,6 +187,7 @@ public class TestSecureZKCuratorManager {
   }
 
   @Test
+  @Timeout(value=30000, unit=TimeUnit.MILLISECONDS)
   public void testTruststoreKeystoreConfiguration() {
     LOG.info("Entered to the testTruststoreKeystoreConfiguration test case.");
     /*
