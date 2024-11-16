@@ -104,7 +104,7 @@ public class TestSecureZKCuratorManager {
    */
   public static Configuration setUpSecureConfig() {
     return setUpSecureConfig(new Configuration(),
-        "src/test/java/org/apache/hadoop/util/curator" + "/resources/data");
+        "src/test/java/org/apache/hadoop/util/curator" + "/resources/data/");
   }
 
   public static Configuration setUpSecureConfig(Configuration conf, String testDataPath) {
