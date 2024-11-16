@@ -104,16 +104,16 @@ public class TestSecureZKCuratorManager {
    */
   public static Configuration setUpSecureConfig() {
     return setUpSecureConfig(new Configuration(),
-        "src/test/java/org/apache/hadoop/util/curator" + "/resources/data/");
+        "src/test/java/org/apache/hadoop/util/curator" + "/resources/data");
   }
 
   public static Configuration setUpSecureConfig(Configuration conf, String testDataPath) {
     System.setProperty("zookeeper.serverCnxnFactory",
         NettyServerCnxnFactory.class.getCanonicalName());
 
-    System.setProperty("zookeeper.ssl.keyStore.location", testDataPath + "keystore.jks");
+    System.setProperty("zookeeper.ssl.keyStore.location", testDataPath + "/ssl/keystore.jks");
     System.setProperty("zookeeper.ssl.keyStore.password", "password");
-    System.setProperty("zookeeper.ssl.trustStore.location", testDataPath + "truststore.jks");
+    System.setProperty("zookeeper.ssl.trustStore.location", testDataPath + "/ssl/truststore.jks");
     System.setProperty("zookeeper.ssl.trustStore.password", "password");
     System.setProperty("zookeeper.request.timeout", "12345");
 
