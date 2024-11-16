@@ -64,7 +64,7 @@ public class TestSecureZKCuratorManager {
     // inject values to the ZK configuration file for secure connection
     Map<String, Object> customConfiguration = new HashMap<>();
     customConfiguration.put("secureClientPort", String.valueOf(SECURE_CLIENT_PORT));
-    customConfiguration.put("audit.enable", true);
+    customConfiguration.put("audit.enable", "true");
     this.hadoopConf = setUpSecureConfig();
     InstanceSpec spec =
         new InstanceSpec(ZK_DATA_DIR, SECURE_CLIENT_PORT, ELECTION_PORT, QUORUM_PORT,
