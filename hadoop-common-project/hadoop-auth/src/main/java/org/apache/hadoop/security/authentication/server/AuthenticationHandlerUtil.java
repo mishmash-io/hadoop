@@ -14,9 +14,9 @@
 
 package org.apache.hadoop.security.authentication.server;
 
-import static org.apache.hadoop.security.authentication.server.HttpConstants.NEGOTIATE;
-import static org.apache.hadoop.security.authentication.server.HttpConstants.BASIC;
-import static org.apache.hadoop.security.authentication.server.HttpConstants.DIGEST;
+import static org.apache.hadoop.security.authentication.util.HttpConstants.BASIC;
+import static org.apache.hadoop.security.authentication.util.HttpConstants.DIGEST;
+import static org.apache.hadoop.security.authentication.util.HttpConstants.NEGOTIATE;
 
 import java.util.Locale;
 

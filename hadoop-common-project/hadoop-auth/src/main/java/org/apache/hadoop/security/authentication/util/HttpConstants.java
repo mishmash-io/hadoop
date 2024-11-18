@@ -11,7 +11,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License. See accompanying LICENSE file.
  */
-package org.apache.hadoop.security.authentication.server;
+package org.apache.hadoop.security.authentication.util;
 
 /**
  * This class defines constants used for HTTP protocol entities (such as
