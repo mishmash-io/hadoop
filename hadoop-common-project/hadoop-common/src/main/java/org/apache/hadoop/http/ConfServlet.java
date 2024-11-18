@@ -15,7 +15,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.hadoop.conf;
+package org.apache.hadoop.http;
 
 import java.io.IOException;
 import java.io.Writer;
@@ -28,9 +28,8 @@ import jakarta.ws.rs.core.HttpHeaders;
 
 import org.apache.hadoop.classification.InterfaceAudience;
 import org.apache.hadoop.classification.InterfaceStability;
-import org.apache.hadoop.http.HttpServer2;
-
 import org.apache.hadoop.classification.VisibleForTesting;
+import org.apache.hadoop.conf.Configuration;
 
 /**
  * A servlet to print out the running configuration data.

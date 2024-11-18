@@ -16,7 +16,7 @@
  * limitations under the License.
  */
 
-package org.apache.hadoop.conf;
+package org.apache.hadoop.http;
 
 import org.apache.commons.text.StringEscapeUtils;
 

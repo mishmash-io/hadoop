@@ -15,7 +15,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.hadoop.conf;
+package org.apache.hadoop.http;
 
 import java.io.StringWriter;
 import java.io.PrintWriter;
@@ -41,7 +41,7 @@ import org.w3c.dom.NodeList;
 import org.xml.sax.InputSource;
 
 import org.apache.hadoop.thirdparty.com.google.common.base.Strings;
-
+import org.apache.hadoop.http.ConfServlet;
 import org.apache.hadoop.http.HttpServer2;
 import org.apache.hadoop.util.XMLUtils;
 
