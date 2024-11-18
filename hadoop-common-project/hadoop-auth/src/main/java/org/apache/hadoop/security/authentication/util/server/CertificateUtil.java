@@ -15,7 +15,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.hadoop.security.authentication.util;
+package org.apache.hadoop.security.authentication.util.server;
 
 import java.io.ByteArrayInputStream;
 import java.nio.charset.StandardCharsets;

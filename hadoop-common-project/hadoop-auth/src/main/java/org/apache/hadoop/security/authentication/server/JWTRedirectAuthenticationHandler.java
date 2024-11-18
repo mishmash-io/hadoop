@@ -30,7 +30,7 @@ import java.security.interfaces.RSAPublicKey;
 
 import org.apache.hadoop.classification.VisibleForTesting;
 import org.apache.hadoop.security.authentication.client.AuthenticationException;
-import org.apache.hadoop.security.authentication.util.CertificateUtil;
+import org.apache.hadoop.security.authentication.util.server.CertificateUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

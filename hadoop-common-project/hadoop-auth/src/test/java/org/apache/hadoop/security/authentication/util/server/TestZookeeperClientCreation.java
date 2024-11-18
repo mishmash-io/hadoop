@@ -12,7 +12,7 @@
  * limitations under the License. See accompanying LICENSE file.
  */
 
-package org.apache.hadoop.security.authentication.util;
+package org.apache.hadoop.security.authentication.util.server;
 
 import org.apache.curator.RetryPolicy;
 import org.apache.curator.framework.CuratorFrameworkFactory;
@@ -20,7 +20,8 @@ import org.apache.curator.framework.imps.DefaultACLProvider;
 import org.apache.curator.retry.ExponentialBackoffRetry;
 import org.apache.curator.utils.ConfigurableZookeeperFactory;
 import org.apache.curator.utils.ZookeeperFactory;
-import org.apache.hadoop.security.authentication.util.ZookeeperClient.SASLOwnerACLProvider;
+import org.apache.hadoop.security.authentication.util.server.ZookeeperClient;
+import org.apache.hadoop.security.authentication.util.server.ZookeeperClient.SASLOwnerACLProvider;
 import org.apache.zookeeper.ZooDefs;
 import org.apache.zookeeper.client.ZKClientConfig;
 import org.apache.zookeeper.common.ClientX509Util;

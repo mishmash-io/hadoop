@@ -11,21 +11,23 @@
  * See the License for the specific language governing permissions and
  * limitations under the License. See accompanying LICENSE file.
  */
-package org.apache.hadoop.security.authentication.util;
+package org.apache.hadoop.security.authentication.util.server;
+
+import org.apache.hadoop.classification.VisibleForTesting;
+import org.apache.hadoop.classification.InterfaceStability;
 
 /**
- * Exception thrown by {@link Signer} when a string signature is invalid.
+ * Helper class for creating StringSignerSecretProviders in unit tests
  */
-public class SignerException extends Exception {
-  
-  static final long serialVersionUID = 0;
-
+@InterfaceStability.Unstable
+@VisibleForTesting
+public class StringSignerSecretProviderCreator {
   /**
-   * Creates an exception instance.
-   *
-   * @param msg message for the exception.
+   * @return a new StringSignerSecretProvider
+   * @throws Exception
    */
-  public SignerException(String msg) {
-    super(msg);
+  public static StringSignerSecretProvider newStringSignerSecretProvider()
+      throws Exception {
+    return new StringSignerSecretProvider();
   }
 }

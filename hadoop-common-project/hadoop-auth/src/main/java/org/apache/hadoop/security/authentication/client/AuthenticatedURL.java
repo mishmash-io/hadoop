@@ -13,7 +13,6 @@
  */
 package org.apache.hadoop.security.authentication.client;
 
-import org.apache.hadoop.security.authentication.server.AuthenticationFilter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -32,7 +31,7 @@ import java.util.Map;
 
 /**
  * The {@link AuthenticatedURL} class enables the use of the JDK {@link URL} class
- * against HTTP endpoints protected with the {@link AuthenticationFilter}.
+ * against HTTP endpoints protected with the {@link org.apache.hadoop.security.authentication.server.AuthenticationFilter}.
  * <p>
  * The authentication mechanisms supported by default are Hadoop Simple  authentication
  * (also known as pseudo authentication) and Kerberos SPNEGO authentication.

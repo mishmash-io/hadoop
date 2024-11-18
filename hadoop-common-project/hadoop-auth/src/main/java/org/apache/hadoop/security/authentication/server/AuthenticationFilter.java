@@ -19,6 +19,12 @@ import org.apache.hadoop.security.authentication.client.AuthenticatedURL;
 import org.apache.hadoop.security.authentication.client.AuthenticationException;
 import org.apache.hadoop.security.authentication.client.KerberosAuthenticator;
 import org.apache.hadoop.security.authentication.util.*;
+import org.apache.hadoop.security.authentication.util.server.FileSignerSecretProvider;
+import org.apache.hadoop.security.authentication.util.server.RandomSignerSecretProvider;
+import org.apache.hadoop.security.authentication.util.server.Signer;
+import org.apache.hadoop.security.authentication.util.server.SignerException;
+import org.apache.hadoop.security.authentication.util.server.SignerSecretProvider;
+import org.apache.hadoop.security.authentication.util.server.ZKSignerSecretProvider;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
