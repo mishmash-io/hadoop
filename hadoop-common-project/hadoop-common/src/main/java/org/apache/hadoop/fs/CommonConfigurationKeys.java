@@ -20,7 +20,6 @@ package org.apache.hadoop.fs;
 
 import org.apache.hadoop.classification.InterfaceAudience;
 import org.apache.hadoop.classification.InterfaceStability;
-import org.apache.hadoop.http.lib.StaticUserWebFilter;
 import org.apache.hadoop.net.DomainNameResolver;
 import org.apache.hadoop.net.DNSDomainNameResolver;
 
@@ -318,7 +317,7 @@ public class CommonConfigurationKeys extends CommonConfigurationKeysPublic {
   public static final int HA_FC_CLI_CHECK_TIMEOUT_DEFAULT = 20000;
 
   /** Static user web-filter properties.
-   * See {@link StaticUserWebFilter}.
+   * See {@link org.apache.hadoop.http.lib.StaticUserWebFilter}.
    */
   public static final String HADOOP_HTTP_STATIC_USER =
     "hadoop.http.staticuser.user";
