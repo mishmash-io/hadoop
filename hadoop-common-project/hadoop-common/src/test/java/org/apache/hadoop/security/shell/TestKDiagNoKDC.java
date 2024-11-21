@@ -16,9 +16,10 @@
  * limitations under the License.
  */
 
-package org.apache.hadoop.security;
+package org.apache.hadoop.security.shell;
 
 import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.security.UserGroupInformation;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
@@ -30,13 +31,13 @@ import org.slf4j.LoggerFactory;
 import java.util.concurrent.TimeUnit;
 
 import static org.apache.hadoop.fs.CommonConfigurationKeysPublic.HADOOP_TOKEN_FILES;
-import static org.apache.hadoop.security.KDiag.ARG_KEYLEN;
-import static org.apache.hadoop.security.KDiag.ARG_NOFAIL;
-import static org.apache.hadoop.security.KDiag.ARG_NOLOGIN;
-import static org.apache.hadoop.security.KDiag.CAT_LOGIN;
-import static org.apache.hadoop.security.KDiag.CAT_TOKEN;
-import static org.apache.hadoop.security.KDiag.KerberosDiagsFailure;
-import static org.apache.hadoop.security.KDiag.exec;
+import static org.apache.hadoop.security.shell.KDiag.ARG_KEYLEN;
+import static org.apache.hadoop.security.shell.KDiag.ARG_NOFAIL;
+import static org.apache.hadoop.security.shell.KDiag.ARG_NOLOGIN;
+import static org.apache.hadoop.security.shell.KDiag.CAT_LOGIN;
+import static org.apache.hadoop.security.shell.KDiag.CAT_TOKEN;
+import static org.apache.hadoop.security.shell.KDiag.KerberosDiagsFailure;
+import static org.apache.hadoop.security.shell.KDiag.exec;
 
 @Timeout(value=30000, unit=TimeUnit.MILLISECONDS)
 public class TestKDiagNoKDC extends Assertions {
