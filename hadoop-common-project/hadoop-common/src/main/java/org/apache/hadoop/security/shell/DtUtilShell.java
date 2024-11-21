@@ -16,7 +16,7 @@
  * limitations under the License.
  */
 
-package org.apache.hadoop.security.token;
+package org.apache.hadoop.security.shell;
 
 import java.io.File;
 import java.io.IOException;
