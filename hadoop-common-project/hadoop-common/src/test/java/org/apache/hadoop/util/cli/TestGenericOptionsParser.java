@@ -15,7 +15,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.hadoop.util;
+package org.apache.hadoop.util.cli;
 
 import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -47,6 +47,8 @@ import org.apache.hadoop.security.token.delegation.AbstractDelegationTokenIdenti
 import org.apache.hadoop.test.GenericTestUtils;
 
 import org.apache.hadoop.thirdparty.com.google.common.collect.Maps;
+import org.apache.hadoop.util.Shell;
+import org.apache.hadoop.util.cli.GenericOptionsParser;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;

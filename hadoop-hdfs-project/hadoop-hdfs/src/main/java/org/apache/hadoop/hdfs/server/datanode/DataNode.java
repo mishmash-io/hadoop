@@ -261,6 +261,7 @@ import org.apache.hadoop.security.token.Token;
 import org.apache.hadoop.security.token.TokenIdentifier;
 import org.apache.hadoop.tracing.TraceUtils;
 import org.apache.hadoop.util.DiskChecker.DiskErrorException;
+import org.apache.hadoop.util.cli.GenericOptionsParser;
 import org.apache.hadoop.util.concurrent.HadoopExecutors;
 import org.apache.hadoop.tracing.Tracer;
 import org.eclipse.jetty.util.ajax.JSON;

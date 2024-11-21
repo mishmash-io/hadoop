@@ -24,8 +24,8 @@ import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hdfs.DistributedFileSystem;
 import org.apache.hadoop.hdfs.protocol.SnapshotStatus;
 import org.apache.hadoop.hdfs.tools.AdminHelper;
-import org.apache.hadoop.util.Tool;
-import org.apache.hadoop.util.ToolRunner;
+import org.apache.hadoop.util.cli.Tool;
+import org.apache.hadoop.util.cli.ToolRunner;
 
 /**
  * A tool used to list all snapshottable directories that are owned by the

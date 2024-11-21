@@ -108,11 +108,10 @@ import org.apache.hadoop.security.UserGroupInformation;
 import org.apache.hadoop.security.authentication.server.ProxyUserAuthenticationFilterInitializer;
 import org.apache.hadoop.security.authorize.AccessControlList;
 import org.apache.hadoop.security.token.Token;
-import org.apache.hadoop.util.ToolRunner;
-
 import org.apache.hadoop.classification.VisibleForTesting;
 import org.apache.hadoop.thirdparty.com.google.common.base.Joiner;
 import org.apache.hadoop.util.Preconditions;
+import org.apache.hadoop.util.cli.ToolRunner;
 import org.apache.hadoop.thirdparty.protobuf.BlockingService;
 
 @InterfaceAudience.Private

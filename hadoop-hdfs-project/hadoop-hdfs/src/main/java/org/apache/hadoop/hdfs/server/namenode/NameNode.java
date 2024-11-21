@@ -91,7 +91,6 @@ import org.apache.hadoop.security.authorize.RefreshAuthorizationPolicyProtocol;
 import org.apache.hadoop.tools.GetUserMappingsProtocol;
 import org.apache.hadoop.tracing.TraceUtils;
 import org.apache.hadoop.util.ExitUtil.ExitException;
-import org.apache.hadoop.util.GenericOptionsParser;
 import org.apache.hadoop.util.JvmPauseMonitor;
 import org.apache.hadoop.util.Lists;
 import org.apache.hadoop.util.ServicePlugin;
@@ -100,6 +99,7 @@ import org.apache.hadoop.util.StringUtils;
 import org.apache.hadoop.util.Time;
 import org.apache.hadoop.util.GcTimeMonitor;
 import org.apache.hadoop.util.GcTimeMonitor.Builder;
+import org.apache.hadoop.util.cli.GenericOptionsParser;
 import org.apache.hadoop.tracing.Tracer;
 import org.apache.hadoop.util.Timer;
 
@@ -227,7 +227,7 @@ import static org.apache.hadoop.hdfs.DFSConfigKeys.DFS_NAMENODE_DECOMMISSION_BAC
 import static org.apache.hadoop.hdfs.DFSConfigKeys.DFS_NAMENODE_DECOMMISSION_BACKOFF_MONITOR_PENDING_BLOCKS_PER_LOCK_DEFAULT;
 
 import static org.apache.hadoop.util.ExitUtil.terminate;
-import static org.apache.hadoop.util.ToolRunner.confirmPrompt;
+import static org.apache.hadoop.util.cli.ToolRunner.confirmPrompt;
 import static org.apache.hadoop.fs.CommonConfigurationKeys.IPC_BACKOFF_ENABLE;
 import static org.apache.hadoop.fs.CommonConfigurationKeys.IPC_NAMESPACE;
 import static org.apache.hadoop.fs.CommonConfigurationKeys.IPC_BACKOFF_ENABLE_DEFAULT;

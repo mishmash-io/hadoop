@@ -16,7 +16,7 @@
  * limitations under the License.
  */
 
-package org.apache.hadoop.util;
+package org.apache.hadoop.util.cli;
 
 import org.apache.hadoop.classification.InterfaceAudience;
 import org.apache.hadoop.classification.InterfaceStability;

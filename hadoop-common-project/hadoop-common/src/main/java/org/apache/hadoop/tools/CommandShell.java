@@ -21,7 +21,7 @@ package org.apache.hadoop.tools;
 import java.io.PrintStream;
 
 import org.apache.hadoop.conf.Configured;
-import org.apache.hadoop.util.Tool;
+import org.apache.hadoop.util.cli.Tool;
 
 /**
  * This program is a CLI utility base class utilizing hadoop Tool class.

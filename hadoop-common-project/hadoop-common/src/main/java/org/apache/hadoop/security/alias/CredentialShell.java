@@ -32,7 +32,7 @@ import org.apache.commons.lang3.StringUtils;
 
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.tools.CommandShell;
-import org.apache.hadoop.util.ToolRunner;
+import org.apache.hadoop.util.cli.ToolRunner;
 
 /**
  * This program is the CLI utility for the CredentialProvider facilities in

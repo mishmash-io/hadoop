@@ -37,8 +37,8 @@ import org.apache.hadoop.hdfs.protocol.ZoneReencryptionStatus;
 import org.apache.hadoop.tools.TableListing;
 import org.apache.hadoop.util.StringUtils;
 import org.apache.hadoop.util.Time;
-import org.apache.hadoop.util.Tool;
-import org.apache.hadoop.util.ToolRunner;
+import org.apache.hadoop.util.cli.Tool;
+import org.apache.hadoop.util.cli.ToolRunner;
 
 /**
  * This class implements crypto command-line operations.

@@ -18,7 +18,7 @@
 package org.apache.hadoop.cli.util;
 
 import org.apache.hadoop.hdfs.tools.ECAdmin;
-import org.apache.hadoop.util.ToolRunner;
+import org.apache.hadoop.util.cli.ToolRunner;
 
 public class ErasureCodingCliCmdExecutor extends CommandExecutor {
   protected String namenode = null;

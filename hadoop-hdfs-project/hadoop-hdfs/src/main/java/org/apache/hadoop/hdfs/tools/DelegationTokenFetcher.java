@@ -41,8 +41,7 @@ import org.apache.hadoop.security.UserGroupInformation;
 import org.apache.hadoop.security.token.Token;
 import org.apache.hadoop.security.token.TokenIdentifier;
 import org.apache.hadoop.util.ExitUtil;
-import org.apache.hadoop.util.GenericOptionsParser;
-
+import org.apache.hadoop.util.cli.GenericOptionsParser;
 import org.apache.hadoop.classification.VisibleForTesting;
 
 /**

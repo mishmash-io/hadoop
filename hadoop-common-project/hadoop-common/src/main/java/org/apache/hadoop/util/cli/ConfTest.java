@@ -16,7 +16,7 @@
  * limitations under the License.
  */
 
-package org.apache.hadoop.util;
+package org.apache.hadoop.util.cli;
 
 import java.io.File;
 import java.io.FileFilter;
@@ -49,6 +49,7 @@ import org.apache.commons.cli.Option;
 import org.apache.commons.cli.Options;
 import org.apache.commons.cli.ParseException;
 import org.apache.hadoop.classification.InterfaceAudience;
+import org.apache.hadoop.util.StringUtils;
 
 /**
  * This class validates configuration XML files in ${HADOOP_CONF_DIR} or

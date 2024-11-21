@@ -34,7 +34,7 @@ import org.apache.hadoop.hdfs.HdfsConfiguration;
 import org.apache.hadoop.hdfs.NameNodeProxies;
 import org.apache.hadoop.tools.GetGroupsBase;
 import org.apache.hadoop.tools.GetUserMappingsProtocol;
-import org.apache.hadoop.util.ToolRunner;
+import org.apache.hadoop.util.cli.ToolRunner;
 
 /**
  * HDFS implementation of a tool for getting the groups which a given user

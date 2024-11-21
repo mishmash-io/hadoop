@@ -55,7 +55,7 @@ import org.apache.hadoop.hdfs.tools.DFSAdmin;
 import org.apache.hadoop.test.GenericTestUtils;
 import org.apache.hadoop.util.Lists;
 import org.apache.hadoop.util.Time;
-import org.apache.hadoop.util.ToolRunner;
+import org.apache.hadoop.util.cli.ToolRunner;
 import org.junit.Assert;
 import org.junit.Test;
 import org.slf4j.Logger;

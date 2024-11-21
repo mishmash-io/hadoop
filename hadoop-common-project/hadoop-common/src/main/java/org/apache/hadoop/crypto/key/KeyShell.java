@@ -33,7 +33,7 @@ import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.crypto.key.KeyProvider.Metadata;
 import org.apache.hadoop.crypto.key.KeyProvider.Options;
 import org.apache.hadoop.tools.CommandShell;
-import org.apache.hadoop.util.ToolRunner;
+import org.apache.hadoop.util.cli.ToolRunner;
 
 /**
  * This program is the CLI utility for the KeyProvider facilities in Hadoop.

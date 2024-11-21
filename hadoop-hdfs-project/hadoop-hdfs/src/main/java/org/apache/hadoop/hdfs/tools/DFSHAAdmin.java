@@ -24,6 +24,7 @@ import java.util.Collection;
 import java.util.Map;
 
 import org.apache.hadoop.util.Preconditions;
+import org.apache.hadoop.util.cli.ToolRunner;
 import org.apache.hadoop.thirdparty.com.google.common.collect.ImmutableMap;
 import org.apache.hadoop.thirdparty.com.google.common.collect.ImmutableSortedMap;
 import org.apache.commons.cli.CommandLine;
@@ -44,7 +45,6 @@ import org.apache.hadoop.hdfs.DFSConfigKeys;
 import org.apache.hadoop.hdfs.DFSUtil;
 import org.apache.hadoop.hdfs.DFSUtilClient;
 import org.apache.hadoop.hdfs.HdfsConfiguration;
-import org.apache.hadoop.util.ToolRunner;
 
 /**
  * Class to extend HAAdmin to do a little bit of HDFS-specific configuration.

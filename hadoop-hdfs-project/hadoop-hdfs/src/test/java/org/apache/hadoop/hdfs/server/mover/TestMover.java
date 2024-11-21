@@ -98,7 +98,6 @@ import org.apache.hadoop.security.authentication.util.KerberosName;
 import org.apache.hadoop.security.ssl.KeyStoreTestUtil;
 import org.apache.hadoop.test.GenericTestUtils;
 import org.apache.hadoop.test.MetricsAsserts;
-import org.apache.hadoop.util.ToolRunner;
 import org.junit.Assert;
 import org.junit.Test;
 import org.slf4j.Logger;
@@ -106,6 +105,7 @@ import org.slf4j.LoggerFactory;
 
 import java.util.function.Supplier;
 import org.apache.hadoop.thirdparty.com.google.common.collect.Maps;
+import org.apache.hadoop.util.cli.ToolRunner;
 
 public class TestMover {
   private static final Logger LOG = LoggerFactory.getLogger(TestMover.class);

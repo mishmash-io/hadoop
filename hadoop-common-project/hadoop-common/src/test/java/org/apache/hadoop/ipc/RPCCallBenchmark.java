@@ -36,8 +36,8 @@ import org.apache.hadoop.net.NetUtils;
 import org.apache.hadoop.security.UserGroupInformation;
 import org.apache.hadoop.test.MultithreadedTestUtil;
 import org.apache.hadoop.test.MultithreadedTestUtil.TestContext;
-import org.apache.hadoop.util.Tool;
-import org.apache.hadoop.util.ToolRunner;
+import org.apache.hadoop.util.cli.Tool;
+import org.apache.hadoop.util.cli.ToolRunner;
 
 import java.io.IOException;
 import java.lang.management.ManagementFactory;

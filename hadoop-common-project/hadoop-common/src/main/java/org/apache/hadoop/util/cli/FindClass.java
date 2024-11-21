@@ -15,13 +15,11 @@
  * limitations under the License.
  */
 
-package org.apache.hadoop.util;
+package org.apache.hadoop.util.cli;
 
 import org.apache.hadoop.classification.VisibleForTesting;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.conf.Configured;
-import org.apache.hadoop.util.Tool;
-import org.apache.hadoop.util.ToolRunner;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.PrintStream;

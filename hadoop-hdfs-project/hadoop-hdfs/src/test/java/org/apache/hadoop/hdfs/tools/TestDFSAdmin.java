@@ -89,8 +89,7 @@ import org.apache.hadoop.security.authorize.DefaultImpersonationProvider;
 import org.apache.hadoop.test.GenericTestUtils;
 import org.apache.hadoop.test.PathUtils;
 import org.apache.hadoop.util.Lists;
-import org.apache.hadoop.util.ToolRunner;
-
+import org.apache.hadoop.util.cli.ToolRunner;
 import org.assertj.core.api.Assertions;
 import org.junit.After;
 import org.junit.Before;

@@ -44,8 +44,8 @@ import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.fs.UnsupportedFileSystemException;
 import org.apache.hadoop.io.IOUtils;
 import org.apache.hadoop.util.Time;
-import org.apache.hadoop.util.Tool;
-import org.apache.hadoop.util.ToolRunner;
+import org.apache.hadoop.util.cli.Tool;
+import org.apache.hadoop.util.cli.ToolRunner;
 import org.apache.hadoop.util.Preconditions;
 
 import org.slf4j.Logger;

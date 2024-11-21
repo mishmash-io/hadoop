@@ -18,7 +18,7 @@
 package org.apache.hadoop.cli.util;
 
 import org.apache.hadoop.fs.shell.FsShell;
-import org.apache.hadoop.util.ToolRunner;
+import org.apache.hadoop.util.cli.ToolRunner;
 
 public class FSCmdExecutor extends CommandExecutor {
   protected String namenode = null;

@@ -55,10 +55,10 @@ import org.apache.hadoop.hdfs.tools.GetConf.Command;
 import org.apache.hadoop.hdfs.tools.GetConf.CommandHandler;
 import org.apache.hadoop.hdfs.util.HostsFileWriter;
 import org.apache.hadoop.net.NetUtils;
-import org.apache.hadoop.util.ToolRunner;
 import org.junit.Test;
 
 import org.apache.hadoop.thirdparty.com.google.common.base.Joiner;
+import org.apache.hadoop.util.cli.ToolRunner;
 
 /**
  * Test for {@link GetConf}

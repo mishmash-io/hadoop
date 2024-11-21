@@ -122,7 +122,7 @@ import org.apache.hadoop.security.UserGroupInformation;
 import org.apache.hadoop.security.ssl.KeyStoreTestUtil;
 import org.apache.hadoop.test.GenericTestUtils;
 import org.apache.hadoop.util.Time;
-import org.apache.hadoop.util.Tool;
+import org.apache.hadoop.util.cli.Tool;
 import org.slf4j.event.Level;
 import org.junit.After;
 import org.junit.Test;

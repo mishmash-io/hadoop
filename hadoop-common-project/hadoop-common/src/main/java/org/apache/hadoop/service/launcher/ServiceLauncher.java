@@ -40,8 +40,8 @@ import org.apache.hadoop.net.NetUtils;
 import org.apache.hadoop.service.Service;
 import org.apache.hadoop.util.ExitCodeProvider;
 import org.apache.hadoop.util.ExitUtil;
-import org.apache.hadoop.util.GenericOptionsParser;
 import org.apache.hadoop.util.StringUtils;
+import org.apache.hadoop.util.cli.GenericOptionsParser;
 
 /**
  * A class to launch any YARN service by name.

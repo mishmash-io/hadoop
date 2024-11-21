@@ -145,8 +145,7 @@ import org.apache.hadoop.test.GenericTestUtils;
 import org.apache.hadoop.util.ExitUtil;
 import org.apache.hadoop.util.ShutdownHookManager;
 import org.apache.hadoop.util.StringUtils;
-import org.apache.hadoop.util.ToolRunner;
-
+import org.apache.hadoop.util.cli.ToolRunner;
 import org.apache.hadoop.thirdparty.com.google.common.base.Joiner;
 import org.apache.hadoop.util.Preconditions;
 

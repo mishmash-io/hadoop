@@ -105,8 +105,7 @@ import org.apache.hadoop.security.SecurityUtil;
 import org.apache.hadoop.security.UserGroupInformation;
 import org.apache.hadoop.security.authorize.RefreshAuthorizationPolicyProtocol;
 import org.apache.hadoop.util.StringUtils;
-import org.apache.hadoop.util.ToolRunner;
-
+import org.apache.hadoop.util.cli.ToolRunner;
 import org.apache.hadoop.util.Preconditions;
 
 /**

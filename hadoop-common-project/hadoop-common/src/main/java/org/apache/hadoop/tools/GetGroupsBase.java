@@ -26,7 +26,7 @@ import org.apache.hadoop.conf.Configured;
 import org.apache.hadoop.ipc.RPC;
 import org.apache.hadoop.net.NetUtils;
 import org.apache.hadoop.security.UserGroupInformation;
-import org.apache.hadoop.util.Tool;
+import org.apache.hadoop.util.cli.Tool;
 
 /**
  * Base class for the HDFS and MR implementations of tools which fetch and

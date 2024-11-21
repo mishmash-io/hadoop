@@ -42,10 +42,9 @@ import org.apache.hadoop.hdfs.protocol.CachePoolStats;
 import org.apache.hadoop.tools.TableListing;
 import org.apache.hadoop.tools.TableListing.Justification;
 import org.apache.hadoop.util.StringUtils;
-import org.apache.hadoop.util.Tool;
-
+import org.apache.hadoop.util.cli.Tool;
+import org.apache.hadoop.util.cli.ToolRunner;
 import org.apache.hadoop.thirdparty.com.google.common.base.Joiner;
-import org.apache.hadoop.util.ToolRunner;
 
 /**
  * This class implements command-line operations on the HDFS Cache.

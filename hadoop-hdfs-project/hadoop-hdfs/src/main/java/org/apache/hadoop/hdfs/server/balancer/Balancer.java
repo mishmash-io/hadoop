@@ -71,9 +71,8 @@ import org.apache.hadoop.security.UserGroupInformation;
 import org.apache.hadoop.util.HostsFileReader;
 import org.apache.hadoop.util.StringUtils;
 import org.apache.hadoop.util.Time;
-import org.apache.hadoop.util.Tool;
-import org.apache.hadoop.util.ToolRunner;
-
+import org.apache.hadoop.util.cli.Tool;
+import org.apache.hadoop.util.cli.ToolRunner;
 import org.apache.hadoop.util.Preconditions;
 
 /** <p>The balancer is a tool that balances disk space usage on an HDFS cluster

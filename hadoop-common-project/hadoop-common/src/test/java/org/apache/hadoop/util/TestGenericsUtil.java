@@ -27,6 +27,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.util.cli.GenericOptionsParser;
 import org.junit.jupiter.api.Test;
 
 public class TestGenericsUtil {

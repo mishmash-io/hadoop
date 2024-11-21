@@ -31,8 +31,8 @@ import org.apache.hadoop.hdfs.server.diskbalancer.command.HelpCommand;
 import org.apache.hadoop.hdfs.server.diskbalancer.command.PlanCommand;
 import org.apache.hadoop.hdfs.server.diskbalancer.command.QueryCommand;
 import org.apache.hadoop.hdfs.server.diskbalancer.command.ReportCommand;
-import org.apache.hadoop.util.Tool;
-import org.apache.hadoop.util.ToolRunner;
+import org.apache.hadoop.util.cli.Tool;
+import org.apache.hadoop.util.cli.ToolRunner;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

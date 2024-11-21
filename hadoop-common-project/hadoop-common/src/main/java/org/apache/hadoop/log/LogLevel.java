@@ -45,11 +45,11 @@ import org.apache.hadoop.http.HttpServer2;
 import org.apache.hadoop.security.authentication.client.AuthenticatedURL;
 import org.apache.hadoop.security.authentication.client.KerberosAuthenticator;
 import org.apache.hadoop.security.ssl.SSLFactory;
-import org.apache.hadoop.util.GenericOptionsParser;
 import org.apache.hadoop.util.GenericsUtil;
 import org.apache.hadoop.util.ServletUtil;
-import org.apache.hadoop.util.Tool;
-import org.apache.hadoop.util.ToolRunner;
+import org.apache.hadoop.util.cli.GenericOptionsParser;
+import org.apache.hadoop.util.cli.Tool;
+import org.apache.hadoop.util.cli.ToolRunner;
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
 
