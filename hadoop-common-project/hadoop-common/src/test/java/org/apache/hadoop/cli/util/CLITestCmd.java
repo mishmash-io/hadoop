@@ -18,7 +18,7 @@
 package org.apache.hadoop.cli.util;
 
 import org.apache.hadoop.conf.Configuration;
-import org.apache.hadoop.fs.FsShell;
+import org.apache.hadoop.fs.shell.FsShell;
 
 /**
  * Class to define Test Command along with its type

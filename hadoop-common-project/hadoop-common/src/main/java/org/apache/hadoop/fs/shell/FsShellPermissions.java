@@ -15,7 +15,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.hadoop.fs;
+package org.apache.hadoop.fs.shell;
 
 import java.io.IOException;
 import java.util.LinkedList;
@@ -26,10 +26,6 @@ import org.apache.hadoop.classification.InterfaceAudience;
 import org.apache.hadoop.classification.InterfaceStability;
 import org.apache.hadoop.fs.permission.ChmodParser;
 import org.apache.hadoop.fs.permission.FsPermission;
-import org.apache.hadoop.fs.shell.CommandFactory;
-import org.apache.hadoop.fs.shell.CommandFormat;
-import org.apache.hadoop.fs.shell.FsCommand;
-import org.apache.hadoop.fs.shell.PathData;
 import org.apache.hadoop.util.Shell;
 import org.slf4j.Logger;
 

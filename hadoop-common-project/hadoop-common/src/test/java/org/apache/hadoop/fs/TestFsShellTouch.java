@@ -21,6 +21,7 @@ import java.text.ParseException;
 import java.util.Date;
 
 import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.fs.shell.FsShell;
 import org.apache.hadoop.fs.shell.TouchCommands.Touch;
 import org.apache.hadoop.test.GenericTestUtils;
 import org.apache.hadoop.util.StringUtils;
