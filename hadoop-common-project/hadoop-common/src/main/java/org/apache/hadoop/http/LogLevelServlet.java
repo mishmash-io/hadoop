@@ -24,8 +24,10 @@ import org.apache.hadoop.classification.InterfaceAudience;
 import org.apache.hadoop.classification.InterfaceStability;
 import org.apache.hadoop.util.GenericsUtil;
 import org.apache.hadoop.util.http.ServletUtil;
-import org.apache.log4j.Level;
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.Level;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.core.config.Configurator;
 import org.slf4j.LoggerFactory;
 
 import jakarta.servlet.ServletException;
@@ -70,7 +72,7 @@ public class LogLevelServlet extends HttpServlet {
         }
 
         if (GenericsUtil.isLog4jLogger(logName)) {
-          process(Logger.getLogger(logName), level, out);
+          process(LogManager.getLogger(logName), level, out);
         } else {
           out.println("Sorry, setting log level is only supported for log4j loggers.<br />");
         }
@@ -96,11 +98,11 @@ public class LogLevelServlet extends HttpServlet {
             .toString())) {
           out.println(MARKER + "Bad Level : <b>" + level + "</b><br />");
         } else {
-          log.setLevel(Level.toLevel(level));
+          Configurator.setLevel(log, Level.toLevel(level));
           out.println(MARKER + "Setting Level to " + level + " ...<br />");
         }
       }
       out.println(MARKER
-          + "Effective Level: <b>" + log.getEffectiveLevel() + "</b><br />");
+          + "Effective Level: <b>" + log.getLevel() + "</b><br />");
     }
 }
