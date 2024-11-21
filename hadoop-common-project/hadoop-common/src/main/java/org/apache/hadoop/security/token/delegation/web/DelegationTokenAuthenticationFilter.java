@@ -36,7 +36,7 @@ import org.apache.hadoop.security.authorize.AuthorizationException;
 import org.apache.hadoop.security.authorize.ProxyUsers;
 import org.apache.hadoop.security.token.delegation.AbstractDelegationTokenSecretManager;
 import org.apache.hadoop.security.token.delegation.ZKDelegationTokenSecretManager;
-import org.apache.hadoop.util.HttpExceptionUtils;
+import org.apache.hadoop.util.http.HttpExceptionUtils;
 import org.apache.hc.core5.http.NameValuePair;
 import org.apache.hc.core5.net.URLEncodedUtils;
 import org.slf4j.Logger;

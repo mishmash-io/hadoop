@@ -25,7 +25,7 @@ import org.apache.hadoop.security.AccessControlException;
 import org.apache.hadoop.security.UserGroupInformation;
 import org.apache.hadoop.security.authentication.client.AuthenticationException;
 import org.apache.hadoop.security.authorize.AuthorizationException;
-import org.apache.hadoop.util.HttpExceptionUtils;
+import org.apache.hadoop.util.http.HttpExceptionUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

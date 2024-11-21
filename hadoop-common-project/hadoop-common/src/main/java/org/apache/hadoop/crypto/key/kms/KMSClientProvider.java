@@ -41,7 +41,6 @@ import org.apache.hadoop.security.token.TokenRenewer;
 import org.apache.hadoop.security.token.delegation.AbstractDelegationTokenIdentifier;
 import org.apache.hadoop.security.token.delegation.AbstractDelegationTokenSelector;
 import org.apache.hadoop.security.token.delegation.web.DelegationTokenAuthenticatedURL;
-import org.apache.hadoop.util.HttpExceptionUtils;
 import org.apache.hadoop.util.JsonSerialization;
 import org.apache.hadoop.util.KMSUtil;
 import org.apache.hc.core5.net.URIBuilder;
@@ -82,6 +81,7 @@ import org.apache.hadoop.crypto.key.KeyProviderCryptoExtension.CryptoExtension;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.hadoop.classification.VisibleForTesting;
 import org.apache.hadoop.util.Preconditions;
+import org.apache.hadoop.util.http.HttpExceptionUtils;
 import org.apache.hadoop.thirdparty.com.google.common.base.Strings;
 
 import static org.apache.hadoop.util.KMSUtil.checkNotEmpty;

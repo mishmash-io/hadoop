@@ -28,9 +28,9 @@ import org.apache.hadoop.security.authentication.client.Authenticator;
 import org.apache.hadoop.security.authentication.client.ConnectionConfigurator;
 import org.apache.hadoop.security.token.Token;
 import org.apache.hadoop.security.token.delegation.AbstractDelegationTokenIdentifier;
-import org.apache.hadoop.util.HttpExceptionUtils;
 import org.apache.hadoop.util.JsonSerialization;
 import org.apache.hadoop.util.StringUtils;
+import org.apache.hadoop.util.http.HttpExceptionUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
