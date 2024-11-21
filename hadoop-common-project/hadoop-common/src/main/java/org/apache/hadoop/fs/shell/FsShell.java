@@ -24,6 +24,7 @@ import java.util.Arrays;
 import java.util.LinkedList;
 
 import org.apache.hadoop.classification.InterfaceAudience;
+import org.apache.hadoop.classification.VisibleForTesting;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.conf.Configured;
 import org.apache.hadoop.fs.FileSystem;
@@ -97,7 +98,9 @@ public class FsShell extends Configured implements Tool {
     return this.help;
   }
   
-  protected void init() {
+  @VisibleForTesting
+  @InterfaceAudience.Private
+  public void init() {
     getConf().setQuietMode(true);
     UserGroupInformation.setConfiguration(getConf());
     if (commandFactory == null) {

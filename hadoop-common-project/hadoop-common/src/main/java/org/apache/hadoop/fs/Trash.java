@@ -21,6 +21,7 @@ import java.io.IOException;
 
 import org.apache.hadoop.classification.InterfaceAudience;
 import org.apache.hadoop.classification.InterfaceStability;
+import org.apache.hadoop.classification.VisibleForTesting;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.conf.Configured;
 import org.slf4j.Logger;
@@ -170,6 +171,8 @@ public class Trash extends Configured {
    * @throws IOException on raised on errors performing I/O.
    * @return Trash Dir.
    */
+  @VisibleForTesting
+  @InterfaceAudience.Private
   public Path getCurrentTrashDir() throws IOException {
     return trashPolicy.getCurrentTrashDir();
   }
