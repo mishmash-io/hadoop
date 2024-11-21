@@ -70,7 +70,7 @@ import org.apache.hadoop.security.SecurityUtil;
 import org.apache.hadoop.security.UserGroupInformation;
 import org.apache.hadoop.security.authentication.client.ConnectionConfigurator;
 import org.apache.hadoop.security.authentication.util.KerberosName;
-import org.apache.hadoop.security.AuthenticationFilterInitializer;
+import org.apache.hadoop.security.http.AuthenticationFilterInitializer;
 import org.apache.hadoop.security.ssl.KeyStoreTestUtil;
 import org.apache.hadoop.security.token.SecretManager.InvalidToken;
 import org.apache.hadoop.test.GenericTestUtils;

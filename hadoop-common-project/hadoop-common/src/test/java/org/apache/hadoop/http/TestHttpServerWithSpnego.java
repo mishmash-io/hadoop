@@ -22,7 +22,6 @@ import org.apache.hadoop.fs.CommonConfigurationKeys;
 import org.apache.hadoop.fs.CommonConfigurationKeysPublic;
 import org.apache.hadoop.minikdc.MiniKdc;
 import org.apache.hadoop.net.NetUtils;
-import org.apache.hadoop.security.AuthenticationFilterInitializer;
 import org.apache.hadoop.security.UserGroupInformation;
 import org.apache.hadoop.security.authentication.KerberosTestUtils;
 import org.apache.hadoop.security.authentication.client.AuthenticatedURL;
@@ -34,6 +33,7 @@ import org.apache.hadoop.security.authentication.util.server.SignerSecretProvide
 import org.apache.hadoop.security.authentication.util.server.StringSignerSecretProviderCreator;
 import org.apache.hadoop.security.authorize.AccessControlList;
 import org.apache.hadoop.security.authorize.ProxyUsers;
+import org.apache.hadoop.security.http.AuthenticationFilterInitializer;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;

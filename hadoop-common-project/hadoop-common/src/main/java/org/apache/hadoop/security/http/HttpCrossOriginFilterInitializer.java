@@ -16,7 +16,7 @@
  * limitations under the License.
  */
 
-package org.apache.hadoop.security;
+package org.apache.hadoop.security.http;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -24,7 +24,6 @@ import java.util.Map;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.http.FilterContainer;
 import org.apache.hadoop.http.FilterInitializer;
-import org.apache.hadoop.security.http.CrossOriginFilter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

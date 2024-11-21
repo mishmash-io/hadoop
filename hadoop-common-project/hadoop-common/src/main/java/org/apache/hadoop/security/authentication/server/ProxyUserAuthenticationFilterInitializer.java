@@ -22,8 +22,8 @@ import java.util.Map;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.http.FilterContainer;
 import org.apache.hadoop.http.FilterInitializer;
-import org.apache.hadoop.security.AuthenticationFilterInitializer;
 import org.apache.hadoop.security.authorize.ProxyUsers;
+import org.apache.hadoop.security.http.AuthenticationFilterInitializer;
 
 /**
  * Filter initializer to initialize

@@ -16,7 +16,7 @@
  * limitations under the License.
  */
 
-package org.apache.hadoop.security;
+package org.apache.hadoop.security.http;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNull;

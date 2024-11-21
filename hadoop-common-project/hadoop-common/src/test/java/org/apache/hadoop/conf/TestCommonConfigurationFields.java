@@ -29,9 +29,9 @@ import org.apache.hadoop.ha.SshFenceByTcpPort;
 import org.apache.hadoop.ha.ZKFailoverController;
 import org.apache.hadoop.io.erasurecode.CodecUtil;
 import org.apache.hadoop.security.CompositeGroupsMapping;
-import org.apache.hadoop.security.HttpCrossOriginFilterInitializer;
 import org.apache.hadoop.security.LdapGroupsMapping;
 import org.apache.hadoop.security.RuleBasedLdapGroupsMapping;
+import org.apache.hadoop.security.http.HttpCrossOriginFilterInitializer;
 import org.apache.hadoop.security.ssl.SSLFactory;
 
 /**

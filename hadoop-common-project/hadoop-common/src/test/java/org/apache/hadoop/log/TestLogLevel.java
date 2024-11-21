@@ -38,11 +38,11 @@ import org.apache.hadoop.http.HttpServer2;
 import org.apache.hadoop.log.LogLevel.CLI;
 import org.apache.hadoop.minikdc.KerberosSecurityTestcase;
 import org.apache.hadoop.net.NetUtils;
-import org.apache.hadoop.security.AuthenticationFilterInitializer;
 import org.apache.hadoop.security.UserGroupInformation;
 import org.apache.hadoop.security.authentication.KerberosTestUtils;
 import org.apache.hadoop.security.authentication.client.KerberosAuthenticator;
 import org.apache.hadoop.security.authorize.AccessControlList;
+import org.apache.hadoop.security.http.AuthenticationFilterInitializer;
 import org.apache.hadoop.security.ssl.KeyStoreTestUtil;
 
 import org.apache.hadoop.test.GenericTestUtils;

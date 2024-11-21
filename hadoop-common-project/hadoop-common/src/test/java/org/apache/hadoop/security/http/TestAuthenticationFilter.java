@@ -14,7 +14,7 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package org.apache.hadoop.security;
+package org.apache.hadoop.security.http;
 
 
 import static org.junit.jupiter.api.Assertions.assertEquals;

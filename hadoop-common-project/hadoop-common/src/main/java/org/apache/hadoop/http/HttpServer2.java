@@ -73,7 +73,6 @@ import org.apache.hadoop.jmx.JMXJsonServlet;
 import org.apache.hadoop.log.LogLevel;
 import org.apache.hadoop.metrics2.lib.DefaultMetricsSystem;
 import org.apache.hadoop.metrics2.sink.PrometheusMetricsSink;
-import org.apache.hadoop.security.AuthenticationFilterInitializer;
 import org.apache.hadoop.security.SecurityUtil;
 import org.apache.hadoop.security.UserGroupInformation;
 import org.apache.hadoop.security.authentication.server.AuthenticationFilter;
@@ -81,6 +80,7 @@ import org.apache.hadoop.security.authentication.server.ProxyUserAuthenticationF
 import org.apache.hadoop.security.authentication.server.PseudoAuthenticationHandler;
 import org.apache.hadoop.security.authentication.util.server.SignerSecretProvider;
 import org.apache.hadoop.security.authorize.AccessControlList;
+import org.apache.hadoop.security.http.AuthenticationFilterInitializer;
 import org.apache.hadoop.security.ssl.FileBasedKeyStoresFactory;
 import org.apache.hadoop.security.ssl.FileMonitoringTimerTask;
 import org.apache.hadoop.security.ssl.SSLFactory;
