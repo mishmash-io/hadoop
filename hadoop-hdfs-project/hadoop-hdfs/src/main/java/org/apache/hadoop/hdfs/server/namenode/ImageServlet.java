@@ -61,9 +61,8 @@ import org.apache.hadoop.http.HttpServer2;
 import org.apache.hadoop.io.IOUtils;
 import org.apache.hadoop.io.MD5Hash;
 import org.apache.hadoop.security.UserGroupInformation;
-import org.apache.hadoop.util.ServletUtil;
 import org.apache.hadoop.util.StringUtils;
-
+import org.apache.hadoop.util.http.ServletUtil;
 import org.apache.hadoop.classification.VisibleForTesting;
 import org.apache.hadoop.util.Preconditions;
 

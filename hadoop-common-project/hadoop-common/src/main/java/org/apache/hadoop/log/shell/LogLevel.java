@@ -15,12 +15,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.hadoop.log;
+package org.apache.hadoop.log.shell;
 
 import java.io.BufferedReader;
-import java.io.IOException;
 import java.io.InputStreamReader;
-import java.io.PrintWriter;
 import java.net.URL;
 import java.net.URLConnection;
 import java.nio.charset.StandardCharsets;
@@ -28,30 +26,17 @@ import java.util.regex.Pattern;
 
 import javax.net.ssl.HttpsURLConnection;
 import javax.net.ssl.SSLSocketFactory;
-import jakarta.servlet.ServletException;
-import jakarta.servlet.http.HttpServlet;
-import jakarta.servlet.http.HttpServletRequest;
-import jakarta.servlet.http.HttpServletResponse;
-
 import org.apache.hadoop.classification.VisibleForTesting;
-import org.slf4j.LoggerFactory;
-
 import org.apache.hadoop.HadoopIllegalArgumentException;
-import org.apache.hadoop.classification.InterfaceAudience;
 import org.apache.hadoop.classification.InterfaceStability;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.conf.Configured;
-import org.apache.hadoop.http.HttpServer2;
 import org.apache.hadoop.security.authentication.client.AuthenticatedURL;
 import org.apache.hadoop.security.authentication.client.KerberosAuthenticator;
 import org.apache.hadoop.security.ssl.SSLFactory;
-import org.apache.hadoop.util.GenericsUtil;
-import org.apache.hadoop.util.ServletUtil;
 import org.apache.hadoop.util.cli.GenericOptionsParser;
 import org.apache.hadoop.util.cli.Tool;
 import org.apache.hadoop.util.cli.ToolRunner;
-import org.apache.log4j.Level;
-import org.apache.log4j.Logger;
 
 /**
  * Change log level in runtime.
@@ -314,74 +299,4 @@ public class LogLevel {
   static final String MARKER = "<!-- OUTPUT -->";
   static final Pattern TAG = Pattern.compile("<[^>]*>");
 
-  /**
-   * A servlet implementation
-   */
-  @InterfaceAudience.LimitedPrivate({"HDFS", "MapReduce"})
-  @InterfaceStability.Unstable
-  public static class Servlet extends HttpServlet {
-    private static final long serialVersionUID = 1L;
-
-    @Override
-    public void doGet(HttpServletRequest request, HttpServletResponse response
-        ) throws ServletException, IOException {
-
-      // Do the authorization
-      if (!HttpServer2.hasAdministratorAccess(getServletContext(), request,
-          response)) {
-        return;
-      }
-
-      PrintWriter out = ServletUtil.initHTML(response, "Log Level");
-      String logName = ServletUtil.getParameter(request, "log");
-      String level = ServletUtil.getParameter(request, "level");
-
-      if (logName != null) {
-        out.println("<br /><hr /><h3>Results</h3>");
-        out.println(MARKER
-            + "Submitted Class Name: <b>" + logName + "</b><br />");
-
-        org.slf4j.Logger log = LoggerFactory.getLogger(logName);
-        out.println(MARKER
-            + "Log Class: <b>" + log.getClass().getName() +"</b><br />");
-        if (level != null) {
-          out.println(MARKER + "Submitted Level: <b>" + level + "</b><br />");
-        }
-
-        if (GenericsUtil.isLog4jLogger(logName)) {
-          process(Logger.getLogger(logName), level, out);
-        } else {
-          out.println("Sorry, setting log level is only supported for log4j loggers.<br />");
-        }
-      }
-
-      out.println(FORMS);
-      out.println(ServletUtil.HTML_TAIL);
-    }
-
-    static final String FORMS = "\n<br /><hr /><h3>Get / Set</h3>"
-        + "\n<form>Class Name: <input type='text' size='50' name='log' /> "
-        + "<input type='submit' value='Get Log Level' />"
-        + "</form>"
-        + "\n<form>Class Name: <input type='text' size='50' name='log' /> "
-        + "Level: <input type='text' name='level' /> "
-        + "<input type='submit' value='Set Log Level' />"
-        + "</form>";
-
-    private static void process(Logger log, String level,
-        PrintWriter out) throws IOException {
-      if (level != null) {
-        if (!level.equalsIgnoreCase(Level.toLevel(level)
-            .toString())) {
-          out.println(MARKER + "Bad Level : <b>" + level + "</b><br />");
-        } else {
-          log.setLevel(Level.toLevel(level));
-          out.println(MARKER + "Setting Level to " + level + " ...<br />");
-        }
-      }
-      out.println(MARKER
-          + "Effective Level: <b>" + log.getEffectiveLevel() + "</b><br />");
-    }
-
-  }
 }

@@ -15,7 +15,7 @@
 * See the License for the specific language governing permissions and
 * limitations under the License.
 */
-package org.apache.hadoop.log;
+package org.apache.hadoop.log.shell;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
@@ -35,7 +35,8 @@ import org.apache.hadoop.fs.CommonConfigurationKeys;
 import org.apache.hadoop.fs.CommonConfigurationKeysPublic;
 import org.apache.hadoop.fs.FileUtil;
 import org.apache.hadoop.http.HttpServer2;
-import org.apache.hadoop.log.LogLevel.CLI;
+import org.apache.hadoop.http.LogLevelServlet;
+import org.apache.hadoop.log.shell.LogLevel.CLI;
 import org.apache.hadoop.minikdc.KerberosSecurityTestcase;
 import org.apache.hadoop.net.NetUtils;
 import org.apache.hadoop.security.UserGroupInformation;
@@ -222,7 +223,7 @@ public class TestLogLevel extends KerberosSecurityTestcase {
     HttpServer2 server = builder.build();
     // Enable SPNEGO for LogLevel servlet
     if (isSpnego) {
-      server.addInternalServlet("logLevel", "/logLevel", LogLevel.Servlet.class,
+      server.addInternalServlet("logLevel", "/logLevel", LogLevelServlet.class,
           true);
     }
     server.start();

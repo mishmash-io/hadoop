@@ -70,7 +70,6 @@ import org.apache.hadoop.conf.Configuration.IntegerRanges;
 import org.apache.hadoop.fs.CommonConfigurationKeys;
 import org.apache.hadoop.fs.CommonConfigurationKeysPublic;
 import org.apache.hadoop.jmx.JMXJsonServlet;
-import org.apache.hadoop.log.LogLevel;
 import org.apache.hadoop.metrics2.lib.DefaultMetricsSystem;
 import org.apache.hadoop.metrics2.sink.PrometheusMetricsSink;
 import org.apache.hadoop.security.SecurityUtil;
@@ -986,7 +985,7 @@ public final class HttpServer2 implements FilterContainer {
   protected void addDefaultServlets(Configuration configuration) {
     // set up default servlets
     addServlet("stacks", "/stacks", StackServlet.class);
-    addServlet("logLevel", "/logLevel", LogLevel.Servlet.class);
+    addServlet("logLevel", "/logLevel", LogLevelServlet.class);
     addServlet("jmx", "/jmx",
         configuration.getBoolean(JMX_NAN_FILTER, JMX_NAN_FILTER_DEFAULT)
             ? JMXJsonServletNaNFiltered.class
