@@ -47,10 +47,10 @@ public class TestShellBasedUnixGroupsMapping {
   private static final Logger TESTLOG =
       LoggerFactory.getLogger(TestShellBasedUnixGroupsMapping.class);
 
-  private GenericTestUtils.LogCapturer shellMappingLog;
+  private static GenericTestUtils.LogCapturer shellMappingLog;
 
   @BeforeAll
-  public void initLogCapturer() {
+  public static void initLogCapturer() {
       shellMappingLog = GenericTestUtils.LogCapturer.captureLogs(
           ShellBasedUnixGroupsMapping.LOG);
   }
