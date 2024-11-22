@@ -34,6 +34,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 /**
  * Test miscellaneous service operations through mocked failures.
@@ -51,6 +52,7 @@ public class TestServiceOperations {
   public void testStopQuietlyWhenServiceStopThrowsException() throws Exception {
     Logger logger = LoggerFactory.getLogger(TestServiceOperations.class);
     LogCapturer logCapturer = captureLogs(logger);
+    when(e.getStackTrace()).thenReturn(new StackTraceElement[] {});
     doThrow(e).when(service).stop();
 
     ServiceOperations.stopQuietly(logger, service);
