@@ -87,7 +87,6 @@ import static org.apache.hadoop.util.PlatformName.IBM_JAVA;
 
 import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.core.LogEvent;
-import org.apache.logging.log4j.core.Logger;
 import org.apache.logging.log4j.core.LoggerContext;
 import org.apache.logging.log4j.core.appender.AbstractAppender;
 import org.apache.logging.log4j.core.config.AppenderRef;
@@ -257,28 +256,22 @@ public class TestConfiguration {
 
     // Attach our own log appender so we can verify output
     TestAppender appender = installTestAppender();
-    //final Logger logger = LoggerContext.getContext().getLogger(Configuration.class.getName());
-    //logger.addAppender(appender);
+    appender.log.clear();
 
-    try {
-      // Add the 2 different resources - this should generate a warning
-      conf.addResource(in1);
-      conf.addResource(in2);
-      assertEquals("A", conf.get("prop"), "should see the first value");
+    // Add the 2 different resources - this should generate a warning
+    conf.addResource(in1);
+    conf.addResource(in2);
+    assertEquals("A", conf.get("prop"), "should see the first value");
 
-      List<LogEvent> events = appender.getLog();
-      assertEquals(1, events.size(),
-          "overriding a final parameter should cause logging");
-      LogEvent loggingEvent = events.get(0);
-      String renderedMessage = loggingEvent.getMessage().getFormattedMessage();
-      assertTrue(
-          renderedMessage.contains("an attempt to override final parameter: "
-              + "prop;  Ignoring."),
-          "did not see expected string inside message "+ renderedMessage);
-    } finally {
-      // Make sure the appender is removed
-      //logger.removeAppender(appender);
-    }
+    List<LogEvent> events = appender.getLog();
+    assertEquals(1, events.size(),
+      "overriding a final parameter should cause logging");
+    LogEvent loggingEvent = events.get(0);
+    String renderedMessage = loggingEvent.getMessage().getFormattedMessage();
+    assertTrue(
+      renderedMessage.contains("an attempt to override final parameter: "
+          + "prop;  Ignoring."),
+      "did not see expected string inside message "+ renderedMessage);
   }
 
   @Test
@@ -296,28 +289,20 @@ public class TestConfiguration {
 
     // Attach our own log appender so we can verify output
     TestAppender appender = installTestAppender();
-    //final Logger logger = LoggerContext.getContext().getLogger(Configuration.class.getName());
-    //logger.addAppender(appender);
+    appender.log.clear();
 
-    try {
-      // Add the resource twice from a stream - should not generate warnings
-      conf.addResource(in1);
-      conf.addResource(in2);
-      assertEquals("A", conf.get("prop"));
+    // Add the resource twice from a stream - should not generate warnings
+    conf.addResource(in1);
+    conf.addResource(in2);
+    assertEquals("A", conf.get("prop"));
 
-      List<LogEvent> events = appender.getLog();
-      for (LogEvent loggingEvent : events) {
-        System.out.println("Event = " + loggingEvent.getMessage().getFormattedMessage());
-      }
-      assertTrue(events.isEmpty(),
-          "adding same resource twice should not cause logging");
-    } finally {
-      // Make sure the appender is removed
-      //logger.removeAppender(appender);
+    List<LogEvent> events = appender.getLog();
+    for (LogEvent loggingEvent : events) {
+      System.out.println("Event = " + loggingEvent.getMessage().getFormattedMessage());
     }
+    assertTrue(events.isEmpty(),
+        "adding same resource twice should not cause logging");
   }
-
-
 
   @Test
   public void testFinalWarningsMultiple() throws Exception {
@@ -333,24 +318,18 @@ public class TestConfiguration {
 
     // Attach our own log appender so we can verify output
     TestAppender appender = installTestAppender();
-    //final Logger logger = LoggerContext.getContext().getLogger(Configuration.class.getName());
-    //logger.addAppender(appender);
+    appender.log.clear();
 
-    try {
-      // Add the resource - this should not produce a warning
-      conf.addResource(in1);
-      assertEquals("A", conf.get("prop"), "should see the value");
+    // Add the resource - this should not produce a warning
+    conf.addResource(in1);
+    assertEquals("A", conf.get("prop"), "should see the value");
 
-      List<LogEvent> events = appender.getLog();
-      for (LogEvent loggingEvent : events) {
-        System.out.println("Event = " + loggingEvent.getMessage().getFormattedMessage());
-      }
-      assertTrue(events.isEmpty(),
-          "adding same resource twice should not cause logging");
-    } finally {
-      // Make sure the appender is removed
-      //logger.removeAppender(appender);
+    List<LogEvent> events = appender.getLog();
+    for (LogEvent loggingEvent : events) {
+      System.out.println("Event = " + loggingEvent.getMessage().getFormattedMessage());
     }
+    assertTrue(events.isEmpty(),
+        "adding same resource twice should not cause logging");
   }
 
   @Test
@@ -367,27 +346,21 @@ public class TestConfiguration {
 
     // Attach our own log appender so we can verify output
     TestAppender appender = installTestAppender();
-    //final Logger logger = LoggerContext.getContext().getLogger(Configuration.class.getName());
-    //logger.addAppender(appender);
+    appender.log.clear();
 
-    try {
-      // Add the resource - this should produce a warning
-      conf.addResource(in1);
-      assertEquals("A", conf.get("prop"), "should see the value");
+    // Add the resource - this should produce a warning
+    conf.addResource(in1);
+    assertEquals("A", conf.get("prop"), "should see the value");
 
-      List<LogEvent> events = appender.getLog();
-      assertEquals(1, events.size(),
-          "overriding a final parameter should cause logging");
-      LogEvent loggingEvent = events.get(0);
-      String renderedMessage = loggingEvent.getMessage().getFormattedMessage();
-      assertTrue(
-          renderedMessage.contains("an attempt to override final parameter: "
-              + "prop;  Ignoring."),
-          "did not see expected string inside message "+ renderedMessage);
-    } finally {
-      // Make sure the appender is removed
-      //logger.removeAppender(appender);
-    }
+    List<LogEvent> events = appender.getLog();
+    assertEquals(1, events.size(),
+        "overriding a final parameter should cause logging");
+    LogEvent loggingEvent = events.get(0);
+    String renderedMessage = loggingEvent.getMessage().getFormattedMessage();
+    assertTrue(
+        renderedMessage.contains("an attempt to override final parameter: "
+            + "prop;  Ignoring."),
+        "did not see expected string inside message "+ renderedMessage);
   }
 
   /**
