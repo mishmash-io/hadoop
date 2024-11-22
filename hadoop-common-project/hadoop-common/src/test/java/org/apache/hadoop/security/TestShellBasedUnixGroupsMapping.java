@@ -303,7 +303,7 @@ public class TestShellBasedUnixGroupsMapping {
     executor = mapping.createGroupIDExecutor(userName);
     assertEquals(
         testTimeout,
-            executor.getTimeoutInterval(),
+        executor.getTimeoutInterval(),
         "Expected the group ID executor to carry the configured timeout");
 
     assertEquals(

@@ -56,9 +56,7 @@ import org.apache.hadoop.util.BlockingThreadPoolExecutorService;
 import org.apache.hadoop.util.DurationInfo;
 import org.apache.hadoop.util.StringUtils;
 import org.apache.hadoop.util.Time;
-import org.apache.logging.log4j.core.Appender;
 import org.apache.logging.log4j.core.LoggerContext;
-import org.apache.logging.log4j.core.StringLayout;
 import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -501,7 +499,7 @@ public abstract class GenericTestUtils {
       this.appender.start();
       conf.addAppender(this.appender);
       AppenderRef[] refs = new AppenderRef[] {
-        AppenderRef.createAppenderRef("logCapturerAppender", null, null)
+        AppenderRef.createAppenderRef("logCapturerAppender:" + logger, null, null)
       };
       LoggerConfig loggerConf = LoggerConfig.createLogger(false, Level.INFO, logger,
         "true", refs, null, conf, null);
