@@ -156,8 +156,8 @@ public class TestReloadingX509KeyManager {
 
             assertEquals(kp.getPrivate(), tm.getPrivateKey("cert1"));
         } finally {
-            reloaderLog.stopCapturing();
             fileMonitoringTimer.cancel();
+            reloaderLog.clearOutput();
         }
     }
 
@@ -194,8 +194,8 @@ public class TestReloadingX509KeyManager {
 
             assertEquals(kp.getPrivate(), tm.getPrivateKey("cert1"));
         } finally {
-            reloaderLog.stopCapturing();
             fileMonitoringTimer.cancel();
+            reloaderLog.clearOutput();
         }
     }
 
