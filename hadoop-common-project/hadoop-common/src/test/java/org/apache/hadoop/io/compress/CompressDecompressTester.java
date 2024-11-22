@@ -37,8 +37,8 @@ import org.apache.hadoop.io.compress.zlib.BuiltInZlibDeflater;
 import org.apache.hadoop.io.compress.zlib.ZlibCompressor;
 import org.apache.hadoop.io.compress.zlib.ZlibFactory;
 import org.apache.hadoop.util.NativeCodeLoader;
-import org.apache.log4j.Logger;
-
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.apache.hadoop.thirdparty.com.google.common.base.Joiner;
 import org.apache.hadoop.thirdparty.com.google.common.collect.ImmutableList;
 import org.apache.hadoop.thirdparty.com.google.common.collect.ImmutableMap;
@@ -46,7 +46,7 @@ import org.apache.hadoop.thirdparty.com.google.common.collect.ImmutableSet;
 
 public class CompressDecompressTester<T extends Compressor, E extends Decompressor> {
 
-  private static final Logger logger = Logger
+  private static final Logger logger = LoggerFactory
       .getLogger(CompressDecompressTester.class);
 
   private final byte[] originalRawData;
@@ -485,7 +485,7 @@ public class CompressDecompressTester<T extends Compressor, E extends Decompress
   
   abstract static class TesterCompressionStrategy {
 
-    protected final Logger logger = Logger.getLogger(getClass());
+    protected final Logger logger = LoggerFactory.getLogger(getClass());
 
     abstract void assertCompression(String name, Compressor compressor,
         Decompressor decompressor, byte[] originalRawData) throws Exception;

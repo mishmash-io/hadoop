@@ -42,7 +42,8 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.junit.jupiter.api.Test;
 
 import javax.management.MBeanAttributeInfo;
@@ -241,7 +242,7 @@ public class TestMetricsSourceAdapter {
     private MetricsSourceAdapter sa = null;
     private ScheduledFuture<?> future = null;
     private AtomicBoolean hasError = null;
-    private static final Logger LOG = Logger.getLogger(SourceUpdater.class);
+    private static final Logger LOG = LoggerFactory.getLogger(SourceUpdater.class);
 
     public SourceUpdater(MetricsSourceAdapter sourceAdapter,
         AtomicBoolean err) {
@@ -263,7 +264,7 @@ public class TestMetricsSourceAdapter {
       } catch (Exception e) {
         // catch all errors
         hasError.set(true);
-        LOG.error(e.getStackTrace());
+        LOG.error(e.getMessage(), e);
       } finally {
         if (hasError.get()) {
           LOG.error("Hit error, stopping now");
@@ -284,7 +285,7 @@ public class TestMetricsSourceAdapter {
     private int cnt = 0;
     private ScheduledFuture<?> future = null;
     private AtomicBoolean hasError = null;
-    private static final Logger LOG = Logger.getLogger(SourceReader.class);
+    private static final Logger LOG = LoggerFactory.getLogger(SourceReader.class);
 
     public SourceReader(
         TestMetricsSource source, MetricsSourceAdapter sourceAdapter,
@@ -318,7 +319,7 @@ public class TestMetricsSourceAdapter {
       } catch (Exception e) {
         // catch other errors
         hasError.set(true);
-        LOG.error(e.getStackTrace());
+        LOG.error(e.getMessage(), e);
       } finally {
         if (hasError.get()) {
           future.cancel(false);
