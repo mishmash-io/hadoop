@@ -28,6 +28,7 @@ import org.apache.hadoop.util.ReflectionUtils;
 import org.apache.hadoop.util.Shell;
 import org.apache.hadoop.util.Shell.ExitCodeException;
 import org.apache.hadoop.util.Shell.ShellCommandExecutor;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.Timeout;
 import org.slf4j.Logger;
@@ -46,9 +47,13 @@ public class TestShellBasedUnixGroupsMapping {
   private static final Logger TESTLOG =
       LoggerFactory.getLogger(TestShellBasedUnixGroupsMapping.class);
 
-  private final GenericTestUtils.LogCapturer shellMappingLog =
-      GenericTestUtils.LogCapturer.captureLogs(
+  private GenericTestUtils.LogCapturer shellMappingLog;
+
+  @BeforeAll
+  public void initLogCapturer() {
+      shellMappingLog = GenericTestUtils.LogCapturer.captureLogs(
           ShellBasedUnixGroupsMapping.LOG);
+  }
 
   private class TestGroupUserNotExist
       extends ShellBasedUnixGroupsMapping {
