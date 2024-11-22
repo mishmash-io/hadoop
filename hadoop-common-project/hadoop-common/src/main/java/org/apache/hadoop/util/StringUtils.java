@@ -43,7 +43,7 @@ import org.apache.hadoop.classification.InterfaceStability;
 import org.apache.hadoop.classification.VisibleForTesting;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.net.NetUtils;
-import org.apache.log4j.LogManager;
+import org.apache.logging.log4j.LogManager;
 
 import org.apache.hadoop.thirdparty.com.google.common.net.InetAddresses;
 

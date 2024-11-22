@@ -15,11 +15,12 @@ package org.apache.hadoop.security.authentication.util.server;
 
 import java.util.Random;
 
-import org.apache.log4j.Level;
-import org.apache.log4j.LogManager;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+
+import org.apache.logging.log4j.Level;
+import org.apache.logging.log4j.core.config.Configurator;
 import org.junit.jupiter.api.Test;
 
 import static org.mockito.Mockito.spy;
@@ -33,8 +34,8 @@ public class TestRandomSignerSecretProvider {
   private final long rolloverFrequency = timeout / 2;
 
   {
-    LogManager.getLogger(
-        RolloverSignerSecretProvider.LOG.getName()).setLevel(Level.DEBUG);
+    Configurator.setLevel(
+        RolloverSignerSecretProvider.LOG.getName(), Level.DEBUG);
   }
 
   @Test
