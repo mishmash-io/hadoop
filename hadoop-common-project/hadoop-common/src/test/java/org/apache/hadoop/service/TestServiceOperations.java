@@ -59,7 +59,7 @@ public class TestServiceOperations {
 
     assertThat(logCapturer.getOutput())
         .contains("When stopping the service " + service.getName());
-    verify(e, times(1)).printStackTrace(Mockito.any(PrintWriter.class));
+    verify(e, times(1)).getStackTrace();
   }
 
 }
