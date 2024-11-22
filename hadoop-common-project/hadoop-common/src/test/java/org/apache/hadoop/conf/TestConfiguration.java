@@ -217,8 +217,8 @@ public class TestConfiguration {
   private TestAppender installTestAppender() {
     LoggerContext ctx = LoggerContext.getContext(false);
     org.apache.logging.log4j.core.config.Configuration conf = ctx.getConfiguration();
-    if (conf.getAppender("testConfigAppender") != null) {
-      return (TestAppender) conf.getAppender("testConfigAppender");
+    if (conf.getAppender(TestAppender.NAME) != null) {
+      return (TestAppender) conf.getAppender(TestAppender.NAME);
     }
     PatternLayout layout = PatternLayout.createDefaultLayout(conf);
     TestAppender appender = new TestAppender(layout);
@@ -394,8 +394,10 @@ public class TestConfiguration {
    * A simple appender for white box testing.
    */
   private static class TestAppender extends AbstractAppender {
+    private static final String NAME = "TestConfigurationAppender";
+
     protected TestAppender(PatternLayout layout) {
-        super("TestConfigurationAppender", null, layout, true, Property.EMPTY_ARRAY);
+        super(NAME, null, layout, true, Property.EMPTY_ARRAY);
     }
 
     private final List<LogEvent> log = new ArrayList<>();
