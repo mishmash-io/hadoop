@@ -233,7 +233,7 @@ public class TestConfiguration {
 
     // Attach our own log appender so we can verify output
     TestAppender appender = new TestAppender();
-    final Logger logger = LoggerContext.getContext().getRootLogger();
+    final Logger logger = LoggerContext.getContext().getLogger(Configuration.class.getName());
     logger.addAppender(appender);
 
     try {
@@ -272,7 +272,7 @@ public class TestConfiguration {
 
     // Attach our own log appender so we can verify output
     TestAppender appender = new TestAppender();
-    final Logger logger = LoggerContext.getContext().getRootLogger();
+    final Logger logger = LoggerContext.getContext().getLogger(Configuration.class.getName());
     logger.addAppender(appender);
 
     try {
@@ -309,7 +309,7 @@ public class TestConfiguration {
 
     // Attach our own log appender so we can verify output
     TestAppender appender = new TestAppender();
-    final Logger logger = LoggerContext.getContext().getRootLogger();
+    final Logger logger = LoggerContext.getContext().getLogger(Configuration.class.getName());
     logger.addAppender(appender);
 
     try {
@@ -343,7 +343,7 @@ public class TestConfiguration {
 
     // Attach our own log appender so we can verify output
     TestAppender appender = new TestAppender();
-    final Logger logger = LoggerContext.getContext().getRootLogger();
+    final Logger logger = LoggerContext.getContext().getLogger(Configuration.class.getName());
     logger.addAppender(appender);
 
     try {
