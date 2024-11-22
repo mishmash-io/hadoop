@@ -85,10 +85,13 @@ import org.apache.hadoop.test.GenericTestUtils;
 
 import static org.apache.hadoop.util.PlatformName.IBM_JAVA;
 
+import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.core.LogEvent;
 import org.apache.logging.log4j.core.Logger;
 import org.apache.logging.log4j.core.LoggerContext;
 import org.apache.logging.log4j.core.appender.AbstractAppender;
+import org.apache.logging.log4j.core.config.AppenderRef;
+import org.apache.logging.log4j.core.config.LoggerConfig;
 import org.apache.logging.log4j.core.config.Property;
 import org.apache.logging.log4j.core.layout.PatternLayout;
 import org.mockito.Mockito;
@@ -218,6 +221,13 @@ public class TestConfiguration {
     TestAppender appender = new TestAppender(layout);
     appender.start();
     conf.addAppender(appender);
+    AppenderRef[] refs = new AppenderRef[] {
+      AppenderRef.createAppenderRef("testConfigAppender", null, null)
+    };
+    LoggerConfig loggerConf = LoggerConfig.createLogger(false, Level.INFO,
+            Configuration.class.getName(), "true", refs, null, conf, null);
+    loggerConf.addAppender(appender, null, null);
+    conf.addLogger(Configuration.class.getName(), loggerConf);
     ctx.updateLoggers();
     return appender;
   }
