@@ -45,14 +45,14 @@ public class TestReloadingX509KeyManager {
     private static final String BASEDIR = GenericTestUtils.getTempPath(
             TestReloadingX509TrustManager.class.getSimpleName());
 
-    private final GenericTestUtils.LogCapturer reloaderLog = GenericTestUtils.LogCapturer.captureLogs(
-            FileMonitoringTimerTask.LOG);
+    private static GenericTestUtils.LogCapturer reloaderLog;
 
     @BeforeAll
     public static void setUp() throws Exception {
         File base = new File(BASEDIR);
         FileUtil.fullyDelete(base);
         base.mkdirs();
+        reloaderLog = GenericTestUtils.LogCapturer.captureLogs(FileMonitoringTimerTask.LOG);
     }
 
     @Test
