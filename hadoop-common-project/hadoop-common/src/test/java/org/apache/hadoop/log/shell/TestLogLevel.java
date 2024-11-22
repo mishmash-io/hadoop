@@ -255,7 +255,7 @@ public class TestLogLevel extends KerberosSecurityTestcase {
     if (!LogLevel.isValidProtocol(connectProtocol)) {
       throw new Exception("Invalid client protocol " + connectProtocol);
     }
-    Level oldLevel = log.getEffectiveLevel();
+    Level oldLevel = log.getLevel();
     assertNotEquals(Level.ERROR, oldLevel,
         "Get default Log Level which shouldn't be ERROR.");
 
@@ -327,7 +327,7 @@ public class TestLogLevel extends KerberosSecurityTestcase {
     cli.run(setLevelArgs);
 
     assertEquals(newLevel.toUpperCase(),
-        log.getEffectiveLevel().toString(),
+        log.getLevel().toString(),
         "new level not equal to expected: ");
   }
 
