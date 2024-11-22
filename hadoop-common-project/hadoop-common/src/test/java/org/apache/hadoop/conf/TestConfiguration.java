@@ -217,6 +217,9 @@ public class TestConfiguration {
   private TestAppender installTestAppender() {
     LoggerContext ctx = LoggerContext.getContext(false);
     org.apache.logging.log4j.core.config.Configuration conf = ctx.getConfiguration();
+    if (conf.getAppender("testConfigAppender") != null) {
+      return (TestAppender) conf.getAppender("testConfigAppender");
+    }
     PatternLayout layout = PatternLayout.createDefaultLayout(conf);
     TestAppender appender = new TestAppender(layout);
     appender.start();
