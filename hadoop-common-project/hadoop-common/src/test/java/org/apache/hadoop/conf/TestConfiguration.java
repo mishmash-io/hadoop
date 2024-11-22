@@ -211,6 +211,17 @@ public class TestConfiguration {
     assertEquals("A", conf.get("prop"));
   }
 
+  private TestAppender installTestAppender() {
+    LoggerContext ctx = LoggerContext.getContext(false);
+    org.apache.logging.log4j.core.config.Configuration conf = ctx.getConfiguration();
+    PatternLayout layout = PatternLayout.createDefaultLayout(conf);
+    TestAppender appender = new TestAppender(layout);
+    appender.start();
+    conf.addAppender(appender);
+    ctx.updateLoggers();
+    return appender;
+  }
+  
   @Test
   public void testFinalWarnings() throws Exception {
     // Make a configuration file with a final property
@@ -232,9 +243,9 @@ public class TestConfiguration {
     InputStream in2 = new ByteArrayInputStream(bytes2);
 
     // Attach our own log appender so we can verify output
-    TestAppender appender = new TestAppender();
-    final Logger logger = LoggerContext.getContext().getLogger(Configuration.class.getName());
-    logger.addAppender(appender);
+    TestAppender appender = installTestAppender();
+    //final Logger logger = LoggerContext.getContext().getLogger(Configuration.class.getName());
+    //logger.addAppender(appender);
 
     try {
       // Add the 2 different resources - this should generate a warning
@@ -253,7 +264,7 @@ public class TestConfiguration {
           "did not see expected string inside message "+ renderedMessage);
     } finally {
       // Make sure the appender is removed
-      logger.removeAppender(appender);
+      //logger.removeAppender(appender);
     }
   }
 
@@ -271,9 +282,9 @@ public class TestConfiguration {
     InputStream in2 = new ByteArrayInputStream(bytes);
 
     // Attach our own log appender so we can verify output
-    TestAppender appender = new TestAppender();
-    final Logger logger = LoggerContext.getContext().getLogger(Configuration.class.getName());
-    logger.addAppender(appender);
+    TestAppender appender = installTestAppender();
+    //final Logger logger = LoggerContext.getContext().getLogger(Configuration.class.getName());
+    //logger.addAppender(appender);
 
     try {
       // Add the resource twice from a stream - should not generate warnings
@@ -289,7 +300,7 @@ public class TestConfiguration {
           "adding same resource twice should not cause logging");
     } finally {
       // Make sure the appender is removed
-      logger.removeAppender(appender);
+      //logger.removeAppender(appender);
     }
   }
 
@@ -308,9 +319,9 @@ public class TestConfiguration {
     InputStream in1 = new ByteArrayInputStream(bytes);
 
     // Attach our own log appender so we can verify output
-    TestAppender appender = new TestAppender();
-    final Logger logger = LoggerContext.getContext().getLogger(Configuration.class.getName());
-    logger.addAppender(appender);
+    TestAppender appender = installTestAppender();
+    //final Logger logger = LoggerContext.getContext().getLogger(Configuration.class.getName());
+    //logger.addAppender(appender);
 
     try {
       // Add the resource - this should not produce a warning
@@ -325,7 +336,7 @@ public class TestConfiguration {
           "adding same resource twice should not cause logging");
     } finally {
       // Make sure the appender is removed
-      logger.removeAppender(appender);
+      //logger.removeAppender(appender);
     }
   }
 
@@ -342,9 +353,9 @@ public class TestConfiguration {
     InputStream in1 = new ByteArrayInputStream(bytes);
 
     // Attach our own log appender so we can verify output
-    TestAppender appender = new TestAppender();
-    final Logger logger = LoggerContext.getContext().getLogger(Configuration.class.getName());
-    logger.addAppender(appender);
+    TestAppender appender = installTestAppender();
+    //final Logger logger = LoggerContext.getContext().getLogger(Configuration.class.getName());
+    //logger.addAppender(appender);
 
     try {
       // Add the resource - this should produce a warning
@@ -362,7 +373,7 @@ public class TestConfiguration {
           "did not see expected string inside message "+ renderedMessage);
     } finally {
       // Make sure the appender is removed
-      logger.removeAppender(appender);
+      //logger.removeAppender(appender);
     }
   }
 
@@ -370,8 +381,8 @@ public class TestConfiguration {
    * A simple appender for white box testing.
    */
   private static class TestAppender extends AbstractAppender {
-    protected TestAppender() {
-        super("TestConfigurationAppender", null, PatternLayout.createDefaultLayout(), true, Property.EMPTY_ARRAY);
+    protected TestAppender(PatternLayout layout) {
+        super("TestConfigurationAppender", null, layout, true, Property.EMPTY_ARRAY);
     }
 
     private final List<LogEvent> log = new ArrayList<>();
