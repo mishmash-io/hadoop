@@ -38,7 +38,6 @@ import java.util.Locale;
 import java.util.Objects;
 import java.util.Random;
 import java.util.Set;
-import java.util.Enumeration;
 import java.util.TreeSet;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CountDownLatch;
@@ -57,13 +56,15 @@ import org.apache.hadoop.util.BlockingThreadPoolExecutorService;
 import org.apache.hadoop.util.DurationInfo;
 import org.apache.hadoop.util.StringUtils;
 import org.apache.hadoop.util.Time;
-import org.apache.log4j.Appender;
-import org.apache.log4j.Layout;
-import org.apache.log4j.Level;
-import org.apache.log4j.LogManager;
-import org.apache.log4j.Logger;
-import org.apache.log4j.PatternLayout;
-import org.apache.log4j.WriterAppender;
+import org.apache.logging.log4j.core.Appender;
+import org.apache.logging.log4j.core.LoggerContext;
+import org.apache.logging.log4j.core.StringLayout;
+import org.apache.logging.log4j.Level;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.core.layout.PatternLayout;
+import org.apache.logging.log4j.core.appender.WriterAppender;
+import org.apache.logging.log4j.core.config.Configurator;
 import org.mockito.invocation.InvocationOnMock;
 import org.mockito.stubbing.Answer;
 import org.slf4j.LoggerFactory;
@@ -129,7 +130,7 @@ public abstract class GenericTestUtils {
    */
   @Deprecated
   public static void disableLog(Logger logger) {
-    logger.setLevel(Level.OFF);
+    Configurator.setLevel(logger, Level.OFF);
   }
 
   public static void disableLog(org.slf4j.Logger logger) {
@@ -137,7 +138,7 @@ public abstract class GenericTestUtils {
   }
 
   public static void setLogLevel(Logger logger, Level level) {
-    logger.setLevel(level);
+    Configurator.setLevel(logger, level);
   }
 
   /**
@@ -159,10 +160,8 @@ public abstract class GenericTestUtils {
   }
 
   public static void setCurrentLoggersLogLevel(org.slf4j.event.Level level) {
-    for (Enumeration<?> loggers = LogManager.getCurrentLoggers();
-        loggers.hasMoreElements();) {
-      Logger logger = (Logger) loggers.nextElement();
-      logger.setLevel(Level.toLevel(level.toString()));
+    for (Logger logger : LoggerContext.getContext().getLoggers()) {
+      Configurator.setLevel(logger, Level.toLevel(level.toString()));
     }
   }
 
@@ -479,11 +478,11 @@ public abstract class GenericTestUtils {
   public static class LogCapturer {
     private StringWriter sw = new StringWriter();
     private WriterAppender appender;
-    private Logger logger;
+    private org.apache.logging.log4j.core.Logger logger;
 
     public static LogCapturer captureLogs(org.slf4j.Logger logger) {
       if (logger.getName().equals("root")) {
-        return new LogCapturer(org.apache.log4j.Logger.getRootLogger());
+        return new LogCapturer(LoggerContext.getContext().getRootLogger());
       }
       return new LogCapturer(toLog4j(logger));
     }
@@ -493,15 +492,15 @@ public abstract class GenericTestUtils {
     }
 
     private LogCapturer(Logger logger) {
-      this.logger = logger;
-      Appender defaultAppender = Logger.getRootLogger().getAppender("stdout");
+      this.logger = (org.apache.logging.log4j.core.Logger) logger;
+      Appender defaultAppender = LoggerContext.getContext().getConfiguration().getAppender("stdout");
       if (defaultAppender == null) {
-        defaultAppender = Logger.getRootLogger().getAppender("console");
+        defaultAppender = LoggerContext.getContext().getConfiguration().getAppender("console");
       }
-      final Layout layout = (defaultAppender == null) ? new PatternLayout() :
-          defaultAppender.getLayout();
-      this.appender = new WriterAppender(layout, sw);
-      logger.addAppender(this.appender);
+      final StringLayout layout = (defaultAppender == null) ? PatternLayout.createDefaultLayout() :
+          (StringLayout) defaultAppender.getLayout();
+      this.appender = WriterAppender.createAppender(layout, null, sw, "writerName", true, true);
+      this.logger.addAppender(this.appender);
     }
 
     public String getOutput() {

@@ -47,93 +47,93 @@ public class TestFindClass extends Assertions {
 
   @Test
   public void testUsage() throws Throwable {
-    run(FindClass.E_USAGE, "org.apache.hadoop.util.TestFindClass");
+    run(FindClass.E_USAGE, "org.apache.hadoop.util.cli.TestFindClass");
   }
 
   @Test
   public void testFindsResource() throws Throwable {
     run(FindClass.SUCCESS,
-        FindClass.A_RESOURCE, "org/apache/hadoop/util/TestFindClass.class");
+        FindClass.A_RESOURCE, "org/apache/hadoop/util/cli/TestFindClass.class");
   }
 
   @Test
   public void testFailsNoSuchResource() throws Throwable {
     run(FindClass.E_NOT_FOUND,
         FindClass.A_RESOURCE,
-        "org/apache/hadoop/util/ThereIsNoSuchClass.class");
+        "org/apache/hadoop/util/cli/ThereIsNoSuchClass.class");
   }
 
   @Test
   public void testLoadFindsSelf() throws Throwable {
     run(FindClass.SUCCESS,
-        FindClass.A_LOAD, "org.apache.hadoop.util.TestFindClass");
+        FindClass.A_LOAD, "org.apache.hadoop.util.cli.TestFindClass");
   }
 
   @Test
   public void testLoadFailsNoSuchClass() throws Throwable {
     run(FindClass.E_NOT_FOUND,
-        FindClass.A_LOAD, "org.apache.hadoop.util.ThereIsNoSuchClass");
+        FindClass.A_LOAD, "org.apache.hadoop.util.cli.ThereIsNoSuchClass");
   }
 
   @Test
   public void testLoadWithErrorInStaticInit() throws Throwable {
     run(FindClass.E_LOAD_FAILED,
         FindClass.A_LOAD,
-        "org.apache.hadoop.util.TestFindClass$FailInStaticInit");
+        "org.apache.hadoop.util.cli.TestFindClass$FailInStaticInit");
   }
 
   @Test
   public void testCreateHandlesBadToString() throws Throwable {
     run(FindClass.SUCCESS,
         FindClass.A_CREATE,
-        "org.apache.hadoop.util.TestFindClass$BadToStringClass");
+        "org.apache.hadoop.util.cli.TestFindClass$BadToStringClass");
   }
 
   @Test
   public void testCreatesClass() throws Throwable {
     run(FindClass.SUCCESS,
-        FindClass.A_CREATE, "org.apache.hadoop.util.TestFindClass");
+        FindClass.A_CREATE, "org.apache.hadoop.util.cli.TestFindClass");
   }
 
   @Test
   public void testCreateFailsInStaticInit() throws Throwable {
     run(FindClass.E_LOAD_FAILED,
         FindClass.A_CREATE,
-        "org.apache.hadoop.util.TestFindClass$FailInStaticInit");
+        "org.apache.hadoop.util.cli.TestFindClass$FailInStaticInit");
   }
 
   @Test
   public void testCreateFailsInConstructor() throws Throwable {
     run(FindClass.E_CREATE_FAILED,
         FindClass.A_CREATE,
-        "org.apache.hadoop.util.TestFindClass$FailInConstructor");
+        "org.apache.hadoop.util.cli.TestFindClass$FailInConstructor");
   }
 
   @Test
   public void testCreateFailsNoEmptyConstructor() throws Throwable {
     run(FindClass.E_CREATE_FAILED,
         FindClass.A_CREATE,
-        "org.apache.hadoop.util.TestFindClass$NoEmptyConstructor");
+        "org.apache.hadoop.util.cli.TestFindClass$NoEmptyConstructor");
   }
 
   @Test
   public void testLoadPrivateClass() throws Throwable {
     run(FindClass.SUCCESS,
-        FindClass.A_LOAD, "org.apache.hadoop.util.TestFindClass$PrivateClass");
+        FindClass.A_LOAD, "org.apache.hadoop.util.cli.TestFindClass$PrivateClass");
   }
 
   @Test
   public void testCreateFailsPrivateClass() throws Throwable {
     run(FindClass.E_CREATE_FAILED,
         FindClass.A_CREATE,
-        "org.apache.hadoop.util.TestFindClass$PrivateClass");
+        "org.apache.hadoop.util.cli.TestFindClass$PrivateClass");
   }
 
   @Test
   public void testCreateFailsInPrivateConstructor() throws Throwable {
     run(FindClass.E_CREATE_FAILED,
         FindClass.A_CREATE,
-        "org.apache.hadoop.util.TestFindClass$PrivateConstructor");
+        "org.apache.hadoop.util.cli.TestFindClass$PrivateConstructor");
   }
 
   @Test
