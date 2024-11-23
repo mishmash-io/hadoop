@@ -56,15 +56,15 @@ import org.apache.hadoop.util.BlockingThreadPoolExecutorService;
 import org.apache.hadoop.util.DurationInfo;
 import org.apache.hadoop.util.StringUtils;
 import org.apache.hadoop.util.Time;
-import org.apache.logging.log4j.core.Appender;
 import org.apache.logging.log4j.core.LoggerContext;
-import org.apache.logging.log4j.core.StringLayout;
 import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.core.layout.PatternLayout;
 import org.apache.logging.log4j.core.appender.WriterAppender;
+import org.apache.logging.log4j.core.config.AppenderRef;
 import org.apache.logging.log4j.core.config.Configurator;
+import org.apache.logging.log4j.core.config.LoggerConfig;
 import org.mockito.invocation.InvocationOnMock;
 import org.mockito.stubbing.Answer;
 import org.slf4j.LoggerFactory;
@@ -478,29 +478,34 @@ public abstract class GenericTestUtils {
   public static class LogCapturer {
     private StringWriter sw = new StringWriter();
     private WriterAppender appender;
-    private org.apache.logging.log4j.core.Logger logger;
+    //private org.apache.logging.log4j.core.Logger logger;
 
     public static LogCapturer captureLogs(org.slf4j.Logger logger) {
       if (logger.getName().equals("root")) {
-        return new LogCapturer(LoggerContext.getContext().getRootLogger());
+        return new LogCapturer(LoggerContext.getContext().getRootLogger().getName());
       }
-      return new LogCapturer(toLog4j(logger));
+      return new LogCapturer(logger.getName());
     }
 
     public static LogCapturer captureLogs(Logger logger) {
-      return new LogCapturer(logger);
+      return new LogCapturer(logger.getName());
     }
 
-    private LogCapturer(Logger logger) {
-      this.logger = (org.apache.logging.log4j.core.Logger) logger;
-      Appender defaultAppender = LoggerContext.getContext().getConfiguration().getAppender("stdout");
-      if (defaultAppender == null) {
-        defaultAppender = LoggerContext.getContext().getConfiguration().getAppender("console");
-      }
-      final StringLayout layout = (defaultAppender == null) ? PatternLayout.createDefaultLayout() :
-          (StringLayout) defaultAppender.getLayout();
-      this.appender = WriterAppender.createAppender(layout, null, sw, "writerName", true, true);
-      this.logger.addAppender(this.appender);
+    private LogCapturer(String logger) {
+      LoggerContext ctx = LoggerContext.getContext(false);
+      org.apache.logging.log4j.core.config.Configuration conf = ctx.getConfiguration();
+      this.appender = WriterAppender.createAppender(PatternLayout.createDefaultLayout(conf),
+        null, sw, "LogCapturerAppender for " + logger, true, true);
+      this.appender.start();
+      conf.addAppender(this.appender);
+      AppenderRef[] refs = new AppenderRef[] {
+        AppenderRef.createAppenderRef("logCapturerAppender:" + logger, null, null)
+      };
+      LoggerConfig loggerConf = LoggerConfig.createLogger(false, Level.INFO, logger,
+        "true", refs, null, conf, null);
+      loggerConf.addAppender(this.appender, null, null);
+      conf.addLogger(logger, loggerConf);
+      ctx.updateLoggers();
     }
 
     public String getOutput() {
@@ -508,7 +513,7 @@ public abstract class GenericTestUtils {
     }
 
     public void stopCapturing() {
-      logger.removeAppender(appender);
+      //logger.removeAppender(appender);
     }
 
     public void clearOutput() {

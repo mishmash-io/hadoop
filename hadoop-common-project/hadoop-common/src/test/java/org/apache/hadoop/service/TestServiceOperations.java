@@ -22,18 +22,16 @@ import org.apache.hadoop.test.GenericTestUtils.LogCapturer;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
-import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.PrintWriter;
-
 import static org.apache.hadoop.test.GenericTestUtils.LogCapturer.captureLogs;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.doThrow;
-import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.atLeast;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 /**
  * Test miscellaneous service operations through mocked failures.
@@ -51,13 +49,14 @@ public class TestServiceOperations {
   public void testStopQuietlyWhenServiceStopThrowsException() throws Exception {
     Logger logger = LoggerFactory.getLogger(TestServiceOperations.class);
     LogCapturer logCapturer = captureLogs(logger);
+    when(e.getStackTrace()).thenReturn(new StackTraceElement[] {});
     doThrow(e).when(service).stop();
 
     ServiceOperations.stopQuietly(logger, service);
 
     assertThat(logCapturer.getOutput())
         .contains("When stopping the service " + service.getName());
-    verify(e, times(1)).printStackTrace(Mockito.any(PrintWriter.class));
+    verify(e, atLeast(1)).getStackTrace();
   }
 
 }

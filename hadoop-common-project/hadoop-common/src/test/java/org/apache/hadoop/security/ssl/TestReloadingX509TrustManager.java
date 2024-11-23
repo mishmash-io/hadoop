@@ -53,14 +53,14 @@ public class TestReloadingX509TrustManager {
 
   private X509Certificate cert1;
   private X509Certificate cert2;
-  private final LogCapturer reloaderLog = LogCapturer.captureLogs(
-      FileMonitoringTimerTask.LOG);
+  private static LogCapturer reloaderLog;
 
   @BeforeAll
   public static void setUp() throws Exception {
     File base = new File(BASEDIR);
     FileUtil.fullyDelete(base);
     base.mkdirs();
+    reloaderLog = LogCapturer.captureLogs(FileMonitoringTimerTask.LOG);
   }
 
   @Test
@@ -159,8 +159,8 @@ public class TestReloadingX509TrustManager {
       assertEquals(1, tm.getAcceptedIssuers().length);
       assertEquals(cert, tm.getAcceptedIssuers()[0]);
     } finally {
-      reloaderLog.stopCapturing();
       fileMonitoringTimer.cancel();
+      reloaderLog.clearOutput();
     }
   }
 
@@ -198,8 +198,8 @@ public class TestReloadingX509TrustManager {
       assertEquals(1, tm.getAcceptedIssuers().length);
       assertEquals(cert, tm.getAcceptedIssuers()[0]);
     } finally {
-      reloaderLog.stopCapturing();
       fileMonitoringTimer.cancel();
+      reloaderLog.clearOutput();
     }
   }
 
