@@ -23,8 +23,6 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
-import org.apache.hadoop.security.SecurityUtil;
-
 import org.apache.curator.test.InstanceSpec;
 import org.apache.curator.test.TestingServer;
 import org.apache.hadoop.conf.Configuration;
@@ -151,7 +149,7 @@ public class TestSecureZKCuratorManager {
     // Validate that HadoopZooKeeperFactory will set ZKConfig with given principals
     ZKCuratorManager.HadoopZookeeperFactory factory =
         new ZKCuratorManager.HadoopZookeeperFactory(null, null, null, true,
-            new SecurityUtil.TruststoreKeystore(hadoopConf));
+            new ZKUtil.TruststoreKeystore(hadoopConf));
     ZooKeeper zk = factory.newZooKeeper(this.server.getConnectString(), 1000, null, false);
     validateSSLConfiguration(this.hadoopConf.get(CommonConfigurationKeys.ZK_SSL_KEYSTORE_LOCATION),
         this.hadoopConf.get(CommonConfigurationKeys.ZK_SSL_KEYSTORE_PASSWORD),
@@ -195,8 +193,8 @@ public class TestSecureZKCuratorManager {
       Validate that the null values are converted into empty strings by the class.
      */
     Configuration conf = new Configuration();
-    SecurityUtil.TruststoreKeystore truststoreKeystore =
-        new SecurityUtil.TruststoreKeystore(conf);
+    ZKUtil.TruststoreKeystore truststoreKeystore =
+        new ZKUtil.TruststoreKeystore(conf);
 
     assertEquals("",
         truststoreKeystore.getKeystoreLocation(),
@@ -216,8 +214,8 @@ public class TestSecureZKCuratorManager {
     conf.set(CommonConfigurationKeys.ZK_SSL_KEYSTORE_PASSWORD, "keystorePassword");
     conf.set(CommonConfigurationKeys.ZK_SSL_TRUSTSTORE_LOCATION, "/truststore.jks");
     conf.set(CommonConfigurationKeys.ZK_SSL_TRUSTSTORE_PASSWORD, "truststorePassword");
-    SecurityUtil.TruststoreKeystore truststoreKeystore1 =
-        new SecurityUtil.TruststoreKeystore(conf);
+    ZKUtil.TruststoreKeystore truststoreKeystore1 =
+        new ZKUtil.TruststoreKeystore(conf);
     assertEquals("/keystore.jks",
         truststoreKeystore1.getKeystoreLocation(),
         "Validate that non-null value kept intact.");
