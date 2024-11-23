@@ -18,42 +18,29 @@ package org.apache.hadoop.security;
 
 import static org.apache.hadoop.fs.CommonConfigurationKeysPublic.HADOOP_SECURITY_AUTHENTICATION;
 import static org.apache.hadoop.security.UserGroupInformation.AuthenticationMethod.*;
-import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-import java.io.File;
 import java.io.IOException;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.net.URI;
-import java.nio.charset.StandardCharsets;
-import java.util.List;
-
 import javax.security.auth.kerberos.KerberosPrincipal;
 
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.CommonConfigurationKeys;
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.net.NetUtils;
-import org.apache.hadoop.security.alias.CredentialProvider;
-import org.apache.hadoop.security.alias.CredentialProviderFactory;
-import org.apache.hadoop.security.alias.LocalJavaKeyStoreProvider;
 import org.apache.hadoop.security.token.Token;
 import org.apache.hadoop.security.token.TokenIdentifier;
 import org.apache.hadoop.util.StringUtils;
-import org.apache.hadoop.util.ZKUtil.ZKAuthInfo;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 
-import org.apache.hadoop.thirdparty.com.google.common.io.Files;
-
 public class TestSecurityUtil {
-
-  private static final String ZK_AUTH_VALUE = "a_scheme:a_password";
 
   @BeforeAll
   public static void unsetKerberosRealm() {
@@ -428,75 +415,5 @@ public class TestSecurityUtil {
     // kerberos
     SecurityUtil.setAuthenticationMethod(KERBEROS, conf);
     assertEquals("kerberos", conf.get(HADOOP_SECURITY_AUTHENTICATION));
-  }
-
-  @Test
-  public void testAuthPlainPasswordProperty() throws Exception {
-    Configuration conf = new Configuration();
-    conf.set(CommonConfigurationKeys.ZK_AUTH, ZK_AUTH_VALUE);
-    List<ZKAuthInfo> zkAuths = SecurityUtil.getZKAuthInfos(conf,
-        CommonConfigurationKeys.ZK_AUTH);
-    assertEquals(1, zkAuths.size());
-    ZKAuthInfo zkAuthInfo = zkAuths.get(0);
-    assertEquals("a_scheme", zkAuthInfo.getScheme());
-    assertArrayEquals("a_password".getBytes(), zkAuthInfo.getAuth());
-  }
-
-  @Test
-  public void testAuthPlainTextFile() throws Exception {
-    Configuration conf = new Configuration();
-    File passwordTxtFile = File.createTempFile(
-        getClass().getSimpleName() +  ".testAuthAtPathNotation-", ".txt");
-    Files.asCharSink(passwordTxtFile, StandardCharsets.UTF_8)
-        .write(ZK_AUTH_VALUE);
-    try {
-      conf.set(CommonConfigurationKeys.ZK_AUTH,
-          "@" + passwordTxtFile.getAbsolutePath());
-      List<ZKAuthInfo> zkAuths = SecurityUtil.getZKAuthInfos(conf,
-          CommonConfigurationKeys.ZK_AUTH);
-      assertEquals(1, zkAuths.size());
-      ZKAuthInfo zkAuthInfo = zkAuths.get(0);
-      assertEquals("a_scheme", zkAuthInfo.getScheme());
-      assertArrayEquals("a_password".getBytes(), zkAuthInfo.getAuth());
-    } finally {
-      boolean deleted = passwordTxtFile.delete();
-      assertTrue(deleted);
-    }
-  }
-
-  @Test
-  public void testAuthLocalJceks() throws Exception {
-    File localJceksFile = File.createTempFile(
-        getClass().getSimpleName() +".testAuthLocalJceks-", ".localjceks");
-    populateLocalJceksTestFile(localJceksFile.getAbsolutePath());
-    try {
-      String localJceksUri = "localjceks://file/" +
-          localJceksFile.getAbsolutePath();
-      Configuration conf = new Configuration();
-      conf.set(CredentialProviderFactory.CREDENTIAL_PROVIDER_PATH,
-          localJceksUri);
-      List<ZKAuthInfo> zkAuths = SecurityUtil.getZKAuthInfos(conf,
-          CommonConfigurationKeys.ZK_AUTH);
-      assertEquals(1, zkAuths.size());
-      ZKAuthInfo zkAuthInfo = zkAuths.get(0);
-      assertEquals("a_scheme", zkAuthInfo.getScheme());
-      assertArrayEquals("a_password".getBytes(), zkAuthInfo.getAuth());
-    } finally {
-      boolean deleted = localJceksFile.delete();
-      assertTrue(deleted);
-    }
-  }
-
-  private void populateLocalJceksTestFile(String path) throws IOException {
-    Configuration conf = new Configuration();
-    conf.set(CredentialProviderFactory.CREDENTIAL_PROVIDER_PATH,
-        "localjceks://file/" + path);
-    CredentialProvider provider =
-        CredentialProviderFactory.getProviders(conf).get(0);
-    assertEquals(LocalJavaKeyStoreProvider.class.getName(),
-        provider.getClass().getName());
-    provider.createCredentialEntry(CommonConfigurationKeys.ZK_AUTH,
-        ZK_AUTH_VALUE.toCharArray());
-    provider.flush();
   }
 }

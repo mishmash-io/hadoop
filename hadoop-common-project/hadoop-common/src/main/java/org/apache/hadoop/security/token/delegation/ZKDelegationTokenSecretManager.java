@@ -43,7 +43,7 @@ import org.apache.hadoop.classification.InterfaceAudience.Private;
 import org.apache.hadoop.classification.InterfaceStability.Unstable;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.CommonConfigurationKeys;
-import org.apache.hadoop.security.SecurityUtil.TruststoreKeystore;
+import org.apache.hadoop.util.curator.ZKUtil.TruststoreKeystore;
 import org.apache.hadoop.security.authentication.util.server.ZookeeperClient;
 import org.apache.hadoop.security.token.Token;
 import org.apache.hadoop.security.token.delegation.web.DelegationTokenManager;

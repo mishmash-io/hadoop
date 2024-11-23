@@ -15,8 +15,9 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.hadoop.util;
+package org.apache.hadoop.util.curator;
 
+import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -28,19 +29,25 @@ import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.util.List;
 
+import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.fs.CommonConfigurationKeys;
+import org.apache.hadoop.security.alias.CredentialProvider;
+import org.apache.hadoop.security.alias.CredentialProviderFactory;
+import org.apache.hadoop.security.alias.LocalJavaKeyStoreProvider;
 import org.apache.hadoop.test.GenericTestUtils;
-import org.apache.hadoop.util.ZKUtil.BadAclFormatException;
-import org.apache.hadoop.util.ZKUtil.ZKAuthInfo;
 import org.apache.zookeeper.ZooDefs.Perms;
 import org.apache.zookeeper.data.ACL;
 import org.junit.jupiter.api.Test;
 import org.apache.hadoop.thirdparty.com.google.common.io.Files;
+import org.apache.hadoop.util.curator.ZKUtil.BadAclFormatException;
+import org.apache.hadoop.util.curator.ZKUtil.ZKAuthInfo;
 
 public class TestZKUtil {
   private static final String TEST_ROOT_DIR = GenericTestUtils.getTempPath(
       "TestZKUtil");
   private static final File TEST_FILE = new File(TEST_ROOT_DIR,
       "test-file");
+  private static final String ZK_AUTH_VALUE = "a_scheme:a_password";
   
   /** A path which is expected not to exist */
   private static final String BOGUS_FILE =
@@ -143,5 +150,75 @@ public class TestZKUtil {
     } catch (FileNotFoundException fnfe) {
       assertTrue(fnfe.getMessage().startsWith(BOGUS_FILE));
     }
+  }
+
+  @Test
+  public void testAuthPlainPasswordProperty() throws Exception {
+    Configuration conf = new Configuration();
+    conf.set(CommonConfigurationKeys.ZK_AUTH, ZK_AUTH_VALUE);
+    List<ZKAuthInfo> zkAuths = ZKUtil.getZKAuthInfos(conf,
+        CommonConfigurationKeys.ZK_AUTH);
+    assertEquals(1, zkAuths.size());
+    ZKAuthInfo zkAuthInfo = zkAuths.get(0);
+    assertEquals("a_scheme", zkAuthInfo.getScheme());
+    assertArrayEquals("a_password".getBytes(), zkAuthInfo.getAuth());
+  }
+
+  @Test
+  public void testAuthPlainTextFile() throws Exception {
+    Configuration conf = new Configuration();
+    File passwordTxtFile = File.createTempFile(
+        getClass().getSimpleName() +  ".testAuthAtPathNotation-", ".txt");
+    Files.asCharSink(passwordTxtFile, StandardCharsets.UTF_8)
+        .write(ZK_AUTH_VALUE);
+    try {
+      conf.set(CommonConfigurationKeys.ZK_AUTH,
+          "@" + passwordTxtFile.getAbsolutePath());
+      List<ZKAuthInfo> zkAuths = ZKUtil.getZKAuthInfos(conf,
+          CommonConfigurationKeys.ZK_AUTH);
+      assertEquals(1, zkAuths.size());
+      ZKAuthInfo zkAuthInfo = zkAuths.get(0);
+      assertEquals("a_scheme", zkAuthInfo.getScheme());
+      assertArrayEquals("a_password".getBytes(), zkAuthInfo.getAuth());
+    } finally {
+      boolean deleted = passwordTxtFile.delete();
+      assertTrue(deleted);
+    }
+  }
+
+  @Test
+  public void testAuthLocalJceks() throws Exception {
+    File localJceksFile = File.createTempFile(
+        getClass().getSimpleName() +".testAuthLocalJceks-", ".localjceks");
+    populateLocalJceksTestFile(localJceksFile.getAbsolutePath());
+    try {
+      String localJceksUri = "localjceks://file/" +
+          localJceksFile.getAbsolutePath();
+      Configuration conf = new Configuration();
+      conf.set(CredentialProviderFactory.CREDENTIAL_PROVIDER_PATH,
+          localJceksUri);
+      List<ZKAuthInfo> zkAuths = ZKUtil.getZKAuthInfos(conf,
+          CommonConfigurationKeys.ZK_AUTH);
+      assertEquals(1, zkAuths.size());
+      ZKAuthInfo zkAuthInfo = zkAuths.get(0);
+      assertEquals("a_scheme", zkAuthInfo.getScheme());
+      assertArrayEquals("a_password".getBytes(), zkAuthInfo.getAuth());
+    } finally {
+      boolean deleted = localJceksFile.delete();
+      assertTrue(deleted);
+    }
+  }
+
+  private void populateLocalJceksTestFile(String path) throws IOException {
+    Configuration conf = new Configuration();
+    conf.set(CredentialProviderFactory.CREDENTIAL_PROVIDER_PATH,
+        "localjceks://file/" + path);
+    CredentialProvider provider =
+        CredentialProviderFactory.getProviders(conf).get(0);
+    assertEquals(LocalJavaKeyStoreProvider.class.getName(),
+        provider.getClass().getName());
+    provider.createCredentialEntry(CommonConfigurationKeys.ZK_AUTH,
+        ZK_AUTH_VALUE.toCharArray());
+    provider.flush();
   }
 }

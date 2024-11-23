@@ -35,9 +35,7 @@ import org.apache.curator.retry.RetryNTimes;
 import org.apache.curator.test.TestingServer;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.CommonConfigurationKeys;
-import org.apache.hadoop.security.SecurityUtil;
 import org.apache.hadoop.security.authentication.util.JaasConfiguration;
-import org.apache.hadoop.util.ZKUtil;
 import org.apache.zookeeper.CreateMode;
 import org.apache.zookeeper.ZooKeeper;
 import org.apache.zookeeper.client.ZKClientConfig;
@@ -222,7 +220,7 @@ public class TestZKCuratorManager {
         .authorization(new ArrayList<>())
         .zookeeperFactory(new ZKCuratorManager.HadoopZookeeperFactory(
             "foo1", "bar1", "bar1.keytab", false,
-            new SecurityUtil.TruststoreKeystore(conf))
+            new ZKUtil.TruststoreKeystore(conf))
 
         ).build();
     client.start();

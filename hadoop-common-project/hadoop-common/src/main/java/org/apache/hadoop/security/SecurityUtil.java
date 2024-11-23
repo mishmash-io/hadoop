@@ -29,13 +29,11 @@ import java.security.PrivilegedAction;
 import java.security.PrivilegedExceptionAction;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.List;
 import java.util.ServiceLoader;
 import java.util.concurrent.TimeUnit;
 
 import javax.annotation.Nullable;
-import javax.naming.ConfigurationException;
 import javax.security.auth.kerberos.KerberosPrincipal;
 import javax.security.auth.kerberos.KerberosTicket;
 
@@ -53,9 +51,6 @@ import org.apache.hadoop.security.token.Token;
 import org.apache.hadoop.security.token.TokenInfo;
 import org.apache.hadoop.util.StopWatch;
 import org.apache.hadoop.util.StringUtils;
-import org.apache.hadoop.util.ZKUtil;
-import org.apache.zookeeper.client.ZKClientConfig;
-import org.apache.zookeeper.common.ClientX509Util;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.xbill.DNS.Name;
@@ -762,130 +757,4 @@ public final class SecurityUtil {
     return port < 1024;
   }
 
-  /**
-   * Utility method to fetch ZK auth info from the configuration.
-   *
-   * @param conf configuration.
-   * @param configKey config key.
-   * @throws java.io.IOException if the Zookeeper ACLs configuration file
-   * cannot be read
-   * @throws ZKUtil.BadAuthFormatException if the auth format is invalid
-   * @return ZKAuthInfo List.
-   */
-  public static List<ZKUtil.ZKAuthInfo> getZKAuthInfos(Configuration conf,
-      String configKey) throws IOException {
-    char[] zkAuthChars = conf.getPassword(configKey);
-    String zkAuthConf =
-        zkAuthChars != null ? String.valueOf(zkAuthChars) : null;
-    try {
-      zkAuthConf = ZKUtil.resolveConfIndirection(zkAuthConf);
-      if (zkAuthConf != null) {
-        return ZKUtil.parseAuth(zkAuthConf);
-      } else {
-        return Collections.emptyList();
-      }
-    } catch (IOException | ZKUtil.BadAuthFormatException e) {
-      LOG.error("Couldn't read Auth based on {}", configKey);
-      throw e;
-    }
-  }
-
-  public static void validateSslConfiguration(TruststoreKeystore truststoreKeystore)
-          throws ConfigurationException {
-    if (org.apache.commons.lang3.StringUtils.isEmpty(truststoreKeystore.keystoreLocation)) {
-      throw new ConfigurationException(
-          "The keystore location parameter is empty for the ZooKeeper client connection.");
-    }
-    if (org.apache.commons.lang3.StringUtils.isEmpty(truststoreKeystore.keystorePassword)) {
-      throw new ConfigurationException(
-          "The keystore password parameter is empty for the ZooKeeper client connection.");
-    }
-    if (org.apache.commons.lang3.StringUtils.isEmpty(truststoreKeystore.truststoreLocation)) {
-      throw new ConfigurationException(
-          "The truststore location parameter is empty for the ZooKeeper client connection.");
-    }
-    if (org.apache.commons.lang3.StringUtils.isEmpty(truststoreKeystore.truststorePassword)) {
-      throw new ConfigurationException(
-          "The truststore password parameter is empty for the ZooKeeper client connection.");
-    }
-  }
-
-  /**
-   * Configure ZooKeeper Client with SSL/TLS connection.
-   * @param zkClientConfig ZooKeeper Client configuration
-   * @param truststoreKeystore truststore keystore, that we use to set the SSL configurations
-   * @throws ConfigurationException if the SSL configs are empty
-   */
-  public static void setSslConfiguration(ZKClientConfig zkClientConfig,
-                                         TruststoreKeystore truststoreKeystore)
-          throws ConfigurationException {
-    setSslConfiguration(zkClientConfig, truststoreKeystore, new ClientX509Util());
-  }
-
-  public static void setSslConfiguration(ZKClientConfig zkClientConfig,
-                                         TruststoreKeystore truststoreKeystore,
-                                         ClientX509Util x509Util)
-          throws ConfigurationException {
-    validateSslConfiguration(truststoreKeystore);
-    LOG.info("Configuring the ZooKeeper client to use SSL/TLS encryption for connecting to the "
-        + "ZooKeeper server.");
-    LOG.debug("Configuring the ZooKeeper client with {} location: {}.",
-        truststoreKeystore.keystoreLocation,
-        CommonConfigurationKeys.ZK_SSL_KEYSTORE_LOCATION);
-    LOG.debug("Configuring the ZooKeeper client with {} location: {}.",
-        truststoreKeystore.truststoreLocation,
-        CommonConfigurationKeys.ZK_SSL_TRUSTSTORE_LOCATION);
-
-    zkClientConfig.setProperty(ZKClientConfig.SECURE_CLIENT, "true");
-    zkClientConfig.setProperty(ZKClientConfig.ZOOKEEPER_CLIENT_CNXN_SOCKET,
-        "org.apache.zookeeper.ClientCnxnSocketNetty");
-    zkClientConfig.setProperty(x509Util.getSslKeystoreLocationProperty(),
-        truststoreKeystore.keystoreLocation);
-    zkClientConfig.setProperty(x509Util.getSslKeystorePasswdProperty(),
-        truststoreKeystore.keystorePassword);
-    zkClientConfig.setProperty(x509Util.getSslTruststoreLocationProperty(),
-        truststoreKeystore.truststoreLocation);
-    zkClientConfig.setProperty(x509Util.getSslTruststorePasswdProperty(),
-        truststoreKeystore.truststorePassword);
-  }
-
-  /**
-   * Helper class to contain the Truststore/Keystore paths for the ZK client connection over
-   * SSL/TLS.
-   */
-  public static class TruststoreKeystore {
-    private final String keystoreLocation;
-    private final String keystorePassword;
-    private final String truststoreLocation;
-    private final String truststorePassword;
-
-    /**
-     * Configuration for the ZooKeeper connection when SSL/TLS is enabled.
-     * When a value is not configured, ensure that empty string is set instead of null.
-     *
-     * @param conf ZooKeeper Client configuration
-     */
-    public TruststoreKeystore(Configuration conf) {
-      keystoreLocation = conf.get(CommonConfigurationKeys.ZK_SSL_KEYSTORE_LOCATION, "");
-      keystorePassword = conf.get(CommonConfigurationKeys.ZK_SSL_KEYSTORE_PASSWORD, "");
-      truststoreLocation = conf.get(CommonConfigurationKeys.ZK_SSL_TRUSTSTORE_LOCATION, "");
-      truststorePassword = conf.get(CommonConfigurationKeys.ZK_SSL_TRUSTSTORE_PASSWORD, "");
-    }
-
-    public String getKeystoreLocation() {
-      return keystoreLocation;
-    }
-
-    public String getKeystorePassword() {
-      return keystorePassword;
-    }
-
-    public String getTruststoreLocation() {
-      return truststoreLocation;
-    }
-
-    public String getTruststorePassword() {
-      return truststorePassword;
-    }
-  }
 }

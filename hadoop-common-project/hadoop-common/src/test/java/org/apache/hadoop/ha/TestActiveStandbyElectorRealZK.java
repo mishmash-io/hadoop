@@ -29,7 +29,6 @@ import org.apache.hadoop.fs.CommonConfigurationKeys;
 import org.apache.hadoop.ha.ActiveStandbyElector.ActiveStandbyElectorCallback;
 import org.apache.hadoop.ha.ActiveStandbyElector.State;
 import org.apache.hadoop.test.GenericTestUtils;
-import org.apache.hadoop.util.ZKUtil.ZKAuthInfo;
 import org.apache.zookeeper.CreateMode;
 import org.apache.zookeeper.ZooDefs.Ids;
 import org.apache.zookeeper.ZooKeeper;
@@ -41,6 +40,7 @@ import org.mockito.AdditionalMatchers;
 import org.mockito.Mockito;
 
 import org.apache.hadoop.thirdparty.com.google.common.primitives.Ints;
+import org.apache.hadoop.util.curator.ZKUtil.ZKAuthInfo;
 import org.slf4j.event.Level;
 
 /**

@@ -29,9 +29,9 @@ import java.util.concurrent.locks.ReentrantLock;
 import org.apache.hadoop.HadoopIllegalArgumentException;
 import org.apache.hadoop.classification.InterfaceAudience;
 import org.apache.hadoop.classification.InterfaceStability;
-import org.apache.hadoop.security.SecurityUtil;
-import org.apache.hadoop.util.ZKUtil.ZKAuthInfo;
 import org.apache.hadoop.util.StringUtils;
+import org.apache.hadoop.util.curator.ZKUtil.ZKAuthInfo;
+import org.apache.hadoop.util.curator.ZKUtil.TruststoreKeystore;
 import org.apache.zookeeper.client.ZKClientConfig;
 import org.apache.zookeeper.data.ACL;
 import org.apache.zookeeper.KeeperException;
@@ -51,8 +51,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.naming.ConfigurationException;
-
-import org.apache.hadoop.security.SecurityUtil.TruststoreKeystore;
 
 /**
  * 
@@ -753,7 +751,7 @@ public class ActiveStandbyElector implements StatCallback, StringCallback {
     ZKClientConfig zkClientConfig = new ZKClientConfig();
     if (truststoreKeystore != null) {
       try {
-        SecurityUtil.setSslConfiguration(zkClientConfig, truststoreKeystore);
+          org.apache.hadoop.util.curator.ZKUtil.setSslConfiguration(zkClientConfig, truststoreKeystore);
       } catch (ConfigurationException ce) {
         throw new IOException(ce);
       }

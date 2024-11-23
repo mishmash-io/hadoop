@@ -39,9 +39,10 @@ import org.apache.hadoop.ha.HAServiceProtocol.HAServiceState;
 import org.apache.hadoop.ha.HAServiceProtocol.StateChangeRequestInfo;
 import org.apache.hadoop.ha.HAServiceProtocol.RequestSource;
 import org.apache.hadoop.security.ProviderUtils;
-import org.apache.hadoop.util.ZKUtil;
-import org.apache.hadoop.util.ZKUtil.ZKAuthInfo;
 import org.apache.hadoop.util.cli.ToolRunner;
+import org.apache.hadoop.util.curator.ZKUtil;
+import org.apache.hadoop.util.curator.ZKUtil.TruststoreKeystore;
+import org.apache.hadoop.util.curator.ZKUtil.ZKAuthInfo;
 import org.apache.hadoop.ha.HealthMonitor.State;
 import org.apache.hadoop.ipc.Server;
 import org.apache.hadoop.security.AccessControlException;
@@ -58,8 +59,6 @@ import org.apache.hadoop.util.Preconditions;
 import org.apache.hadoop.thirdparty.com.google.common.util.concurrent.ThreadFactoryBuilder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import org.apache.hadoop.security.SecurityUtil.TruststoreKeystore;
 
 @InterfaceAudience.LimitedPrivate("HDFS")
 public abstract class ZKFailoverController {
@@ -363,7 +362,7 @@ public abstract class ZKFailoverController {
       // present. Inside tests, the hdfs filesystem will not be present
       LOG.debug("No filesystem found for the hdfs scheme", e);
     }
-    List<ZKAuthInfo> zkAuths = SecurityUtil.getZKAuthInfos(c, ZK_AUTH_KEY);
+    List<ZKAuthInfo> zkAuths = ZKUtil.getZKAuthInfos(c, ZK_AUTH_KEY);
 
     // Sanity check configuration.
     Preconditions.checkArgument(zkQuorum != null,

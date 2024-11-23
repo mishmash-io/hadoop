@@ -35,7 +35,6 @@ import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.CommonConfigurationKeys;
 import org.apache.hadoop.security.SecurityUtil;
 import org.apache.hadoop.security.authentication.util.JaasConfiguration;
-import org.apache.hadoop.util.ZKUtil;
 import org.apache.zookeeper.CreateMode;
 import org.apache.zookeeper.Watcher;
 import org.apache.zookeeper.ZooKeeper;
@@ -48,7 +47,7 @@ import org.slf4j.LoggerFactory;
 
 import org.apache.hadoop.util.Preconditions;
 
-import org.apache.hadoop.security.SecurityUtil.TruststoreKeystore;
+import org.apache.hadoop.util.curator.ZKUtil.TruststoreKeystore;
 
 /**
  * Helper class that provides utility methods specific to ZK operations.
@@ -119,7 +118,7 @@ public final class ZKCuratorManager {
    */
   public static List<ZKUtil.ZKAuthInfo> getZKAuths(Configuration conf)
       throws IOException {
-    return SecurityUtil.getZKAuthInfos(conf, CommonConfigurationKeys.ZK_AUTH);
+    return ZKUtil.getZKAuthInfos(conf, CommonConfigurationKeys.ZK_AUTH);
   }
 
   /**
@@ -569,7 +568,7 @@ public final class ZKCuratorManager {
         setJaasConfiguration(zkClientConfig);
       }
       if (sslEnabled) {
-        SecurityUtil.setSslConfiguration(zkClientConfig, truststoreKeystore);
+        ZKUtil.setSslConfiguration(zkClientConfig, truststoreKeystore);
       }
       return new ZooKeeper(connectString, sessionTimeout, watcher,
           canBeReadOnly, zkClientConfig);

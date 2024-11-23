@@ -23,7 +23,6 @@ import java.util.Collections;
 import java.util.List;
 
 import org.apache.hadoop.conf.Configuration;
-import org.apache.hadoop.security.SecurityUtil;
 import org.apache.zookeeper.CreateMode;
 import org.apache.zookeeper.KeeperException;
 import org.apache.zookeeper.KeeperException.Code;
@@ -45,8 +44,9 @@ import org.apache.hadoop.HadoopIllegalArgumentException;
 import org.apache.hadoop.fs.CommonConfigurationKeys;
 import org.apache.hadoop.ha.ActiveStandbyElector.ActiveStandbyElectorCallback;
 import org.apache.hadoop.ha.ActiveStandbyElector.ActiveNotFoundException;
-import org.apache.hadoop.util.ZKUtil.ZKAuthInfo;
 import org.apache.hadoop.test.GenericTestUtils;
+import org.apache.hadoop.util.curator.ZKUtil;
+import org.apache.hadoop.util.curator.ZKUtil.ZKAuthInfo;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
@@ -873,7 +873,7 @@ public class TestActiveStandbyElector {
     conf.set(CommonConfigurationKeys.ZK_SSL_KEYSTORE_PASSWORD, "keystore_password");
     conf.set(CommonConfigurationKeys.ZK_SSL_TRUSTSTORE_LOCATION, "truststore_location");
     conf.set(CommonConfigurationKeys.ZK_SSL_TRUSTSTORE_PASSWORD, "truststore_password");
-    SecurityUtil.TruststoreKeystore truststoreKeystore = new SecurityUtil.TruststoreKeystore(conf);
+    ZKUtil.TruststoreKeystore truststoreKeystore = new ZKUtil.TruststoreKeystore(conf);
     ActiveStandbyElector e = Mockito.spy(new ActiveStandbyElector("localhost", 1, "",
             Collections.emptyList(), null, Mockito.mock(ActiveStandbyElectorCallback.class),
             1, truststoreKeystore) {
