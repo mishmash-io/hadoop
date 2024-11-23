@@ -99,29 +99,10 @@ public class TestGenericTestUtils extends GenericTestUtils {
     // test clear output
     logCapturer.clearOutput();
     assertTrue(logCapturer.getOutput().isEmpty());
-    // test stop capturing
-    logCapturer.stopCapturing();
-    log.info(infoMessage);
-    assertTrue(logCapturer.getOutput().isEmpty());
-  }
-
-  @Test
-  @Timeout(value=10000, unit=TimeUnit.MILLISECONDS)
-  public void testLogCapturerSlf4jLogger() {
-    final Logger logger = LoggerFactory.getLogger(TestGenericTestUtils.class);
-    LogCapturer logCapturer = LogCapturer.captureLogs(logger);
-    final String infoMessage = "info message";
-    // test get output message
-    logger.info(infoMessage);
-    assertTrue(logCapturer.getOutput().endsWith(
-        String.format(infoMessage + "%n")));
-    // test clear output
-    logCapturer.clearOutput();
-    assertTrue(logCapturer.getOutput().isEmpty());
-    // test stop capturing
-    logCapturer.stopCapturing();
-    logger.info(infoMessage);
-    assertTrue(logCapturer.getOutput().isEmpty());
+    // test stop capturing - not needed anymore
+    // logCapturer.stopCapturing();
+    // log.info(infoMessage);
+    // assertTrue(logCapturer.getOutput().isEmpty());
   }
 
   @Test

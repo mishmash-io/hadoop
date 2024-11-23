@@ -159,8 +159,8 @@ public class TestReloadingX509TrustManager {
       assertEquals(1, tm.getAcceptedIssuers().length);
       assertEquals(cert, tm.getAcceptedIssuers()[0]);
     } finally {
-      reloaderLog.stopCapturing();
       fileMonitoringTimer.cancel();
+      reloaderLog.clearOutput();
     }
   }
 
@@ -198,8 +198,8 @@ public class TestReloadingX509TrustManager {
       assertEquals(1, tm.getAcceptedIssuers().length);
       assertEquals(cert, tm.getAcceptedIssuers()[0]);
     } finally {
-      reloaderLog.stopCapturing();
       fileMonitoringTimer.cancel();
+      reloaderLog.clearOutput();
     }
   }
 
