@@ -16,7 +16,7 @@
  * limitations under the License.
  */
 
-package org.apache.hadoop.fs.store.audit;
+package org.apache.hadoop.http;
 
 import java.net.URI;
 import java.net.URISyntaxException;
