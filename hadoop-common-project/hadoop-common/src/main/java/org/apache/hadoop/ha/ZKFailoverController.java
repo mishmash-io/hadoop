@@ -39,7 +39,6 @@ import org.apache.hadoop.ha.HAServiceProtocol.HAServiceState;
 import org.apache.hadoop.ha.HAServiceProtocol.StateChangeRequestInfo;
 import org.apache.hadoop.ha.HAServiceProtocol.RequestSource;
 import org.apache.hadoop.security.ProviderUtils;
-import org.apache.hadoop.util.cli.ToolRunner;
 import org.apache.hadoop.util.curator.ZKUtil;
 import org.apache.hadoop.util.curator.ZKUtil.TruststoreKeystore;
 import org.apache.hadoop.util.curator.ZKUtil.ZKAuthInfo;
@@ -297,6 +296,31 @@ public abstract class ZKFailoverController {
     return 0;
   }
 
+  private boolean confirmPrompt(String prompt) throws IOException {
+    while (true) {
+      System.err.print(prompt + " (Y or N) ");
+      StringBuilder responseBuilder = new StringBuilder();
+      while (true) {
+        int c = System.in.read();
+        if (c == -1 || c == '\r' || c == '\n') {
+          break;
+        }
+        responseBuilder.append((char)c);
+      }
+  
+      String response = responseBuilder.toString();
+      if (response.equalsIgnoreCase("y") ||
+          response.equalsIgnoreCase("yes")) {
+        return true;
+      } else if (response.equalsIgnoreCase("n") ||
+          response.equalsIgnoreCase("no")) {
+        return false;
+      }
+      System.err.println("Invalid input: " + response);
+      // else ask them again
+    }
+  }
+
   private boolean confirmFormat() {
     String parentZnode = getParentZnode();
     System.err.println(
@@ -308,7 +332,7 @@ public abstract class ZKFailoverController {
         "failover controllers are stopped!\n" +
         "===============================================");
     try {
-      return ToolRunner.confirmPrompt("Proceed formatting " + parentZnode + "?");
+      return confirmPrompt("Proceed formatting " + parentZnode + "?");
     } catch (IOException e) {
       LOG.debug("Failed to confirm", e);
       return false;
