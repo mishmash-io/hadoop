@@ -26,12 +26,12 @@ import java.util.Set;
 import java.util.stream.Stream;
 import static java.util.stream.Collectors.joining;
 import static java.util.stream.Collectors.toSet;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import org.apache.hadoop.fs.FileStatus;
+import org.junit.jupiter.api.Test;
 
-import org.junit.Test;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /**
  * Unit test verifying that {@link HdfsFileStatus} is a superset of
@@ -51,10 +51,9 @@ public class TestHdfsFileStatusMethods {
     hfsM.addAll(signatures(Object.class));
     assertTrue(fsM.removeAll(hfsM));
     // verify that FileStatus is a subset of HdfsFileStatus
-    assertEquals(fsM.stream()
+    assertEquals(Collections.emptySet(), fsM, fsM.stream()
             .map(MethodSignature::toString)
-            .collect(joining("\n")),
-        Collections.emptySet(), fsM);
+            .collect(joining("\n")));
   }
 
   /** Map non-static, declared methods for this class to signatures. */

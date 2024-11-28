@@ -32,9 +32,8 @@ import org.apache.hadoop.security.ssl.KeyStoreTestUtil;
 import org.apache.hadoop.security.ssl.SSLFactory;
 import org.apache.hadoop.test.GenericTestUtils;
 import org.apache.hadoop.util.Lists;
-import org.junit.Assert;
-import org.junit.Test;
-
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 import org.slf4j.LoggerFactory;
 
 public final class TestURLConnectionFactory {
@@ -47,14 +46,14 @@ public final class TestURLConnectionFactory {
       @Override
       public HttpURLConnection configure(HttpURLConnection conn)
           throws IOException {
-        Assert.assertEquals(u, conn.getURL());
+        Assertions.assertEquals(u, conn.getURL());
         conns.add(conn);
         return conn;
       }
     });
 
     fc.openConnection(u);
-    Assert.assertEquals(1, conns.size());
+    Assertions.assertEquals(1, conns.size());
   }
 
   @Test
@@ -65,9 +64,9 @@ public final class TestURLConnectionFactory {
         GenericTestUtils.LogCapturer.captureLogs(
             LoggerFactory.getLogger(URLConnectionFactory.class));
     URLConnectionFactory.newDefaultURLConnectionFactory(conf);
-    Assert.assertTrue("Expected log for ssl init failure not found!",
-        logs.getOutput().contains(
-        "Cannot load customized ssl related configuration"));
+    Assertions.assertTrue(logs.getOutput().contains(
+        "Cannot load customized ssl related configuration"),
+        "Expected log for ssl init failure not found!");
   }
 
   @Test
@@ -104,7 +103,7 @@ public final class TestURLConnectionFactory {
         reloaderThread = thread;
       }
     }
-    Assert.assertTrue("Reloader is not alive", reloaderThread.isAlive());
+    Assertions.assertTrue(reloaderThread.isAlive(), "Reloader is not alive");
 
     fs.close();
 
@@ -116,6 +115,6 @@ public final class TestURLConnectionFactory {
       }
       Thread.sleep(1000);
     }
-    Assert.assertFalse("Reloader is still alive", reloaderStillAlive);
+    Assertions.assertFalse(reloaderStillAlive, "Reloader is still alive");
   }
 }

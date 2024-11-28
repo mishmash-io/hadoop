@@ -17,12 +17,12 @@
  */
 package org.apache.hadoop.hdfs.web;
 
-import static org.junit.Assert.assertEquals;
+import org.junit.jupiter.api.Test;
 
 import java.io.IOException;
 import java.net.URL;
 
-import org.junit.Test;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 public class TestOffsetUrlInputStream {
   @Test

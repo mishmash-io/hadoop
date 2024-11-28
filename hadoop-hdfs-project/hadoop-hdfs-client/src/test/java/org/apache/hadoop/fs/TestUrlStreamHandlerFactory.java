@@ -19,9 +19,8 @@
 package org.apache.hadoop.fs;
 
 import org.apache.hadoop.test.GenericTestUtils;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.Timeout;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.Timeout;
 
 import java.io.File;
 import java.io.IOException;
@@ -31,18 +30,17 @@ import java.util.Random;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
 
 /**
  * Test of the URL stream handler factory.
  */
+@Timeout(value=30000, unit=TimeUnit.MILLISECONDS)
 public class TestUrlStreamHandlerFactory {
 
   private static final int RUNS = 20;
   private static final int THREADS = 10;
   private static final int TASKS = 200;
-
-  @Rule
-  public Timeout globalTimeout = new Timeout(30000);
 
   @Test
   public void testConcurrency() throws Exception {

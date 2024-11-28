@@ -18,12 +18,10 @@
 
 package org.apache.hadoop.fs;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotSame;
-import static org.junit.Assert.assertNotEquals;
+import static org.junit.jupiter.api.Assertions.*;
 
-import org.junit.BeforeClass;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
 
 /**
  * Tests for <code>XAttr</code> objects.
@@ -31,7 +29,7 @@ import org.junit.Test;
 public class TestXAttr {
   private static XAttr XATTR, XATTR1, XATTR2, XATTR3, XATTR4, XATTR5;
   
-  @BeforeClass
+  @BeforeAll
   public static void setUp() throws Exception {
     byte[] value = {0x31, 0x32, 0x33};
     XATTR = new XAttr.Builder()

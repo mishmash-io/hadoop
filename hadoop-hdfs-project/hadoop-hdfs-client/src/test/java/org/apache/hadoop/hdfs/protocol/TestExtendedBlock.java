@@ -17,10 +17,10 @@
  */
 package org.apache.hadoop.hdfs.protocol;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
+import org.junit.jupiter.api.Test;
 
-import org.junit.Test;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 
 
 public class TestExtendedBlock {
@@ -71,7 +71,7 @@ public class TestExtendedBlock {
   }
 
   private static void assertNotEquals(Object a, Object b) {
-    assertFalse("expected not equal: '" + a + "' and '" + b + "'",
-        a.equals(b));
+    assertFalse(a.equals(b),
+        "expected not equal: '" + a + "' and '" + b + "'");
   }
 }
