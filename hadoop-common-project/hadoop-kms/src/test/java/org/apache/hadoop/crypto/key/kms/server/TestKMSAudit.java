@@ -17,6 +17,10 @@
  */
 package org.apache.hadoop.crypto.key.kms.server;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.fail;
+
 import java.io.ByteArrayOutputStream;
 import java.io.FilterOutputStream;
 import java.io.InputStream;
@@ -35,13 +39,12 @@ import org.apache.hadoop.test.GenericTestUtils;
 import org.apache.hadoop.util.ThreadUtil;
 import org.apache.log4j.LogManager;
 import org.apache.log4j.PropertyConfigurator;
-import org.junit.After;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.Timeout;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.Timeout;
 
+@Timeout(value=180000, unit=TimeUnit.MILLISECONDS)
 public class TestKMSAudit {
 
   private PrintStream originalOut;
@@ -63,10 +66,7 @@ public class TestKMSAudit {
     }
   }
 
-  @Rule
-  public final Timeout testTimeout = new Timeout(180000L, TimeUnit.MILLISECONDS);
-
-  @Before
+  @BeforeEach
   public void setUp() throws IOException {
     originalOut = System.err;
     memOut = new ByteArrayOutputStream();
@@ -81,7 +81,7 @@ public class TestKMSAudit {
     this.kmsAudit = new KMSAudit(conf);
   }
 
-  @After
+  @AfterEach
   public void cleanUp() {
     System.setErr(originalOut);
     LogManager.resetConfiguration();
@@ -138,7 +138,7 @@ public class TestKMSAudit {
             + "OK\\[op=REENCRYPT_EEK_BATCH, key=k1, user=luser@REALM\\] testmsg"
             + "OK\\[op=REENCRYPT_EEK_BATCH, key=k1, user=luser@REALM\\] "
             + "testmsg");
-    Assert.assertTrue(doesMatch);
+    assertTrue(doesMatch);
   }
 
   @Test
@@ -179,7 +179,7 @@ public class TestKMSAudit {
             + " interval=[^m]{1,4}ms\\] testmsg"
             + "OK\\[op=GENERATE_EEK, key=k3, user=luser@REALM, accessCount=1,"
             + " interval=[^m]{1,4}ms\\] testmsg");
-    Assert.assertTrue(doesMatch);
+    assertTrue(doesMatch);
   }
 
   @Test
@@ -192,7 +192,7 @@ public class TestKMSAudit {
     kmsAudit.unauthenticated("remotehost", "method", "url", "testmsg");
     String out = getAndResetLogOutput();
     System.out.println(out);
-    Assert.assertTrue(out.matches(
+    assertTrue(out.matches(
         "OK\\[op=GENERATE_EEK, key=k4, user=luser@REALM, accessCount=1, "
             + "interval=[^m]{1,4}ms\\] testmsg"
             + "OK\\[op=GENERATE_EEK, user=luser@REALM\\] testmsg"
@@ -211,8 +211,8 @@ public class TestKMSAudit {
     List<KMSAuditLogger> loggers = (List<KMSAuditLogger>) FieldUtils.
         getField(KMSAudit.class, "auditLoggers", true).get(kmsAudit);
 
-    Assert.assertEquals(1, loggers.size());
-    Assert.assertEquals(SimpleKMSAuditLogger.class, loggers.get(0).getClass());
+    assertEquals(1, loggers.size());
+    assertEquals(SimpleKMSAuditLogger.class, loggers.get(0).getClass());
 
     // Explicitly configure the simple logger. Duplicates are ignored.
     final Configuration conf = new Configuration();
@@ -222,15 +222,15 @@ public class TestKMSAudit {
     final KMSAudit audit = new KMSAudit(conf);
     loggers = (List<KMSAuditLogger>) FieldUtils.
         getField(KMSAudit.class, "auditLoggers", true).get(kmsAudit);
-    Assert.assertEquals(1, loggers.size());
-    Assert.assertEquals(SimpleKMSAuditLogger.class, loggers.get(0).getClass());
+    assertEquals(1, loggers.size());
+    assertEquals(SimpleKMSAuditLogger.class, loggers.get(0).getClass());
 
     // If any loggers unable to load, init should fail.
     conf.set(KMSConfiguration.KMS_AUDIT_LOGGER_KEY,
         SimpleKMSAuditLogger.class.getName() + ",unknown");
     try {
       new KMSAudit(conf);
-      Assert.fail("loggers configured but invalid, init should fail.");
+      fail("loggers configured but invalid, init should fail.");
     } catch (Exception ex) {
       GenericTestUtils
           .assertExceptionContains(KMSConfiguration.KMS_AUDIT_LOGGER_KEY, ex);

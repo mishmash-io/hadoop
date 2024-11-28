@@ -23,10 +23,11 @@ import org.apache.hadoop.security.token.delegation.web
     .DelegationTokenAuthenticationHandler;
 import org.apache.hadoop.security.token.delegation.web
     .PseudoDelegationTokenAuthenticationHandler;
-import org.junit.Test;
-import java.util.Properties;
+import org.junit.jupiter.api.Test;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+
+import java.util.Properties;
 
 /**
  * Test KMS Authentication Filter.

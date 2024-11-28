@@ -38,6 +38,7 @@
     <jetty.version>12.0.14</jetty.version>
     <servlet-api.version>6.0.0</servlet-api.version>
     <jsp-api.version>4.0.0</jsp-api.version>
+    <junit5.version>5.11.0</junit5.version>
   </properties>
 
   <dependencies>
@@ -47,8 +48,9 @@
       <scope>test</scope>
     </dependency>
     <dependency>
-      <groupId>junit</groupId>
-      <artifactId>junit</artifactId>
+      <groupId>org.junit.jupiter</groupId>
+      <artifactId>junit-jupiter-engine</artifactId>
+      <version>${junit5.version}</version>
       <scope>test</scope>
     </dependency>
     <dependency>
