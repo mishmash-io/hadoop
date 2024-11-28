@@ -23,7 +23,7 @@ import org.apache.hadoop.crypto.key.kms.KMSRESTConstants;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.security.UserGroupInformation;
 import org.apache.hadoop.security.authentication.server.AuthenticationFilter;
-import org.apache.hadoop.security.authentication.util.ZKSignerSecretProvider;
+import org.apache.hadoop.security.authentication.util.server.ZKSignerSecretProvider;
 import org.apache.hadoop.security.token.delegation.web.DelegationTokenAuthenticatedURL;
 import org.junit.Assert;
 import org.junit.Test;
