@@ -30,14 +30,14 @@ import org.apache.hadoop.security.token.delegation.web.KerberosDelegationTokenAu
 import org.apache.hadoop.security.token.delegation.web.PseudoDelegationTokenAuthenticationHandler;
 import org.eclipse.jetty.server.Response;
 
-import javax.servlet.FilterChain;
-import javax.servlet.FilterConfig;
-import javax.servlet.ServletException;
-import javax.servlet.ServletRequest;
-import javax.servlet.ServletResponse;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-import javax.servlet.http.HttpServletResponseWrapper;
+import jakarta.servlet.FilterChain;
+import jakarta.servlet.FilterConfig;
+import jakarta.servlet.ServletException;
+import jakarta.servlet.ServletRequest;
+import jakarta.servlet.ServletResponse;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
+import jakarta.servlet.http.HttpServletResponseWrapper;
 import java.io.IOException;
 import java.util.Map;
 import java.util.Properties;
@@ -118,9 +118,8 @@ public class KMSAuthenticationFilter
       ServletResponse response = getResponse();
 
       // After Jetty 9.4.21, sendError() no longer allows a custom message.
-      // use setStatusWithReason() to set a custom message.
       if (response instanceof Response) {
-        ((Response) response).setStatusWithReason(sc, msg);
+        ((Response) response).setStatus(sc);
       } else {
         KMS.LOG.warn("The wrapped response object is instance of {}" +
             ", not org.eclipse.jetty.server.Response. Can't set custom error " +
@@ -133,25 +132,6 @@ public class KMSAuthenticationFilter
     public void sendError(int sc) throws IOException {
       statusCode = sc;
       super.sendError(sc);
-    }
-
-    /**
-     * Calls setStatus(int sc, String msg) on the wrapped
-     * {@link HttpServletResponseWrapper} object.
-     *
-     * @param sc the status code
-     * @param sm the status message
-     * @deprecated {@link HttpServletResponseWrapper#setStatus(int, String)} is
-     * deprecated. To set a status code use {@link #setStatus(int)}, to send an
-     * error with a description use {@link #sendError(int, String)}
-     */
-    @Override
-    @Deprecated
-    @SuppressWarnings("deprecation")
-    public void setStatus(int sc, String sm) {
-      statusCode = sc;
-      msg = sm;
-      super.setStatus(sc, sm);
     }
   }
 
