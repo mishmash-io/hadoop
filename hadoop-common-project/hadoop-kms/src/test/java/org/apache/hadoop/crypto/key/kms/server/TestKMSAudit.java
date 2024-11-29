@@ -37,6 +37,7 @@ import org.apache.hadoop.security.UserGroupInformation;
 import org.apache.hadoop.test.GenericTestUtils;
 import org.apache.logging.log4j.core.LoggerContext;
 import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.Timeout;
@@ -63,17 +64,21 @@ public class TestKMSAudit {
     }
   }
 
+  @BeforeAll
+  public void setUpAll() throws URISyntaxException {
+    LoggerContext ctx = LoggerContext.getContext(false);
+    ctx.setConfigLocation(getClass().getClassLoader()
+        .getResource("log4j2-kmsaudit.properties").toURI());
+    ctx.reconfigure();
+  }
+
   @BeforeEach
-  public void setUp() throws IOException, URISyntaxException {
+  public void setUp() throws IOException {
     originalOut = System.err;
     memOut = new ByteArrayOutputStream();
     filterOut = new FilterOut(memOut);
     capturedOut = new PrintStream(filterOut);
     System.setErr(capturedOut);
-    LoggerContext ctx = LoggerContext.getContext(false);
-    ctx.setConfigLocation(getClass().getClassLoader()
-        .getResource("log4j2-kmsaudit.properties").toURI());
-    ctx.reconfigure();
     Configuration conf = new Configuration();
     this.kmsAudit = new KMSAudit(conf);
   }
