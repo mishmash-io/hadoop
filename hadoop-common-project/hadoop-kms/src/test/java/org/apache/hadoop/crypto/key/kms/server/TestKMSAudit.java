@@ -69,7 +69,6 @@ public class TestKMSAudit {
     LoggerContext ctx = LoggerContext.getContext(false);
     ctx.setConfigLocation(TestKMSAudit.class.getClassLoader()
         .getResource("log4j2-kmsaudit.properties").toURI());
-    ctx.reconfigure();
   }
 
   @BeforeEach
