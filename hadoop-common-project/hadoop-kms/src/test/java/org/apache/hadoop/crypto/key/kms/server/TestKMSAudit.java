@@ -23,22 +23,19 @@ import static org.junit.jupiter.api.Assertions.fail;
 
 import java.io.ByteArrayOutputStream;
 import java.io.FilterOutputStream;
-import java.io.InputStream;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.io.PrintStream;
+import java.net.URISyntaxException;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 
 import org.apache.commons.lang3.reflect.FieldUtils;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.crypto.key.kms.server.KMS.KMSOp;
-import org.apache.hadoop.io.IOUtils;
 import org.apache.hadoop.security.UserGroupInformation;
 import org.apache.hadoop.test.GenericTestUtils;
-import org.apache.hadoop.util.ThreadUtil;
-import org.apache.log4j.LogManager;
-import org.apache.log4j.PropertyConfigurator;
+import org.apache.logging.log4j.core.LoggerContext;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -67,16 +64,16 @@ public class TestKMSAudit {
   }
 
   @BeforeEach
-  public void setUp() throws IOException {
+  public void setUp() throws IOException, URISyntaxException {
     originalOut = System.err;
     memOut = new ByteArrayOutputStream();
     filterOut = new FilterOut(memOut);
     capturedOut = new PrintStream(filterOut);
     System.setErr(capturedOut);
-    InputStream is =
-        ThreadUtil.getResourceAsStream("log4j-kmsaudit.properties");
-    PropertyConfigurator.configure(is);
-    IOUtils.closeStream(is);
+    LoggerContext ctx = LoggerContext.getContext(false);
+    ctx.setConfigLocation(getClass().getClassLoader()
+        .getResource("log4j-kmsaudit.properties").toURI());
+    ctx.reconfigure();
     Configuration conf = new Configuration();
     this.kmsAudit = new KMSAudit(conf);
   }
@@ -84,7 +81,6 @@ public class TestKMSAudit {
   @AfterEach
   public void cleanUp() {
     System.setErr(originalOut);
-    LogManager.resetConfiguration();
     kmsAudit.shutdown();
   }
 
