@@ -27,7 +27,7 @@ import org.apache.hadoop.hdfs.client.HdfsClientConfigKeys;
 import org.apache.hadoop.hdfs.web.oauth2.ConfCredentialBasedAccessTokenProvider;
 import org.apache.hadoop.hdfs.web.oauth2.CredentialBasedAccessTokenProvider;
 import org.apache.hadoop.hdfs.web.oauth2.OAuth2ConnectionConfigurator;
-import org.apache.http.HttpStatus;
+import org.apache.hc.core5.http.HttpStatus;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
