@@ -18,7 +18,7 @@
 
 package org.apache.hadoop.hdfs.server.namenode;
 
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.*;
 
 import java.io.InputStream;
 import java.util.ArrayList;
@@ -46,29 +46,23 @@ import org.apache.log4j.Appender;
 import org.apache.log4j.AsyncAppender;
 import org.apache.log4j.Logger;
 
-import org.junit.After;
-import org.junit.AfterClass;
-import org.junit.Before;
-import org.junit.BeforeClass;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.junit.runners.Parameterized;
-import org.junit.runners.Parameterized.Parameters;
+import org.junit.jupiter.api.*;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.MethodSource;
+
 import org.slf4j.LoggerFactory;
 
 /**
  * A JUnit test that audit logs are generated
  */
-@RunWith(Parameterized.class)
 public class TestAuditLogs {
 
   private static final org.slf4j.Logger LOG = LoggerFactory.getLogger(TestAuditLogs.class);
 
-  final boolean useAsyncEdits;
+  boolean useAsyncEdits;
 
   private static LogCapturer auditLogCapture;
 
-  @Parameters
   public static Collection<Object[]> data() {
     Collection<Object[]> params = new ArrayList<>();
     params.add(new Object[]{Boolean.FALSE});
@@ -76,7 +70,7 @@ public class TestAuditLogs {
     return params;
   }
 
-  public TestAuditLogs(boolean useAsyncEdits) {
+  public void initTestAuditLogs(boolean useAsyncEdits) {
     this.useAsyncEdits = useAsyncEdits;
   }
 
@@ -106,7 +100,7 @@ public class TestAuditLogs {
   Configuration conf;
   UserGroupInformation userGroupInfo;
 
-  @Before
+  @BeforeEach
   public void setupCluster() throws Exception {
     // must configure prior to instantiating the namesystem because it
     // will reconfigure the logger if async is enabled
@@ -133,7 +127,7 @@ public class TestAuditLogs {
     userGroupInfo = UserGroupInformation.createUserForTesting(username, groups);
  }
 
-  @After
+  @AfterEach
   public void teardownCluster() throws Exception {
     util.cleanup(fs, "/srcdat");
     if (fs != null) {
@@ -146,20 +140,22 @@ public class TestAuditLogs {
     }
   }
 
-  @BeforeClass
+  @BeforeAll
   public static void beforeClass() {
     auditLogCapture = LogCapturer.captureLogs(FSNamesystem.AUDIT_LOG);
   }
 
-  @AfterClass
+  @AfterAll
   public static void afterClass() {
     auditLogCapture.stopCapturing();
   }
 
 
   /** test that allowed operation puts proper entry in audit log */
-  @Test
-  public void testAuditAllowed() throws Exception {
+  @MethodSource("data")
+  @ParameterizedTest
+  public void testAuditAllowed(boolean useAsyncEdits) throws Exception {
+    initTestAuditLogs(useAsyncEdits);
     final Path file = new Path(fnames[0]);
     FileSystem userfs = DFSTestUtil.getFileSystemAs(userGroupInfo, conf);
 
@@ -167,23 +163,27 @@ public class TestAuditLogs {
     int val = istream.read();
     istream.close();
     verifySuccessCommandsAuditLogs(2, fnames[0], "cmd=open");
-    assertTrue("failed to read from file", val >= 0);
+    assertTrue(val >= 0, "failed to read from file");
   }
 
   /** test that allowed stat puts proper entry in audit log */
-  @Test
-  public void testAuditAllowedStat() throws Exception {
+  @MethodSource("data")
+  @ParameterizedTest
+  public void testAuditAllowedStat(boolean useAsyncEdits) throws Exception {
+    initTestAuditLogs(useAsyncEdits);
     final Path file = new Path(fnames[0]);
     FileSystem userfs = DFSTestUtil.getFileSystemAs(userGroupInfo, conf);
 
     FileStatus st = userfs.getFileStatus(file);
     verifySuccessCommandsAuditLogs(2, fnames[0], "cmd=getfileinfo");
-    assertTrue("failed to stat file", st != null && st.isFile());
+    assertTrue(st != null && st.isFile(), "failed to stat file");
   }
 
   /** test that denied operation puts proper entry in audit log */
-  @Test
-  public void testAuditDenied() throws Exception {
+  @MethodSource("data")
+  @ParameterizedTest
+  public void testAuditDenied(boolean useAsyncEdits) throws Exception {
+    initTestAuditLogs(useAsyncEdits);
     final Path file = new Path(fnames[0]);
     FileSystem userfs = DFSTestUtil.getFileSystemAs(userGroupInfo, conf);
 
@@ -200,8 +200,10 @@ public class TestAuditLogs {
   }
 
   /** test that access via webhdfs puts proper entry in audit log */
-  @Test
-  public void testAuditWebHdfs() throws Exception {
+  @MethodSource("data")
+  @ParameterizedTest
+  public void testAuditWebHdfs(boolean useAsyncEdits) throws Exception {
+    initTestAuditLogs(useAsyncEdits);
     final Path file = new Path(fnames[0]);
 
     fs.setPermission(file, new FsPermission((short)0644));
@@ -213,12 +215,14 @@ public class TestAuditLogs {
     istream.close();
 
     verifySuccessCommandsAuditLogs(3, fnames[0], "cmd=open");
-    assertTrue("failed to read from file", val >= 0);
+    assertTrue(val >= 0, "failed to read from file");
   }
 
   /** test that stat via webhdfs puts proper entry in audit log */
-  @Test
-  public void testAuditWebHdfsStat() throws Exception {
+  @MethodSource("data")
+  @ParameterizedTest
+  public void testAuditWebHdfsStat(boolean useAsyncEdits) throws Exception {
+    initTestAuditLogs(useAsyncEdits);
     final Path file = new Path(fnames[0]);
 
     fs.setPermission(file, new FsPermission((short)0644));
@@ -228,12 +232,14 @@ public class TestAuditLogs {
     FileStatus st = webfs.getFileStatus(file);
 
     verifySuccessCommandsAuditLogs(2, fnames[0], "cmd=getfileinfo");
-    assertTrue("failed to stat file", st != null && st.isFile());
+    assertTrue(st != null && st.isFile(), "failed to stat file");
   }
 
   /** test that denied access via webhdfs puts proper entry in audit log */
-  @Test
-  public void testAuditWebHdfsDenied() throws Exception {
+  @MethodSource("data")
+  @ParameterizedTest
+  public void testAuditWebHdfsDenied(boolean useAsyncEdits) throws Exception {
+    initTestAuditLogs(useAsyncEdits);
     final Path file = new Path(fnames[0]);
 
     fs.setPermission(file, new FsPermission((short)0600));
@@ -251,8 +257,10 @@ public class TestAuditLogs {
   }
 
   /** test that open via webhdfs puts proper entry in audit log */
-  @Test
-  public void testAuditWebHdfsOpen() throws Exception {
+  @MethodSource("data")
+  @ParameterizedTest
+  public void testAuditWebHdfsOpen(boolean useAsyncEdits) throws Exception {
+    initTestAuditLogs(useAsyncEdits);
     final Path file = new Path(fnames[0]);
 
     fs.setPermission(file, new FsPermission((short)0644));
@@ -265,8 +273,10 @@ public class TestAuditLogs {
   }
 
   /** make sure that "\r\n" isn't made into a newline in audit log */
-  @Test
-  public void testAuditCharacterEscape() throws Exception {
+  @MethodSource("data")
+  @ParameterizedTest
+  public void testAuditCharacterEscape(boolean useAsyncEdits) throws Exception {
+    initTestAuditLogs(useAsyncEdits);
     final Path file = new Path("foo" + "\r\n" + "bar");
     fs.create(file);
     verifySuccessCommandsAuditLogs(1, "foo", "cmd=create");
@@ -282,8 +292,8 @@ public class TestAuditLogs {
       String line = "allowed=" + auditLogLine.split("allowed=")[1];
       LOG.info("Line: {}", line);
       if (SUCCESS_PATTERN.matcher(line).matches() && line.contains(file) && line.contains(cmd)) {
-        assertTrue("Expected audit event not found in audit log",
-            AUDIT_PATTERN.matcher(line).matches());
+        assertTrue(AUDIT_PATTERN.matcher(line).matches(),
+            "Expected audit event not found in audit log");
         LOG.info("Successful verification. Log line: {}", line);
         success++;
       }
@@ -305,14 +315,15 @@ public class TestAuditLogs {
       LOG.info("Line: {}", line);
       if (FAILURE_PATTERN.matcher(line).matches() && line.contains(file) && line.contains(
           cmd)) {
-        assertTrue("Expected audit event not found in audit log",
-            AUDIT_PATTERN.matcher(line).matches());
+        assertTrue(AUDIT_PATTERN.matcher(line).matches(),
+            "Expected audit event not found in audit log");
         LOG.info("Failure verification. Log line: {}", line);
         success++;
       }
     }
-    assertEquals("Expected: " + expected + ". Actual failure: " + success, expected,
-        success);
+    assertEquals(expected,
+        success,
+        "Expected: " + expected + ". Actual failure: " + success);
   }
 
 }

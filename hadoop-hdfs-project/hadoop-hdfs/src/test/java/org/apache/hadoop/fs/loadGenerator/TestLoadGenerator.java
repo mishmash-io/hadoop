@@ -17,7 +17,7 @@
  */
 package org.apache.hadoop.fs.loadGenerator;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -33,7 +33,9 @@ import org.apache.hadoop.test.PathUtils;
 import org.apache.hadoop.util.Time;
 import org.apache.hadoop.util.cli.Tool;
 import org.apache.hadoop.util.cli.ToolRunner;
-import org.junit.Test;
+
+import org.junit.jupiter.api.Test;
+
 /**
  * This class tests if a balancer schedules tasks correctly.
  */

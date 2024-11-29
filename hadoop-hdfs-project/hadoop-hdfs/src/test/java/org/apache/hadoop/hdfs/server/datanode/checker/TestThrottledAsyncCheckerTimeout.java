@@ -22,13 +22,14 @@ import org.apache.hadoop.thirdparty.com.google.common.util.concurrent.Futures;
 import org.apache.hadoop.thirdparty.com.google.common.util.concurrent.ListenableFuture;
 import org.apache.hadoop.thirdparty.com.google.common.util.concurrent.MoreExecutors;
 import org.apache.hadoop.util.FakeTimer;
-import org.junit.Before;
 import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.TestName;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.TestInfo;
 import org.junit.rules.Timeout;
 import org.slf4j.LoggerFactory;
 
+import java.lang.reflect.Method;
 import java.util.Optional;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
@@ -38,8 +39,8 @@ import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.locks.ReentrantLock;
 
 import static org.hamcrest.CoreMatchers.is;
-import static org.junit.Assert.assertThat;
-import static org.junit.Assert.assertTrue;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.timeout;
@@ -49,8 +50,8 @@ public class TestThrottledAsyncCheckerTimeout {
   public static final org.slf4j.Logger LOG =
       LoggerFactory.getLogger(TestThrottledAsyncCheckerTimeout.class);
 
-  @Rule
-  public TestName testName = new TestName();
+  
+  public String testName;
   @Rule
   public Timeout testTimeout = new Timeout(300_000);
 
@@ -61,14 +62,18 @@ public class TestThrottledAsyncCheckerTimeout {
     return new ScheduledThreadPoolExecutor(1);
   }
 
-  @Before
-  public void initializeLock() {
+  @BeforeEach
+  public void initializeLock(TestInfo testInfo) {
+    Optional<Method> testMethod = testInfo.getTestMethod();
+    if (testMethod.isPresent()) {
+      this.testName = testMethod.get().getName();
+    }
     lock = new ReentrantLock();
   }
 
   @Test
   public void testDiskCheckTimeout() throws Exception {
-    LOG.info("Executing {}", testName.getMethodName());
+    LOG.info("Executing {}", testName);
 
     final DummyCheckable target = new DummyCheckable();
     final FakeTimer timer = new FakeTimer();
@@ -118,7 +123,7 @@ public class TestThrottledAsyncCheckerTimeout {
 
   @Test
   public void testDiskCheckTimeoutInvokesOneCallbackOnly() throws Exception {
-    LOG.info("Executing {}", testName.getMethodName());
+    LOG.info("Executing {}", testName);
 
     final DummyCheckable target = new DummyCheckable();
     final FakeTimer timer = new FakeTimer();
@@ -164,7 +169,7 @@ public class TestThrottledAsyncCheckerTimeout {
 
   @Test
   public void testTimeoutExceptionIsNotThrownForGoodDisk() throws Exception {
-    LOG.info("Executing {}", testName.getMethodName());
+    LOG.info("Executing {}", testName);
 
     final DummyCheckable target = new DummyCheckable();
     final FakeTimer timer = new FakeTimer();

@@ -30,7 +30,7 @@ import org.apache.log4j.Appender;
 import org.apache.log4j.AsyncAppender;
 
 import org.junit.Rule;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.junit.rules.Timeout;
 
 import java.io.IOException;
@@ -39,7 +39,7 @@ import java.util.List;
 import java.util.concurrent.TimeoutException;
 
 import static org.apache.hadoop.hdfs.DFSConfigKeys.*;
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.mock;
 
 /**

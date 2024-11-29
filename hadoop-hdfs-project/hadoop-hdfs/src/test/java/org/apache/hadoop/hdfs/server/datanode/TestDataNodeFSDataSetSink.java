@@ -25,12 +25,13 @@ import org.apache.hadoop.metrics2.MetricsRecord;
 import org.apache.hadoop.metrics2.MetricsSink;
 import org.apache.hadoop.metrics2.MetricsTag;
 import org.apache.hadoop.metrics2.impl.MetricsSystemImpl;
-import org.junit.Test;
 
 import java.util.Set;
-import java.util.TreeSet;
 
-import static org.junit.Assert.assertEquals;
+import org.junit.jupiter.api.Test;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import java.util.TreeSet;
 
 public class TestDataNodeFSDataSetSink {
   private static final MetricsSystemImpl ms = new

@@ -24,10 +24,10 @@ import org.apache.hadoop.hdfs.HdfsConfiguration;
 import org.apache.hadoop.hdfs.MiniDFSCluster;
 import org.apache.hadoop.security.UserGroupInformation;
 import org.apache.hadoop.test.GenericTestUtils;
-import org.junit.AfterClass;
-import org.junit.Before;
-import org.junit.BeforeClass;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import javax.security.auth.login.LoginException;
 import java.io.IOException;
@@ -38,8 +38,8 @@ import java.util.EnumSet;
 import static org.apache.hadoop.fs.CreateFlag.CREATE;
 import static org.apache.hadoop.fs.FileContextTestHelper.getDefaultBlockSize;
 import static org.apache.hadoop.fs.FileContextTestHelper.getFileData;
-import static org.junit.Assert.assertArrayEquals;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertArrayEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /**
  * Test of FileContext apis on Webhdfs.
@@ -71,7 +71,7 @@ public class TestWebHdfsFileContextMainOperations
     return webhdfsUrl;
   }
 
-  @BeforeClass
+  @BeforeAll
   public static void clusterSetupAtBeginning()
       throws IOException, LoginException, URISyntaxException {
 
@@ -85,7 +85,7 @@ public class TestWebHdfsFileContextMainOperations
     fc.mkdir(defaultWorkingDirectory, FileContext.DEFAULT_PERM, true);
   }
 
-  @Before
+  @BeforeEach
   public void setUp() throws Exception {
     URI webhdfsUrlReal = getWebhdfsUrl();
     Path testBuildData = new Path(
@@ -122,6 +122,7 @@ public class TestWebHdfsFileContextMainOperations
   /**
    * TODO: Open JIRA for the idiosyncrasies between hdfs and webhdfs
    */
+  @Test
   public void testSetVerifyChecksum() throws IOException {
     final Path rootPath = getTestRootPath(fc, "test");
     final Path path = new Path(rootPath, "zoo");
@@ -153,7 +154,7 @@ public class TestWebHdfsFileContextMainOperations
     assertArrayEquals(data, bb);
   }
 
-  @AfterClass
+  @AfterAll
   public static void ClusterShutdownAtEnd() throws Exception {
     if (cluster != null) {
       cluster.shutdown();

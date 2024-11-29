@@ -17,14 +17,13 @@
  */
 package org.apache.hadoop.hdfs.server.namenode.ha;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.*;
 
 import java.io.IOException;
 import java.io.OutputStream;
 import java.net.URISyntaxException;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 
 import org.apache.hadoop.fs.FileSystem;
@@ -43,13 +42,15 @@ import org.apache.hadoop.test.GenericTestUtils;
 
 import java.util.function.Supplier;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.Timeout;
 
 public class TestPendingCorruptDnMessages {
   
   private static final Path filePath = new Path("/foo.txt");
-  
-  @Test (timeout = 60000)
+
+  @Test
+  @Timeout(value = 60000, unit = TimeUnit.MILLISECONDS)
   public void testChangedStorageId() throws IOException, URISyntaxException,
       InterruptedException, TimeoutException {
     HdfsConfiguration conf = new HdfsConfiguration();

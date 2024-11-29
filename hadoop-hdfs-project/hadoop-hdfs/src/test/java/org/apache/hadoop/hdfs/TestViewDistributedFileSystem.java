@@ -33,17 +33,14 @@ import org.apache.hadoop.test.Whitebox;
 import org.apache.hadoop.util.functional.ConsumerRaisingIOE;
 
 import org.assertj.core.api.Assertions;
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import java.io.IOException;
 import java.net.URI;
 
 import static org.apache.hadoop.fs.CommonPathCapabilities.LEASE_RECOVERABLE;
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.*;
 
 public class TestViewDistributedFileSystem extends TestDistributedFileSystem{
   @Override
@@ -54,6 +51,7 @@ public class TestViewDistributedFileSystem extends TestDistributedFileSystem{
   }
 
   @Override
+  @Test
   public void testStatistics() throws IOException {
     FileSystem.getStatistics(HdfsConstants.HDFS_URI_SCHEME,
         ViewDistributedFileSystem.class).reset();
@@ -87,6 +85,7 @@ public class TestViewDistributedFileSystem extends TestDistributedFileSystem{
   }
 
   @Override
+  @Test
   public void testEmptyDelegationToken() throws IOException {
     Configuration conf = getTestConfiguration();
     MiniDFSCluster cluster = null;
@@ -122,8 +121,8 @@ public class TestViewDistributedFileSystem extends TestDistributedFileSystem{
         final Path renameDir = new Path("/testRename");
         fileSystem.mkdirs(testDir);
         fileSystem.rename(testDir, renameDir, Options.Rename.TO_TRASH);
-        Assert.assertTrue(fileSystem.exists(renameDir));
-        Assert.assertFalse(fileSystem.exists(testDir));
+        assertTrue(fileSystem.exists(renameDir));
+        assertFalse(fileSystem.exists(testDir));
       }
     } finally {
       if (cluster != null) {
@@ -208,8 +207,8 @@ public class TestViewDistributedFileSystem extends TestDistributedFileSystem{
         ViewDistributedFileSystem fileSystem = (ViewDistributedFileSystem) FileSystem.get(
             cluster.getConfiguration(0))) {
       final Path testFile = new Path("/test");
-      assertTrue("ViewDfs supports truncate",
-          fileSystem.hasPathCapability(testFile, CommonPathCapabilities.FS_TRUNCATE));
+      assertTrue(fileSystem.hasPathCapability(testFile, CommonPathCapabilities.FS_TRUNCATE),
+          "ViewDfs supports truncate");
       final boolean isLeaseRecoverable = fileSystem.hasPathCapability(testFile, LEASE_RECOVERABLE);
       assertThat(isLeaseRecoverable).describedAs("path capabilities %s=%s in %s",
           LEASE_RECOVERABLE, fileSystem.hasPathCapability(testFile, LEASE_RECOVERABLE),

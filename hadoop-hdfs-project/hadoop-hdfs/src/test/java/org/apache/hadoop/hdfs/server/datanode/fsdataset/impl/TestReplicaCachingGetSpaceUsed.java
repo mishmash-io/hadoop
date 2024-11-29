@@ -31,20 +31,18 @@ import org.apache.hadoop.hdfs.server.datanode.DataNode;
 import org.apache.hadoop.hdfs.server.datanode.Replica;
 import org.apache.hadoop.hdfs.server.datanode.fsdataset.FsDatasetSpi;
 import org.apache.hadoop.io.IOUtils;
-import org.junit.After;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.*;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.List;
 import java.util.Set;
+import java.util.concurrent.TimeUnit;
 
 import static org.apache.hadoop.fs.CommonConfigurationKeysPublic.FS_DU_INTERVAL_KEY;
 import static org.apache.hadoop.test.PlatformAssumptions.assumeNotWindows;
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 /**
  * Unit test for ReplicaCachingGetSpaceUsed class.
@@ -55,7 +53,7 @@ public class TestReplicaCachingGetSpaceUsed {
   private DistributedFileSystem fs;
   private DataNode dataNode;
 
-  @Before
+  @BeforeEach
   public void setUp()
       throws IOException, NoSuchMethodException, InterruptedException {
     conf = new Configuration();
@@ -70,7 +68,7 @@ public class TestReplicaCachingGetSpaceUsed {
     fs = cluster.getFileSystem();
   }
 
-  @After
+  @AfterEach
   public void tearDown() throws IOException {
     if (cluster != null) {
       cluster.shutdown();
@@ -154,7 +152,8 @@ public class TestReplicaCachingGetSpaceUsed {
     fs.delete(new Path("/testReplicaCachingGetSpaceUsedByRBWReplica"), true);
   }
 
-  @Test(timeout = 15000)
+  @Test
+  @Timeout(value = 15000, unit = TimeUnit.MILLISECONDS)
   public void testFsDatasetImplDeepCopyReplica() {
     FsDatasetSpi<?> fsDataset = dataNode.getFSDataset();
     ModifyThread modifyThread = new ModifyThread();
@@ -170,7 +169,7 @@ public class TestReplicaCachingGetSpaceUsed {
         }
       } catch (IOException e) {
         modifyThread.setShouldRun(false);
-        Assert.fail("Encounter IOException when deep copy replica.");
+        Assertions.fail("Encounter IOException when deep copy replica.");
       }
     }
     modifyThread.setShouldRun(false);

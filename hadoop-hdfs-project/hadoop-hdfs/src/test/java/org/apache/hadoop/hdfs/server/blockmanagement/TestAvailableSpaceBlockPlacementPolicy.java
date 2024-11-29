@@ -18,6 +18,8 @@
 
 package org.apache.hadoop.hdfs.server.blockmanagement;
 
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
 import java.io.File;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -34,11 +36,9 @@ import org.apache.hadoop.hdfs.server.namenode.NameNode;
 import org.apache.hadoop.net.NetworkTopology;
 import org.apache.hadoop.net.Node;
 import org.apache.hadoop.test.PathUtils;
-import org.junit.AfterClass;
-import org.junit.BeforeClass;
-import org.junit.Test;
-
-import static org.junit.Assert.assertTrue;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
 
 public class TestAvailableSpaceBlockPlacementPolicy {
   private final static int numRacks = 4;
@@ -55,7 +55,7 @@ public class TestAvailableSpaceBlockPlacementPolicy {
   private static BlockPlacementPolicy placementPolicy;
   private static NetworkTopology cluster;
 
-  @BeforeClass
+  @BeforeAll
   public static void setupCluster() throws Exception {
     conf = new HdfsConfiguration();
     conf.setFloat(DFSConfigKeys.
@@ -294,7 +294,7 @@ public class TestAvailableSpaceBlockPlacementPolicy {
         tolerateDataNodes[2], false) == -1);
   }
 
-  @AfterClass
+  @AfterAll
   public static void teardownCluster() {
     if (namenode != null) {
       namenode.stop();

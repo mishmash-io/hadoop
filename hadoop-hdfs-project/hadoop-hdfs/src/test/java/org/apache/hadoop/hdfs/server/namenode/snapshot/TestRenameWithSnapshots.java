@@ -41,10 +41,7 @@ import org.apache.hadoop.hdfs.server.namenode.snapshot.DirectoryWithSnapshotFeat
 import org.apache.hadoop.hdfs.util.ReadOnlyList;
 import org.apache.hadoop.test.GenericTestUtils;
 import org.apache.hadoop.test.Whitebox;
-import org.junit.After;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.*;
 import org.mockito.Mockito;
 
 import java.io.File;
@@ -53,12 +50,9 @@ import java.io.PrintWriter;
 import java.util.EnumSet;
 import java.util.List;
 import java.util.Random;
+import java.util.concurrent.TimeUnit;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertSame;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
+import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyBoolean;
 import static org.mockito.ArgumentMatchers.anyInt;
@@ -99,7 +93,7 @@ public class TestRenameWithSnapshots {
     assertEquals(deletedSize, diff.getDeletedUnmodifiable().size());
   }
 
-  @Before
+  @BeforeEach
   public void setUp() throws Exception {
     conf.setLong(DFSConfigKeys.DFS_BLOCK_SIZE_KEY, BLOCKSIZE);
     cluster = new MiniDFSCluster.Builder(conf).numDataNodes(REPL).format(true)
@@ -112,7 +106,7 @@ public class TestRenameWithSnapshots {
     hdfs = cluster.getFileSystem();
   }
 
-  @After
+  @AfterEach
   public void tearDown() throws Exception {
     if (cluster != null) {
       cluster.shutdown();
@@ -120,7 +114,8 @@ public class TestRenameWithSnapshots {
     }
   }
 
-  @Test (timeout=300000)
+  @Test
+  @Timeout(value = 300000, unit = TimeUnit.MILLISECONDS)
   public void testRenameFromSDir2NonSDir() throws Exception {
     final String dirStr = "/testRenameWithSnapshot";
     final String abcStr = dirStr + "/abc";
@@ -149,20 +144,20 @@ public class TestRenameWithSnapshots {
     
     final INode fooRef = fsdir.getINode(
         SnapshotTestHelper.getSnapshotPath(abc, "s0", "foo").toString());
-    Assert.assertTrue(fooRef.isReference());
-    Assert.assertTrue(fooRef.asReference() instanceof INodeReference.WithName);
+    Assertions.assertTrue(fooRef.isReference());
+    Assertions.assertTrue(fooRef.asReference() instanceof INodeReference.WithName);
 
     final INodeReference.WithCount withCount
         = (INodeReference.WithCount)fooRef.asReference().getReferredINode();
-    Assert.assertEquals(2, withCount.getReferenceCount());
+    Assertions.assertEquals(2, withCount.getReferenceCount());
 
     final INode barRef = fsdir.getINode(bar.toString());
-    Assert.assertTrue(barRef.isReference());
+    Assertions.assertTrue(barRef.isReference());
 
-    Assert.assertSame(withCount, barRef.asReference().getReferredINode());
+    Assertions.assertSame(withCount, barRef.asReference().getReferredINode());
     
     hdfs.delete(bar, false);
-    Assert.assertEquals(1, withCount.getReferenceCount());
+    Assertions.assertEquals(1, withCount.getReferenceCount());
     restartClusterAndCheckImage(true);
   }
   
@@ -177,12 +172,13 @@ public class TestRenameWithSnapshots {
     }
     return false;
   }
-  
+
   /**
    * Rename a file under a snapshottable directory, file does not exist
    * in a snapshot.
    */
-  @Test (timeout=60000)
+  @Test
+  @Timeout(value = 60000, unit = TimeUnit.MILLISECONDS)
   public void testRenameFileNotInSnapshot() throws Exception {
     hdfs.mkdirs(sub1);
     hdfs.allowSnapshot(sub1);
@@ -223,7 +219,8 @@ public class TestRenameWithSnapshots {
     restartClusterAndCheckImage(true);
   }
 
-  @Test (timeout=60000)
+  @Test
+  @Timeout(value = 60000, unit = TimeUnit.MILLISECONDS)
   public void testRenameTwiceInSnapshot() throws Exception {
     hdfs.mkdirs(sub1);
     hdfs.allowSnapshot(sub1);
@@ -261,8 +258,9 @@ public class TestRenameWithSnapshots {
     assertTrue(existsInDiffReport(entries, DiffType.RENAME, file1.getName(),
         file3.getName()));
   }
-  
-  @Test (timeout=60000)
+
+  @Test
+  @Timeout(value = 60000, unit = TimeUnit.MILLISECONDS)
   public void testRenameFileInSubDirOfDirWithSnapshot() throws Exception {
     final Path sub2 = new Path(sub1, "sub2");
     final Path sub2file1 = new Path(sub2, "sub2file1");
@@ -288,7 +286,8 @@ public class TestRenameWithSnapshots {
         + "/" + sub2file1.getName(), sub2.getName() + "/" + sub2file2.getName()));
   }
 
-  @Test (timeout=60000)
+  @Test
+  @Timeout(value = 60000, unit = TimeUnit.MILLISECONDS)
   public void testRenameDirectoryInSnapshot() throws Exception {
     final Path sub2 = new Path(sub1, "sub2");
     final Path sub3 = new Path(sub1, "sub3");
@@ -314,7 +313,8 @@ public class TestRenameWithSnapshots {
         sub3.getName()));
   }
 
-  @Test (timeout=60000)
+  @Test
+  @Timeout(value = 60000, unit = TimeUnit.MILLISECONDS)
   public void testRenameDirectoryAndFileInSnapshot() throws Exception {
     final Path sub2 = new Path(sub1, "sub2");
     final Path sub3 = new Path(sub1, "sub3");
@@ -347,10 +347,10 @@ public class TestRenameWithSnapshots {
             .asReference();
     INodeReference.WithCount withCount = (WithCount) ref
             .getReferredINode();
-    Assert.assertEquals(withCount.getReferenceCount(), 1);
+    Assertions.assertEquals(withCount.getReferenceCount(), 1);
     // Ensure name list is empty for the reference sub3file3Inode
-    Assert.assertNull(withCount.getLastWithName());
-    Assert.assertTrue(sub3file3Inode.isInCurrentState());
+    Assertions.assertNull(withCount.getLastWithName());
+    Assertions.assertTrue(sub3file3Inode.isInCurrentState());
   }
 
   /**
@@ -364,7 +364,8 @@ public class TestRenameWithSnapshots {
    * </pre>
    * When changes happening on foo, the diff should be recorded in snapshot s2. 
    */
-  @Test (timeout=60000)
+  @Test
+  @Timeout(value = 60000, unit = TimeUnit.MILLISECONDS)
   public void testRenameDirAcrossSnapshottableDirs() throws Exception {
     final Path sdir1 = new Path("/dir1");
     final Path sdir2 = new Path("/dir2");
@@ -408,11 +409,12 @@ public class TestRenameWithSnapshots {
         "foo/bar2");
     assertFalse(hdfs.exists(bar2_s3));
   }
-  
+
   /**
    * Rename a single file across snapshottable dirs.
    */
-  @Test (timeout=60000)
+  @Test
+  @Timeout(value = 60000, unit = TimeUnit.MILLISECONDS)
   public void testRenameFileAcrossSnapshottableDirs() throws Exception {
     final Path sdir1 = new Path("/dir1");
     final Path sdir2 = new Path("/dir2");
@@ -1098,11 +1100,12 @@ public class TestRenameWithSnapshots {
     assertEquals(4, barDiffs.size());
     assertEquals(s2222.getId(), barDiffs.get(3).getSnapshotId());
   }
-  
+
   /**
    * Test rename from a non-snapshottable dir to a snapshottable dir
    */
-  @Test (timeout=60000)
+  @Test
+  @Timeout(value = 60000, unit = TimeUnit.MILLISECONDS)
   public void testRenameFromNonSDir2SDir() throws Exception {
     final Path sdir1 = new Path("/dir1");
     final Path sdir2 = new Path("/dir2");
@@ -1120,13 +1123,14 @@ public class TestRenameWithSnapshots {
     INode fooNode = fsdir.getINode4Write(newfoo.toString());
     assertTrue(fooNode instanceof INodeDirectory);
   }
-  
+
   /**
    * Test rename where the src/dst directories are both snapshottable 
    * directories without snapshots. In such case we need to update the 
    * snapshottable dir list in SnapshotManager.
    */
-  @Test (timeout=60000)
+  @Test
+  @Timeout(value = 60000, unit = TimeUnit.MILLISECONDS)
   public void testRenameAndUpdateSnapshottableDirs() throws Exception {
     final Path sdir1 = new Path("/dir1");
     final Path sdir2 = new Path("/dir2");
@@ -2210,8 +2214,8 @@ public class TestRenameWithSnapshots {
     
     final Path foo_s0 = SnapshotTestHelper.getSnapshotPath(test, "s0",
         "dir2/foo");
-    assertTrue("the snapshot path " + foo_s0 + " should exist",
-        hdfs.exists(foo_s0));
+    assertTrue(hdfs.exists(foo_s0),
+        "the snapshot path " + foo_s0 + " should exist");
     
     // delete snapshot s0. The deletion will first go down through dir1, and 
     // find foo in the created list of dir1. Then it will use null as the prior
@@ -2220,12 +2224,12 @@ public class TestRenameWithSnapshots {
     // foo subtree.
     hdfs.deleteSnapshot(test, "s0");
     // check the internal
-    assertFalse("after deleting s0, " + foo_s0 + " should not exist",
-        hdfs.exists(foo_s0));
+    assertFalse(hdfs.exists(foo_s0),
+        "after deleting s0, " + foo_s0 + " should not exist");
     INodeDirectory dir2Node = fsdir.getINode4Write(dir2.toString())
         .asDirectory();
-    assertTrue("the diff list of " + dir2
-        + " should be empty after deleting s0", !dir2Node.isWithSnapshot());
+    assertTrue(!dir2Node.isWithSnapshot(), "the diff list of " + dir2
+        + " should be empty after deleting s0");
     
     assertTrue(hdfs.exists(newfoo));
     INode fooRefNode = fsdir.getINode4Write(newfoo.toString());
@@ -2456,7 +2460,8 @@ public class TestRenameWithSnapshots {
     assertTrue(existsInDiffReport(entries, DiffType.RENAME, "foo/file3", "newDir/file1"));
   }
 
-  @Test (timeout=60000)
+  @Test
+  @Timeout(value = 60000, unit = TimeUnit.MILLISECONDS)
   public void testDoubleRenamesWithSnapshotDelete() throws Exception {
     hdfs.mkdirs(sub1);
     hdfs.allowSnapshot(sub1);
@@ -2522,7 +2527,8 @@ public class TestRenameWithSnapshots {
   /**
    * Test getContentsummary and getQuotausage for an INodeReference.
    */
-  @Test(timeout = 300000)
+  @Test
+  @Timeout(value = 300000, unit = TimeUnit.MILLISECONDS)
   public void testQuotaForRenameFileInSnapshot() throws Exception {
     final Path snapshotDir = new Path("/testRenameWithSnapshot");
     hdfs.mkdirs(snapshotDir, new FsPermission((short) 0777));

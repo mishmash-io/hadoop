@@ -29,6 +29,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ThreadLocalRandom;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
@@ -45,10 +46,7 @@ import org.apache.hadoop.hdfs.client.HdfsClientConfigKeys.BlockWrite.ReplaceData
 import org.apache.hadoop.hdfs.server.namenode.NameNode;
 import org.apache.hadoop.hdfs.server.namenode.TestFileTruncate;
 import org.apache.hadoop.test.GenericTestUtils;
-import org.junit.AfterClass;
-import org.junit.Assert;
-import org.junit.BeforeClass;
-import org.junit.Test;
+import org.junit.jupiter.api.*;
 
 import org.apache.hadoop.util.Preconditions;
 import org.slf4j.event.Level;
@@ -78,7 +76,7 @@ public class TestAppendSnapshotTruncate {
   static MiniDFSCluster cluster;
   static DistributedFileSystem dfs;
 
-  @BeforeClass
+  @BeforeAll
   public static void startUp() throws IOException {
     conf = new HdfsConfiguration();
     conf.setLong(DFSConfigKeys.DFS_NAMENODE_MIN_BLOCK_SIZE_KEY, BLOCK_SIZE);
@@ -95,7 +93,7 @@ public class TestAppendSnapshotTruncate {
     dfs = cluster.getFileSystem();
   }
 
-  @AfterClass
+  @AfterAll
   public static void tearDown() throws IOException {
     if(dfs != null) {
       dfs.close();
@@ -107,7 +105,8 @@ public class TestAppendSnapshotTruncate {
 
 
   /** Test randomly mixing append, snapshot and truncate operations. */
-  @Test(timeout=TEST_TIMEOUT_SECOND*1000)
+  @Test
+  @Timeout(value = TEST_TIMEOUT_SECOND * 1000, unit = TimeUnit.MILLISECONDS)
   public void testAST() throws Exception {
     final String dirPathString = "/dir";
     final Path dir = new Path(dirPathString);
@@ -167,7 +166,7 @@ public class TestAppendSnapshotTruncate {
       {
         //copy all local files to a sub dir to simulate snapshot. 
         final File subDir = new File(localDir, snapshot);
-        Assert.assertFalse(subDir.exists());
+        Assertions.assertFalse(subDir.exists());
         subDir.mkdir();
 
         for(File f : localDir.listFiles(FILE_ONLY)) {
@@ -185,12 +184,12 @@ public class TestAppendSnapshotTruncate {
           .append(snapshot);
 
       final File subDir = new File(localDir, snapshot);
-      Assert.assertTrue(subDir.exists());
+      Assertions.assertTrue(subDir.exists());
       
       final File[] localFiles = subDir.listFiles(FILE_ONLY);
       final Path p = snapshotPaths.get(snapshot);
       final FileStatus[] statuses = dfs.listStatus(p);
-      Assert.assertEquals(localFiles.length, statuses.length);
+      Assertions.assertEquals(localFiles.length, statuses.length);
       b.append(p).append(" vs ").append(subDir).append(", ")
        .append(statuses.length).append(" entries");
       
@@ -374,8 +373,8 @@ public class TestAppendSnapshotTruncate {
 
     static int checkLength(Path file, File localFile) throws IOException {
       final long length = dfs.getFileStatus(file).getLen();
-      Assert.assertEquals(localFile.length(), length);
-      Assert.assertTrue(length <= Integer.MAX_VALUE);
+      Assertions.assertEquals(localFile.length(), length);
+      Assertions.assertTrue(length <= Integer.MAX_VALUE);
       return (int)length;
     }
     

@@ -45,14 +45,16 @@ import org.apache.hadoop.test.GenericTestUtils.LogCapturer;
 import java.io.IOException;
 import java.security.PrivilegedExceptionAction;
 
-import org.junit.After;
-import static org.junit.Assert.assertEquals;
-import org.junit.Before;
-import org.junit.Test;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+
 import static org.apache.hadoop.hdfs.DFSConfigKeys.DFS_NAMENODE_DELEGATION_TOKEN_ALWAYS_USE_KEY;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.fail;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.fail;
 import org.mockito.Mockito;
 
 import static org.mockito.ArgumentMatchers.any;
@@ -75,7 +77,7 @@ public class TestAuditLoggerWithCommands {
   static UserGroupInformation user2;
   private static NamenodeProtocols proto;
 
-  @Before
+  @BeforeEach
   public void initialize() throws Exception {
     // start a cluster
     conf = new HdfsConfiguration();
@@ -100,7 +102,7 @@ public class TestAuditLoggerWithCommands {
     fs = cluster.getFileSystem();
   }
 
-  @After
+  @AfterEach
   public void tearDown() throws Exception {
     Server.getCurCall().set(null);
     fs.close();
@@ -130,8 +132,8 @@ public class TestAuditLoggerWithCommands {
       fail("The operation should have failed with IOException");
     } catch (IOException e) {
     }
-    assertTrue("Unexpected log from getContentSummary",
-        length == auditlog.getOutput().split("\n").length);
+    assertTrue(length == auditlog.getOutput().split("\n").length,
+        "Unexpected log from getContentSummary");
   }
 
   @Test
@@ -187,8 +189,8 @@ public class TestAuditLoggerWithCommands {
       fail("The operation should have failed with IOException");
     } catch (IOException e) {
     }
-    assertTrue("Unexpected log from Concat",
-        length == auditlog.getOutput().split("\n").length);
+    assertTrue(length == auditlog.getOutput().split("\n").length,
+        "Unexpected log from Concat");
   }
 
   @Test
@@ -225,8 +227,8 @@ public class TestAuditLoggerWithCommands {
       fail("The operation should have failed with IOException");
     } catch (IOException e) {
     }
-    assertTrue("Unexpected log!",
-        length == auditlog.getOutput().split("\n").length);
+    assertTrue(length == auditlog.getOutput().split("\n").length,
+        "Unexpected log!");
   }
 
   @Test
@@ -252,8 +254,8 @@ public class TestAuditLoggerWithCommands {
       fail("The operation should have failed with IOException");
     } catch (IOException e) {
     }
-    assertTrue("Unexpected log!",
-        length+1 == auditlog.getOutput().split("\n").length);
+    assertTrue(length+1 == auditlog.getOutput().split("\n").length,
+        "Unexpected log!");
   }
 
   @Test
@@ -333,8 +335,8 @@ public class TestAuditLoggerWithCommands {
       fail("The operation should have failed with IOException");
     } catch (IOException e) {
     }
-    assertTrue("Unexpected log!",
-        length == auditlog.getOutput().split("\n").length);
+    assertTrue(length == auditlog.getOutput().split("\n").length,
+        "Unexpected log!");
   }
 
   @Test
@@ -399,8 +401,8 @@ public class TestAuditLoggerWithCommands {
       fail("The operation should have failed with IOException");
     } catch (IOException e) {
     }
-    assertTrue("Unexpected log!",
-        length == auditlog.getOutput().split("\n").length);
+    assertTrue(length == auditlog.getOutput().split("\n").length,
+        "Unexpected log!");
   }
 
   @Test
@@ -428,8 +430,8 @@ public class TestAuditLoggerWithCommands {
       fail("The operation should have failed with IOException");
     } catch (IOException e) {
     }
-    assertTrue("Unexpected log!",
-        length == auditlog.getOutput().split("\n").length);
+    assertTrue(length == auditlog.getOutput().split("\n").length,
+        "Unexpected log!");
   }
 
   @Test
@@ -451,8 +453,8 @@ public class TestAuditLoggerWithCommands {
       fail("The operation should have failed with IOException");
     } catch (IOException e) {
     }
-    assertTrue("Unexpected log!",
-        length == auditlog.getOutput().split("\n").length);
+    assertTrue(length == auditlog.getOutput().split("\n").length,
+        "Unexpected log!");
   }
 
   @Test
@@ -475,8 +477,8 @@ public class TestAuditLoggerWithCommands {
       fail("The operation should have failed with IOException");
     } catch (IOException e) {
     }
-    assertTrue("Unexpected log!",
-        length == auditlog.getOutput().split("\n").length);
+    assertTrue(length == auditlog.getOutput().split("\n").length,
+        "Unexpected log!");
   }
 
   @Test
@@ -500,8 +502,8 @@ public class TestAuditLoggerWithCommands {
       fail("The operation should have failed with IOException");
     } catch (IOException e) {
     }
-    assertTrue("Unexpected log!",
-        length == auditlog.getOutput().split("\n").length);
+    assertTrue(length == auditlog.getOutput().split("\n").length,
+        "Unexpected log!");
   }
 
   @Test
@@ -519,16 +521,16 @@ public class TestAuditLoggerWithCommands {
     String aceRemoveCachePoolPattern =
         ".*allowed=false.*ugi=theDoctor.*cmd=removeCachePool.*";
     int length = verifyAuditLogs(aceRemoveCachePoolPattern);
-    assertTrue("Unexpected log!",
-        length == auditlog.getOutput().split("\n").length);
+    assertTrue(length == auditlog.getOutput().split("\n").length,
+        "Unexpected log!");
     try {
       fileSys.close();
       ((DistributedFileSystem) fileSys).removeCachePool("pool1");
       fail("The operation should have failed with IOException");
     } catch (IOException e) {
     }
-    assertTrue("Unexpected log!",
-        length == auditlog.getOutput().split("\n").length);
+    assertTrue(length == auditlog.getOutput().split("\n").length,
+        "Unexpected log!");
   }
 
   @Test
@@ -550,8 +552,8 @@ public class TestAuditLoggerWithCommands {
       fail("The operation should have failed with IOException");
     } catch (IOException e){
     }
-    assertTrue("Unexpected log!",
-        length == auditlog.getOutput().split("\n").length);
+    assertTrue(length == auditlog.getOutput().split("\n").length,
+        "Unexpected log!");
   }
 
   @Test
@@ -573,8 +575,8 @@ public class TestAuditLoggerWithCommands {
       fail("The operation should have failed with IOException");
     } catch (IOException e) {
     }
-    assertTrue("Unexpected log!",
-        length == auditlog.getOutput().split("\n").length);
+    assertTrue(length == auditlog.getOutput().split("\n").length,
+        "Unexpected log!");
   }
 
   @Test
@@ -596,8 +598,8 @@ public class TestAuditLoggerWithCommands {
       fail("The operation should have failed with IOException");
     } catch (IOException e) {
     }
-    assertTrue("Unexpected log!",
-        length == auditlog.getOutput().split("\n").length);
+    assertTrue(length == auditlog.getOutput().split("\n").length,
+        "Unexpected log!");
   }
 
   @Test
@@ -638,8 +640,8 @@ public class TestAuditLoggerWithCommands {
       fail("The operation should have failed with IOException");
     } catch (IOException ace) {
     }
-    assertTrue("Unexpected log!",
-        length == auditlog.getOutput().split("\n").length);
+    assertTrue(length == auditlog.getOutput().split("\n").length,
+        "Unexpected log!");
     cluster.getNamesystem().setFSDirectory(dir);
   }
 
@@ -1226,8 +1228,7 @@ public class TestAuditLoggerWithCommands {
       fail(
           "RestoreFailedStorage should have thrown AccessControlException!");
     } catch (IOException ace) {
-      assertEquals("Unexpected Exception!",
-          ace.getClass(), AccessControlException.class);
+      assertEquals(ace.getClass(), AccessControlException.class, "Unexpected Exception!");
       String auditLogString =
           ".*allowed=false.*cmd=" + operationName + ".*";
       verifyAuditLogs(auditLogString);
@@ -1280,7 +1281,7 @@ public class TestAuditLoggerWithCommands {
     int length = auditlog.getOutput().split(System.lineSeparator()).length;
     String lastAudit = auditlog.getOutput()
         .split(System.lineSeparator())[length - 1];
-    assertTrue("Unexpected log!", lastAudit.matches(pattern));
+    assertTrue(lastAudit.matches(pattern), "Unexpected log!");
     return length;
   }
 

@@ -21,9 +21,6 @@ import java.io.ByteArrayOutputStream;
 import java.io.PrintStream;
 import java.util.Arrays;
 
-import org.junit.Test;
-import org.junit.runners.Parameterized;
-import org.junit.runners.Parameterized.Parameter;
 import org.slf4j.event.Level;
 
 import org.apache.hadoop.conf.Configuration;
@@ -36,23 +33,23 @@ import org.apache.hadoop.hdfs.tools.DFSck;
 import org.apache.hadoop.test.GenericTestUtils;
 import org.apache.hadoop.util.cli.ToolRunner;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.MethodSource;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public class TestHAFsck {
   
   static {
     GenericTestUtils.setLogLevel(DFSUtil.LOG, Level.TRACE);
   }
-
-  @Parameter
   private String proxyProvider;
 
   public String getProxyProvider() {
     return proxyProvider;
   }
 
-  @Parameterized.Parameters(name = "ProxyProvider: {0}")
   public static Iterable<Object[]> data() {
     return Arrays.asList(new Object[][]
         {{ConfiguredFailoverProxyProvider.class.getName()},
@@ -62,8 +59,10 @@ public class TestHAFsck {
   /**
    * Test that fsck still works with HA enabled.
    */
-  @Test
-  public void testHaFsck() throws Exception {
+  @MethodSource("data")
+  @ParameterizedTest(name = "ProxyProvider: {0}")
+  public void testHaFsck(String proxyProvider) throws Exception {
+    initTestHAFsck(proxyProvider);
     Configuration conf = new Configuration();
     
     // need some HTTP ports
@@ -120,5 +119,9 @@ public class TestHAFsck {
     assertEquals(0, errCode);
     assertTrue(result.contains("/test1"));
     assertTrue(result.contains("/test2"));
+  }
+
+  public void initTestHAFsck(String proxyProvider) {
+    this.proxyProvider = proxyProvider;
   }
 }

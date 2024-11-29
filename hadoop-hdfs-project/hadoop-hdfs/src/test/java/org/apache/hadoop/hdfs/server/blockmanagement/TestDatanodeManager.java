@@ -35,6 +35,7 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Random;
 import java.util.Set;
+import java.util.concurrent.TimeUnit;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -68,14 +69,16 @@ import org.apache.hadoop.net.DNSToSwitchMapping;
 import org.apache.hadoop.net.NetworkTopology;
 import org.apache.hadoop.util.Shell;
 import org.apache.hadoop.test.Whitebox;
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.Timeout;
 import org.mockito.Mockito;
 import org.mockito.ArgumentCaptor;
 import org.mockito.ArgumentMatchers;
 
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.core.Is.is;
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.*;
 
 public class TestDatanodeManager {
   
@@ -139,9 +142,8 @@ public class TestDatanodeManager {
 
     //Verify DatanodeManager has the correct count
     Map<String, Integer> mapToCheck = dm.getDatanodesSoftwareVersions();
-    assertNull("should be no more version0 nodes", mapToCheck.get("version0"));
-    assertEquals("should be one version1 node",
-        mapToCheck.get("version1").intValue(), 1);
+    assertNull(mapToCheck.get("version0"), "should be no more version0 nodes");
+    assertEquals(mapToCheck.get("version1").intValue(), 1, "should be one version1 node");
   }
 
   /**
@@ -169,8 +171,8 @@ public class TestDatanodeManager {
             new DatanodeID(ipNew, "", storageID, 9000, 0, 0, 0),
             null, null, "version"));
 
-    assertNull("should be no node with old ip", dm.getDatanodeByHost(ipOld));
-    assertNotNull("should be a node with new ip", dm.getDatanodeByHost(ipNew));
+    assertNull(dm.getDatanodeByHost(ipOld), "should be no node with old ip");
+    assertNotNull(dm.getDatanodeByHost(ipNew), "should be a node with new ip");
   }
 
   /**
@@ -272,13 +274,15 @@ public class TestDatanodeManager {
         LOG.info("Still in map: " + entry.getKey() + " has "
           + entry.getValue());
       }
-      assertEquals("The map of version counts returned by DatanodeManager was"
-        + " not what it was expected to be on iteration " + i, 0,
-        mapToCheck.size());
+      assertEquals(0,
+        mapToCheck.size(),
+        "The map of version counts returned by DatanodeManager was"
+        + " not what it was expected to be on iteration " + i);
     }
   }
-  
-  @Test (timeout = 100000)
+
+  @Test
+  @Timeout(value = 100000, unit = TimeUnit.MILLISECONDS)
   public void testRejectUnresolvedDatanodes() throws IOException {
     //Create the DatanodeManager which will be tested
     FSNamesystem fsn = Mockito.mock(FSNamesystem.class);
@@ -307,12 +311,12 @@ public class TestDatanodeManager {
     try {
       //Register this node
       dm.registerDatanode(dr);
-      Assert.fail("Expected an UnresolvedTopologyException");
+      Assertions.fail("Expected an UnresolvedTopologyException");
     } catch (UnresolvedTopologyException ute) {
       LOG.info("Expected - topology is not resolved and " +
           "registration is rejected.");
     } catch (Exception e) {
-      Assert.fail("Expected an UnresolvedTopologyException");
+      Assertions.fail("Expected an UnresolvedTopologyException");
     }
   }
   
@@ -928,12 +932,9 @@ public class TestDatanodeManager {
     // Sort the list so that we know which one is which
     Collections.sort(both);
 
-    Assert.assertEquals("Incorrect number of hosts reported",
-        2, both.size());
-    Assert.assertEquals("Unexpected host or host in unexpected position",
-        "127.0.0.1:12345", both.get(0).getInfoAddr());
-    Assert.assertEquals("Unexpected host or host in unexpected position",
-        "127.0.0.1:23456", both.get(1).getInfoAddr());
+    Assertions.assertEquals(2, both.size(), "Incorrect number of hosts reported");
+    Assertions.assertEquals("127.0.0.1:12345", both.get(0).getInfoAddr(), "Unexpected host or host in unexpected position");
+    Assertions.assertEquals("127.0.0.1:23456", both.get(1).getInfoAddr(), "Unexpected host or host in unexpected position");
 
     // Remove one node from includes, but do not add it to excludes.
     hm.refresh(oneNode, noNodes);
@@ -942,10 +943,8 @@ public class TestDatanodeManager {
     List<DatanodeDescriptor> onlyOne =
         dm.getDatanodeListForReport(HdfsConstants.DatanodeReportType.ALL);
 
-    Assert.assertEquals("Incorrect number of hosts reported",
-        1, onlyOne.size());
-    Assert.assertEquals("Unexpected host reported",
-        "127.0.0.1:23456", onlyOne.get(0).getInfoAddr());
+    Assertions.assertEquals(1, onlyOne.size(), "Incorrect number of hosts reported");
+    Assertions.assertEquals("127.0.0.1:23456", onlyOne.get(0).getInfoAddr(), "Unexpected host reported");
 
     // Remove all nodes from includes
     hm.refresh(noNodes, noNodes);
@@ -957,12 +956,9 @@ public class TestDatanodeManager {
     // Sort the list so that we know which one is which
     Collections.sort(bothAgain);
 
-    Assert.assertEquals("Incorrect number of hosts reported",
-        2, bothAgain.size());
-    Assert.assertEquals("Unexpected host or host in unexpected position",
-        "127.0.0.1:12345", bothAgain.get(0).getInfoAddr());
-    Assert.assertEquals("Unexpected host or host in unexpected position",
-        "127.0.0.1:23456", bothAgain.get(1).getInfoAddr());
+    Assertions.assertEquals(2, bothAgain.size(), "Incorrect number of hosts reported");
+    Assertions.assertEquals("127.0.0.1:12345", bothAgain.get(0).getInfoAddr(), "Unexpected host or host in unexpected position");
+    Assertions.assertEquals("127.0.0.1:23456", bothAgain.get(1).getInfoAddr(), "Unexpected host or host in unexpected position");
   }
 
   /**

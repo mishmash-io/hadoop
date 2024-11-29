@@ -27,15 +27,18 @@ import org.apache.hadoop.hdfs.protocol.ExtendedBlock;
 import org.apache.hadoop.hdfs.protocol.LocatedBlock;
 import org.apache.hadoop.hdfs.server.namenode.FSNamesystem;
 import org.apache.hadoop.util.Time;
-import org.junit.Test;
+
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.Timeout;
 import org.mockito.Mockito;
 
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.concurrent.TimeUnit;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /**
  * This class tests the sorting of located blocks based on
@@ -62,7 +65,8 @@ public class TestSortLocatedBlock {
    * or
    * (d4 -> d3 -> d1 -> d2 -> d0).
    */
-  @Test(timeout = 30000)
+  @Test
+  @Timeout(value = 30000, unit = TimeUnit.MILLISECONDS)
   public void testWithStaleDatanodes() throws IOException {
     long blockID = Long.MAX_VALUE;
     int totalDns = 5;
@@ -130,7 +134,8 @@ public class TestSortLocatedBlock {
    * avoidStaleDataNodesForRead=true && avoidSlowDataNodesForRead=true
    * d6 -> d5 -> d4 -> d3 -> d2 -> d1 -> d0
    */
-  @Test(timeout = 30000)
+  @Test
+  @Timeout(value = 30000, unit = TimeUnit.MILLISECONDS)
   public void testAviodStaleAndSlowDatanodes() throws IOException {
     DatanodeManager dm = mockDatanodeManager(true, true);
     DatanodeInfo[] locs = mockDatanodes(dm);
@@ -176,7 +181,8 @@ public class TestSortLocatedBlock {
    * avoidStaleDataNodesForRead=true && avoidSlowDataNodesForRead=false
    * (d6 <-> d5) -> (d4 <-> d3) -> d2 -> d1 -> d0
    */
-  @Test(timeout = 30000)
+  @Test
+  @Timeout(value = 30000, unit = TimeUnit.MILLISECONDS)
   public void testAviodStaleDatanodes() throws IOException {
     DatanodeManager dm = mockDatanodeManager(true, false);
     DatanodeInfo[] locs = mockDatanodes(dm);
@@ -224,7 +230,8 @@ public class TestSortLocatedBlock {
    * avoidStaleDataNodesForRead=false && avoidSlowDataNodesForRead=true
    * (d6 -> d4) -> (d5 <-> d3) -> d2 -> d1 -> d0
    */
-  @Test(timeout = 30000)
+  @Test
+  @Timeout(value = 30000, unit = TimeUnit.MILLISECONDS)
   public void testAviodSlowDatanodes() throws IOException {
     DatanodeManager dm = mockDatanodeManager(false, true);
     DatanodeInfo[] locs = mockDatanodes(dm);
@@ -272,7 +279,8 @@ public class TestSortLocatedBlock {
    * avoidStaleDataNodesForRead=false && avoidSlowDataNodesForRead=false
    * (d6 <-> d5 <-> d4 <-> d3) -> d2 -> d1 -> d0
    */
-  @Test(timeout = 30000)
+  @Test
+  @Timeout(value = 30000, unit = TimeUnit.MILLISECONDS)
   public void testWithServiceComparator() throws IOException {
     DatanodeManager dm = mockDatanodeManager(false, false);
     DatanodeInfo[] locs = mockDatanodes(dm);

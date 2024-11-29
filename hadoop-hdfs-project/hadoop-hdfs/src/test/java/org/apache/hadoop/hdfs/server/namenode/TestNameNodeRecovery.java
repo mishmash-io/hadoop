@@ -18,9 +18,7 @@
 
 package org.apache.hadoop.hdfs.server.namenode;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
+import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.spy;
 
@@ -32,6 +30,7 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.Set;
+import java.util.concurrent.TimeUnit;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.hadoop.conf.Configuration;
@@ -51,10 +50,11 @@ import org.apache.hadoop.io.IOUtils;
 import org.apache.hadoop.test.GenericTestUtils;
 import org.apache.hadoop.test.PathUtils;
 import org.apache.hadoop.util.StringUtils;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.junit.runners.Parameterized;
-import org.junit.runners.Parameterized.Parameters;
+
+import org.junit.jupiter.api.Timeout;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.MethodSource;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -62,9 +62,7 @@ import org.slf4j.LoggerFactory;
  * This tests data recovery mode for the NameNode.
  */
 
-@RunWith(Parameterized.class)
 public class TestNameNodeRecovery {
-  @Parameters
   public static Collection<Object[]> data() {
     Collection<Object[]> params = new ArrayList<Object[]>();
     params.add(new Object[]{ Boolean.FALSE });
@@ -73,7 +71,8 @@ public class TestNameNodeRecovery {
   }
 
   private static boolean useAsyncEditLog;
-  public TestNameNodeRecovery(Boolean async) {
+
+  public void initTestNameNodeRecovery(Boolean async) {
     useAsyncEditLog = async;
   }
 
@@ -236,7 +235,7 @@ public class TestNameNodeRecovery {
   private static class EltsTestEmptyLog extends EditLogTestSetup {
     private final int paddingLength;
 
-    public EltsTestEmptyLog(int paddingLength) {
+    public void initTestNameNodeRecovery(int paddingLength) {
       this.paddingLength = paddingLength;
     }
 
@@ -256,23 +255,32 @@ public class TestNameNodeRecovery {
       return new HashSet<Long>();
     } 
   }
-  
+
   /** Test an empty edit log */
-  @Test(timeout=180000)
-  public void testEmptyLog() throws IOException {
+  @MethodSource("data")
+  @ParameterizedTest
+  @Timeout(value = 180000, unit = TimeUnit.MILLISECONDS)
+  public void testEmptyLog(Boolean async) throws IOException {
+    initTestNameNodeRecovery(async);
     runEditLogTest(new EltsTestEmptyLog(0));
   }
 
   /** Test an empty edit log with padding */
-  @Test(timeout=180000)
-  public void testEmptyPaddedLog() throws IOException {
+  @MethodSource("data")
+  @ParameterizedTest
+  @Timeout(value = 180000, unit = TimeUnit.MILLISECONDS)
+  public void testEmptyPaddedLog(Boolean async) throws IOException {
+    initTestNameNodeRecovery(async);
     runEditLogTest(new EltsTestEmptyLog(
         EditLogFileOutputStream.MIN_PREALLOCATION_LENGTH));
   }
-  
+
   /** Test an empty edit log with extra-long padding */
-  @Test(timeout=180000)
-  public void testEmptyExtraPaddedLog() throws IOException {
+  @MethodSource("data")
+  @ParameterizedTest
+  @Timeout(value = 180000, unit = TimeUnit.MILLISECONDS)
+  public void testEmptyExtraPaddedLog(Boolean async) throws IOException {
+    initTestNameNodeRecovery(async);
     runEditLogTest(new EltsTestEmptyLog(
         3 * EditLogFileOutputStream.MIN_PREALLOCATION_LENGTH));
   }
@@ -281,7 +289,7 @@ public class TestNameNodeRecovery {
    * Test using a non-default maximum opcode length.
    */
   private static class EltsTestNonDefaultMaxOpSize extends EditLogTestSetup {
-    public EltsTestNonDefaultMaxOpSize() {
+    public void initTestNameNodeRecovery() {
     }
 
     @Override
@@ -308,8 +316,11 @@ public class TestNameNodeRecovery {
   }
 
   /** Test an empty edit log with extra-long padding */
-  @Test(timeout=180000)
-  public void testNonDefaultMaxOpSize() throws IOException {
+  @MethodSource("data")
+  @ParameterizedTest
+  @Timeout(value = 180000, unit = TimeUnit.MILLISECONDS)
+  public void testNonDefaultMaxOpSize(Boolean async) throws IOException {
+    initTestNameNodeRecovery(async);
     runEditLogTest(new EltsTestNonDefaultMaxOpSize());
   }
 
@@ -323,7 +334,7 @@ public class TestNameNodeRecovery {
   private static class EltsTestOpcodesAfterPadding extends EditLogTestSetup {
     private final int paddingLength;
 
-    public EltsTestOpcodesAfterPadding(int paddingLength) {
+    public void initTestNameNodeRecovery(int paddingLength) {
       this.paddingLength = paddingLength;
     }
 
@@ -345,14 +356,20 @@ public class TestNameNodeRecovery {
     } 
   }
 
-  @Test(timeout=180000)
-  public void testOpcodesAfterPadding() throws IOException {
+  @MethodSource("data")
+  @ParameterizedTest
+  @Timeout(value = 180000, unit = TimeUnit.MILLISECONDS)
+  public void testOpcodesAfterPadding(Boolean async) throws IOException {
+    initTestNameNodeRecovery(async);
     runEditLogTest(new EltsTestOpcodesAfterPadding(
         EditLogFileOutputStream.MIN_PREALLOCATION_LENGTH));
   }
 
-  @Test(timeout=180000)
-  public void testOpcodesAfterExtraPadding() throws IOException {
+  @MethodSource("data")
+  @ParameterizedTest
+  @Timeout(value = 180000, unit = TimeUnit.MILLISECONDS)
+  public void testOpcodesAfterExtraPadding(Boolean async) throws IOException {
+    initTestNameNodeRecovery(async);
     runEditLogTest(new EltsTestOpcodesAfterPadding(
         3 * EditLogFileOutputStream.MIN_PREALLOCATION_LENGTH));
   }
@@ -390,11 +407,14 @@ public class TestNameNodeRecovery {
       return new HashSet<>(Arrays.asList(1L, 2L, 3L, 5L, 6L, 7L, 8L, 9L, 10L));
     }
   }
-  
+
   /** Test that we can successfully recover from a situation where there is
    * garbage in the middle of the edit log file output stream. */
-  @Test(timeout=180000)
-  public void testSkipEdit() throws IOException {
+  @MethodSource("data")
+  @ParameterizedTest
+  @Timeout(value = 180000, unit = TimeUnit.MILLISECONDS)
+  public void testSkipEdit(Boolean async) throws IOException {
+    initTestNameNodeRecovery(async);
     runEditLogTest(new EltsTestGarbageInEditLog());
   }
 
@@ -485,7 +505,7 @@ public class TestNameNodeRecovery {
   static class SafePaddingCorruptor implements Corruptor {
     private final byte padByte;
 
-    public SafePaddingCorruptor(byte padByte) {
+    public void initTestNameNodeRecovery(byte padByte) {
       this.padByte = padByte;
       assert ((this.padByte == 0) || (this.padByte == -1));
     }
@@ -584,7 +604,7 @@ public class TestNameNodeRecovery {
     }
 
     File editFile = FSImageTestUtil.findLatestEditsLog(sd).getFile();
-    assertTrue("Should exist: " + editFile, editFile.exists());
+    assertTrue(editFile.exists(), "Should exist: " + editFile);
 
     // Corrupt the edit log
     LOG.info("corrupting edit log file '" + editFile + "'");
@@ -654,32 +674,44 @@ public class TestNameNodeRecovery {
 
   /** Test that we can successfully recover from a situation where the last
    * entry in the edit log has been truncated. */
-  @Test(timeout=180000)
-  public void testRecoverTruncatedEditLog() throws IOException {
+  @MethodSource("data")
+  @ParameterizedTest
+  @Timeout(value = 180000, unit = TimeUnit.MILLISECONDS)
+  public void testRecoverTruncatedEditLog(Boolean async) throws IOException {
+    initTestNameNodeRecovery(async);
     testNameNodeRecoveryImpl(new TruncatingCorruptor(), true);
     testNameNodeRecoveryImpl(new TruncatingCorruptor(), false);
   }
 
   /** Test that we can successfully recover from a situation where the last
    * entry in the edit log has been padded with garbage. */
-  @Test(timeout=180000)
-  public void testRecoverPaddedEditLog() throws IOException {
+  @MethodSource("data")
+  @ParameterizedTest
+  @Timeout(value = 180000, unit = TimeUnit.MILLISECONDS)
+  public void testRecoverPaddedEditLog(Boolean async) throws IOException {
+    initTestNameNodeRecovery(async);
     testNameNodeRecoveryImpl(new PaddingCorruptor(), true);
     testNameNodeRecoveryImpl(new PaddingCorruptor(), false);
   }
 
   /** Test that don't need to recover from a situation where the last
    * entry in the edit log has been padded with 0. */
-  @Test(timeout=180000)
-  public void testRecoverZeroPaddedEditLog() throws IOException {
+  @MethodSource("data")
+  @ParameterizedTest
+  @Timeout(value = 180000, unit = TimeUnit.MILLISECONDS)
+  public void testRecoverZeroPaddedEditLog(Boolean async) throws IOException {
+    initTestNameNodeRecovery(async);
     testNameNodeRecoveryImpl(new SafePaddingCorruptor((byte)0), true);
     testNameNodeRecoveryImpl(new SafePaddingCorruptor((byte)0), false);
   }
 
   /** Test that don't need to recover from a situation where the last
    * entry in the edit log has been padded with 0xff bytes. */
-  @Test(timeout=180000)
-  public void testRecoverNegativeOnePaddedEditLog() throws IOException {
+  @MethodSource("data")
+  @ParameterizedTest
+  @Timeout(value = 180000, unit = TimeUnit.MILLISECONDS)
+  public void testRecoverNegativeOnePaddedEditLog(Boolean async) throws IOException {
+    initTestNameNodeRecovery(async);
     testNameNodeRecoveryImpl(new SafePaddingCorruptor((byte)-1), true);
     testNameNodeRecoveryImpl(new SafePaddingCorruptor((byte)-1), false);
   }

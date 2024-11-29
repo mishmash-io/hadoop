@@ -45,9 +45,11 @@ import org.apache.hadoop.security.token.Token;
 import org.apache.hadoop.security.token.TokenIdentifier;
 import org.apache.hadoop.test.GenericTestUtils;
 import org.apache.hadoop.test.Whitebox;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.Timeout;
+
 import org.slf4j.event.Level;
 
 import java.io.ByteArrayInputStream;
@@ -58,9 +60,10 @@ import java.net.URI;
 import java.security.PrivilegedExceptionAction;
 import java.util.Collection;
 import java.util.HashSet;
+import java.util.concurrent.TimeUnit;
 
 import static org.apache.hadoop.hdfs.server.namenode.ha.ObserverReadProxyProvider.OBSERVER_PROBE_RETRY_PERIOD_KEY;
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.*;
 
 /**
  * Test case for client support of delegation tokens in an HA cluster.
@@ -79,7 +82,7 @@ public class TestDelegationTokensWithHA {
 
   private volatile boolean catchup = false;
   
-  @Before
+  @BeforeEach
   public void setupCluster() throws Exception {
     SecurityUtilTestHelper.setTokenServiceUseIp(true);
     
@@ -107,7 +110,7 @@ public class TestDelegationTokensWithHA {
         nn0.getNamesystem());
   }
 
-  @After
+  @AfterEach
   public void shutdownCluster() throws IOException {
     if (cluster != null) {
       cluster.shutdown();
@@ -119,7 +122,8 @@ public class TestDelegationTokensWithHA {
    * Test that, when using ObserverReadProxyProvider with DT authentication,
    * the ORPP gracefully handles when the Standby NN throws a StandbyException.
    */
-  @Test(timeout = 300000)
+  @Test
+  @Timeout(value = 300000, unit = TimeUnit.MILLISECONDS)
   public void testObserverReadProxyProviderWithDT() throws Exception {
     // Make the first node standby, so that the ORPP will try it first
     // instead of just using and succeeding on the active
@@ -160,7 +164,8 @@ public class TestDelegationTokensWithHA {
     }
   }
 
-  @Test(timeout = 300000)
+  @Test
+  @Timeout(value = 300000, unit = TimeUnit.MILLISECONDS)
   public void testDelegationTokenDFSApi() throws Exception {
     final Token<DelegationTokenIdentifier> token =
         getDelegationToken(fs, "JobTracker");
@@ -218,12 +223,13 @@ public class TestDelegationTokensWithHA {
       super.catchupDuringFailover();
     }
   }
-  
+
   /**
    * Test if correct exception (StandbyException or RetriableException) can be
    * thrown during the NN failover. 
    */
-  @Test(timeout = 300000)
+  @Test
+  @Timeout(value = 300000, unit = TimeUnit.MILLISECONDS)
   public void testDelegationTokenDuringNNFailover() throws Exception {
     EditLogTailer editLogTailer = nn1.getNamesystem().getEditLogTailer();
     // stop the editLogTailer of nn1
@@ -291,7 +297,8 @@ public class TestDelegationTokensWithHA {
     doRenewOrCancel(token, clientConf, TokenTestAction.CANCEL);
   }
 
-  @Test(timeout = 300000)
+  @Test
+  @Timeout(value = 300000, unit = TimeUnit.MILLISECONDS)
   public void testDelegationTokenWithDoAs() throws Exception {
     final Token<DelegationTokenIdentifier> token =
         getDelegationToken(fs, "JobTracker");
@@ -323,7 +330,8 @@ public class TestDelegationTokensWithHA {
     });
   }
 
-  @Test(timeout = 300000)
+  @Test
+  @Timeout(value = 300000, unit = TimeUnit.MILLISECONDS)
   public void testHAUtilClonesDelegationTokens() throws Exception {
     final Token<DelegationTokenIdentifier> token =
         getDelegationToken(fs, "JobTracker");
@@ -385,7 +393,8 @@ public class TestDelegationTokensWithHA {
    * exception if the URI is a logical URI. This bug fails the combination of
    * ha + mapred + security.
    */
-  @Test(timeout = 300000)
+  @Test
+  @Timeout(value = 300000, unit = TimeUnit.MILLISECONDS)
   public void testDFSGetCanonicalServiceName() throws Exception {
     URI hAUri = HATestUtil.getLogicalUri(cluster);
     String haService = HAUtilClient.buildTokenServiceForLogicalUri(hAUri,
@@ -400,7 +409,8 @@ public class TestDelegationTokensWithHA {
     token.cancel(dfs.getConf());
   }
 
-  @Test(timeout = 300000)
+  @Test
+  @Timeout(value = 300000, unit = TimeUnit.MILLISECONDS)
   public void testHdfsGetCanonicalServiceName() throws Exception {
     Configuration conf = dfs.getConf();
     URI haUri = HATestUtil.getLogicalUri(cluster);
@@ -416,7 +426,8 @@ public class TestDelegationTokensWithHA {
     token.cancel(conf);
   }
 
-  @Test(timeout = 300000)
+  @Test
+  @Timeout(value = 300000, unit = TimeUnit.MILLISECONDS)
   public void testCancelAndUpdateDelegationTokens() throws Exception {
     // Create UGI with token1
     String user = UserGroupInformation.getCurrentUser().getShortUserName();

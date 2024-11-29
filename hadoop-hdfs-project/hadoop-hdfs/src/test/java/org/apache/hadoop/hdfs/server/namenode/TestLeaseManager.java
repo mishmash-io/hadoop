@@ -18,9 +18,8 @@
 package org.apache.hadoop.hdfs.server.namenode;
 
 import static org.hamcrest.CoreMatchers.is;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotEquals;
-import static org.junit.Assert.assertTrue;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.junit.jupiter.api.Assertions.*;
 
 import org.apache.hadoop.fs.FSDataOutputStream;
 import org.apache.hadoop.fs.Path;
@@ -38,9 +37,8 @@ import org.apache.hadoop.hdfs.server.blockmanagement.BlockInfo;
 import org.apache.hadoop.hdfs.server.namenode.snapshot.Snapshot;
 import org.apache.hadoop.util.Lists;
 
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.Timeout;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.Timeout;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -50,15 +48,14 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import static org.junit.Assert.assertThat;
-import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
+@Timeout(value=300000, unit=TimeUnit.MILLISECONDS)
 public class TestLeaseManager {
-  @Rule
-  public Timeout timeout = new Timeout(300000);
-
   public static long maxLockHoldToReleaseLeaseMs = 100;
 
   @Test
@@ -175,8 +172,8 @@ public class TestLeaseManager {
       // Check whether the lease manager has the lease
       dir = cluster.getNamesystem().getFSDirectory();
       file = dir.getINode(path).asFile();
-      assertTrue("Lease should exist.",
-          cluster.getNamesystem().leaseManager.getLease(file) != null);
+      assertTrue(cluster.getNamesystem().leaseManager.getLease(file) != null,
+          "Lease should exist.");
     } finally {
       if (cluster != null) {
         cluster.shutdown();
@@ -190,7 +187,8 @@ public class TestLeaseManager {
    * {@link LeaseManager#getINodeIdWithLeases()} and
    * {@link LeaseManager#getINodeWithLeases(INodeDirectory)}.
    */
-  @Test (timeout = 60000)
+  @Test
+  @Timeout(value = 60000, unit = TimeUnit.MILLISECONDS)
   public void testInodeWithLeases() throws Exception {
     FSNamesystem fsNamesystem = makeMockFsNameSystem();
     when(fsNamesystem.getMaxListOpenFilesResponses()).thenReturn(1024);
@@ -232,7 +230,8 @@ public class TestLeaseManager {
    * {@link LeaseManager#getINodeIdWithLeases()} and
    * {@link LeaseManager#getINodeWithLeases(INodeDirectory)}.
    */
-  @Test (timeout = 240000)
+  @Test
+  @Timeout(value = 240000, unit = TimeUnit.MILLISECONDS)
   public void testInodeWithLeasesAtScale() throws Exception {
     FSNamesystem fsNamesystem = makeMockFsNameSystem();
     when(fsNamesystem.getMaxListOpenFilesResponses()).thenReturn(4096);
@@ -311,7 +310,8 @@ public class TestLeaseManager {
    * {@link LeaseManager#getINodeIdWithLeases()} and
    * {@link LeaseManager#getINodeWithLeases(INodeDirectory)}.
    */
-  @Test (timeout = 60000)
+  @Test
+  @Timeout(value = 60000, unit = TimeUnit.MILLISECONDS)
   public void testInodeWithLeasesForAncestorDir() throws Exception {
     FSNamesystem fsNamesystem = makeMockFsNameSystem();
     FSDirectory fsDirectory = fsNamesystem.getFSDirectory();

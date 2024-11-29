@@ -28,11 +28,14 @@ import org.apache.hadoop.metrics2.lib.MutableRollingAverages;
 import org.apache.hadoop.test.GenericTestUtils;
 import static org.apache.hadoop.test.MetricsAsserts.getDoubleGauge;
 import static org.apache.hadoop.test.MetricsAsserts.getMetrics;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
 import org.apache.hadoop.util.FakeTimer;
-import static org.junit.Assert.assertTrue;
-import org.junit.Test;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyLong;
+
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.Timeout;
 import org.mockito.Mockito;
 import org.mockito.invocation.InvocationOnMock;
 import org.mockito.stubbing.Answer;
@@ -67,7 +70,8 @@ public class TestBlockReaderLocalMetrics {
     clientConf = new DfsClientConf(conf);
   }
 
-  @Test(timeout = 300_000)
+  @Test
+  @Timeout(value = 300_000, unit = TimeUnit.MILLISECONDS)
   public void testSlowShortCircuitReadsStatsRecorded() throws IOException,
       InterruptedException, TimeoutException {
 
@@ -107,11 +111,12 @@ public class TestBlockReaderLocalMetrics {
         SHORT_CIRCUIT_READ_METRIC_REGISTERED_NAME);
     double averageLatency = getDoubleGauge(
         SHORT_CIRCUIT_LOCAL_READS_METRIC_VALUE_FULL_NAME, rb);
-    assertTrue("Average Latency of Short Circuit Reads lower than expected",
-        averageLatency >= SLOW_READ_DELAY);
+    assertTrue(averageLatency >= SLOW_READ_DELAY,
+        "Average Latency of Short Circuit Reads lower than expected");
   }
 
-  @Test(timeout = 300_000)
+  @Test
+  @Timeout(value = 300_000, unit = TimeUnit.MILLISECONDS)
   public void testMutlipleBlockReaderIoProviderStats() throws IOException,
       InterruptedException, TimeoutException {
 
@@ -165,11 +170,12 @@ public class TestBlockReaderLocalMetrics {
     double averageLatency = getDoubleGauge(
         SHORT_CIRCUIT_LOCAL_READS_METRIC_VALUE_FULL_NAME, rb);
 
-    assertTrue("Average Latency of Short Circuit Reads lower than expected",
-        averageLatency >= SLOW_READ_DELAY*2);
+    assertTrue(averageLatency >= SLOW_READ_DELAY*2,
+        "Average Latency of Short Circuit Reads lower than expected");
   }
 
-  @Test(timeout = 300_000)
+  @Test
+  @Timeout(value = 300_000, unit = TimeUnit.MILLISECONDS)
   public void testSlowShortCircuitReadsAverageLatencyValue() throws IOException,
       InterruptedException, TimeoutException {
 
@@ -220,7 +226,7 @@ public class TestBlockReaderLocalMetrics {
     double averageLatency = getDoubleGauge(
         SHORT_CIRCUIT_LOCAL_READS_METRIC_VALUE_FULL_NAME, rb);
 
-    assertTrue("Average Latency of Short Circuit Reads lower than expected",
-        averageLatency >= expectedAvgLatency);
+    assertTrue(averageLatency >= expectedAvgLatency,
+        "Average Latency of Short Circuit Reads lower than expected");
   }
 }

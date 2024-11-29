@@ -17,6 +17,8 @@
  */
 package org.apache.hadoop.hdfs.server.namenode;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+
 import java.io.IOException;
 
 import org.apache.hadoop.conf.Configuration;
@@ -31,12 +33,10 @@ import org.apache.hadoop.hdfs.server.protocol.DatanodeStorageReport;
 import org.apache.hadoop.hdfs.server.protocol.NamenodeProtocols;
 import org.apache.hadoop.security.AccessControlException;
 import org.apache.hadoop.test.GenericTestUtils;
-import org.junit.After;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
-
-import static org.junit.Assert.assertEquals;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 public class TestNameNodeRpcServerMethods {
   private static NamenodeProtocols nnRpc;
@@ -44,7 +44,7 @@ public class TestNameNodeRpcServerMethods {
   private static MiniDFSCluster cluster;
 
   /** Start a cluster */
-  @Before
+  @BeforeEach
   public void setup() throws Exception {
     conf = new HdfsConfiguration();
     cluster = new MiniDFSCluster.Builder(conf).build();
@@ -60,7 +60,7 @@ public class TestNameNodeRpcServerMethods {
    * @throws SafeModeException
    * @throws AccessControlException
    */
-  @After
+  @AfterEach
   public void cleanup() throws IOException {
     if (cluster != null) {
       cluster.shutdown();
@@ -73,7 +73,7 @@ public class TestNameNodeRpcServerMethods {
     String dir = "/testNamenodeRetryCache/testDelete";
     try {
       nnRpc.deleteSnapshot(dir, null);
-      Assert.fail("testdeleteSnapshot is not thrown expected exception ");
+      Assertions.fail("testdeleteSnapshot is not thrown expected exception ");
     } catch (IOException e) {
       // expected
       GenericTestUtils.assertExceptionContains(
@@ -81,7 +81,7 @@ public class TestNameNodeRpcServerMethods {
     }
     try {
       nnRpc.deleteSnapshot(dir, "");
-      Assert.fail("testdeleteSnapshot is not thrown expected exception");
+      Assertions.fail("testdeleteSnapshot is not thrown expected exception");
     } catch (IOException e) {
       // expected
       GenericTestUtils.assertExceptionContains(

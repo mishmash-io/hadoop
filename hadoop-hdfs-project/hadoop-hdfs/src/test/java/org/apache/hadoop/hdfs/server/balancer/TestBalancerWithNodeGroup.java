@@ -17,9 +17,7 @@
  */
 package org.apache.hadoop.hdfs.server.balancer;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.assertFalse;
+import static org.junit.jupiter.api.Assertions.*;
 
 import java.io.IOException;
 import java.net.URI;
@@ -27,6 +25,7 @@ import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 
 import org.slf4j.Logger;
@@ -52,7 +51,9 @@ import org.apache.hadoop.hdfs.server.blockmanagement.BlockPlacementStatus;
 import org.apache.hadoop.net.NetworkTopology;
 import org.apache.hadoop.net.NetworkTopologyWithNodeGroup;
 import org.apache.hadoop.test.LambdaTestUtils;
-import org.junit.Test;
+
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.Timeout;
 
 /**
  * This class tests if a balancer schedules tasks correctly.
@@ -195,8 +196,7 @@ public class TestBalancerWithNodeGroup {
     // start rebalancing
     Collection<URI> namenodes = DFSUtil.getInternalNsRpcUris(conf);
     final int r = Balancer.run(namenodes, BalancerParameters.DEFAULT, conf);
-    assertEquals("Balancer did not exit with NO_MOVE_PROGRESS",
-        ExitStatus.NO_MOVE_PROGRESS.getExitCode(), r);
+    assertEquals(ExitStatus.NO_MOVE_PROGRESS.getExitCode(), r, "Balancer did not exit with NO_MOVE_PROGRESS");
     waitForHeartBeat(totalUsedSpace, totalCapacity);
     LOG.info("Rebalancing with default factor.");
   }
@@ -218,8 +218,8 @@ public class TestBalancerWithNodeGroup {
     NetworkTopology topology =
         cluster.getNamesystem().getBlockManager().getDatanodeManager().
             getNetworkTopology();
-    assertTrue("must be an instance of NetworkTopologyWithNodeGroup",
-        topology instanceof NetworkTopologyWithNodeGroup);
+    assertTrue(topology instanceof NetworkTopologyWithNodeGroup,
+        "must be an instance of NetworkTopologyWithNodeGroup");
   }
 
   private void verifyProperBlockPlacement(String file,
@@ -228,13 +228,13 @@ public class TestBalancerWithNodeGroup {
         cluster.getNamesystem().getBlockManager().getBlockPlacementPolicy();
     List<LocatedBlock> locatedBlocks = client.
         getBlockLocations(file, 0, length).getLocatedBlocks();
-    assertFalse("No blocks found for file " + file, locatedBlocks.isEmpty());
+    assertFalse(locatedBlocks.isEmpty(), "No blocks found for file " + file);
     for (LocatedBlock locatedBlock : locatedBlocks) {
       BlockPlacementStatus status = placementPolicy.verifyBlockPlacement(
           locatedBlock.getLocations(), numOfReplicas);
-      assertTrue("Block placement policy was not satisfied for block " +
-          locatedBlock.getBlock().getBlockId(),
-          status.isPlacementPolicySatisfied());
+      assertTrue(status.isPlacementPolicySatisfied(),
+          "Block placement policy was not satisfied for block " +
+          locatedBlock.getBlock().getBlockId());
     }
   }
 
@@ -242,7 +242,8 @@ public class TestBalancerWithNodeGroup {
    * Create a cluster with even distribution, and a new empty node is added to
    * the cluster, then test rack locality for balancer policy. 
    */
-  @Test(timeout=60000)
+  @Test
+  @Timeout(value = 60000, unit = TimeUnit.MILLISECONDS)
   public void testBalancerWithRackLocality() throws Exception {
     Configuration conf = createConf();
     long[] capacities = new long[]{CAPACITY, CAPACITY};
@@ -298,12 +299,13 @@ public class TestBalancerWithNodeGroup {
       cluster.shutdown();
     }
   }
-  
+
   /**
    * Create a cluster with even distribution, and a new empty node is added to
    * the cluster, then test node-group locality for balancer policy.
    */
-  @Test(timeout=60000)
+  @Test
+  @Timeout(value = 60000, unit = TimeUnit.MILLISECONDS)
   public void testBalancerWithNodeGroup() throws Exception {
     Configuration conf = createConf();
     long[] capacities = new long[]{CAPACITY, CAPACITY, CAPACITY, CAPACITY};
@@ -353,7 +355,7 @@ public class TestBalancerWithNodeGroup {
       cluster.shutdown();
     }
   }
-  
+
   /**
    * Create a 4 nodes cluster: 2 nodes (n0, n1) in RACK0/NODEGROUP0, 1 node (n2)
    * in RACK1/NODEGROUP1 and 1 node (n3) in RACK1/NODEGROUP2. Fill the cluster 
@@ -363,7 +365,8 @@ public class TestBalancerWithNodeGroup {
    * to n0 or n1 as balancer policy with node group. Thus, we expect the balancer
    * to end in 5 iterations without move block process.
    */
-  @Test(timeout=60000)
+  @Test
+  @Timeout(value = 60000, unit = TimeUnit.MILLISECONDS)
   public void testBalancerEndInNoMoveProgress() throws Exception {
     Configuration conf = createConf();
     long[] capacities = new long[]{CAPACITY, CAPACITY, CAPACITY, CAPACITY};

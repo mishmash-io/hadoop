@@ -17,10 +17,7 @@
  */
 package org.apache.hadoop.hdfs;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
+import static org.junit.jupiter.api.Assertions.*;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -42,8 +39,9 @@ import org.apache.hadoop.io.IOUtils;
 import org.apache.hadoop.security.AccessControlException;
 import org.apache.hadoop.security.UserGroupInformation;
 import org.apache.hadoop.test.GenericTestUtils;
-import org.junit.Test;
 import org.slf4j.event.Level;
+
+import org.junit.jupiter.api.Test;
 
 /**
  * This class tests the building blocks that are needed to
@@ -445,10 +443,10 @@ public class TestFileAppend2 {
             } catch (InterruptedException e) {}
           }
 
-          assertTrue("File " + testfile + " size is " + 
+          assertTrue(fs.getFileStatus(testfile).getLen() == (len + sizeToAppend),
+                    "File " + testfile + " size is " + 
                      fs.getFileStatus(testfile).getLen() +
-                     " but expected " + (len + sizeToAppend),
-                    fs.getFileStatus(testfile).getLen() == (len + sizeToAppend));
+                     " but expected " + (len + sizeToAppend));
 
           AppendTestUtil.checkFullFile(fs, testfile, (int) (len + sizeToAppend),
               fileContents, "Read 2");
@@ -460,9 +458,9 @@ public class TestFileAppend2 {
                                " " + e);
             e.printStackTrace();
           }
-          assertTrue("Workload exception " + id + " testfile " + testfile +
-                     " expected size " + (len + sizeToAppend),
-                     false);
+          assertTrue(false,
+                     "Workload exception " + id + " testfile " + testfile +
+                     " expected size " + (len + sizeToAppend));
         }
 
         // Add testfile back to the pool of files.
@@ -530,7 +528,7 @@ public class TestFileAppend2 {
     // If any of the worker thread failed in their job, indicate that
     // this test failed.
     //
-    assertTrue("testComplexAppend Worker encountered exceptions.", globalStatus);
+    assertTrue(globalStatus, "testComplexAppend Worker encountered exceptions.");
   }
 
   @Test

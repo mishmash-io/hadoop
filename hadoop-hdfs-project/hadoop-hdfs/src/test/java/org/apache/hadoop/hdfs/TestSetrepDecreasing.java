@@ -18,11 +18,14 @@
 package org.apache.hadoop.hdfs;
 
 import java.io.IOException;
+import java.util.concurrent.TimeUnit;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.Timeout;
 
 public class TestSetrepDecreasing {
-  @Test(timeout=120000)
+  @Test
+  @Timeout(value = 120000, unit = TimeUnit.MILLISECONDS)
   public void testSetrepDecreasing() throws IOException {
     TestSetrepIncreasing.setrep(5, 3, false);
   }

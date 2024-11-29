@@ -18,17 +18,21 @@
 package org.apache.hadoop.hdfs.server.datanode;
 
 import org.apache.hadoop.hdfs.server.common.Storage;
-import org.junit.Test;
+
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.Timeout;
 import org.mockito.Mockito;
 
 import java.io.File;
 import java.util.Random;
 import java.util.UUID;
+import java.util.concurrent.TimeUnit;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.core.Is.is;
-import static org.junit.Assert.assertThat;
 
 /**
  * Test that BlockPoolSliceStorage can correctly generate trash and
@@ -139,7 +143,8 @@ public class TestBlockPoolSliceStorage {
 
   }
 
-  @Test (timeout=300000)
+  @Test
+  @Timeout(value = 300000, unit = TimeUnit.MILLISECONDS)
   public void testGetTrashAndRestoreDirectories() {
     storage = makeBlockPoolStorage();
 

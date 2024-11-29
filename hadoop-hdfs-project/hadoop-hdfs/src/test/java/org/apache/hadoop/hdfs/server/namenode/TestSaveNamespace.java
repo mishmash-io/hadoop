@@ -18,10 +18,7 @@
 package org.apache.hadoop.hdfs.server.namenode;
 
 import static org.apache.hadoop.hdfs.server.common.Util.fileAsURI;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
+import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.doThrow;
@@ -35,10 +32,7 @@ import java.io.PrintWriter;
 import java.net.URI;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.Callable;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.Future;
+import java.util.concurrent.*;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.hadoop.util.StringUtils;
@@ -68,8 +62,9 @@ import org.apache.hadoop.test.GenericTestUtils;
 import org.apache.hadoop.test.GenericTestUtils.DelayAnswer;
 import org.apache.hadoop.test.Whitebox;
 import org.slf4j.event.Level;
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.Timeout;
 import org.mockito.Mockito;
 import org.mockito.invocation.InvocationOnMock;
 import org.mockito.stubbing.Answer;
@@ -254,7 +249,8 @@ public class TestSaveNamespace {
    * Verify that a saveNamespace command brings faulty directories
    * in fs.name.dir and fs.edit.dir back online.
    */
-  @Test (timeout=30000)
+  @Test
+  @Timeout(value = 30000, unit = TimeUnit.MILLISECONDS)
   public void testReinsertnamedirsInSavenamespace() throws Exception {
     // create a configuration with the key to restore error
     // directories in fs.name.dir
@@ -290,10 +286,10 @@ public class TestSaveNamespace {
       fsn.saveNamespace(0, 0);
       LOG.info("First savenamespace sucessful.");      
       
-      assertTrue("Savenamespace should have marked one directory as bad." +
+      assertTrue(storage.getRemovedStorageDirs().size() == 1, 
+                   "Savenamespace should have marked one directory as bad." +
                  " But found " + storage.getRemovedStorageDirs().size() +
-                 " bad directories.", 
-                   storage.getRemovedStorageDirs().size() == 1);
+                 " bad directories.");
 
       fs.setPermission(rootPath, permissionAll);
 
@@ -303,11 +299,11 @@ public class TestSaveNamespace {
       LOG.info("Doing the second savenamespace.");
       fsn.saveNamespace(0, 0);
       LOG.warn("Second savenamespace sucessful.");
-      assertTrue("Savenamespace should have been successful in removing " +
+      assertTrue(storage.getRemovedStorageDirs().size() == 0, 
+                 "Savenamespace should have been successful in removing " +
                  " bad directories from Image."  +
                  " But found " + storage.getRemovedStorageDirs().size() +
-                 " bad directories.", 
-                 storage.getRemovedStorageDirs().size() == 0);
+                 " bad directories.");
 
       // Now shut down and restart the namesystem
       LOG.info("Shutting down fsimage.");
@@ -339,31 +335,36 @@ public class TestSaveNamespace {
     }
   }
 
-  @Test (timeout=30000)
+  @Test
+  @Timeout(value = 30000, unit = TimeUnit.MILLISECONDS)
   public void testRTEWhileSavingSecondImage() throws Exception {
     saveNamespaceWithInjectedFault(Fault.SAVE_SECOND_FSIMAGE_RTE);
   }
 
-  @Test (timeout=30000)
+  @Test
+  @Timeout(value = 30000, unit = TimeUnit.MILLISECONDS)
   public void testIOEWhileSavingSecondImage() throws Exception {
     saveNamespaceWithInjectedFault(Fault.SAVE_SECOND_FSIMAGE_IOE);
   }
 
-  @Test (timeout=30000)
+  @Test
+  @Timeout(value = 30000, unit = TimeUnit.MILLISECONDS)
   public void testCrashInAllImageDirs() throws Exception {
     saveNamespaceWithInjectedFault(Fault.SAVE_ALL_FSIMAGES);
   }
-  
-  @Test (timeout=30000)
+
+  @Test
+  @Timeout(value = 30000, unit = TimeUnit.MILLISECONDS)
   public void testCrashWhenWritingVersionFiles() throws Exception {
     saveNamespaceWithInjectedFault(Fault.WRITE_STORAGE_ALL);
   }
-  
-  @Test (timeout=30000)
+
+  @Test
+  @Timeout(value = 30000, unit = TimeUnit.MILLISECONDS)
   public void testCrashWhenWritingVersionFileInOneDir() throws Exception {
     saveNamespaceWithInjectedFault(Fault.WRITE_STORAGE_ONE);
   }
- 
+
 
   /**
    * Test case where savenamespace fails in all directories
@@ -371,7 +372,8 @@ public class TestSaveNamespace {
    * failed checkpoint since it only affected ".ckpt" files, not
    * valid image files
    */
-  @Test (timeout=30000)
+  @Test
+  @Timeout(value = 30000, unit = TimeUnit.MILLISECONDS)
   public void testFailedSaveNamespace() throws Exception {
     doTestFailedSaveNamespace(false);
   }
@@ -381,7 +383,8 @@ public class TestSaveNamespace {
    * the operator restores the directories and calls it again.
    * This should leave the NN in a clean state for next start.
    */
-  @Test (timeout=30000)
+  @Test
+  @Timeout(value = 30000, unit = TimeUnit.MILLISECONDS)
   public void testFailedSaveNamespaceWithRecovery() throws Exception {
     doTestFailedSaveNamespace(true);
   }
@@ -455,7 +458,8 @@ public class TestSaveNamespace {
     }
   }
 
-  @Test (timeout=30000)
+  @Test
+  @Timeout(value = 30000, unit = TimeUnit.MILLISECONDS)
   public void testSaveWhileEditsRolled() throws Exception {
     Configuration conf = getConf();
     NameNode.initMetrics(conf, NamenodeRole.NAMENODE);
@@ -490,8 +494,9 @@ public class TestSaveNamespace {
       }
     }
   }
-  
-  @Test (timeout=30000)
+
+  @Test
+  @Timeout(value = 30000, unit = TimeUnit.MILLISECONDS)
   public void testTxIdPersistence() throws Exception {
     Configuration conf = getConf();
     NameNode.initMetrics(conf, NamenodeRole.NAMENODE);
@@ -528,8 +533,9 @@ public class TestSaveNamespace {
       }
     }
   }
-  
-  @Test(timeout=20000)
+
+  @Test
+  @Timeout(value = 20000, unit = TimeUnit.MILLISECONDS)
   public void testCancelSaveNamespace() throws Exception {
     Configuration conf = getConf();
     NameNode.initMetrics(conf, NamenodeRole.NAMENODE);
@@ -617,7 +623,8 @@ public class TestSaveNamespace {
    * open lease and destination directory exist. 
    * This test is a regression for HDFS-2827
    */
-  @Test (timeout=30000)
+  @Test
+  @Timeout(value = 30000, unit = TimeUnit.MILLISECONDS)
   public void testSaveNamespaceWithRenamedLease() throws Exception {
     MiniDFSCluster cluster = new MiniDFSCluster.Builder(new Configuration())
         .numDataNodes(1).build();
@@ -637,8 +644,9 @@ public class TestSaveNamespace {
       cluster.shutdown();
     }
   }
-  
-  @Test (timeout=30000)
+
+  @Test
+  @Timeout(value = 30000, unit = TimeUnit.MILLISECONDS)
   public void testSaveNamespaceWithDanglingLease() throws Exception {
     MiniDFSCluster cluster = new MiniDFSCluster.Builder(new Configuration())
         .numDataNodes(1).build();
@@ -675,8 +683,8 @@ public class TestSaveNamespace {
           .saveSelf2Snapshot(-1, file, null, false);
 
       // make sure it has a diff
-      assertTrue("Snapshot fileDiff is missing.",
-          file.getFileWithSnapshotFeature().getDiffs() != null);
+      assertTrue(file.getFileWithSnapshotFeature().getDiffs() != null,
+          "Snapshot fileDiff is missing.");
 
       // saveNamespace
       fs.setSafeMode(SafeModeAction.ENTER);
@@ -690,8 +698,8 @@ public class TestSaveNamespace {
 
       // there should be no snapshot feature for the inode, when there is
       // no snapshot.
-      assertTrue("There should be no snapshot feature for this INode.",
-          file.getFileWithSnapshotFeature() == null);
+      assertTrue(file.getFileWithSnapshotFeature() == null,
+          "There should be no snapshot feature for this INode.");
     } finally {
       cluster.shutdown();
     }
@@ -718,7 +726,7 @@ public class TestSaveNamespace {
 
       // make sure no new checkpoint was done
       long after = fsimage.getStorage().getMostRecentCheckpointTxId();
-      Assert.assertEquals(before, after);
+      Assertions.assertEquals(before, after);
 
       Thread.sleep(1000);
       // do another checkpoint. this time set the timewindow to 1s
@@ -727,7 +735,7 @@ public class TestSaveNamespace {
       fs.setSafeMode(SafeModeAction.LEAVE);
 
       after = fsimage.getStorage().getMostRecentCheckpointTxId();
-      Assert.assertTrue(after > before);
+      Assertions.assertTrue(after > before);
 
       fs.mkdirs(new Path("/foo/bar/baz")); // 3 new tx
 
@@ -735,17 +743,18 @@ public class TestSaveNamespace {
       cluster.getNameNodeRpc().saveNamespace(3600, 5); // 3 + end/start segment
       long after2 = fsimage.getStorage().getMostRecentCheckpointTxId();
       // no checkpoint should be made
-      Assert.assertEquals(after, after2);
+      Assertions.assertEquals(after, after2);
       cluster.getNameNodeRpc().saveNamespace(3600, 3);
       after2 = fsimage.getStorage().getMostRecentCheckpointTxId();
       // a new checkpoint should be done
-      Assert.assertTrue(after2 > after);
+      Assertions.assertTrue(after2 > after);
     } finally {
       cluster.shutdown();
     }
   }
 
-  @Test(timeout=30000)
+  @Test
+  @Timeout(value = 30000, unit = TimeUnit.MILLISECONDS)
   public void testTxFaultTolerance() throws Exception {
     String baseDir = MiniDFSCluster.getBaseDirectory();
     List<String> nameDirs = new ArrayList<>();

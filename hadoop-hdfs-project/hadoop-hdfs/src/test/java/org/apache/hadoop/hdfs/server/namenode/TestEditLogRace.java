@@ -18,9 +18,7 @@
 package org.apache.hadoop.hdfs.server.namenode;
 
 import static org.apache.hadoop.hdfs.server.namenode.FSEditLogOpCodes.OP_SET_OWNER;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.argThat;
 import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.spy;
@@ -63,12 +61,12 @@ import org.apache.hadoop.hdfs.server.protocol.NamenodeProtocols;
 import org.apache.hadoop.ipc.RemoteException;
 import org.apache.hadoop.test.GenericTestUtils;
 import org.apache.hadoop.util.Time;
+
+import org.junit.jupiter.api.Timeout;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.MethodSource;
 import org.mockito.ArgumentMatcher;
 import org.slf4j.event.Level;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.junit.runners.Parameterized;
-import org.junit.runners.Parameterized.Parameters;
 import org.mockito.invocation.InvocationOnMock;
 import org.mockito.stubbing.Answer;
 
@@ -76,13 +74,11 @@ import org.mockito.stubbing.Answer;
  * This class tests various synchronization bugs in FSEditLog rolling
  * and namespace saving.
  */
-@RunWith(Parameterized.class)
 public class TestEditLogRace {
   static {
     GenericTestUtils.setLogLevel(FSEditLog.LOG, Level.DEBUG);
   }
 
-  @Parameters
   public static Collection<Object[]> data() {
     Collection<Object[]> params = new ArrayList<Object[]>();
     params.add(new Object[]{ false });
@@ -92,7 +88,7 @@ public class TestEditLogRace {
 
   private static boolean useAsyncEditLog;
 
-  public TestEditLogRace(boolean useAsyncEditLog) {
+  public void initTestEditLogRace(boolean useAsyncEditLog) {
     TestEditLogRace.useAsyncEditLog = useAsyncEditLog;
   }
 
@@ -143,7 +139,7 @@ public class TestEditLogRace {
     volatile Thread thr;
     final AtomicReference<Throwable> caught;
 
-    Transactions(MiniDFSCluster cluster, AtomicReference<Throwable> caught) {
+    void initTestEditLogRace(MiniDFSCluster cluster, AtomicReference<Throwable> caught) {
       this.cluster = cluster;
       this.nn = cluster.getNameNodeRpc();
       try {
@@ -225,8 +221,10 @@ public class TestEditLogRace {
   /**
    * Tests rolling edit logs while transactions are ongoing.
    */
-  @Test
-  public void testEditLogRolling() throws Exception {
+  @MethodSource("data")
+  @ParameterizedTest
+  public void testEditLogRolling(boolean useAsyncEditLog) throws Exception {
+    initTestEditLogRace(useAsyncEditLog);
     // start a cluster 
     Configuration conf = getConf();
     final MiniDFSCluster cluster =
@@ -263,7 +261,7 @@ public class TestEditLogRace {
         assertEquals(previousLogTxId, nextLog);
         
         File expectedLog = NNStorage.getInProgressEditsFile(sd, previousLogTxId);
-        assertTrue("Expect " + expectedLog + " to exist", expectedLog.exists());
+        assertTrue(expectedLog.exists(), "Expect " + expectedLog + " to exist");
       }
     } finally {
       stopTransactionWorkers();
@@ -307,8 +305,10 @@ public class TestEditLogRace {
   /**
    * Tests saving fs image while transactions are ongoing.
    */
-  @Test
-  public void testSaveNamespace() throws Exception {
+  @MethodSource("data")
+  @ParameterizedTest
+  public void testSaveNamespace(boolean useAsyncEditLog) throws Exception {
+    initTestEditLogRace(useAsyncEditLog);
     // start a cluster 
     Configuration conf = getConf();
     MiniDFSCluster cluster = null;
@@ -403,8 +403,10 @@ public class TestEditLogRace {
    *   Then I terminate the name-node.
    *   After that the name-node wont start, since the edits file is broken.
    */
-  @Test
-  public void testSaveImageWhileSyncInProgress() throws Exception {
+  @MethodSource("data")
+  @ParameterizedTest
+  public void testSaveImageWhileSyncInProgress(boolean useAsyncEditLog) throws Exception {
+    initTestEditLogRace(useAsyncEditLog);
     Configuration conf = getConf();
     NameNode.initMetrics(conf, NamenodeRole.NAMENODE);
     DFSTestUtil.formatNameNode(conf);
@@ -495,7 +497,7 @@ public class TestEditLogRace {
       if(namesystem != null) namesystem.close();
     }
   }
-  
+
   /**
    * Most of the FSNamesystem methods have a synchronized section where they
    * update the name system itself and write to the edit log, and then
@@ -503,8 +505,10 @@ public class TestEditLogRace {
    * operation has written to the edit log but not yet synced it,
    * we wait for that sync before entering safe mode.
    */
-  @Test
-  public void testSaveRightBeforeSync() throws Exception {
+  @MethodSource("data")
+  @ParameterizedTest
+  public void testSaveRightBeforeSync(boolean useAsyncEditLog) throws Exception {
+    initTestEditLogRace(useAsyncEditLog);
     Configuration conf = getConf();
     NameNode.initMetrics(conf, NamenodeRole.NAMENODE);
     DFSTestUtil.formatNameNode(conf);
@@ -599,8 +603,11 @@ public class TestEditLogRace {
     }
   }
 
-  @Test(timeout=180000)
-  public void testDeadlock() throws Throwable {
+  @MethodSource("data")
+  @ParameterizedTest
+  @Timeout(value = 180000, unit = TimeUnit.MILLISECONDS)
+  public void testDeadlock(boolean useAsyncEditLog) throws Throwable {
+    initTestEditLogRace(useAsyncEditLog);
     GenericTestUtils.setLogLevel(FSEditLog.LOG, Level.DEBUG);
     GenericTestUtils.setLogLevel(FSEditLogAsync.LOG, Level.DEBUG);
 
@@ -638,7 +645,7 @@ public class TestEditLogRace {
                 LOG.info("thread[" + ii +"] edits=" + i);
               }
             }
-            assertTrue("too many edits", done.get());
+            assertTrue(done.get(), "too many edits");
             return null;
           }
         });

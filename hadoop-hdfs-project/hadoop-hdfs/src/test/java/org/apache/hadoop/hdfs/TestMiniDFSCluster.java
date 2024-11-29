@@ -20,8 +20,8 @@ package org.apache.hadoop.hdfs;
 
 import static org.apache.hadoop.hdfs.DFSConfigKeys.DFS_NAMENODE_HTTP_ADDRESS_KEY;
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assume.assumeTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assumptions.assumeTrue;
 
 import java.io.File;
 import java.io.IOException;
@@ -29,6 +29,7 @@ import java.util.ArrayList;
 import java.util.Random;
 import java.util.Set;
 import java.util.UUID;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 
 import org.apache.hadoop.conf.Configuration;
@@ -43,8 +44,10 @@ import org.apache.hadoop.hdfs.server.datanode.fsdataset.impl.FsVolumeImpl;
 import org.apache.hadoop.net.NetUtils;
 import org.apache.hadoop.test.LambdaTestUtils;
 import org.apache.hadoop.test.PathUtils;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.Timeout;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -66,7 +69,7 @@ public class TestMiniDFSCluster {
   private static final String CLUSTER_4 = "cluster4";
   private static final String CLUSTER_5 = "cluster5";
   protected File testDataPath;
-  @Before
+  @BeforeEach
   public void setUp() {
     testDataPath = new File(PathUtils.getTestDir(getClass()), "miniclusters");
   }
@@ -77,7 +80,8 @@ public class TestMiniDFSCluster {
    *
    * @throws Throwable on a failure
    */
-  @Test(timeout=100000)
+  @Test
+  @Timeout(value = 100000, unit = TimeUnit.MILLISECONDS)
   public void testClusterWithoutSystemProperties() throws Throwable {
     String oldPrp = System.getProperty(MiniDFSCluster.PROP_TEST_BUILD_DATA);
     System.clearProperty(MiniDFSCluster.PROP_TEST_BUILD_DATA);
@@ -98,7 +102,8 @@ public class TestMiniDFSCluster {
   /**
    * Tests storage capacity setting still effective after cluster restart.
    */
-  @Test(timeout=100000)
+  @Test
+  @Timeout(value = 100000, unit = TimeUnit.MILLISECONDS)
   public void testClusterSetStorageCapacity() throws Throwable {
 
     final Configuration conf = new HdfsConfiguration();
@@ -211,7 +216,8 @@ public class TestMiniDFSCluster {
     return cluster;
   }
 
-  @Test(timeout=100000)
+  @Test
+  @Timeout(value = 100000, unit = TimeUnit.MILLISECONDS)
   public void testIsClusterUpAfterShutdown() throws Throwable {
     Configuration conf = new HdfsConfiguration();
     File testDataCluster4 = new File(testDataPath, CLUSTER_4);
@@ -229,7 +235,8 @@ public class TestMiniDFSCluster {
   }
 
   /** MiniDFSCluster should not clobber dfs.datanode.hostname if requested */
-  @Test(timeout=100000)
+  @Test
+  @Timeout(value = 100000, unit = TimeUnit.MILLISECONDS)
   public void testClusterSetDatanodeHostname() throws Throwable {
     assumeTrue(System.getProperty("os.name").startsWith("Linux"));
     Configuration conf = new HdfsConfiguration();
@@ -240,8 +247,9 @@ public class TestMiniDFSCluster {
           .numDataNodes(1)
           .checkDataNodeHostConfig(true)
           .build()) {
-      assertEquals("DataNode hostname config not respected", "MYHOST",
-          cluster5.getDataNodes().get(0).getDatanodeId().getHostName());
+      assertEquals("MYHOST",
+          cluster5.getDataNodes().get(0).getDatanodeId().getHostName(),
+          "DataNode hostname config not respected");
     }
   }
 

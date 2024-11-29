@@ -18,8 +18,8 @@
 
 package org.apache.hadoop.hdfs.tools.offlineEditsViewer;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.io.ByteArrayOutputStream;
 import java.io.File;
@@ -40,12 +40,11 @@ import org.apache.hadoop.hdfs.server.namenode.OfflineEditsViewerHelper;
 import org.apache.hadoop.hdfs.tools.offlineEditsViewer.OfflineEditsViewer.Flags;
 import org.apache.hadoop.io.IOUtils;
 import org.apache.hadoop.test.PathUtils;
-import org.junit.After;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.TemporaryFolder;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
 
 import org.apache.hadoop.thirdparty.com.google.common.collect.ImmutableSet;
 
@@ -81,15 +80,15 @@ public class TestOfflineEditsViewer {
     return b.build();
   }
 
-  @Rule
-  public final TemporaryFolder folder = new TemporaryFolder();
+  @TempDir
+  public File folder;
 
-  @Before
+  @BeforeEach
   public void setUp() throws IOException {
     nnHelper.startCluster(buildDir + "/dfs/");
   }
 
-  @After
+  @AfterEach
   public void tearDown() throws IOException {
     nnHelper.shutdownCluster();
   }
@@ -103,11 +102,11 @@ public class TestOfflineEditsViewer {
     // binary, XML, reparsed binary
     String edits = nnHelper.generateEdits();
     LOG.info("Generated edits=" + edits);
-    String editsParsedXml = folder.newFile("editsParsed.xml").getAbsolutePath();
-    String editsReparsed = folder.newFile("editsParsed").getAbsolutePath();
+    String editsParsedXml = File.createTempFile("editsParsed.xml", null, folder).getAbsolutePath();
+    String editsReparsed = File.createTempFile("editsParsed", null, folder).getAbsolutePath();
     // capital case extension
     String editsParsedXML_caseInSensitive =
-        folder.newFile("editsRecoveredParsed.XML").getAbsolutePath();
+        File.createTempFile("editsRecoveredParsed.XML", null, folder).getAbsolutePath();
 
     // parse to XML then back to binary
     assertEquals(0, runOev(edits, editsParsedXml, "xml", false));
@@ -118,13 +117,13 @@ public class TestOfflineEditsViewer {
 
 
     // judgment time
-    assertTrue("Edits " + edits + " should have all op codes",
-        hasAllOpCodes(edits));
+    assertTrue(hasAllOpCodes(edits),
+        "Edits " + edits + " should have all op codes");
     LOG.info("Comparing generated file " + editsReparsed
         + " with reference file " + edits);
     assertTrue(
-        "Generated edits and reparsed (bin to XML to bin) should be same",
-        filesEqualIgnoreTrailingZeros(edits, editsReparsed));
+        filesEqualIgnoreTrailingZeros(edits, editsReparsed),
+        "Generated edits and reparsed (bin to XML to bin) should be same");
   }
 
 
@@ -138,11 +137,11 @@ public class TestOfflineEditsViewer {
     FileChannel editsFile = os.getChannel();
     editsFile.truncate(editsFile.size() - 5);
 
-    String editsParsedXml = folder.newFile("editsRecoveredParsed.xml")
+    String editsParsedXml = File.createTempFile("editsRecoveredParsed.xml", null, folder)
         .getAbsolutePath();
-    String editsReparsed = folder.newFile("editsRecoveredReparsed")
+    String editsReparsed = File.createTempFile("editsRecoveredReparsed", null, folder)
         .getAbsolutePath();
-    String editsParsedXml2 = folder.newFile("editsRecoveredParsed2.xml")
+    String editsParsedXml2 = File.createTempFile("editsRecoveredParsed2.xml", null, folder)
         .getAbsolutePath();
 
     // Can't read the corrupted file without recovery mode
@@ -154,8 +153,8 @@ public class TestOfflineEditsViewer {
     assertEquals(0, runOev(editsReparsed, editsParsedXml2, "xml", false));
 
     // judgment time
-    assertTrue("Test round trip", FileUtils.contentEqualsIgnoreEOL(
-        new File(editsParsedXml), new File(editsParsedXml2), "UTF-8"));
+    assertTrue(FileUtils.contentEqualsIgnoreEOL(
+        new File(editsParsedXml), new File(editsParsedXml2), "UTF-8"), "Test round trip");
 
     os.close();
   }
@@ -178,14 +177,14 @@ public class TestOfflineEditsViewer {
         runOev(editsStoredParsedXml, editsStoredReparsed, "binary", false));
 
     // judgement time
-    assertTrue("Edits " + editsStored + " should have all op codes",
-        hasAllOpCodes(editsStored));
-    assertTrue("Reference XML edits and parsed to XML should be same",
-        FileUtils.contentEqualsIgnoreEOL(new File(editsStoredXml),
-            new File(editsStoredParsedXml), "UTF-8"));
+    assertTrue(hasAllOpCodes(editsStored),
+        "Edits " + editsStored + " should have all op codes");
+    assertTrue(FileUtils.contentEqualsIgnoreEOL(new File(editsStoredXml),
+            new File(editsStoredParsedXml), "UTF-8"),
+        "Reference XML edits and parsed to XML should be same");
     assertTrue(
-        "Reference edits and reparsed (bin to XML to bin) should be same",
-        filesEqualIgnoreTrailingZeros(editsStored, editsStoredReparsed));
+        filesEqualIgnoreTrailingZeros(editsStored, editsStoredReparsed),
+        "Reference edits and reparsed (bin to XML to bin) should be same");
   }
 
   /**
@@ -299,11 +298,11 @@ public class TestOfflineEditsViewer {
     try {
       System.setOut(out);
       int status = new OfflineEditsViewer().run(new String[] { "-h" });
-      assertTrue("" + "Exit code returned for help option is incorrect",
-          status == 0);
-      Assert.assertFalse(
-          "Invalid Command error displayed when help option is passed.", bytes
-              .toString().contains("Error parsing command-line options"));
+      assertTrue(status == 0,
+          "" + "Exit code returned for help option is incorrect");
+      Assertions.assertFalse(
+          bytes
+              .toString().contains("Error parsing command-line options"), "Invalid Command error displayed when help option is passed.");
     } finally {
       System.setOut(oldOut);
       IOUtils.closeStream(out);
@@ -322,7 +321,7 @@ public class TestOfflineEditsViewer {
     if (oev.go(editFilename, outFilename, "stats", new Flags(), visitor) == 0) {
       statisticsStr = visitor.getStatisticsString();
     }
-    Assert.assertNotNull(statisticsStr);
+    Assertions.assertNotNull(statisticsStr);
 
     String str;
     Long count;
@@ -343,9 +342,9 @@ public class TestOfflineEditsViewer {
   public void testProcessorWithSameTypeFormatFile() throws IOException {
     String edits = nnHelper.generateEdits();
     LOG.info("Generated edits=" + edits);
-    String binaryEdits = folder.newFile("binaryEdits").getAbsolutePath();
-    String editsParsedXml = folder.newFile("editsParsed.xml").getAbsolutePath();
-    String editsReparsedXml = folder.newFile("editsReparsed.xml")
+    String binaryEdits = File.createTempFile("binaryEdits", null, folder).getAbsolutePath();
+    String editsParsedXml = File.createTempFile("editsParsed.xml", null, folder).getAbsolutePath();
+    String editsReparsedXml = File.createTempFile("editsReparsed.xml", null, folder)
         .getAbsolutePath();
 
     // Binary format input file is not allowed to be processed

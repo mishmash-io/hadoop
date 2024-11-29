@@ -36,8 +36,9 @@ import org.apache.hadoop.io.DataOutputBuffer;
 
 import org.apache.hadoop.thirdparty.protobuf.ByteString;
 
-import org.junit.Test;
-import static org.junit.Assert.*;
+import org.junit.jupiter.api.Test;
+
+import static org.junit.jupiter.api.Assertions.*;
 
 /**
  * Verify compatible FileStatus/HdfsFileStatus serialization.

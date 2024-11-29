@@ -22,7 +22,7 @@ import static org.apache.hadoop.hdfs.server.namenode.AclTestHelpers.*;
 import static org.apache.hadoop.fs.permission.AclEntryScope.*;
 import static org.apache.hadoop.fs.permission.AclEntryType.*;
 import static org.apache.hadoop.fs.permission.FsAction.*;
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.*;
 
 import java.io.FileNotFoundException;
 import java.io.IOException;
@@ -50,13 +50,11 @@ import org.apache.hadoop.io.IOUtils;
 import org.apache.hadoop.security.AccessControlException;
 import org.apache.hadoop.security.UserGroupInformation;
 import org.apache.hadoop.util.Lists;
-import org.junit.After;
-import org.junit.AfterClass;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.ExpectedException;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import org.apache.hadoop.thirdparty.com.google.common.collect.ImmutableList;
 
@@ -81,9 +79,6 @@ public abstract class FSAclBaseTest {
   private static int pathCount = 0;
   private static Path path;
 
-  @Rule
-  public ExpectedException exception = ExpectedException.none();
-
   private FileSystem fs, fsAsBruce, fsAsDiana, fsAsSupergroupMember, fsAsBob;
 
   protected static void startCluster() throws IOException {
@@ -92,21 +87,21 @@ public abstract class FSAclBaseTest {
     cluster.waitActive();
   }
 
-  @AfterClass
+  @AfterAll
   public static void shutdown() {
     if (cluster != null) {
       cluster.shutdown();
     }
   }
 
-  @Before
+  @BeforeEach
   public void setUp() throws Exception {
     pathCount += 1;
     path = new Path("/p" + pathCount);
     initFileSystems();
   }
 
-  @After
+  @AfterEach
   public void destroyFileSystems() {
     IOUtils.cleanupWithLogger(null, fs, fsAsBruce, fsAsDiana,
         fsAsSupergroupMember);
@@ -123,15 +118,15 @@ public abstract class FSAclBaseTest {
       aclEntry(ACCESS, OTHER, NONE),
       aclEntry(DEFAULT, USER, "foo", ALL));
     fs.setAcl(path, aclSpec);
-    Assert.assertTrue(path + " should have ACLs in FileStatus!",
-        fs.getFileStatus(path).hasAcl());
+    Assertions.assertTrue(fs.getFileStatus(path).hasAcl(),
+        path + " should have ACLs in FileStatus!");
 
     aclSpec = Lists.newArrayList(
       aclEntry(ACCESS, USER, "foo", READ_EXECUTE),
       aclEntry(DEFAULT, USER, "foo", READ_EXECUTE));
     fs.modifyAclEntries(path, aclSpec);
-    Assert.assertTrue(path + " should have ACLs in FileStatus!",
-        fs.getFileStatus(path).hasAcl());
+    Assertions.assertTrue(fs.getFileStatus(path).hasAcl(),
+        path + " should have ACLs in FileStatus!");
 
     AclStatus s = fs.getAclStatus(path);
     AclEntry[] returned = s.getEntries().toArray(new AclEntry[0]);
@@ -269,24 +264,28 @@ public abstract class FSAclBaseTest {
     assertAclFeature(true);
   }
 
-  @Test(expected=FileNotFoundException.class)
-  public void testModifyAclEntriesPathNotFound() throws IOException {
-    // Path has not been created.
-    List<AclEntry> aclSpec = Lists.newArrayList(
-      aclEntry(ACCESS, USER, ALL),
-      aclEntry(ACCESS, USER, "foo", ALL),
-      aclEntry(ACCESS, GROUP, READ_EXECUTE),
-      aclEntry(ACCESS, OTHER, NONE));
-    fs.modifyAclEntries(path, aclSpec);
+  @Test
+  public void testModifyAclEntriesPathNotFound() {
+    assertThrows(FileNotFoundException.class, () -> {
+      // Path has not been created.
+      List<AclEntry> aclSpec = Lists.newArrayList(
+          aclEntry(ACCESS, USER, ALL),
+          aclEntry(ACCESS, USER, "foo", ALL),
+          aclEntry(ACCESS, GROUP, READ_EXECUTE),
+          aclEntry(ACCESS, OTHER, NONE));
+      fs.modifyAclEntries(path, aclSpec);
+    });
   }
 
-  @Test(expected=AclException.class)
-  public void testModifyAclEntriesDefaultOnFile() throws IOException {
-    fs.create(path).close();
-    fs.setPermission(path, FsPermission.createImmutable((short)0640));
-    List<AclEntry> aclSpec = Lists.newArrayList(
-      aclEntry(DEFAULT, USER, "foo", ALL));
-    fs.modifyAclEntries(path, aclSpec);
+  @Test
+  public void testModifyAclEntriesDefaultOnFile() {
+    assertThrows(AclException.class, () -> {
+      fs.create(path).close();
+      fs.setPermission(path, FsPermission.createImmutable((short) 0640));
+      List<AclEntry> aclSpec = Lists.newArrayList(
+          aclEntry(DEFAULT, USER, "foo", ALL));
+      fs.modifyAclEntries(path, aclSpec);
+    });
   }
 
   @Test
@@ -437,12 +436,14 @@ public abstract class FSAclBaseTest {
     assertAclFeature(true);
   }
 
-  @Test(expected=FileNotFoundException.class)
-  public void testRemoveAclEntriesPathNotFound() throws IOException {
-    // Path has not been created.
-    List<AclEntry> aclSpec = Lists.newArrayList(
-      aclEntry(ACCESS, USER, "foo"));
-    fs.removeAclEntries(path, aclSpec);
+  @Test
+  public void testRemoveAclEntriesPathNotFound() {
+    assertThrows(FileNotFoundException.class, () -> {
+      // Path has not been created.
+      List<AclEntry> aclSpec = Lists.newArrayList(
+          aclEntry(ACCESS, USER, "foo"));
+      fs.removeAclEntries(path, aclSpec);
+    });
   }
 
   @Test
@@ -555,10 +556,11 @@ public abstract class FSAclBaseTest {
     assertArrayEquals(returned, afterRestart);
   }
 
-  @Test(expected=FileNotFoundException.class)
-  public void testRemoveDefaultAclPathNotFound() throws IOException {
-    // Path has not been created.
-    fs.removeDefaultAcl(path);
+  @Test
+  public void testRemoveDefaultAclPathNotFound() {
+    assertThrows(FileNotFoundException.class, () ->
+      // Path has not been created.
+      fs.removeDefaultAcl(path));
   }
 
   @Test
@@ -572,15 +574,15 @@ public abstract class FSAclBaseTest {
       aclEntry(DEFAULT, USER, "foo", ALL));
 
     fs.setAcl(path, aclSpec);
-    Assert.assertTrue(path + " should have ACLs in FileStatus!",
-        fs.getFileStatus(path).hasAcl());
-    Assert.assertTrue(path + " should have ACLs in FileStatus#toString()!",
-        fs.getFileStatus(path).toString().contains("hasAcl=true"));
+    Assertions.assertTrue(fs.getFileStatus(path).hasAcl(),
+        path + " should have ACLs in FileStatus!");
+    Assertions.assertTrue(fs.getFileStatus(path).toString().contains("hasAcl=true"),
+        path + " should have ACLs in FileStatus#toString()!");
     fs.removeAcl(path);
-    Assert.assertFalse(path + " should not have ACLs in FileStatus!",
-        fs.getFileStatus(path).hasAcl());
-    Assert.assertTrue(path + " should not have ACLs in FileStatus#toString()!",
-        fs.getFileStatus(path).toString().contains("hasAcl=false"));
+    Assertions.assertFalse(fs.getFileStatus(path).hasAcl(),
+        path + " should not have ACLs in FileStatus!");
+    Assertions.assertTrue(fs.getFileStatus(path).toString().contains("hasAcl=false"),
+        path + " should not have ACLs in FileStatus#toString()!");
 
     AclStatus s = fs.getAclStatus(path);
     AclEntry[] returned = s.getEntries().toArray(new AclEntry[0]);
@@ -636,10 +638,11 @@ public abstract class FSAclBaseTest {
     assertAclFeature(false);
   }
 
-  @Test(expected=FileNotFoundException.class)
-  public void testRemoveAclPathNotFound() throws IOException {
-    // Path has not been created.
-    fs.removeAcl(path);
+  @Test
+  public void testRemoveAclPathNotFound() {
+    assertThrows(FileNotFoundException.class, () ->
+      // Path has not been created.
+      fs.removeAcl(path));
   }
 
   @Test
@@ -787,24 +790,28 @@ public abstract class FSAclBaseTest {
     assertAclFeature(true);
   }
 
-  @Test(expected=FileNotFoundException.class)
-  public void testSetAclPathNotFound() throws IOException {
-    // Path has not been created.
-    List<AclEntry> aclSpec = Lists.newArrayList(
-      aclEntry(ACCESS, USER, READ_WRITE),
-      aclEntry(ACCESS, USER, "foo", READ),
-      aclEntry(ACCESS, GROUP, READ),
-      aclEntry(ACCESS, OTHER, NONE));
-    fs.setAcl(path, aclSpec);
+  @Test
+  public void testSetAclPathNotFound() {
+    assertThrows(FileNotFoundException.class, () -> {
+      // Path has not been created.
+      List<AclEntry> aclSpec = Lists.newArrayList(
+          aclEntry(ACCESS, USER, READ_WRITE),
+          aclEntry(ACCESS, USER, "foo", READ),
+          aclEntry(ACCESS, GROUP, READ),
+          aclEntry(ACCESS, OTHER, NONE));
+      fs.setAcl(path, aclSpec);
+    });
   }
 
-  @Test(expected=AclException.class)
-  public void testSetAclDefaultOnFile() throws IOException {
-    fs.create(path).close();
-    fs.setPermission(path, FsPermission.createImmutable((short)0640));
-    List<AclEntry> aclSpec = Lists.newArrayList(
-      aclEntry(DEFAULT, USER, "foo", ALL));
-    fs.setAcl(path, aclSpec);
+  @Test
+  public void testSetAclDefaultOnFile() {
+    assertThrows(AclException.class, () -> {
+      fs.create(path).close();
+      fs.setPermission(path, FsPermission.createImmutable((short) 0640));
+      List<AclEntry> aclSpec = Lists.newArrayList(
+          aclEntry(DEFAULT, USER, "foo", ALL));
+      fs.setAcl(path, aclSpec);
+    });
   }
 
   @Test
@@ -992,13 +999,13 @@ public abstract class FSAclBaseTest {
     List<AclEntry> aclSpec = Lists.newArrayList(
       aclEntry(DEFAULT, USER, "foo", ALL));
     fs.setAcl(path, aclSpec);
-    Assert.assertTrue(path + " should have ACLs in FileStatus!",
-        fs.getFileStatus(path).hasAcl());
+    Assertions.assertTrue(fs.getFileStatus(path).hasAcl(),
+        path + " should have ACLs in FileStatus!");
 
     Path dirPath = new Path(path, "dir1");
     fs.mkdirs(dirPath);
-    Assert.assertTrue(dirPath + " should have ACLs in FileStatus!",
-        fs.getFileStatus(dirPath).hasAcl());
+    Assertions.assertTrue(fs.getFileStatus(dirPath).hasAcl(),
+        dirPath + " should have ACLs in FileStatus!");
 
     AclStatus s = fs.getAclStatus(dirPath);
     AclEntry[] returned = s.getEntries().toArray(new AclEntry[0]);
@@ -1318,101 +1325,107 @@ public abstract class FSAclBaseTest {
   }
 
   @Test
-  public void testModifyAclEntriesMustBeOwnerOrSuper() throws Exception {
-    Path bruceDir = new Path(path, "bruce");
-    Path bruceFile = new Path(bruceDir, "file");
-    fs.mkdirs(bruceDir);
-    fs.setOwner(bruceDir, "bruce", null);
-    fsAsBruce.create(bruceFile).close();
-    List<AclEntry> aclSpec = Lists.newArrayList(
-      aclEntry(ACCESS, USER, "diana", ALL));
-    fsAsBruce.modifyAclEntries(bruceFile, aclSpec);
-    fs.modifyAclEntries(bruceFile, aclSpec);
-    fsAsSupergroupMember.modifyAclEntries(bruceFile, aclSpec);
-    exception.expect(AccessControlException.class);
-    fsAsDiana.modifyAclEntries(bruceFile, aclSpec);
+  public void testModifyAclEntriesMustBeOwnerOrSuper() {
+    assertThrows(AccessControlException.class, () -> {
+      Path bruceDir = new Path(path, "bruce");
+      Path bruceFile = new Path(bruceDir, "file");
+      fs.mkdirs(bruceDir);
+      fs.setOwner(bruceDir, "bruce", null);
+      fsAsBruce.create(bruceFile).close();
+      List<AclEntry> aclSpec = Lists.newArrayList(
+          aclEntry(ACCESS, USER, "diana", ALL));
+      fsAsBruce.modifyAclEntries(bruceFile, aclSpec);
+      fs.modifyAclEntries(bruceFile, aclSpec);
+      fsAsSupergroupMember.modifyAclEntries(bruceFile, aclSpec);
+      fsAsDiana.modifyAclEntries(bruceFile, aclSpec);
+    });
   }
 
   @Test
-  public void testRemoveAclEntriesMustBeOwnerOrSuper() throws Exception {
-    Path bruceDir = new Path(path, "bruce");
-    Path bruceFile = new Path(bruceDir, "file");
-    fs.mkdirs(bruceDir);
-    fs.setOwner(bruceDir, "bruce", null);
-    fsAsBruce.create(bruceFile).close();
-    List<AclEntry> aclSpec = Lists.newArrayList(
-      aclEntry(ACCESS, USER, "diana"));
-    fsAsBruce.removeAclEntries(bruceFile, aclSpec);
-    fs.removeAclEntries(bruceFile, aclSpec);
-    fsAsSupergroupMember.removeAclEntries(bruceFile, aclSpec);
-    exception.expect(AccessControlException.class);
-    fsAsDiana.removeAclEntries(bruceFile, aclSpec);
+  public void testRemoveAclEntriesMustBeOwnerOrSuper() {
+    assertThrows(AccessControlException.class, () -> {
+      Path bruceDir = new Path(path, "bruce");
+      Path bruceFile = new Path(bruceDir, "file");
+      fs.mkdirs(bruceDir);
+      fs.setOwner(bruceDir, "bruce", null);
+      fsAsBruce.create(bruceFile).close();
+      List<AclEntry> aclSpec = Lists.newArrayList(
+          aclEntry(ACCESS, USER, "diana"));
+      fsAsBruce.removeAclEntries(bruceFile, aclSpec);
+      fs.removeAclEntries(bruceFile, aclSpec);
+      fsAsSupergroupMember.removeAclEntries(bruceFile, aclSpec);
+      fsAsDiana.removeAclEntries(bruceFile, aclSpec);
+    });
   }
 
   @Test
-  public void testRemoveDefaultAclMustBeOwnerOrSuper() throws Exception {
-    Path bruceDir = new Path(path, "bruce");
-    Path bruceFile = new Path(bruceDir, "file");
-    fs.mkdirs(bruceDir);
-    fs.setOwner(bruceDir, "bruce", null);
-    fsAsBruce.create(bruceFile).close();
-    fsAsBruce.removeDefaultAcl(bruceFile);
-    fs.removeDefaultAcl(bruceFile);
-    fsAsSupergroupMember.removeDefaultAcl(bruceFile);
-    exception.expect(AccessControlException.class);
-    fsAsDiana.removeDefaultAcl(bruceFile);
+  public void testRemoveDefaultAclMustBeOwnerOrSuper() {
+    assertThrows(AccessControlException.class, () -> {
+      Path bruceDir = new Path(path, "bruce");
+      Path bruceFile = new Path(bruceDir, "file");
+      fs.mkdirs(bruceDir);
+      fs.setOwner(bruceDir, "bruce", null);
+      fsAsBruce.create(bruceFile).close();
+      fsAsBruce.removeDefaultAcl(bruceFile);
+      fs.removeDefaultAcl(bruceFile);
+      fsAsSupergroupMember.removeDefaultAcl(bruceFile);
+      fsAsDiana.removeDefaultAcl(bruceFile);
+    });
   }
 
   @Test
-  public void testRemoveAclMustBeOwnerOrSuper() throws Exception {
-    Path bruceDir = new Path(path, "bruce");
-    Path bruceFile = new Path(bruceDir, "file");
-    fs.mkdirs(bruceDir);
-    fs.setOwner(bruceDir, "bruce", null);
-    fsAsBruce.create(bruceFile).close();
-    fsAsBruce.removeAcl(bruceFile);
-    fs.removeAcl(bruceFile);
-    fsAsSupergroupMember.removeAcl(bruceFile);
-    exception.expect(AccessControlException.class);
-    fsAsDiana.removeAcl(bruceFile);
+  public void testRemoveAclMustBeOwnerOrSuper() {
+    assertThrows(AccessControlException.class, () -> {
+      Path bruceDir = new Path(path, "bruce");
+      Path bruceFile = new Path(bruceDir, "file");
+      fs.mkdirs(bruceDir);
+      fs.setOwner(bruceDir, "bruce", null);
+      fsAsBruce.create(bruceFile).close();
+      fsAsBruce.removeAcl(bruceFile);
+      fs.removeAcl(bruceFile);
+      fsAsSupergroupMember.removeAcl(bruceFile);
+      fsAsDiana.removeAcl(bruceFile);
+    });
   }
 
   @Test
-  public void testSetAclMustBeOwnerOrSuper() throws Exception {
-    Path bruceDir = new Path(path, "bruce");
-    Path bruceFile = new Path(bruceDir, "file");
-    fs.mkdirs(bruceDir);
-    fs.setOwner(bruceDir, "bruce", null);
-    fsAsBruce.create(bruceFile).close();
-    List<AclEntry> aclSpec = Lists.newArrayList(
-      aclEntry(ACCESS, USER, READ_WRITE),
-      aclEntry(ACCESS, USER, "diana", READ_WRITE),
-      aclEntry(ACCESS, GROUP, READ),
-      aclEntry(ACCESS, OTHER, READ));
-    fsAsBruce.setAcl(bruceFile, aclSpec);
-    fs.setAcl(bruceFile, aclSpec);
-    fsAsSupergroupMember.setAcl(bruceFile, aclSpec);
-    exception.expect(AccessControlException.class);
-    fsAsDiana.setAcl(bruceFile, aclSpec);
+  public void testSetAclMustBeOwnerOrSuper() {
+    assertThrows(AccessControlException.class, () -> {
+      Path bruceDir = new Path(path, "bruce");
+      Path bruceFile = new Path(bruceDir, "file");
+      fs.mkdirs(bruceDir);
+      fs.setOwner(bruceDir, "bruce", null);
+      fsAsBruce.create(bruceFile).close();
+      List<AclEntry> aclSpec = Lists.newArrayList(
+          aclEntry(ACCESS, USER, READ_WRITE),
+          aclEntry(ACCESS, USER, "diana", READ_WRITE),
+          aclEntry(ACCESS, GROUP, READ),
+          aclEntry(ACCESS, OTHER, READ));
+      fsAsBruce.setAcl(bruceFile, aclSpec);
+      fs.setAcl(bruceFile, aclSpec);
+      fsAsSupergroupMember.setAcl(bruceFile, aclSpec);
+      fsAsDiana.setAcl(bruceFile, aclSpec);
+    });
   }
 
   @Test
-  public void testGetAclStatusRequiresTraverseOrSuper() throws Exception {
-    Path bruceDir = new Path(path, "bruce");
-    Path bruceFile = new Path(bruceDir, "file");
-    fs.mkdirs(bruceDir);
-    fs.setOwner(bruceDir, "bruce", null);
-    fsAsBruce.create(bruceFile).close();
-    fsAsBruce.setAcl(bruceDir, Lists.newArrayList(
-      aclEntry(ACCESS, USER, ALL),
-      aclEntry(ACCESS, USER, "diana", READ),
-      aclEntry(ACCESS, GROUP, NONE),
-      aclEntry(ACCESS, OTHER, NONE)));
-    fsAsBruce.getAclStatus(bruceFile);
-    fs.getAclStatus(bruceFile);
-    fsAsSupergroupMember.getAclStatus(bruceFile);
-    exception.expect(AccessControlException.class);
-    fsAsDiana.getAclStatus(bruceFile);
+  public void testGetAclStatusRequiresTraverseOrSuper() {
+    assertThrows(AccessControlException.class, () -> {
+      Path bruceDir = new Path(path, "bruce");
+      Path bruceFile = new Path(bruceDir, "file");
+      fs.mkdirs(bruceDir);
+      fs.setOwner(bruceDir, "bruce", null);
+      fsAsBruce.create(bruceFile).close();
+      fsAsBruce.setAcl(bruceDir, Lists.newArrayList(
+          aclEntry(ACCESS, USER, ALL),
+          aclEntry(ACCESS, USER, "diana", READ),
+          aclEntry(ACCESS, GROUP, NONE),
+          aclEntry(ACCESS, OTHER, NONE)));
+      fsAsBruce.getAclStatus(bruceFile);
+      fs.getAclStatus(bruceFile);
+      fsAsSupergroupMember.getAclStatus(bruceFile);
+      fsAsDiana.getAclStatus(bruceFile);
+    });
   }
 
   @Test
@@ -1478,17 +1491,16 @@ public abstract class FSAclBaseTest {
     // give all access at first
     fs.setPermission(p1, FsPermission.valueOf("-rwxrwxrwx"));
     AclStatus aclStatus = fs.getAclStatus(p1);
-    assertEquals("Entries should be empty", 0, aclStatus.getEntries().size());
-    assertEquals("Permission should be carried by AclStatus",
-        fs.getFileStatus(p1).getPermission(), aclStatus.getPermission());
+    assertEquals(0, aclStatus.getEntries().size(), "Entries should be empty");
+    assertEquals(fs.getFileStatus(p1).getPermission(), aclStatus.getPermission(), "Permission should be carried by AclStatus");
 
     // Add a named entries with all access
     fs.modifyAclEntries(p1, Lists.newArrayList(
         aclEntry(ACCESS, USER, "bruce", ALL),
         aclEntry(ACCESS, GROUP, "groupY", ALL)));
     aclStatus = fs.getAclStatus(p1);
-    assertEquals("Entries should contain owner group entry also", 3, aclStatus
-        .getEntries().size());
+    assertEquals(3, aclStatus
+        .getEntries().size(), "Entries should contain owner group entry also");
 
     // restrict the access
     fs.setPermission(p1, FsPermission.valueOf("-rwxr-----"));
@@ -1540,8 +1552,9 @@ public abstract class FSAclBaseTest {
           aclEntry(DEFAULT, GROUP, "testdeduplicategroup", ALL));
       fs.mkdirs(p1);
       fs.modifyAclEntries(p1, aclSpec);
-      assertEquals("One more ACL feature should be unique", currentSize + 1,
-          AclStorage.getUniqueAclFeatures().getUniqueElementsSize());
+      assertEquals(currentSize + 1,
+          AclStorage.getUniqueAclFeatures().getUniqueElementsSize(),
+          "One more ACL feature should be unique");
       currentSize++;
     }
     Path child1 = new Path(p1, "child1");
@@ -1549,11 +1562,13 @@ public abstract class FSAclBaseTest {
     {
       // new child dir should copy entries from its parent.
       fs.mkdirs(child1);
-      assertEquals("One more ACL feature should be unique", currentSize + 1,
-          AclStorage.getUniqueAclFeatures().getUniqueElementsSize());
+      assertEquals(currentSize + 1,
+          AclStorage.getUniqueAclFeatures().getUniqueElementsSize(),
+          "One more ACL feature should be unique");
       child1AclFeature = getAclFeature(child1, cluster);
-      assertEquals("Reference count should be 1", 1,
-          child1AclFeature.getRefCount());
+      assertEquals(1,
+          child1AclFeature.getRefCount(),
+          "Reference count should be 1");
       currentSize++;
     }
     Path child2 = new Path(p1, "child2");
@@ -1561,13 +1576,16 @@ public abstract class FSAclBaseTest {
       // new child dir should copy entries from its parent. But all entries are
       // same as its sibling without any more acl changes.
       fs.mkdirs(child2);
-      assertEquals("existing AclFeature should be re-used", currentSize,
-          AclStorage.getUniqueAclFeatures().getUniqueElementsSize());
+      assertEquals(currentSize,
+          AclStorage.getUniqueAclFeatures().getUniqueElementsSize(),
+          "existing AclFeature should be re-used");
       AclFeature child2AclFeature = getAclFeature(child1, cluster);
-      assertSame("Same Aclfeature should be re-used", child1AclFeature,
-          child2AclFeature);
-      assertEquals("Reference count should be 2", 2,
-          child2AclFeature.getRefCount());
+      assertSame(child1AclFeature,
+          child2AclFeature,
+          "Same Aclfeature should be re-used");
+      assertEquals(2,
+          child2AclFeature.getRefCount(),
+          "Reference count should be 2");
     }
     {
       // modification of ACL on should decrement the original reference count
@@ -1576,31 +1594,37 @@ public abstract class FSAclBaseTest {
           "user1", ALL));
       fs.modifyAclEntries(child1, aclSpec);
       AclFeature modifiedAclFeature = getAclFeature(child1, cluster);
-      assertEquals("Old Reference count should be 1", 1,
-          child1AclFeature.getRefCount());
-      assertEquals("New Reference count should be 1", 1,
-          modifiedAclFeature.getRefCount());
+      assertEquals(1,
+          child1AclFeature.getRefCount(),
+          "Old Reference count should be 1");
+      assertEquals(1,
+          modifiedAclFeature.getRefCount(),
+          "New Reference count should be 1");
 
       // removing the new added ACL entry should refer to old ACLfeature
       AclEntry aclEntry = new AclEntry.Builder().setScope(ACCESS).setType(USER)
           .setName("user1").build();
       fs.removeAclEntries(child1, Lists.newArrayList(aclEntry));
-      assertEquals("Old Reference count should be 2 again", 2,
-          child1AclFeature.getRefCount());
-      assertEquals("New Reference count should be 0", 0,
-          modifiedAclFeature.getRefCount());
+      assertEquals(2,
+          child1AclFeature.getRefCount(),
+          "Old Reference count should be 2 again");
+      assertEquals(0,
+          modifiedAclFeature.getRefCount(),
+          "New Reference count should be 0");
     }
     {
       // verify the reference count on deletion of Acls
       fs.removeAcl(child2);
-      assertEquals("Reference count should be 1", 1,
-          child1AclFeature.getRefCount());
+      assertEquals(1,
+          child1AclFeature.getRefCount(),
+          "Reference count should be 1");
     }
     {
       // verify the reference count on deletion of dir with ACL
       fs.delete(child1, true);
-      assertEquals("Reference count should be 0", 0,
-          child1AclFeature.getRefCount());
+      assertEquals(0,
+          child1AclFeature.getRefCount(),
+          "Reference count should be 0");
     }
 
     Path file1 = new Path(p1, "file1");
@@ -1610,11 +1634,13 @@ public abstract class FSAclBaseTest {
       // Using same reference on creation of file
       fs.create(file1).close();
       fileAclFeature = getAclFeature(file1, cluster);
-      assertEquals("Reference count should be 1", 1,
-          fileAclFeature.getRefCount());
+      assertEquals(1,
+          fileAclFeature.getRefCount(),
+          "Reference count should be 1");
       fs.create(file2).close();
-      assertEquals("Reference count should be 2", 2,
-          fileAclFeature.getRefCount());
+      assertEquals(2,
+          fileAclFeature.getRefCount(),
+          "Reference count should be 2");
     }
     {
       // modifying ACLs on file should decrease the reference count on old
@@ -1624,34 +1650,35 @@ public abstract class FSAclBaseTest {
       // adding new ACL entry
       fs.modifyAclEntries(file1, aclSpec);
       AclFeature modifiedFileAcl = getAclFeature(file1, cluster);
-      assertEquals("Old Reference count should be 1", 1,
-          fileAclFeature.getRefCount());
-      assertEquals("New Reference count should be 1", 1,
-          modifiedFileAcl.getRefCount());
+      assertEquals(1,
+          fileAclFeature.getRefCount(),
+          "Old Reference count should be 1");
+      assertEquals(1,
+          modifiedFileAcl.getRefCount(),
+          "New Reference count should be 1");
 
       // removing the new added ACL entry should refer to old ACLfeature
       AclEntry aclEntry = new AclEntry.Builder().setScope(ACCESS).setType(USER)
           .setName("user1").build();
       fs.removeAclEntries(file1, Lists.newArrayList(aclEntry));
-      assertEquals("Old Reference count should be 2", 2,
-          fileAclFeature.getRefCount());
-      assertEquals("New Reference count should be 0", 0,
-          modifiedFileAcl.getRefCount());
+      assertEquals(2,
+          fileAclFeature.getRefCount(),
+          "Old Reference count should be 2");
+      assertEquals(0,
+          modifiedFileAcl.getRefCount(),
+          "New Reference count should be 0");
     }
     {
       // reference count should be decreased on deletion of files with ACLs
       fs.delete(file2, true);
-      assertEquals("Reference count should be decreased on delete of the file",
-          1, fileAclFeature.getRefCount());
+      assertEquals(1, fileAclFeature.getRefCount(), "Reference count should be decreased on delete of the file");
       fs.delete(file1, true);
-      assertEquals("Reference count should be decreased on delete of the file",
-          0, fileAclFeature.getRefCount());
+      assertEquals(0, fileAclFeature.getRefCount(), "Reference count should be decreased on delete of the file");
 
       // On reference count reaches 0 instance should be removed from map
       fs.create(file1).close();
       AclFeature newFileAclFeature = getAclFeature(file1, cluster);
-      assertNotSame("Instance should be different on reference count 0",
-          fileAclFeature, newFileAclFeature);
+      assertNotSame(fileAclFeature, newFileAclFeature, "Instance should be different on reference count 0");
       fileAclFeature = newFileAclFeature;
     }
     Map<AclFeature, Integer> restartRefCounter = new HashMap<>();
@@ -1670,12 +1697,10 @@ public abstract class FSAclBaseTest {
       cluster.restartNameNode(true);
       List<AclFeature> entriesAfterRestart = AclStorage.getUniqueAclFeatures()
           .getEntries();
-      assertEquals("Entries before and after should be same",
-          entriesBeforeRestart, entriesAfterRestart);
+      assertEquals(entriesBeforeRestart, entriesAfterRestart, "Entries before and after should be same");
       for (AclFeature aclFeature : entriesAfterRestart) {
         int before = restartRefCounter.get(aclFeature);
-        assertEquals("ReferenceCount After Restart should be doubled",
-            before * 2, aclFeature.getRefCount());
+        assertEquals(before * 2, aclFeature.getRefCount(), "ReferenceCount After Restart should be doubled");
       }
     }
     {
@@ -1688,12 +1713,10 @@ public abstract class FSAclBaseTest {
       cluster.restartNameNode(true);
       List<AclFeature> entriesAfterRestart = AclStorage.getUniqueAclFeatures()
           .getEntries();
-      assertEquals("Entries before and after should be same",
-          entriesBeforeRestart, entriesAfterRestart);
+      assertEquals(entriesBeforeRestart, entriesAfterRestart, "Entries before and after should be same");
       for (AclFeature aclFeature : entriesAfterRestart) {
         int before = restartRefCounter.get(aclFeature);
-        assertEquals("ReferenceCount After 2 Restarts should be tripled",
-            before * 3, aclFeature.getRefCount());
+        assertEquals(before * 3, aclFeature.getRefCount(), "ReferenceCount After 2 Restarts should be tripled");
       }
     }
   }

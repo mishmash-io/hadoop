@@ -19,6 +19,7 @@
 package org.apache.hadoop.hdfs.server.datanode;
 
 import java.io.*;
+import java.util.concurrent.TimeUnit;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -27,7 +28,9 @@ import org.apache.hadoop.hdfs.DFSConfigKeys;
 import org.apache.hadoop.hdfs.HdfsConfiguration;
 import org.apache.hadoop.hdfs.MiniDFSCluster;
 import org.apache.hadoop.hdfs.server.datanode.fsdataset.FsDatasetSpi;
-import org.junit.Test;
+
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.Timeout;
 
 /**
  * Test to verify that the DataNode Uuid is correctly initialized before
@@ -68,7 +71,8 @@ public class TestDataNodeInitStorage {
   }
 
 
-  @Test (timeout = 60000)
+  @Test
+  @Timeout(value = 60000, unit = TimeUnit.MILLISECONDS)
   public void testDataNodeInitStorage() throws Throwable {
     // Create configuration to use SimulatedFsDatasetVerifier#Factory.
     Configuration conf = new HdfsConfiguration();

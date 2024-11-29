@@ -33,14 +33,18 @@ import org.apache.hadoop.hdfs.MiniDFSNNTopology;
 import org.apache.hadoop.hdfs.server.namenode.FSNamesystem;
 import org.apache.hadoop.hdfs.server.namenode.NameNode;
 import org.apache.hadoop.io.IOUtils;
-import org.junit.Test;
 
 import javax.management.MBeanServer;
+
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.Timeout;
+
 import javax.management.ObjectName;
 import java.lang.management.ManagementFactory;
+import java.util.concurrent.TimeUnit;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /**
  * Make sure HA-related metrics are updated and reported appropriately.
@@ -50,7 +54,8 @@ public class TestHAMetrics {
   private static final Logger LOG =
       LoggerFactory.getLogger(TestHAMetrics.class);
 
-  @Test(timeout = 300000)
+  @Test
+  @Timeout(value = 300000, unit = TimeUnit.MILLISECONDS)
   public void testHAMetrics() throws Exception {
     Configuration conf = new Configuration();
     conf.setInt(DFSConfigKeys.DFS_HA_TAILEDITS_PERIOD_KEY, 1);
@@ -77,7 +82,7 @@ public class TestHAMetrics {
           new ObjectName("Hadoop:service=NameNode,name=NameNodeStatus");
       final Long ltt1 =
           (Long) mbs.getAttribute(mxbeanName, "LastHATransitionTime");
-      assertTrue("lastHATransitionTime should be > 0", ltt1 > 0);
+      assertTrue(ltt1 > 0, "lastHATransitionTime should be > 0");
       
       assertEquals("active", nn0.getHAState());
       assertEquals(0, nn0.getMillisSinceLastLoadedEdits());
@@ -87,7 +92,7 @@ public class TestHAMetrics {
       cluster.transitionToStandby(0);
       final Long ltt2 =
           (Long) mbs.getAttribute(mxbeanName, "LastHATransitionTime");
-      assertTrue("lastHATransitionTime should be > " + ltt1, ltt2 > ltt1);
+      assertTrue(ltt2 > ltt1, "lastHATransitionTime should be > " + ltt1);
       cluster.transitionToActive(1);
       
       assertEquals("standby", nn0.getHAState());
@@ -117,9 +122,9 @@ public class TestHAMetrics {
       long newMillisSinceLastLoadedEdits = nn0.getMillisSinceLastLoadedEdits();
       // Since we just waited for the standby to catch up, the time since we
       // last loaded edits should be very low.
-      assertTrue("expected " + millisSinceLastLoadedEdits + " > " +
-          newMillisSinceLastLoadedEdits,
-          millisSinceLastLoadedEdits > newMillisSinceLastLoadedEdits);
+      assertTrue(millisSinceLastLoadedEdits > newMillisSinceLastLoadedEdits,
+          "expected " + millisSinceLastLoadedEdits + " > " +
+          newMillisSinceLastLoadedEdits);
     } finally {
       IOUtils.cleanupWithLogger(LOG, fs);
       cluster.shutdown();

@@ -23,12 +23,7 @@ import static org.apache.hadoop.hdfs.DFSConfigKeys.DFS_NAMENODE_FILE_CLOSE_NUM_C
 import static org.apache.hadoop.hdfs.client.HdfsAdmin.TRASH_PERMISSION;
 import static org.apache.hadoop.hdfs.client.HdfsClientConfigKeys.DFS_CLIENT_CONTEXT;
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
+import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyBoolean;
 import static org.mockito.ArgumentMatchers.anyString;
@@ -60,6 +55,7 @@ import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutorService;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 import java.util.concurrent.atomic.AtomicReference;
 
@@ -131,8 +127,9 @@ import org.apache.hadoop.util.DataChecksum;
 import org.apache.hadoop.util.Time;
 import org.apache.hadoop.util.concurrent.HadoopExecutors;
 import org.apache.hadoop.util.functional.RemoteIterators;
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.Timeout;
 import org.mockito.InOrder;
 import org.mockito.Mockito;
 import org.slf4j.Logger;
@@ -233,13 +230,13 @@ public class TestDistributedFileSystem {
       types.add(OpenFilesIterator.OpenFilesType.ALL_OPEN_FILES);
       RemoteIterator<OpenFileEntry> listOpenFiles =
           fileSys.listOpenFiles(EnumSet.copyOf(types));
-      assertTrue("Two files should be open", listOpenFiles.hasNext());
+      assertTrue(listOpenFiles.hasNext(), "Two files should be open");
       int countOpenFiles = 0;
       while (listOpenFiles.hasNext()) {
         listOpenFiles.next();
         ++countOpenFiles;
       }
-      assertEquals("Mismatch of open files count", 2, countOpenFiles);
+      assertEquals(2, countOpenFiles, "Mismatch of open files count");
 
       // create another file, close it, and read it, so
       // the client gets a socket in its SocketCache
@@ -451,7 +448,7 @@ public class TestDistributedFileSystem {
         // success
         threw = true;
       }
-      assertTrue("Failed to throw IOE when seeking past end", threw);
+      assertTrue(threw, "Failed to throw IOE when seeking past end");
       input.close();
       threw = false;
       try {
@@ -460,7 +457,7 @@ public class TestDistributedFileSystem {
         //success
         threw = true;
       }
-      assertTrue("Failed to throw IOE when seeking after close", threw);
+      assertTrue(threw, "Failed to throw IOE when seeking after close");
       fileSys.close();
     }
     finally {
@@ -569,7 +566,7 @@ public class TestDistributedFileSystem {
         // Check to see if opening a non-existent file triggers a FNF
         FileSystem fs = cluster.getFileSystem();
         Path dir = new Path("/wrwelkj");
-        assertFalse("File should not exist for test.", fs.exists(dir));
+        assertFalse(fs.exists(dir), "File should not exist for test.");
 
         try {
           FSDataInputStream in = fs.open(dir);
@@ -577,8 +574,8 @@ public class TestDistributedFileSystem {
             in.close();
             fs.close();
           } finally {
-            assertTrue("Did not get a FileNotFoundException for non-existing" +
-                " file.", false);
+            assertTrue(false, "Did not get a FileNotFoundException for non-existing" +
+                " file.");
           }
         } catch (FileNotFoundException fnf) {
           // This is the proper exception to catch; move on.
@@ -628,11 +625,11 @@ public class TestDistributedFileSystem {
         fs.create(new Path("/tmp/nonEmptyDir/emptyFile")).close();
         try {
           fs.delete(new Path("/tmp/nonEmptyDir"), false);
-          Assert.fail("Expecting PathIsNotEmptyDirectoryException");
+          Assertions.fail("Expecting PathIsNotEmptyDirectoryException");
         } catch (PathIsNotEmptyDirectoryException ex) {
           // This is the proper exception to catch; move on.
         }
-        Assert.assertTrue(fs.exists(new Path("/test/nonEmptyDir")));
+        Assertions.assertTrue(fs.exists(new Path("/test/nonEmptyDir")));
         fs.delete(new Path("/tmp/nonEmptyDir"), true);
       }
 
@@ -1056,7 +1053,8 @@ public class TestDistributedFileSystem {
   }
 
   @SuppressWarnings("ThrowableResultOfMethodCallIgnored")
-  @Test (timeout = 180000)
+  @Test
+  @Timeout(value = 180000, unit = TimeUnit.MILLISECONDS)
   public void testConcurrentStatistics()
       throws IOException, InterruptedException {
     FileSystem.getStatistics(HdfsConstants.HDFS_URI_SCHEME,
@@ -1105,8 +1103,8 @@ public class TestDistributedFileSystem {
       // wait until all threads are done
       allDone.await();
 
-     assertNull("Child failed with exception " + childError.get(),
-          childError.get());
+     assertNull(childError.get(),
+          "Child failed with exception " + childError.get());
 
       checkStatistics(fs, 0, numThreads, 0);
       // check the single operation count stat
@@ -1118,8 +1116,7 @@ public class TestDistributedFileSystem {
            opCountIter.hasNext();) {
         final LongStatistic opCount = opCountIter.next();
         if (OpType.MKDIRS.getSymbol().equals(opCount.getName())) {
-          assertEquals("Unexpected op count from iterator!",
-              numThreads + oldMkdirOpCount, opCount.getValue());
+          assertEquals(numThreads + oldMkdirOpCount, opCount.getValue(), "Unexpected op count from iterator!");
         }
         LOG.info(opCount.getName() + "\t" + opCount.getValue());
       }
@@ -1237,8 +1234,7 @@ public class TestDistributedFileSystem {
   }
 
   public static void checkOpStatistics(OpType op, long count) {
-    assertEquals("Op " + op.getSymbol() + " has unexpected count!",
-        count, getOpStatistics(op));
+    assertEquals(count, getOpStatistics(op), "Op " + op.getSymbol() + " has unexpected count!");
   }
 
   public static long getOpStatistics(OpType op) {
@@ -1269,8 +1265,8 @@ public class TestDistributedFileSystem {
           "/test/TestNonExistingFile"));
       fail("Expecting FileNotFoundException");
     } catch (FileNotFoundException e) {
-      assertTrue("Not throwing the intended exception message", e.getMessage()
-          .contains("File does not exist: /test/TestNonExistingFile"));
+      assertTrue(e.getMessage()
+          .contains("File does not exist: /test/TestNonExistingFile"), "Not throwing the intended exception message");
     }
 
     try {
@@ -1279,8 +1275,8 @@ public class TestDistributedFileSystem {
       hdfs.getFileChecksum(path);
       fail("Expecting FileNotFoundException");
     } catch (FileNotFoundException e) {
-      assertTrue("Not throwing the intended exception message", e.getMessage()
-          .contains("Path is not a file: /test/TestExistingDir"));
+      assertTrue(e.getMessage()
+          .contains("Path is not a file: /test/TestExistingDir"), "Not throwing the intended exception message");
     }
 
     //webhdfs
@@ -1416,7 +1412,8 @@ public class TestDistributedFileSystem {
     }
   }
 
-  @Test(timeout=120000)
+  @Test
+  @Timeout(value = 120000, unit = TimeUnit.MILLISECONDS)
   public void testLocatedFileStatusStorageIdsTypes() throws Exception {
     final Configuration conf = getTestConfiguration();
     final MiniDFSCluster cluster = new MiniDFSCluster.Builder(conf)
@@ -1433,10 +1430,10 @@ public class TestDistributedFileSystem {
       DFSTestUtil.waitForReplication(fs, testFile, (short) repl, 30000);
       // Get the listing
       RemoteIterator<LocatedFileStatus> it = fs.listLocatedStatus(testFile);
-      assertTrue("Expected file to be present", it.hasNext());
+      assertTrue(it.hasNext(), "Expected file to be present");
       LocatedFileStatus stat = it.next();
       BlockLocation[] locs = stat.getBlockLocations();
-      assertEquals("Unexpected number of locations", numBlocks, locs.length);
+      assertEquals(numBlocks, locs.length, "Unexpected number of locations");
 
       Set<String> dnStorageIds = new HashSet<>();
       for (DataNode d : cluster.getDataNodes()) {
@@ -1453,15 +1450,15 @@ public class TestDistributedFileSystem {
         // Run it through a set to deduplicate, since there should be no dupes
         Set<String> storageIds = new HashSet<>();
         Collections.addAll(storageIds, ids);
-        assertEquals("Unexpected num storage ids", repl, storageIds.size());
+        assertEquals(repl, storageIds.size(), "Unexpected num storage ids");
         // Make sure these are all valid storage IDs
-        assertTrue("Unknown storage IDs found!", dnStorageIds.containsAll
-            (storageIds));
+        assertTrue(dnStorageIds.containsAll
+            (storageIds), "Unknown storage IDs found!");
         // Check storage types are the default, since we didn't set any
         StorageType[] types = loc.getStorageTypes();
-        assertEquals("Unexpected num storage types", repl, types.length);
+        assertEquals(repl, types.length, "Unexpected num storage types");
         for (StorageType t: types) {
-          assertEquals("Unexpected storage type", StorageType.DEFAULT, t);
+          assertEquals(StorageType.DEFAULT, t, "Unexpected storage type");
         }
       }
     } finally {
@@ -1527,7 +1524,8 @@ public class TestDistributedFileSystem {
     }
   }
 
-  @Test(timeout=60000)
+  @Test
+  @Timeout(value = 60000, unit = TimeUnit.MILLISECONDS)
   public void testFileCloseStatus() throws IOException {
     Configuration conf = getTestConfiguration();
     MiniDFSCluster cluster = new MiniDFSCluster.Builder(conf).build();
@@ -1539,9 +1537,9 @@ public class TestDistributedFileSystem {
       // write to file
       output.writeBytes("Some test data");
       output.flush();
-      assertFalse("File status should be open", fs.isFileClosed(file));
+      assertFalse(fs.isFileClosed(file), "File status should be open");
       output.close();
-      assertTrue("File status should be closed", fs.isFileClosed(file));
+      assertTrue(fs.isFileClosed(file), "File status should be closed");
     } finally {
       cluster.shutdown();
     }
@@ -1586,7 +1584,8 @@ public class TestDistributedFileSystem {
     }
   }
 
-  @Test(timeout=60000)
+  @Test
+  @Timeout(value = 60000, unit = TimeUnit.MILLISECONDS)
   public void testListFiles() throws IOException {
     Configuration conf = getTestConfiguration();
     MiniDFSCluster cluster = new MiniDFSCluster.Builder(conf).build();
@@ -1678,7 +1677,8 @@ public class TestDistributedFileSystem {
     }
   }
 
-  @Test(timeout=10000)
+  @Test
+  @Timeout(value = 10000, unit = TimeUnit.MILLISECONDS)
   public void testDFSClientPeerReadTimeout() throws IOException {
     final int timeout = 1000;
     final Configuration conf = getTestConfiguration();
@@ -1696,7 +1696,7 @@ public class TestDistributedFileSystem {
       long start = Time.now();
       try {
         peer.getInputStream().read();
-        Assert.fail("read should timeout");
+        Assertions.fail("read should timeout");
       } catch (SocketTimeoutException ste) {
         long delta = Time.now() - start;
         if (delta < timeout*0.9) {
@@ -1713,7 +1713,8 @@ public class TestDistributedFileSystem {
     }
   }
 
-  @Test(timeout=60000)
+  @Test
+  @Timeout(value = 60000, unit = TimeUnit.MILLISECONDS)
   public void testGetServerDefaults() throws IOException {
     Configuration conf = getTestConfiguration();
     MiniDFSCluster cluster = new MiniDFSCluster.Builder(conf).build();
@@ -1727,7 +1728,8 @@ public class TestDistributedFileSystem {
     }
   }
 
-  @Test(timeout=10000)
+  @Test
+  @Timeout(value = 10000, unit = TimeUnit.MILLISECONDS)
   public void testDFSClientPeerWriteTimeout() throws IOException {
     final int timeout = 1000;
     final Configuration conf = getTestConfiguration();
@@ -1747,7 +1749,7 @@ public class TestDistributedFileSystem {
         byte[] buf = new byte[10 * 1024 * 1024];
         peer.getOutputStream().write(buf);
         long delta = Time.now() - start;
-        Assert.fail("write finish in " + delta + " ms" + "but should timedout");
+        Assertions.fail("write finish in " + delta + " ms" + "but should timedout");
       } catch (SocketTimeoutException ste) {
         long delta = Time.now() - start;
 
@@ -1765,7 +1767,8 @@ public class TestDistributedFileSystem {
     }
   }
 
-  @Test(timeout = 30000)
+  @Test
+  @Timeout(value = 30000, unit = TimeUnit.MILLISECONDS)
   public void testTotalDfsUsed() throws Exception {
     Configuration conf = getTestConfiguration();
     MiniDFSCluster cluster = null;
@@ -1905,15 +1908,15 @@ public class TestDistributedFileSystem {
       } catch (FileNotFoundException e) {
         // As expected.
       }
-      assertFalse("parent directory should not be created",
-          fs.exists(new Path("/parent")));
+      assertFalse(fs.exists(new Path("/parent")),
+          "parent directory should not be created");
 
       try (FSDataOutputStream out = fs.createFile(nonParentFile).recursive()
         .build()) {
         out.write(1);
       }
-      assertTrue("parent directory has not been created",
-          fs.exists(new Path("/parent")));
+      assertTrue(fs.exists(new Path("/parent")),
+          "parent directory has not been created");
     }
   }
 
@@ -2107,7 +2110,7 @@ public class TestDistributedFileSystem {
       //test enable a policy that doesn't exist
       try {
         fs.enableErasureCodingPolicy("notExistECName");
-        Assert.fail("enable the policy that doesn't exist should fail");
+        Assertions.fail("enable the policy that doesn't exist should fail");
       } catch (Exception e) {
         GenericTestUtils.assertExceptionContains("does not exist", e);
         // pass
@@ -2116,7 +2119,7 @@ public class TestDistributedFileSystem {
       //test disable a policy that doesn't exist
       try {
         fs.disableErasureCodingPolicy("notExistECName");
-        Assert.fail("disable the policy that doesn't exist should fail");
+        Assertions.fail("disable the policy that doesn't exist should fail");
       } catch (Exception e) {
         GenericTestUtils.assertExceptionContains("does not exist", e);
         // pass
@@ -2178,7 +2181,7 @@ public class TestDistributedFileSystem {
           .getBlockLocations(file1.toUri().getPath(), 0, Long.MAX_VALUE);
       int numSSD = Collections.frequency(
           Arrays.asList(locations[0].getStorageTypes()), StorageType.SSD);
-      assertEquals("Number of SSD should be 1 but was : " + numSSD, 1, numSSD);
+      assertEquals(1, numSSD, "Number of SSD should be 1 but was : " + numSSD);
     }
   }
 

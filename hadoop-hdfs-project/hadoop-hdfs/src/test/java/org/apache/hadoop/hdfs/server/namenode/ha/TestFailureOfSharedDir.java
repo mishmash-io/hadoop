@@ -19,10 +19,7 @@ package org.apache.hadoop.hdfs.server.namenode.ha;
 
 import static org.apache.hadoop.hdfs.DFSConfigKeys.DFS_NAMENODE_RESOURCE_CHECK_INTERVAL_DEFAULT;
 import static org.apache.hadoop.hdfs.DFSConfigKeys.DFS_NAMENODE_RESOURCE_CHECK_INTERVAL_KEY;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
+import static org.junit.jupiter.api.Assertions.*;
 
 import java.io.File;
 import java.io.IOException;
@@ -43,9 +40,10 @@ import org.apache.hadoop.hdfs.server.namenode.NNStorage;
 import org.apache.hadoop.hdfs.server.namenode.NameNode;
 import org.apache.hadoop.test.GenericTestUtils;
 import org.apache.hadoop.util.ExitUtil.ExitException;
-import org.junit.Test;
 
 import org.apache.hadoop.thirdparty.com.google.common.base.Joiner;
+
+import org.junit.jupiter.api.Test;
 
 public class TestFailureOfSharedDir {
 
@@ -66,8 +64,8 @@ public class TestFailureOfSharedDir {
     conf.set(DFSConfigKeys.DFS_NAMENODE_SHARED_EDITS_DIR_KEY, bar.toString());
     Collection<URI> requiredEditsDirs = FSNamesystem
         .getRequiredNamespaceEditsDirs(conf); 
-    assertTrue(Joiner.on(",").join(requiredEditsDirs) + " does not contain " + bar,
-        requiredEditsDirs.contains(bar));
+    assertTrue(requiredEditsDirs.contains(bar),
+        Joiner.on(",").join(requiredEditsDirs) + " does not contain " + bar);
   }
 
   /**
@@ -115,10 +113,10 @@ public class TestFailureOfSharedDir {
         Joiner.on(",").join(localC, localB, localA));
     List<URI> dirs = FSNamesystem.getNamespaceEditsDirs(conf);
     assertEquals(
-        "Shared dirs should come first, then local dirs, in the order " +
-        "they were listed in the configuration.",
         Joiner.on(",").join(sharedA, localC, localB, localA),
-        Joiner.on(",").join(dirs));
+        Joiner.on(",").join(dirs),
+        "Shared dirs should come first, then local dirs, in the order " +
+        "they were listed in the configuration.");
   }
   
   /**
@@ -159,8 +157,8 @@ public class TestFailureOfSharedDir {
       NameNode nn1 = cluster.getNameNode(1);
       assertTrue(nn1.isStandbyState());
       assertFalse(
-          "StandBy NameNode should not go to SafeMode on resource unavailability",
-          nn1.isInSafeMode());
+          nn1.isInSafeMode(),
+          "StandBy NameNode should not go to SafeMode on resource unavailability");
 
       NameNode nn0 = cluster.getNameNode(0);
       try {

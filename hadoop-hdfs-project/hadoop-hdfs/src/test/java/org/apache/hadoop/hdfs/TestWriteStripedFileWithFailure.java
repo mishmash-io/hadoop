@@ -25,12 +25,15 @@ import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hdfs.protocol.ErasureCodingPolicy;
 import org.apache.hadoop.test.GenericTestUtils;
-import org.junit.Assert;
-import org.junit.Ignore;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Disabled;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.Timeout;
+
 import org.slf4j.event.Level;
 
 import java.io.IOException;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 
 public class TestWriteStripedFileWithFailure {
@@ -71,8 +74,9 @@ public class TestWriteStripedFileWithFailure {
 
   // Test writing file with some Datanodes failure
   // TODO: enable this test after HDFS-8704 and HDFS-9040
-  @Ignore
-  @Test(timeout = 300000)
+  @Disabled
+  @Test
+  @Timeout(value = 300000, unit = TimeUnit.MILLISECONDS)
   public void testWriteStripedFileWithDNFailure() throws IOException {
     for (int fileLength : fileLengths) {
       for (int dataDelNum = 1; dataDelNum <= parityBlocks; dataDelNum++) {
@@ -125,10 +129,10 @@ public class TestWriteStripedFileWithFailure {
 
     int[] dataDNFailureIndices = StripedFileTestUtil.randomArray(0, dataBlocks,
         dataDNFailureNum);
-    Assert.assertNotNull(dataDNFailureIndices);
+    Assertions.assertNotNull(dataDNFailureIndices);
     int[] parityDNFailureIndices = StripedFileTestUtil.randomArray(dataBlocks,
         dataBlocks + parityBlocks, parityDNFailureNum);
-    Assert.assertNotNull(parityDNFailureIndices);
+    Assertions.assertNotNull(parityDNFailureIndices);
 
     int[] failedDataNodes = new int[dataDNFailureNum + parityDNFailureNum];
     System.arraycopy(dataDNFailureIndices, 0, failedDataNodes,
@@ -150,7 +154,7 @@ public class TestWriteStripedFileWithFailure {
 
     // make sure the expected number of Datanode have been killed
     int dnFailureNum = dataDNFailureNum + parityDNFailureNum;
-    Assert.assertEquals(cluster.getDataNodes().size(), numDNs - dnFailureNum);
+    Assertions.assertEquals(cluster.getDataNodes().size(), numDNs - dnFailureNum);
 
     byte[] smallBuf = new byte[1024];
     byte[] largeBuf = new byte[fileLength + 100];

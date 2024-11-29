@@ -25,15 +25,20 @@ import org.apache.hadoop.hdfs.server.datanode.fsdataset.FsVolumeReference;
 import org.apache.hadoop.hdfs.server.datanode.fsdataset.FsVolumeSpi;
 import org.apache.hadoop.util.FakeTimer;
 import static org.hamcrest.CoreMatchers.is;
-import static org.junit.Assert.assertThat;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.TestName;
+import static org.hamcrest.MatcherAssert.assertThat;
+
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.TestInfo;
+import org.junit.jupiter.api.Timeout;
+
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 import org.mockito.stubbing.Answer;
 import org.slf4j.LoggerFactory;
 
+import java.lang.reflect.Method;
+import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicLong;
@@ -46,8 +51,8 @@ public class TestDatasetVolumeCheckerTimeout {
   public static final org.slf4j.Logger LOG =
       LoggerFactory.getLogger(TestDatasetVolumeCheckerTimeout.class);
 
-  @Rule
-  public TestName testName = new TestName();
+  
+  public String testName;
 
   static Configuration conf;
   private static final long DISK_CHECK_TIMEOUT = 10;
@@ -81,9 +86,10 @@ public class TestDatasetVolumeCheckerTimeout {
     return volume;
   }
 
-  @Test (timeout = 300000)
+  @Test
+  @Timeout(value = 300000, unit = TimeUnit.MILLISECONDS)
   public void testDiskCheckTimeout() throws Exception {
-    LOG.info("Executing {}", testName.getMethodName());
+    LOG.info("Executing {}", testName);
     final FsVolumeSpi volume = makeSlowVolume();
 
     final DatasetVolumeChecker checker =
@@ -117,5 +123,13 @@ public class TestDatasetVolumeCheckerTimeout {
     // Ensure that the check was invoked only once.
     verify(volume, times(1)).check(any());
     assertThat(numCallbackInvocations.get(), is(1L));
+  }
+
+  @BeforeEach
+  public void setup(TestInfo testInfo) {
+    Optional<Method> testMethod = testInfo.getTestMethod();
+    if (testMethod.isPresent()) {
+      this.testName = testMethod.get().getName();
+    }
   }
 }

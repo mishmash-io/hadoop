@@ -19,8 +19,14 @@ package org.apache.hadoop.hdfs.server.namenode.ha;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+
 import org.apache.hadoop.conf.Configuration;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import org.apache.hadoop.fs.FileSystem;
+
+import java.util.concurrent.TimeUnit;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hdfs.DFSConfigKeys;
 import org.apache.hadoop.hdfs.DFSTestUtil;
@@ -29,10 +35,10 @@ import org.apache.hadoop.hdfs.MiniDFSCluster;
 import org.apache.hadoop.hdfs.MiniDFSNNTopology;
 import org.apache.hadoop.hdfs.server.blockmanagement.BlockManagerTestUtil;
 import org.apache.hadoop.hdfs.server.namenode.NameNode;
-import org.junit.Test;
 import org.slf4j.event.Level;
 
-import static org.junit.Assert.assertEquals;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.Timeout;
 
 /**
  * Makes sure that standby doesn't do the unnecessary block management such as
@@ -49,7 +55,8 @@ public class TestStandbyBlockManagement {
     DFSTestUtil.setNameNodeLogLevel(Level.TRACE);
   }
 
-  @Test(timeout=60000)
+  @Test
+  @Timeout(value = 60000, unit = TimeUnit.MILLISECONDS)
   public void testInvalidateBlock() throws Exception {
     Configuration conf = new Configuration();
     HAUtil.setAllowStandbyReads(conf, true);
@@ -102,7 +109,8 @@ public class TestStandbyBlockManagement {
    * when set decrease replication.
    * @throws Exception
    */
-  @Test(timeout = 60000)
+  @Test
+  @Timeout(value = 60000, unit = TimeUnit.MILLISECONDS)
   public void testNotHandleRedundantReplica() throws Exception {
     Configuration conf = new Configuration();
     HAUtil.setAllowStandbyReads(conf, true);

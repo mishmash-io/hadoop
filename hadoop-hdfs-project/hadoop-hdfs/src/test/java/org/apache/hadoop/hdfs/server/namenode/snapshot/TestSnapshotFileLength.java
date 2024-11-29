@@ -20,21 +20,22 @@ package org.apache.hadoop.hdfs.server.namenode.snapshot;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.PrintStream;
+import java.util.concurrent.TimeUnit;
 
 import org.apache.hadoop.fs.FSDataOutputStream;
 import org.apache.hadoop.fs.FileChecksum;
 import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.hdfs.AppendTestUtil;
 import org.apache.hadoop.hdfs.DFSConfigKeys;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.Timeout;
+
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.not;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertThat;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.junit.jupiter.api.Assertions.*;
 
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FSDataInputStream;
@@ -60,7 +61,7 @@ public class TestSnapshotFileLength {
   private final String file1Name = "file1";
   private final String snapshot1 = "snapshot1";
 
-  @Before
+  @BeforeEach
   public void setUp() throws Exception {
     conf.setLong(DFSConfigKeys.DFS_NAMENODE_MIN_BLOCK_SIZE_KEY, BLOCKSIZE);
     conf.setInt(DFSConfigKeys.DFS_BYTES_PER_CHECKSUM_KEY, BLOCKSIZE);
@@ -70,7 +71,7 @@ public class TestSnapshotFileLength {
     hdfs = cluster.getFileSystem();
   }
 
-  @After
+  @AfterEach
   public void tearDown() throws Exception {
     if (cluster != null) {
       cluster.shutdown();
@@ -84,7 +85,8 @@ public class TestSnapshotFileLength {
    * when accessing it via a snapshot path.
    *
    */
-  @Test (timeout=300000)
+  @Test
+  @Timeout(value = 300000, unit = TimeUnit.MILLISECONDS)
   public void testSnapshotfileLength() throws Exception {
     hdfs.mkdirs(sub);
 
@@ -174,7 +176,8 @@ public class TestSnapshotFileLength {
    *  cannot read a file beyond snapshot file length
    * @throws Exception
    */
-  @Test (timeout = 600000)
+  @Test
+  @Timeout(value = 600000, unit = TimeUnit.MILLISECONDS)
   public void testSnapshotFileLengthWithCatCommand() throws Exception {
 
     FSDataInputStream fis = null;
@@ -194,10 +197,10 @@ public class TestSnapshotFileLength {
 
     // Make sure we can read the entire file via its non-snapshot path.
     fileStatus = hdfs.getFileStatus(file1);
-    assertEquals("Unexpected file length", BLOCKSIZE * 2, fileStatus.getLen());
+    assertEquals(BLOCKSIZE * 2, fileStatus.getLen(), "Unexpected file length");
     fis = hdfs.open(file1);
     bytesRead = fis.read(buffer, 0, buffer.length);
-    assertEquals("Unexpected # bytes read", BLOCKSIZE * 2, bytesRead);
+    assertEquals(BLOCKSIZE * 2, bytesRead, "Unexpected # bytes read");
     fis.close();
 
     Path file1snap1 =
@@ -207,7 +210,7 @@ public class TestSnapshotFileLength {
     assertEquals(fileStatus.getLen(), BLOCKSIZE);
     // Make sure we can only read up to the snapshot length.
     bytesRead = fis.read(buffer, 0, buffer.length);
-    assertEquals("Unexpected # bytes read", BLOCKSIZE, bytesRead);
+    assertEquals(BLOCKSIZE, bytesRead, "Unexpected # bytes read");
     fis.close();
 
     PrintStream outBackup = System.out;
@@ -220,7 +223,7 @@ public class TestSnapshotFileLength {
     try {
       ToolRunner.run(conf, shell, new String[] { "-cat",
       "/TestSnapshotFileLength/sub1/.snapshot/snapshot1/file1" });
-      assertEquals("Unexpected # bytes from -cat", BLOCKSIZE, bao.size());
+      assertEquals(BLOCKSIZE, bao.size(), "Unexpected # bytes from -cat");
     } finally {
       System.setOut(outBackup);
       System.setErr(errBackup);

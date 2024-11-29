@@ -17,10 +17,11 @@
  */
 package org.apache.hadoop.hdfs;
 
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.io.IOException;
 import java.util.Arrays;
+import java.util.concurrent.TimeUnit;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -30,7 +31,9 @@ import org.apache.hadoop.fs.FSDataInputStream;
 import org.apache.hadoop.fs.FSDataOutputStream;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
-import org.junit.Test;
+
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.Timeout;
 
 /**
  * This class tests that blocks can be larger than 2GB
@@ -135,13 +138,13 @@ public class TestLargeBlock {
       if (verifyData) {
         // verify data read
         if (thisread == readSize) {
-          assertTrue("file is corrupted at or after byte " +
-              (fileSize - bytesToRead), Arrays.equals(b, compb));
+          assertTrue(Arrays.equals(b, compb), "file is corrupted at or after byte " +
+              (fileSize - bytesToRead));
         } else {
           // b was only partially filled by last read
           for (int k = 0; k < thisread; k++) {
-            assertTrue("file is corrupted at or after byte " +
-                (fileSize - bytesToRead), b[k] == compb[k]);
+            assertTrue(b[k] == compb[k], "file is corrupted at or after byte " +
+                (fileSize - bytesToRead));
           }
         }
       }
@@ -153,14 +156,15 @@ public class TestLargeBlock {
     }
     stm.close();
   }
- 
+
   /**
    * Test for block size of 2GB + 512B. This test can take a rather long time to
    * complete on Windows (reading the file back can be slow) so we use a larger
    * timeout here.
    * @throws IOException in case of errors
    */
-  @Test (timeout = 1800000)
+  @Test
+  @Timeout(value = 1800000, unit = TimeUnit.MILLISECONDS)
   public void testLargeBlockSize() throws IOException {
     final long blockSize = 2L * 1024L * 1024L * 1024L + 512L; // 2GB + 512B
     runTest(blockSize);
@@ -190,8 +194,8 @@ public class TestLargeBlock {
           " blocksize " + blockSize);
 
       // verify that file exists in FS namespace
-      assertTrue(file1 + " should be a file", 
-                  fs.getFileStatus(file1).isFile());
+      assertTrue(fs.getFileStatus(file1).isFile(), 
+                  file1 + " should be a file");
 
       // write to file
       writeFile(stm, fileSize);
@@ -206,9 +210,9 @@ public class TestLargeBlock {
 
       // verify that file size has changed
       long len = fs.getFileStatus(file1).getLen();
-      assertTrue(file1 + " should be of size " +  fileSize +
-                 " but found to be of size " + len, 
-                  len == fileSize);
+      assertTrue(len == fileSize, 
+                  file1 + " should be of size " +  fileSize +
+                 " but found to be of size " + len);
 
     } finally {
       cluster.shutdown();

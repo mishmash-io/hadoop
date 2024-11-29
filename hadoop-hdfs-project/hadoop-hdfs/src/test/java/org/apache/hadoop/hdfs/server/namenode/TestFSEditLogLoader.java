@@ -18,10 +18,7 @@
 package org.apache.hadoop.hdfs.server.namenode;
 
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
+import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.spy;
@@ -68,17 +65,14 @@ import org.apache.hadoop.test.GenericTestUtils.LogCapturer;
 import org.apache.hadoop.test.PathUtils;
 import org.apache.hadoop.util.FakeTimer;
 import org.slf4j.event.Level;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.junit.runners.Parameterized;
-import org.junit.runners.Parameterized.Parameters;
+
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.MethodSource;
 
 import org.apache.hadoop.thirdparty.com.google.common.collect.Maps;
 import org.apache.hadoop.thirdparty.com.google.common.io.Files;
 
-@RunWith(Parameterized.class)
 public class TestFSEditLogLoader {
-  @Parameters
   public static Collection<Object[]> data() {
     Collection<Object[]> params = new ArrayList<Object[]>();
     params.add(new Object[]{ Boolean.FALSE });
@@ -87,7 +81,8 @@ public class TestFSEditLogLoader {
   }
 
   private static boolean useAsyncEditLog;
-  public TestFSEditLogLoader(Boolean async) {
+
+  public void initTestFSEditLogLoader(Boolean async) {
     useAsyncEditLog = async;
   }
 
@@ -111,8 +106,10 @@ public class TestFSEditLogLoader {
   private final ErasureCodingPolicy testECPolicy
       = StripedFileTestUtil.getDefaultECPolicy();
 
-  @Test
-  public void testDisplayRecentEditLogOpCodes() throws IOException {
+  @MethodSource("data")
+  @ParameterizedTest
+  public void testDisplayRecentEditLogOpCodes(Boolean async) throws IOException {
+    initTestFSEditLogLoader(async);
     // start a cluster
     Configuration conf = getConf();
     MiniDFSCluster cluster = null;
@@ -131,7 +128,7 @@ public class TestFSEditLogLoader {
     cluster.shutdown();
 
     File editFile = FSImageTestUtil.findLatestEditsLog(sd).getFile();
-    assertTrue("Should exist: " + editFile, editFile.exists());
+    assertTrue(editFile.exists(), "Should exist: " + editFile);
 
     // Corrupt the edits file.
     long fileLen = editFile.length();
@@ -151,18 +148,20 @@ public class TestFSEditLogLoader {
           .enableManagedDfsDirsRedundancy(false).format(false).build();
       fail("should not be able to start");
     } catch (IOException e) {
-      assertTrue("error message contains opcodes message",
-          e.getMessage().matches(bld.toString()));
+      assertTrue(e.getMessage().matches(bld.toString()),
+          "error message contains opcodes message");
     }
   }
-  
+
   /**
    * Test that, if the NN restarts with a new minimum replication,
    * any files created with the old replication count will get
    * automatically bumped up to the new minimum upon restart.
    */
-  @Test
-  public void testReplicationAdjusted() throws Exception {
+  @MethodSource("data")
+  @ParameterizedTest
+  public void testReplicationAdjusted(Boolean async) throws Exception {
+    initTestFSEditLogLoader(async);
     // start a cluster 
     Configuration conf = getConf();
     // Replicate and heartbeat fast to shave a few seconds off test
@@ -266,8 +265,10 @@ public class TestFSEditLogLoader {
     }
   }
 
-  @Test
-  public void testStreamLimiter() throws IOException {
+  @MethodSource("data")
+  @ParameterizedTest
+  public void testStreamLimiter(Boolean async) throws IOException {
+    initTestFSEditLogLoader(async);
     final File LIMITER_TEST_FILE = new File(TEST_DIR, "limiter.test");
     
     FileOutputStream fos = new FileOutputStream(LIMITER_TEST_FILE);
@@ -331,7 +332,7 @@ public class TestFSEditLogLoader {
       // disable that here.
       doNothing().when(spyLog).endCurrentLogSegment(true);
       spyLog.openForWrite(NameNodeLayoutVersion.CURRENT_LAYOUT_VERSION);
-      assertTrue("should exist: " + inProgressFile, inProgressFile.exists());
+      assertTrue(inProgressFile.exists(), "should exist: " + inProgressFile);
       
       for (int i = 0; i < numTx; i++) {
         long trueOffset = getNonTrailerLength(inProgressFile);
@@ -351,8 +352,10 @@ public class TestFSEditLogLoader {
     return inProgressFile;
   }
 
-  @Test
-  public void testValidateEditLogWithCorruptHeader() throws IOException {
+  @MethodSource("data")
+  @ParameterizedTest
+  public void testValidateEditLogWithCorruptHeader(Boolean async) throws IOException {
+    initTestFSEditLogLoader(async);
     File testDir = new File(TEST_DIR, "testValidateEditLogWithCorruptHeader");
     SortedMap<Long, Long> offsetToTxId = Maps.newTreeMap();
     File logFile = prepareUnfinalizedTestEditLog(testDir, 2, offsetToTxId);
@@ -368,8 +371,10 @@ public class TestFSEditLogLoader {
     assertTrue(validation.hasCorruptHeader());
   }
 
-  @Test
-  public void testValidateEditLogWithCorruptBody() throws IOException {
+  @MethodSource("data")
+  @ParameterizedTest
+  public void testValidateEditLogWithCorruptBody(Boolean async) throws IOException {
+    initTestFSEditLogLoader(async);
     File testDir = new File(TEST_DIR, "testValidateEditLogWithCorruptBody");
     SortedMap<Long, Long> offsetToTxId = Maps.newTreeMap();
     final int NUM_TXNS = 20;
@@ -396,8 +401,7 @@ public class TestFSEditLogLoader {
           Long.MAX_VALUE, true);
       long expectedEndTxId = (txId == (NUM_TXNS + 1)) ?
           NUM_TXNS : (NUM_TXNS + 1);
-      assertEquals("Failed when corrupting txn opcode at " + txOffset,
-          expectedEndTxId, validation.getEndTxId());
+      assertEquals(expectedEndTxId, validation.getEndTxId(), "Failed when corrupting txn opcode at " + txOffset);
       assertTrue(!validation.hasCorruptHeader());
     }
 
@@ -414,14 +418,16 @@ public class TestFSEditLogLoader {
           Long.MAX_VALUE, true);
       long expectedEndTxId = (txId == 0) ?
           HdfsServerConstants.INVALID_TXID : (txId - 1);
-      assertEquals("Failed when corrupting txid " + txId + " txn opcode " +
-        "at " + txOffset, expectedEndTxId, validation.getEndTxId());
+      assertEquals(expectedEndTxId, validation.getEndTxId(), "Failed when corrupting txid " + txId + " txn opcode " +
+        "at " + txOffset);
       assertTrue(!validation.hasCorruptHeader());
     }
   }
 
-  @Test
-  public void testValidateEmptyEditLog() throws IOException {
+  @MethodSource("data")
+  @ParameterizedTest
+  public void testValidateEmptyEditLog(Boolean async) throws IOException {
+    initTestFSEditLogLoader(async);
     File testDir = new File(TEST_DIR, "testValidateEmptyEditLog");
     SortedMap<Long, Long> offsetToTxId = Maps.newTreeMap();
     File logFile = prepareUnfinalizedTestEditLog(testDir, 0, offsetToTxId);
@@ -446,25 +452,27 @@ public class TestFSEditLogLoader {
     return byteToEnum.get(opCode);
   }
 
-  @Test
-  public void testFSEditLogOpCodes() throws IOException {
+  @MethodSource("data")
+  @ParameterizedTest
+  public void testFSEditLogOpCodes(Boolean async) throws IOException {
+    initTestFSEditLogLoader(async);
     //try all codes
     for(FSEditLogOpCodes c : FSEditLogOpCodes.values()) {
       final byte code = c.getOpCode();
-      assertEquals("c=" + c + ", code=" + code,
-          c, FSEditLogOpCodes.fromByte(code));
+      assertEquals(c, FSEditLogOpCodes.fromByte(code), "c=" + c + ", code=" + code);
     }
 
     //try all byte values
     for(int b = 0; b < (1 << Byte.SIZE); b++) {
       final byte code = (byte)b;
-      assertEquals("b=" + b + ", code=" + code,
-          fromByte(code), FSEditLogOpCodes.fromByte(code));
+      assertEquals(fromByte(code), FSEditLogOpCodes.fromByte(code), "b=" + b + ", code=" + code);
     }
   }
 
-  @Test
-  public void testAddNewStripedBlock() throws IOException{
+  @MethodSource("data")
+  @ParameterizedTest
+  public void testAddNewStripedBlock(Boolean async) throws IOException {
+    initTestFSEditLogLoader(async);
     // start a cluster
     Configuration conf = new HdfsConfiguration();
     MiniDFSCluster cluster = null;
@@ -537,8 +545,10 @@ public class TestFSEditLogLoader {
     }
   }
 
-  @Test
-  public void testUpdateStripedBlocks() throws IOException{
+  @MethodSource("data")
+  @ParameterizedTest
+  public void testUpdateStripedBlocks(Boolean async) throws IOException {
+    initTestFSEditLogLoader(async);
     // start a cluster
     Configuration conf = new HdfsConfiguration();
     MiniDFSCluster cluster = null;
@@ -619,8 +629,10 @@ public class TestFSEditLogLoader {
     }
   }
 
-  @Test
-  public void testHasNonEcBlockUsingStripedIDForAddBlock() throws IOException{
+  @MethodSource("data")
+  @ParameterizedTest
+  public void testHasNonEcBlockUsingStripedIDForAddBlock(Boolean async) throws IOException {
+    initTestFSEditLogLoader(async);
     // start a cluster
     Configuration conf = new HdfsConfiguration();
     MiniDFSCluster cluster = null;
@@ -667,9 +679,11 @@ public class TestFSEditLogLoader {
     }
   }
 
-  @Test
-  public void testHasNonEcBlockUsingStripedIDForUpdateBlocks()
-      throws IOException{
+  @MethodSource("data")
+  @ParameterizedTest
+  public void testHasNonEcBlockUsingStripedIDForUpdateBlocks(Boolean async)
+      throws IOException {
+    initTestFSEditLogLoader(async);
     // start a cluster
     Configuration conf = new HdfsConfiguration();
     MiniDFSCluster cluster = null;
@@ -722,8 +736,10 @@ public class TestFSEditLogLoader {
     }
   }
 
-  @Test
-  public void testErasureCodingPolicyOperations() throws IOException {
+  @MethodSource("data")
+  @ParameterizedTest
+  public void testErasureCodingPolicyOperations(Boolean async) throws IOException {
+    initTestFSEditLogLoader(async);
     // start a cluster
     Configuration conf = new HdfsConfiguration();
     final int blockSize = 16 * 1024;
@@ -806,8 +822,10 @@ public class TestFSEditLogLoader {
     }
   }
 
-  @Test
-  public void testLoadFSEditLogThrottling() throws Exception {
+  @MethodSource("data")
+  @ParameterizedTest
+  public void testLoadFSEditLogThrottling(Boolean async) throws Exception {
+    initTestFSEditLogLoader(async);
     FSNamesystem namesystem = mock(FSNamesystem.class);
     namesystem.dir = mock(FSDirectory.class);
 

@@ -20,9 +20,7 @@ package org.apache.hadoop.hdfs.server.namenode;
 import static org.apache.hadoop.hdfs.server.namenode.TestEditLog.TXNS_PER_FAIL;
 import static org.apache.hadoop.hdfs.server.namenode.TestEditLog.TXNS_PER_ROLL;
 import static org.apache.hadoop.hdfs.server.namenode.TestEditLog.setupEdits;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.*;
 
 import java.io.File;
 import java.io.FilenameFilter;
@@ -44,9 +42,8 @@ import org.apache.hadoop.hdfs.server.namenode.NNStorage.NameNodeDirType;
 import org.apache.hadoop.hdfs.server.namenode.TestEditLog.AbortSpec;
 import org.apache.hadoop.io.IOUtils;
 import org.apache.hadoop.util.NativeCodeLoader;
-import org.junit.Before;
-import org.junit.Rule;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.junit.rules.ExpectedException;
 
 import org.apache.hadoop.thirdparty.com.google.common.base.Joiner;
@@ -64,10 +61,7 @@ public class TestFileJournalManager {
     EditLogFileOutputStream.setShouldSkipFsyncForTesting(true);
   }
 
-  @Rule
-  public ExpectedException exception = ExpectedException.none();
-
-  @Before
+  @BeforeEach
   public void setUp() {
     conf = new Configuration();
   }
@@ -237,23 +231,25 @@ public class TestFileJournalManager {
     raf.close();
   }
   
-  @Test(expected=IllegalStateException.class)
-  public void testFinalizeErrorReportedToNNStorage() throws IOException, InterruptedException {
-    File f = new File(TestEditLog.TEST_DIR + "/filejournaltestError");
-    // abort after 10th roll
-    NNStorage storage = setupEdits(Collections.<URI>singletonList(f.toURI()),
-                                   10, new AbortSpec(10, 0));
-    StorageDirectory sd = storage.dirIterator(NameNodeDirType.EDITS).next();
+  @Test
+  public void testFinalizeErrorReportedToNNStorage() {
+    assertThrows(IllegalStateException.class, () -> {
+      File f = new File(TestEditLog.TEST_DIR + "/filejournaltestError");
+      // abort after 10th roll
+      NNStorage storage = setupEdits(Collections.<URI>singletonList(f.toURI()),
+          10, new AbortSpec(10, 0));
+      StorageDirectory sd = storage.dirIterator(NameNodeDirType.EDITS).next();
 
-    FileJournalManager jm = new FileJournalManager(conf, sd, storage);
-    String sdRootPath = sd.getRoot().getAbsolutePath();
-    FileUtil.chmod(sdRootPath, "-w", true);
-    try {
-      jm.finalizeLogSegment(0, 1);
-    } finally {
-      FileUtil.chmod(sdRootPath, "+w", true);
-      assertTrue(storage.getRemovedStorageDirs().contains(sd));
-    }
+      FileJournalManager jm = new FileJournalManager(conf, sd, storage);
+      String sdRootPath = sd.getRoot().getAbsolutePath();
+      FileUtil.chmod(sdRootPath, "-w", true);
+      try {
+        jm.finalizeLogSegment(0, 1);
+      } finally {
+        FileUtil.chmod(sdRootPath, "+w", true);
+        assertTrue(storage.getRemovedStorageDirs().contains(sd));
+      }
+    });
   }
 
   /** 
@@ -387,17 +383,18 @@ public class TestFileJournalManager {
     assertEquals("[101,200],[1001,1100]", getLogsAsString(fjm, 101));
     assertEquals("[101,200],[1001,1100]", getLogsAsString(fjm, 150));
     assertEquals("[1001,1100]", getLogsAsString(fjm, 201));
-    assertEquals("Asking for a newer log than exists should return empty list",
-        "", getLogsAsString(fjm, 9999));
+    assertEquals("", getLogsAsString(fjm, 9999), "Asking for a newer log than exists should return empty list");
   }
 
   /**
    * tests that passing an invalid dir to matchEditLogs throws IOException 
    */
-  @Test(expected = IOException.class)
-  public void testMatchEditLogInvalidDirThrowsIOException() throws IOException {
-    File badDir = new File("does not exist");
-    FileJournalManager.matchEditLogs(badDir);
+  @Test
+  public void testMatchEditLogInvalidDirThrowsIOException() {
+    assertThrows(IOException.class, () -> {
+      File badDir = new File("does not exist");
+      FileJournalManager.matchEditLogs(badDir);
+    });
   }
   
   private static EditLogInputStream getJournalInputStream(FileJournalManager jm,
@@ -446,7 +443,7 @@ public class TestFileJournalManager {
     EditLogInputStream elis = getJournalInputStream(jm, 5, true);
     try {
       FSEditLogOp op = elis.readOp();
-      assertEquals("read unexpected op", op.getTransactionId(), 5);
+      assertEquals(op.getTransactionId(), 5, "read unexpected op");
     } finally {
       IOUtils.cleanupWithLogger(LOG, elis);
     }
@@ -488,28 +485,31 @@ public class TestFileJournalManager {
    * failure, which can be useful for troubleshooting.
    */
   @Test
-  public void testDoPreUpgradeIOError() throws IOException {
-    File storageDir = new File(TestEditLog.TEST_DIR, "preupgradeioerror");
-    List<URI> editUris = Collections.singletonList(storageDir.toURI());
-    NNStorage storage = setupEdits(editUris, 5);
-    StorageDirectory sd = storage.dirIterator(NameNodeDirType.EDITS).next();
-    assertNotNull(sd);
-    // Change storage directory so that renaming current to previous.tmp fails.
-    FileUtil.setWritable(storageDir, false);
-    FileJournalManager jm = null;
-    try {
-      jm = new FileJournalManager(conf, sd, storage);
-      exception.expect(IOException.class);
-      if (NativeCodeLoader.isNativeCodeLoaded()) {
-        exception.expectMessage("failure in native rename");
+  public void testDoPreUpgradeIOError() {
+    Throwable exception = assertThrows(IOException.class, () -> {
+      File storageDir = new File(TestEditLog.TEST_DIR, "preupgradeioerror");
+      List<URI> editUris = Collections.singletonList(storageDir.toURI());
+      NNStorage storage = setupEdits(editUris, 5);
+      StorageDirectory sd = storage.dirIterator(NameNodeDirType.EDITS).next();
+      assertNotNull(sd);
+      // Change storage directory so that renaming current to previous.tmp fails.
+      FileUtil.setWritable(storageDir, false);
+      FileJournalManager jm = null;
+      try {
+        jm = new FileJournalManager(conf, sd, storage);
+        exception.expect(IOException.class);
+        if (NativeCodeLoader.isNativeCodeLoaded()) {
+          exception.expectMessage("failure in native rename");
+        }
+        jm.doPreUpgrade();
+      } finally {
+        IOUtils.cleanupWithLogger(LOG, jm);
+        // Restore permissions on storage directory and make sure we can delete.
+        FileUtil.setWritable(storageDir, true);
+        FileUtil.fullyDelete(storageDir);
       }
-      jm.doPreUpgrade();
-    } finally {
-      IOUtils.cleanupWithLogger(LOG, jm);
-      // Restore permissions on storage directory and make sure we can delete.
-      FileUtil.setWritable(storageDir, true);
-      FileUtil.fullyDelete(storageDir);
-    }
+    });
+    assertTrue(exception.getMessage().contains("failure in native rename"));
   }
 
   private static String getLogsAsString(

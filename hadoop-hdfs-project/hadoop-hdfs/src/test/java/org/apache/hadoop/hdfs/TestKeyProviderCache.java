@@ -25,8 +25,8 @@ import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.crypto.key.KeyProvider;
 import org.apache.hadoop.crypto.key.KeyProviderFactory;
 import org.apache.hadoop.fs.CommonConfigurationKeysPublic;
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 
 public class TestKeyProviderCache {
 
@@ -104,35 +104,34 @@ public class TestKeyProviderCache {
         "dummy://foo:bar@test_provider1");
     KeyProvider keyProvider1 = kpCache.get(conf,
         getKeyProviderUriFromConf(conf));
-    Assert.assertNotNull("Returned Key Provider is null !!", keyProvider1);
+    Assertions.assertNotNull(keyProvider1, "Returned Key Provider is null !!");
 
     conf.set(CommonConfigurationKeysPublic.HADOOP_SECURITY_KEY_PROVIDER_PATH,
         "dummy://foo:bar@test_provider1");
     KeyProvider keyProvider2 = kpCache.get(conf,
         getKeyProviderUriFromConf(conf));
 
-    Assert.assertTrue("Different KeyProviders returned !!",
-        keyProvider1 == keyProvider2);
+    Assertions.assertTrue(keyProvider1 == keyProvider2,
+        "Different KeyProviders returned !!");
 
     conf.set(CommonConfigurationKeysPublic.HADOOP_SECURITY_KEY_PROVIDER_PATH,
         "dummy://test_provider3");
     KeyProvider keyProvider3 = kpCache.get(conf,
         getKeyProviderUriFromConf(conf));
 
-    Assert.assertFalse("Same KeyProviders returned !!",
-        keyProvider1 == keyProvider3);
+    Assertions.assertFalse(keyProvider1 == keyProvider3,
+        "Same KeyProviders returned !!");
 
     conf.set(CommonConfigurationKeysPublic.HADOOP_SECURITY_KEY_PROVIDER_PATH,
         "dummy://hello:there@test_provider1");
     KeyProvider keyProvider4 = kpCache.get(conf,
         getKeyProviderUriFromConf(conf));
 
-    Assert.assertFalse("Same KeyProviders returned !!",
-        keyProvider1 == keyProvider4);
+    Assertions.assertFalse(keyProvider1 == keyProvider4,
+        "Same KeyProviders returned !!");
 
     kpCache.invalidateCache();
-    Assert.assertEquals("Expected number of closing calls doesn't match",
-        3, DummyKeyProvider.CLOSE_CALL_COUNT);
+    Assertions.assertEquals(3, DummyKeyProvider.CLOSE_CALL_COUNT, "Expected number of closing calls doesn't match");
   }
 
   private URI getKeyProviderUriFromConf(Configuration conf) {

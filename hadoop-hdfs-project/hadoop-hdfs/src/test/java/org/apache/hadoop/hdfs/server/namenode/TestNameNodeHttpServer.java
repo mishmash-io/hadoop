@@ -33,15 +33,12 @@ import org.apache.hadoop.http.HttpConfig.Policy;
 import org.apache.hadoop.net.NetUtils;
 import org.apache.hadoop.security.ssl.KeyStoreTestUtil;
 import org.apache.hadoop.test.GenericTestUtils;
-import org.junit.AfterClass;
-import org.junit.Assert;
-import org.junit.BeforeClass;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.junit.runners.Parameterized;
-import org.junit.runners.Parameterized.Parameters;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.MethodSource;
 
-@RunWith(value = Parameterized.class)
 public class TestNameNodeHttpServer {
   private static final String BASEDIR = GenericTestUtils
       .getTempPath(TestNameNodeHttpServer.class.getSimpleName());
@@ -50,21 +47,20 @@ public class TestNameNodeHttpServer {
   private static Configuration conf;
   private static URLConnectionFactory connectionFactory;
 
-  @Parameters
   public static Collection<Object[]> policy() {
     Object[][] params = new Object[][] { { HttpConfig.Policy.HTTP_ONLY },
         { HttpConfig.Policy.HTTPS_ONLY }, { HttpConfig.Policy.HTTP_AND_HTTPS } };
     return Arrays.asList(params);
   }
 
-  private final HttpConfig.Policy policy;
+  private HttpConfig.Policy policy;
 
-  public TestNameNodeHttpServer(Policy policy) {
+  public void initTestNameNodeHttpServer(Policy policy) {
     super();
     this.policy = policy;
   }
 
-  @BeforeClass
+  @BeforeAll
   public static void setUp() throws Exception {
     File base = new File(BASEDIR);
     FileUtil.fullyDelete(base);
@@ -81,14 +77,16 @@ public class TestNameNodeHttpServer {
         KeyStoreTestUtil.getServerSSLConfigFileName());
   }
 
-  @AfterClass
+  @AfterAll
   public static void tearDown() throws Exception {
     FileUtil.fullyDelete(new File(BASEDIR));
     KeyStoreTestUtil.cleanupSSLConfig(keystoresDir, sslConfDir);
   }
 
-  @Test
-  public void testHttpPolicy() throws Exception {
+  @MethodSource("policy")
+  @ParameterizedTest
+  public void testHttpPolicy(Policy policy) throws Exception {
+    initTestNameNodeHttpServer(policy);
     conf.set(DFSConfigKeys.DFS_HTTP_POLICY_KEY, policy.name());
     conf.set(DFSConfigKeys.DFS_NAMENODE_HTTPS_ADDRESS_KEY, "localhost:0");
 
@@ -98,14 +96,14 @@ public class TestNameNodeHttpServer {
       server = new NameNodeHttpServer(conf, null, addr);
       server.start();
 
-      Assert.assertTrue(implies(policy.isHttpEnabled(),
+      Assertions.assertTrue(implies(policy.isHttpEnabled(),
           canAccess("http", server.getHttpAddress())));
-      Assert.assertTrue(implies(!policy.isHttpEnabled(),
+      Assertions.assertTrue(implies(!policy.isHttpEnabled(),
           server.getHttpAddress() == null));
 
-      Assert.assertTrue(implies(policy.isHttpsEnabled(),
+      Assertions.assertTrue(implies(policy.isHttpsEnabled(),
           canAccess("https", server.getHttpsAddress())));
-      Assert.assertTrue(implies(!policy.isHttpsEnabled(),
+      Assertions.assertTrue(implies(!policy.isHttpsEnabled(),
           server.getHttpsAddress() == null));
 
     } finally {

@@ -18,11 +18,12 @@
 package org.apache.hadoop.hdfs.tools;
 
 import static org.apache.hadoop.hdfs.DFSConfigKeys.DFS_NAMENODE_SERVICE_RPC_BIND_HOST_KEY;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.io.ByteArrayInputStream;
 import java.io.InputStream;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 
 import org.apache.hadoop.conf.Configuration;
@@ -52,9 +53,10 @@ import org.apache.hadoop.test.GenericTestUtils;
 import org.apache.hadoop.test.LambdaTestUtils;
 import org.apache.hadoop.test.MultithreadedTestUtil.TestContext;
 import org.apache.hadoop.test.MultithreadedTestUtil.TestingThread;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.Timeout;
 
 import java.util.function.Supplier;
 
@@ -72,7 +74,7 @@ public class TestDFSZKFailoverController extends ClientBaseWithFixes {
     EditLogFileOutputStream.setShouldSkipFsyncForTesting(true);
   }
   
-  @Before
+  @BeforeEach
   public void setup() throws Exception {
     conf = new Configuration();
     // Specify the quorum per-nameservice, to ensure that these configs
@@ -129,7 +131,7 @@ public class TestDFSZKFailoverController extends ClientBaseWithFixes {
     fs = HATestUtil.configureFailoverFs(cluster, conf);
   }
   
-  @After
+  @AfterEach
   public void shutdown() throws Exception {
     if (cluster != null) {
       cluster.shutdown();
@@ -150,13 +152,14 @@ public class TestDFSZKFailoverController extends ClientBaseWithFixes {
     }
   }
 
-  @Test(timeout=60000)
+  @Test
+  @Timeout(value = 60000, unit = TimeUnit.MILLISECONDS)
   /**
    * Ensure the cluster simply starts with a hdfs jceks credential provider
    * configured. HDFS-14013.
    */
   public void testZFFCStartsWithCredentialProviderReferencingHDFS()
-      throws Exception{
+      throws Exception {
     // Create a provider path on HDFS
     conf.set(CredentialProviderFactory.CREDENTIAL_PROVIDER_PATH,
         "jceks://hdfs/tmp/test.jceks");
@@ -167,7 +170,8 @@ public class TestDFSZKFailoverController extends ClientBaseWithFixes {
   /**
    * Test that thread dump is captured after NN state changes.
    */
-  @Test(timeout=60000)
+  @Test
+  @Timeout(value = 60000, unit = TimeUnit.MILLISECONDS)
   public void testThreadDumpCaptureAfterNNStateChange() throws Exception {
     startCluster();
     MockNameNodeResourceChecker mockResourceChecker =
@@ -185,7 +189,8 @@ public class TestDFSZKFailoverController extends ClientBaseWithFixes {
    * Test that automatic failover is triggered by shutting the
    * active NN down.
    */
-  @Test(timeout=60000)
+  @Test
+  @Timeout(value = 60000, unit = TimeUnit.MILLISECONDS)
   public void testFailoverAndBackOnNNShutdown() throws Exception {
     startCluster();
     Path p1 = new Path("/dir1");
@@ -217,8 +222,9 @@ public class TestDFSZKFailoverController extends ClientBaseWithFixes {
     assertEquals(AlwaysSucceedFencer.getLastFencedService().getAddress(),
         thr2.zkfc.getLocalTarget().getAddress());
   }
-  
-  @Test(timeout=30000)
+
+  @Test
+  @Timeout(value = 30000, unit = TimeUnit.MILLISECONDS)
   public void testManualFailover() throws Exception {
     startCluster();
     thr2.zkfc.getLocalTarget().getZKFCProxy(conf, 15000).gracefulFailover();
@@ -230,18 +236,20 @@ public class TestDFSZKFailoverController extends ClientBaseWithFixes {
     waitForHAState(1, HAServiceState.STANDBY);
   }
 
-  @Test(timeout=30000)
+  @Test
+  @Timeout(value = 30000, unit = TimeUnit.MILLISECONDS)
   public void testWithoutBindAddressSet() throws Exception {
     startCluster();
     DFSZKFailoverController zkfc = DFSZKFailoverController.create(
         conf);
 
-    assertEquals("Bind address not expected to be wildcard by default.",
-        zkfc.getRpcAddressToBindTo().getHostString(),
-        LOCALHOST_SERVER_ADDRESS);
+    assertEquals(zkfc.getRpcAddressToBindTo().getHostString(),
+        LOCALHOST_SERVER_ADDRESS,
+        "Bind address not expected to be wildcard by default.");
   }
 
-  @Test(timeout=30000)
+  @Test
+  @Timeout(value = 30000, unit = TimeUnit.MILLISECONDS)
   public void testWithBindAddressSet() throws Exception {
     startCluster();
     conf.set(DFS_NAMENODE_SERVICE_RPC_BIND_HOST_KEY, WILDCARD_ADDRESS);
@@ -249,8 +257,7 @@ public class TestDFSZKFailoverController extends ClientBaseWithFixes {
         conf);
     String addr = zkfc.getRpcAddressToBindTo().getHostString();
 
-    assertEquals("Bind address " + addr + " is not wildcard.",
-        addr, WILDCARD_ADDRESS);
+    assertEquals(addr, WILDCARD_ADDRESS, "Bind address " + addr + " is not wildcard.");
   }
 
   /**
@@ -272,7 +279,8 @@ public class TestDFSZKFailoverController extends ClientBaseWithFixes {
             new StateChangeRequestInfo(RequestSource.REQUEST_BY_ZKFC)));
   }
 
-  @Test(timeout=30000)
+  @Test
+  @Timeout(value = 30000, unit = TimeUnit.MILLISECONDS)
   public void testManualFailoverWithDFSHAAdmin() throws Exception {
     startCluster();
     DFSHAAdmin tool = new DFSHAAdmin();
@@ -290,19 +298,20 @@ public class TestDFSZKFailoverController extends ClientBaseWithFixes {
     System.setIn(new ByteArrayInputStream("yes\n".getBytes()));
     int result = tool.run(
         new String[]{"-transitionToObserver", "-forcemanual", "nn2"});
-    assertEquals("State transition returned: " + result, 0, result);
+    assertEquals(0, result, "State transition returned: " + result);
     waitForHAState(1, HAServiceState.OBSERVER);
     // Answer "yes" to the prompt for --forcemanual
     System.setIn(new ByteArrayInputStream("yes\n".getBytes()));
     result = tool.run(
         new String[]{"-transitionToStandby", "-forcemanual", "nn2"});
     System.setIn(inOriginial);
-    assertEquals("State transition returned: " + result, 0, result);
+    assertEquals(0, result, "State transition returned: " + result);
     waitForHAState(1, HAServiceState.STANDBY);
   }
 
-  @Test(timeout=30000)
-  public void testElectionOnObserver() throws Exception{
+  @Test
+  @Timeout(value = 30000, unit = TimeUnit.MILLISECONDS)
+  public void testElectionOnObserver() throws Exception {
     startCluster();
     InputStream inOriginial = System.in;
     try {
@@ -313,7 +322,7 @@ public class TestDFSZKFailoverController extends ClientBaseWithFixes {
       System.setIn(new ByteArrayInputStream("yes\n".getBytes()));
       int result = tool.run(
           new String[]{"-transitionToObserver", "-forcemanual", "nn2"});
-      assertEquals("State transition returned: " + result, 0, result);
+      assertEquals(0, result, "State transition returned: " + result);
       waitForHAState(1, HAServiceState.OBSERVER);
       waitForZKFCState(thr2.zkfc, HAServiceState.OBSERVER);
 

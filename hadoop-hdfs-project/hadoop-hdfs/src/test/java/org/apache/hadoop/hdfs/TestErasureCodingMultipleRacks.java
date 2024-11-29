@@ -27,10 +27,10 @@ import org.apache.hadoop.hdfs.server.blockmanagement.BlockPlacementPolicyDefault
 import org.apache.hadoop.hdfs.server.blockmanagement.BlockPlacementPolicyRackFaultTolerant;
 import org.apache.hadoop.net.NetworkTopology;
 import org.apache.hadoop.test.GenericTestUtils;
-import org.junit.After;
-import org.junit.Before;
 import org.junit.Rule;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.junit.rules.Timeout;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -40,8 +40,8 @@ import java.util.HashMap;
 import java.util.Map;
 
 import static org.apache.hadoop.hdfs.DFSConfigKeys.DFS_NAMENODE_REDUNDANCY_CONSIDERLOAD_KEY;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /**
  * Test erasure coding block placement with skewed # nodes per rack.
@@ -70,7 +70,7 @@ public class TestErasureCodingMultipleRacks {
   private Configuration conf;
   private DistributedFileSystem dfs;
 
-  @Before
+  @BeforeEach
   public void setup() {
     ecPolicy = getPolicy();
     conf = new HdfsConfiguration();
@@ -83,7 +83,7 @@ public class TestErasureCodingMultipleRacks {
    * rack that only has 1 DN. Other racks will be evenly setup with the number
    * of DNs.
    * <p>
-   * This is not done as a {@link Before}, so test cases can setup differently.
+   * This is not done as a {@link BeforeEach}, so test cases can setup differently.
    *
    * @param numDatanodes number of total Datanodes.
    * @param numRacks number of total racks
@@ -98,7 +98,7 @@ public class TestErasureCodingMultipleRacks {
     dfs.setErasureCodingPolicy(new Path("/"), ecPolicy.getName());
   }
 
-  @After
+  @AfterEach
   public void teardown() throws Exception {
     if (cluster != null) {
       cluster.shutdown();

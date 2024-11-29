@@ -29,9 +29,12 @@ import org.apache.hadoop.test.GenericTestUtils.LogCapturer;
 import org.apache.hadoop.test.MetricsAsserts;
 import org.apache.hadoop.util.FakeTimer;
 import org.apache.hadoop.util.Time;
-import org.junit.Test;
 
 import java.io.IOException;
+
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.Timeout;
+
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -41,7 +44,7 @@ import java.util.regex.Pattern;
 import org.slf4j.LoggerFactory;
 import org.slf4j.event.Level;
 
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.*;
 import static org.apache.hadoop.hdfs.DFSConfigKeys.DFS_NAMENODE_FSLOCK_FAIR_KEY;
 import static org.apache.hadoop.test.MetricsAsserts.assertCounter;
 import static org.apache.hadoop.test.MetricsAsserts.assertGauge;
@@ -138,7 +141,8 @@ public class TestFSNamesystemLock {
    * Test when FSNamesystem write lock is held for a long time,
    * logger will report it.
    */
-  @Test(timeout=45000)
+  @Test
+  @Timeout(value = 45000, unit = TimeUnit.MILLISECONDS)
   public void testFSWriteLockLongHoldingReport() throws Exception {
     final long writeLockReportingThreshold = 100L;
     final long writeLockSuppressWarningInterval = 10000L;
@@ -220,7 +224,8 @@ public class TestFSNamesystemLock {
    * Test when FSNamesystem read lock is held for a long time,
    * logger will report it.
    */
-  @Test(timeout=45000)
+  @Test
+  @Timeout(value = 45000, unit = TimeUnit.MILLISECONDS)
   public void testFSReadLockLongHoldingReport() throws Exception {
     final long readLockReportingThreshold = 100L;
     final long readLockSuppressWarningInterval = 10000L;
@@ -407,7 +412,8 @@ public class TestFSNamesystemLock {
    * Test to suppress FSNameSystem write lock report when it is held for long
    * time.
    */
-  @Test(timeout = 45000)
+  @Test
+  @Timeout(value = 45000, unit = TimeUnit.MILLISECONDS)
   public void testFSWriteLockReportSuppressed() throws Exception {
     final long writeLockReportingThreshold = 1L;
     final long writeLockSuppressWarningInterval = 10L;

@@ -17,9 +17,7 @@
  */
 package org.apache.hadoop.hdfs.server.namenode.ha;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
+import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
@@ -59,21 +57,19 @@ import org.apache.hadoop.hdfs.server.namenode.NameNodeAdapter;
 import org.apache.hadoop.test.GenericTestUtils;
 import org.apache.hadoop.util.FakeTimer;
 import org.slf4j.event.Level;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.junit.runners.Parameterized;
-import org.junit.runners.Parameterized.Parameters;
+
+import org.junit.jupiter.api.Timeout;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.MethodSource;
 
 import java.util.function.Supplier;
 import org.mockito.Mockito;
 
-@RunWith(Parameterized.class)
 public class TestEditLogTailer {
   static {
     GenericTestUtils.setLogLevel(FSEditLog.LOG, Level.DEBUG);
   }
 
-  @Parameters
   public static Collection<Object[]> data() {
     Collection<Object[]> params = new ArrayList<Object[]>();
     params.add(new Object[]{ Boolean.FALSE });
@@ -82,7 +78,8 @@ public class TestEditLogTailer {
   }
 
   private static boolean useAsyncEditLog;
-  public TestEditLogTailer(Boolean async) {
+
+  public void initTestEditLogTailer(Boolean async) {
     useAsyncEditLog = async;
   }
 
@@ -104,9 +101,11 @@ public class TestEditLogTailer {
     return conf;
   }
 
-  @Test
-  public void testTailer() throws IOException, InterruptedException,
+  @MethodSource("data")
+  @ParameterizedTest
+  public void testTailer(Boolean async) throws IOException, InterruptedException,
       ServiceFailedException {
+    initTestEditLogTailer(async);
     Configuration conf = getConf();
     conf.setInt(DFSConfigKeys.DFS_HA_TAILEDITS_PERIOD_KEY, 0);
     conf.setInt(DFSConfigKeys.DFS_HA_TAILEDITS_ALL_NAMESNODES_RETRY_KEY, 100);
@@ -132,9 +131,9 @@ public class TestEditLogTailer {
       }
       
       HATestUtil.waitForStandbyToCatchUp(nn1, nn2);
-      assertEquals("Inconsistent number of applied txns on Standby",
-          nn1.getNamesystem().getEditLog().getLastWrittenTxId(),
-          nn2.getNamesystem().getFSImage().getLastAppliedTxId() + 1);
+      assertEquals(nn1.getNamesystem().getEditLog().getLastWrittenTxId(),
+          nn2.getNamesystem().getFSImage().getLastAppliedTxId() + 1,
+          "Inconsistent number of applied txns on Standby");
 
       for (int i = 0; i < DIRS_TO_MAKE / 2; i++) {
         assertTrue(NameNodeAdapter.getFileInfo(nn2,
@@ -148,9 +147,9 @@ public class TestEditLogTailer {
       }
       
       HATestUtil.waitForStandbyToCatchUp(nn1, nn2);
-      assertEquals("Inconsistent number of applied txns on Standby",
-          nn1.getNamesystem().getEditLog().getLastWrittenTxId(),
-          nn2.getNamesystem().getFSImage().getLastAppliedTxId() + 1);
+      assertEquals(nn1.getNamesystem().getEditLog().getLastWrittenTxId(),
+          nn2.getNamesystem().getFSImage().getLastAppliedTxId() + 1,
+          "Inconsistent number of applied txns on Standby");
 
       for (int i = DIRS_TO_MAKE / 2; i < DIRS_TO_MAKE; i++) {
         assertTrue(NameNodeAdapter.getFileInfo(nn2,
@@ -161,8 +160,10 @@ public class TestEditLogTailer {
     }
   }
 
-  @Test
-  public void testTailerBackoff() throws Exception {
+  @MethodSource("data")
+  @ParameterizedTest
+  public void testTailerBackoff(Boolean async) throws Exception {
+    initTestEditLogTailer(async);
     Configuration conf = new Configuration();
     NameNode.initMetrics(conf, HdfsServerConstants.NamenodeRole.NAMENODE);
     conf.setTimeDuration(DFSConfigKeys.DFS_HA_TAILEDITS_PERIOD_KEY,
@@ -201,18 +202,24 @@ public class TestEditLogTailer {
     assertEquals(expectedDurations, new ArrayList<>(sleepDurations));
   }
 
-  @Test
-  public void testNN0TriggersLogRolls() throws Exception {
+  @MethodSource("data")
+  @ParameterizedTest
+  public void testNN0TriggersLogRolls(Boolean async) throws Exception {
+    initTestEditLogTailer(async);
     testStandbyTriggersLogRolls(0);
   }
-  
-  @Test
-  public void testNN1TriggersLogRolls() throws Exception {
+
+  @MethodSource("data")
+  @ParameterizedTest
+  public void testNN1TriggersLogRolls(Boolean async) throws Exception {
+    initTestEditLogTailer(async);
     testStandbyTriggersLogRolls(1);
   }
 
-  @Test
-  public void testNN2TriggersLogRolls() throws Exception {
+  @MethodSource("data")
+  @ParameterizedTest
+  public void testNN2TriggersLogRolls(Boolean async) throws Exception {
+    initTestEditLogTailer(async);
     testStandbyTriggersLogRolls(2);
   }
 
@@ -250,8 +257,10 @@ public class TestEditLogTailer {
     it will be failed.
     2. when one NN become active, standby NN roll log success.
    */
-  @Test
-  public void testTriggersLogRollsForAllStandbyNN() throws Exception {
+  @MethodSource("data")
+  @ParameterizedTest
+  public void testTriggersLogRollsForAllStandbyNN(Boolean async) throws Exception {
+    initTestEditLogTailer(async);
     Configuration conf = getConf();
     // Roll every 1s
     conf.setInt(DFSConfigKeys.DFS_HA_LOGROLL_PERIOD_KEY, 1);
@@ -302,8 +311,11 @@ public class TestEditLogTailer {
     }, 100, 10000);
   }
 
-  @Test(timeout=20000)
-  public void testRollEditTimeoutForActiveNN() throws IOException {
+  @MethodSource("data")
+  @ParameterizedTest
+  @Timeout(value = 20000, unit = TimeUnit.MILLISECONDS)
+  public void testRollEditTimeoutForActiveNN(Boolean async) throws IOException {
+    initTestEditLogTailer(async);
     Configuration conf = getConf();
     conf.setInt(DFSConfigKeys.DFS_HA_TAILEDITS_ROLLEDITS_TIMEOUT_KEY, 5); // 5s
     conf.setInt(DFSConfigKeys.DFS_HA_TAILEDITS_PERIOD_KEY, 1);
@@ -343,8 +355,10 @@ public class TestEditLogTailer {
     }
   }
 
-  @Test
-  public void testRollEditLogIOExceptionForRemoteNN() throws IOException {
+  @MethodSource("data")
+  @ParameterizedTest
+  public void testRollEditLogIOExceptionForRemoteNN(Boolean async) throws IOException {
+    initTestEditLogTailer(async);
     Configuration conf = getConf();
 
     // Roll every 1s
@@ -388,9 +402,11 @@ public class TestEditLogTailer {
     }
   }
 
-  @Test
-  public void testStandbyTriggersLogRollsWhenTailInProgressEdits()
+  @MethodSource("data")
+  @ParameterizedTest
+  public void testStandbyTriggersLogRollsWhenTailInProgressEdits(Boolean async)
       throws Exception {
+    initTestEditLogTailer(async);
     // Time in seconds to wait for standby to catch up to edits from active
     final int standbyCatchupWaitTime = 2;
     // Time in seconds to wait before checking if edit logs are rolled while
@@ -463,9 +479,11 @@ public class TestEditLogTailer {
     }
   }
 
-  @Test
-  public void testRollEditLogHandleThreadInterruption()
+  @MethodSource("data")
+  @ParameterizedTest
+  public void testRollEditLogHandleThreadInterruption(Boolean async)
       throws IOException, InterruptedException, TimeoutException {
+    initTestEditLogTailer(async);
     Configuration conf = getConf();
     // RollEdits timeout 1s.
     conf.setInt(DFSConfigKeys.DFS_HA_TAILEDITS_ROLLEDITS_TIMEOUT_KEY, 1);

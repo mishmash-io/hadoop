@@ -23,11 +23,7 @@ import static org.apache.hadoop.fs.permission.FsAction.*;
 import static org.apache.hadoop.hdfs.server.namenode.AclTestHelpers.*;
 import static org.apache.hadoop.test.MetricsAsserts.assertCounter;
 import static org.apache.hadoop.test.MetricsAsserts.getMetrics;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
+import static org.junit.jupiter.api.Assertions.*;
 
 import java.io.BufferedInputStream;
 import java.io.ByteArrayInputStream;
@@ -93,10 +89,9 @@ import org.apache.hadoop.util.Time;
 import org.apache.log4j.AppenderSkeleton;
 import org.apache.log4j.LogManager;
 import org.apache.log4j.spi.LoggingEvent;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.junit.runners.Parameterized;
-import org.junit.runners.Parameterized.Parameters;
+
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.MethodSource;
 import org.mockito.Mockito;
 import org.slf4j.event.Level;
 import org.xml.sax.ContentHandler;
@@ -110,14 +105,12 @@ import org.slf4j.LoggerFactory;
 /**
  * This class tests the creation and validation of a checkpoint.
  */
-@RunWith(Parameterized.class)
 public class TestEditLog {
 
   static {
     GenericTestUtils.setLogLevel(FSEditLog.LOG, Level.TRACE);
   }
 
-  @Parameters
   public static Collection<Object[]> data() {
     Collection<Object[]> params = new ArrayList<Object[]>();
     params.add(new Object[]{ Boolean.FALSE });
@@ -126,7 +119,8 @@ public class TestEditLog {
   }
 
   private static boolean useAsyncEditLog;
-  public TestEditLog(Boolean async) {
+
+  public void initTestEditLog(Boolean async) {
     useAsyncEditLog = async;
   }
 
@@ -142,7 +136,7 @@ public class TestEditLog {
    * {@link EditLogFileInputStream#scanEditLog(File, long, boolean)}
    */
   public static class GarbageMkdirOp extends FSEditLogOp {
-    public GarbageMkdirOp() {
+    public void initTestEditLog() {
       super(FSEditLogOpCodes.OP_MKDIR);
     }
 
@@ -227,7 +221,7 @@ public class TestEditLog {
     final long blockSize = 64;
     final int startIndex;
 
-    Transactions(FSNamesystem ns, int numTx, int startIdx) {
+    void initTestEditLog(FSNamesystem ns, int numTx, int startIdx) {
       namesystem = ns;
       numTransactions = numTx;
       startIndex = startIdx;
@@ -270,8 +264,10 @@ public class TestEditLog {
   /**
    * Test case for an empty edit log from a prior version of Hadoop.
    */
-  @Test
-  public void testPreTxIdEditLogNoEdits() throws Exception {
+  @MethodSource("data")
+  @ParameterizedTest
+  public void testPreTxIdEditLogNoEdits(Boolean async) throws Exception {
+    initTestEditLog(async);
     FSNamesystem namesys = Mockito.mock(FSNamesystem.class);
     namesys.dir = Mockito.mock(FSDirectory.class);
     long numEdits = testLoad(
@@ -279,13 +275,15 @@ public class TestEditLog {
         namesys);
     assertEquals(0, numEdits);
   }
-  
+
   /**
    * Test case for loading a very simple edit log from a format
    * prior to the inclusion of edit transaction IDs in the log.
    */
-  @Test
-  public void testPreTxidEditLogWithEdits() throws Exception {
+  @MethodSource("data")
+  @ParameterizedTest
+  public void testPreTxidEditLogWithEdits(Boolean async) throws Exception {
+    initTestEditLog(async);
     Configuration conf = getConf();
     MiniDFSCluster cluster = null;
 
@@ -311,9 +309,11 @@ public class TestEditLog {
     return loader.loadFSEdits(new EditLogByteInputStream(data), 1);
   }
 
-  @Test
-  public void testMultiStreamsLoadEditWithConfMaxTxns()
-          throws IOException {
+  @MethodSource("data")
+  @ParameterizedTest
+  public void testMultiStreamsLoadEditWithConfMaxTxns(Boolean async)
+      throws IOException {
+    initTestEditLog(async);
     Configuration conf = getConf();
     MiniDFSCluster cluster = null;
     FileSystem fileSystem = null;
@@ -353,8 +353,8 @@ public class TestEditLog {
                 1, expectedTxns);
         File editFile1 = NNStorage.getFinalizedEditsFile(it.next(),
                 203, 404);
-        assertTrue("Expect " + editFile + " exists", editFile.exists());
-        assertTrue("Expect " + editFile1 + " exists", editFile1.exists());
+        assertTrue(editFile.exists(), "Expect " + editFile + " exists");
+        assertTrue(editFile1.exists(), "Expect " + editFile1 + " exists");
         EditLogFileInputStream editLogFileInputStream1 =
                 new EditLogFileInputStream(editFile, 1, 202, false);
         EditLogFileInputStream editLogFileInputStream2 =
@@ -395,8 +395,10 @@ public class TestEditLog {
   /**
    * Simple test for writing to and rolling the edit log.
    */
-  @Test
-  public void testSimpleEditLog() throws IOException {
+  @MethodSource("data")
+  @ParameterizedTest
+  public void testSimpleEditLog(Boolean async) throws IOException {
+    initTestEditLog(async);
     // start a cluster 
     Configuration conf = getConf();
     MiniDFSCluster cluster = null;
@@ -440,8 +442,10 @@ public class TestEditLog {
   /**
    * Tests transaction logging in dfs.
    */
-  @Test
-  public void testMultiThreadedEditLog() throws IOException {
+  @MethodSource("data")
+  @ParameterizedTest
+  public void testMultiThreadedEditLog(Boolean async) throws IOException {
+    initTestEditLog(async);
     testEditLog(2048);
     // force edit buffer to automatically sync on each log of edit log entry
     testEditLog(1);
@@ -454,7 +458,7 @@ public class TestEditLog {
     NNStorage storage = cluster.getNamesystem().getFSImage().getStorage();
     for (StorageDirectory sd : storage.dirIterable(dirType)) {
       File f = new File(sd.getCurrentDir(), filename);
-      assertTrue("Expect that " + f + " exists", f.exists());
+      assertTrue(f.exists(), "Expect that " + f + " exists");
     }
   }
   
@@ -536,7 +540,7 @@ public class TestEditLog {
         
         File editFile = NNStorage.getFinalizedEditsFile(it.next(), 3,
             3 + expectedTxns - 1);
-        assertTrue("Expect " + editFile + " exists", editFile.exists());
+        assertTrue(editFile.exists(), "Expect " + editFile + " exists");
         
         System.out.println("Verifying file: " + editFile);
         long numEdits = loader.loadFSEdits(
@@ -544,10 +548,10 @@ public class TestEditLog {
         int numLeases = namesystem.leaseManager.countLease();
         System.out.println("Number of outstanding leases " + numLeases);
         assertEquals(0, numLeases);
-        assertTrue("Verification for " + editFile + " failed. " +
+        assertTrue(numEdits == expectedTxns,
+                   "Verification for " + editFile + " failed. " +
                    "Expected " + expectedTxns + " transactions. "+
-                   "Found " + numEdits + " transactions.",
-                   numEdits == expectedTxns);
+                   "Found " + numEdits + " transactions.");
   
       }
     } finally {
@@ -596,8 +600,10 @@ public class TestEditLog {
     }).get();
   }
 
-  @Test
-  public void testSyncBatching() throws Exception {
+  @MethodSource("data")
+  @ParameterizedTest
+  public void testSyncBatching(Boolean async) throws Exception {
+    initTestEditLog(async);
     if (useAsyncEditLog) {
       // semantics are completely differently since edits will be auto-synced
       return;
@@ -617,29 +623,24 @@ public class TestEditLog {
       FSImage fsimage = namesystem.getFSImage();
       final FSEditLog editLog = fsimage.getEditLog();
 
-      assertEquals("should start with only the BEGIN_LOG_SEGMENT txn synced",
-        1, editLog.getSyncTxId());
+      assertEquals(1, editLog.getSyncTxId(), "should start with only the BEGIN_LOG_SEGMENT txn synced");
       
       // Log an edit from thread A
       doLogEdit(threadA, editLog, "thread-a 1");
-      assertEquals("logging edit without syncing should do not affect txid",
-        1, editLog.getSyncTxId());
+      assertEquals(1, editLog.getSyncTxId(), "logging edit without syncing should do not affect txid");
 
       // Log an edit from thread B
       doLogEdit(threadB, editLog, "thread-b 1");
-      assertEquals("logging edit without syncing should do not affect txid",
-        1, editLog.getSyncTxId());
+      assertEquals(1, editLog.getSyncTxId(), "logging edit without syncing should do not affect txid");
 
       // Now ask to sync edit from B, which should sync both edits.
       doCallLogSync(threadB, editLog);
-      assertEquals("logSync from second thread should bump txid up to 3",
-        3, editLog.getSyncTxId());
+      assertEquals(3, editLog.getSyncTxId(), "logSync from second thread should bump txid up to 3");
 
       // Now ask to sync edit from A, which was already batched in - thus
       // it should increment the batch count metric
       doCallLogSync(threadA, editLog);
-      assertEquals("logSync from first thread shouldn't change txid",
-        3, editLog.getSyncTxId());
+      assertEquals(3, editLog.getSyncTxId(), "logSync from first thread shouldn't change txid");
 
       //Should have incremented the batch count exactly once
       assertCounter("TransactionsBatchedInSync", 1L, 
@@ -651,7 +652,7 @@ public class TestEditLog {
       if(cluster != null) cluster.shutdown();
     }
   }
-  
+
   /**
    * Test what happens with the following sequence:
    *
@@ -663,8 +664,10 @@ public class TestEditLog {
    * This sequence is legal and can occur if enterSafeMode() is closely
    * followed by saveNamespace.
    */
-  @Test
-  public void testBatchedSyncWithClosedLogs() throws Exception {
+  @MethodSource("data")
+  @ParameterizedTest
+  public void testBatchedSyncWithClosedLogs(Boolean async) throws Exception {
+    initTestEditLog(async);
     // start a cluster 
     Configuration conf = getConf();
     MiniDFSCluster cluster = null;
@@ -685,13 +688,11 @@ public class TestEditLog {
       // async log is doing batched syncs in background.  logSync just ensures
       // the edit is durable, so the txid may increase prior to sync
       if (!useAsyncEditLog) {
-        assertEquals("logging edit without syncing should do not affect txid",
-            1, editLog.getSyncTxId());
+        assertEquals(1, editLog.getSyncTxId(), "logging edit without syncing should do not affect txid");
       }
       // logSyncAll in Thread B
       doCallLogSyncAll(threadB, editLog);
-      assertEquals("logSyncAll should sync thread A's transaction",
-        2, editLog.getSyncTxId());
+      assertEquals(2, editLog.getSyncTxId(), "logSyncAll should sync thread A's transaction");
 
       // Close edit log
       editLog.close();
@@ -705,9 +706,11 @@ public class TestEditLog {
       if(cluster != null) cluster.shutdown();
     }
   }
-  
-  @Test
-  public void testEditChecksum() throws Exception {
+
+  @MethodSource("data")
+  @ParameterizedTest
+  public void testEditChecksum(Boolean async) throws Exception {
+    initTestEditLog(async);
     // start a cluster 
     Configuration conf = getConf();
     MiniDFSCluster cluster = null;
@@ -749,9 +752,8 @@ public class TestEditLog {
       fail("should not be able to start");
     } catch (IOException e) {
       // expected
-      assertNotNull("Cause of exception should be ChecksumException", e.getCause());
-      assertEquals("Cause of exception should be ChecksumException",
-          ChecksumException.class, e.getCause().getClass());
+      assertNotNull(e.getCause(), "Cause of exception should be ChecksumException");
+      assertEquals(ChecksumException.class, e.getCause().getClass(), "Cause of exception should be ChecksumException");
     }
   }
 
@@ -759,17 +761,21 @@ public class TestEditLog {
    * Test what happens if the NN crashes when it has has started but
    * had no transactions written.
    */
-  @Test
-  public void testCrashRecoveryNoTransactions() throws Exception {
+  @MethodSource("data")
+  @ParameterizedTest
+  public void testCrashRecoveryNoTransactions(Boolean async) throws Exception {
+    initTestEditLog(async);
     testCrashRecovery(0);
   }
-  
+
   /**
    * Test what happens if the NN crashes when it has has started and
    * had a few transactions written
    */
-  @Test
-  public void testCrashRecoveryWithTransactions() throws Exception {
+  @MethodSource("data")
+  @ParameterizedTest
+  public void testCrashRecoveryWithTransactions(Boolean async) throws Exception {
+    initTestEditLog(async);
     testCrashRecovery(150);
   }
   
@@ -826,11 +832,11 @@ public class TestEditLog {
         // We should see the file as in-progress
         File editsFile = new File(currentDir,
             NNStorage.getInProgressEditsFileName(1));
-        assertTrue("Edits file " + editsFile + " should exist", editsFile.exists());        
+        assertTrue(editsFile.exists(), "Edits file " + editsFile + " should exist");        
         
         File imageFile = FSImageTestUtil.findNewestImageFile(
             currentDir.getAbsolutePath());
-        assertNotNull("No image found in " + nameDir, imageFile);
+        assertNotNull(imageFile, "No image found in " + nameDir);
         assertEquals(NNStorage.getImageFileName(0), imageFile.getName());
         // Try to start a new cluster
         LOG.info("\n===========================================\n" +
@@ -858,7 +864,7 @@ public class TestEditLog {
         }
         imageFile = FSImageTestUtil.findNewestImageFile(
             currentDir.getAbsolutePath());
-        assertNotNull("No image found in " + nameDir, imageFile);
+        assertNotNull(imageFile, "No image found in " + nameDir);
         assertEquals(NNStorage.getImageFileName(expectedTxId),
                      imageFile.getName());
         
@@ -877,30 +883,38 @@ public class TestEditLog {
       }
     }
   }
-  
+
   // should succeed - only one corrupt log dir
-  @Test
-  public void testCrashRecoveryEmptyLogOneDir() throws Exception {
+  @MethodSource("data")
+  @ParameterizedTest
+  public void testCrashRecoveryEmptyLogOneDir(Boolean async) throws Exception {
+    initTestEditLog(async);
     doTestCrashRecoveryEmptyLog(false, true, true);
   }
-  
+
   // should fail - seen_txid updated to 3, but no log dir contains txid 3
-  @Test
-  public void testCrashRecoveryEmptyLogBothDirs() throws Exception {
+  @MethodSource("data")
+  @ParameterizedTest
+  public void testCrashRecoveryEmptyLogBothDirs(Boolean async) throws Exception {
+    initTestEditLog(async);
     doTestCrashRecoveryEmptyLog(true, true, false);
   }
 
   // should succeed - only one corrupt log dir
-  @Test
-  public void testCrashRecoveryEmptyLogOneDirNoUpdateSeenTxId() 
+  @MethodSource("data")
+  @ParameterizedTest
+  public void testCrashRecoveryEmptyLogOneDirNoUpdateSeenTxId(Boolean async)
       throws Exception {
+    initTestEditLog(async);
     doTestCrashRecoveryEmptyLog(false, false, true);
   }
-  
+
   // should succeed - both log dirs corrupt, but seen_txid never updated
-  @Test
-  public void testCrashRecoveryEmptyLogBothDirsNoUpdateSeenTxId()
+  @MethodSource("data")
+  @ParameterizedTest
+  public void testCrashRecoveryEmptyLogBothDirsNoUpdateSeenTxId(Boolean async)
       throws Exception {
+    initTestEditLog(async);
     doTestCrashRecoveryEmptyLog(true, false, true);
   }
 
@@ -992,7 +1006,7 @@ public class TestEditLog {
     private FSEditLogOp.Reader reader = null;
     private FSEditLogLoader.PositionTrackingInputStream tracker = null;
 
-    public EditLogByteInputStream(byte[] data) throws IOException {
+    public void initTestEditLog(byte[] data) throws IOException {
       len = data.length;
       input = new ByteArrayInputStream(data);
 
@@ -1060,8 +1074,10 @@ public class TestEditLog {
     }
   }
 
-  @Test
-  public void testFailedOpen() throws Exception {
+  @MethodSource("data")
+  @ParameterizedTest
+  public void testFailedOpen(Boolean async) throws Exception {
+    initTestEditLog(async);
     File logDir = new File(TEST_DIR, "testFailedOpen");
     logDir.mkdirs();
     ExitUtil.disableSystemExit();
@@ -1079,13 +1095,15 @@ public class TestEditLog {
       ExitUtil.resetFirstExitException();
     }
   }
-  
+
   /**
    * Regression test for HDFS-1112/HDFS-3020. Ensures that, even if
    * logSync isn't called periodically, the edit log will sync itself.
    */
-  @Test
-  public void testAutoSync() throws Exception {
+  @MethodSource("data")
+  @ParameterizedTest
+  public void testAutoSync(Boolean async) throws Exception {
+    initTestEditLog(async);
     File logDir = new File(TEST_DIR, "testAutoSync");
     logDir.mkdirs();
     FSEditLog log = FSImageTestUtil.createStandaloneEditLog(logDir);
@@ -1119,8 +1137,10 @@ public class TestEditLog {
    * Tests the getEditLogManifest function using mock storage for a number
    * of different situations.
    */
-  @Test
-  public void testEditLogManifestMocks() throws IOException {
+  @MethodSource("data")
+  @ParameterizedTest
+  public void testEditLogManifestMocks(Boolean async) throws IOException {
+    initTestEditLog(async);
     NNStorage storage;
     FSEditLog log;
     // Simple case - different directories have the same
@@ -1200,7 +1220,7 @@ public class TestEditLog {
       String[] logSpecs = dirSpec.split("\\|");
       for (String logSpec : logSpecs) {
         Matcher m = Pattern.compile("\\[(\\d+),(\\d+)?\\]").matcher(logSpec);
-        assertTrue("bad spec: " + logSpec, m.matches());
+        assertTrue(m.matches(), "bad spec: " + logSpec);
         if (m.group(2) == null) {
           files.add(NNStorage.getInProgressEditsFileName(
               Long.parseLong(m.group(1))));
@@ -1230,13 +1250,13 @@ public class TestEditLog {
   static class AbortSpec {
     final int roll;
     final int logindex;
-    
+
     /**
      * Construct the failure specification. 
      * @param roll number to fail after. e.g. 1 to fail after the first roll
      * @param logindex index of journal to fail.
      */
-    AbortSpec(int roll, int logindex) {
+    void initTestEditLog(int roll, int logindex) {
       this.roll = roll;
       this.logindex = logindex;
     }
@@ -1337,8 +1357,10 @@ public class TestEditLog {
    * The first one fails on odd rolls, the second on even. Test
    * that we are able to load the entire editlog regardless.
    */
-  @Test
-  public void testAlternatingJournalFailure() throws IOException {
+  @MethodSource("data")
+  @ParameterizedTest
+  public void testAlternatingJournalFailure(Boolean async) throws IOException {
+    initTestEditLog(async);
     File f1 = new File(TEST_DIR + "/alternatingjournaltest0");
     File f2 = new File(TEST_DIR + "/alternatingjournaltest1");
 
@@ -1385,8 +1407,10 @@ public class TestEditLog {
    * There should be 4*TXNS_PER_ROLL transactions as we rolled 3
    * times. 
    */
-  @Test
-  public void testLoadingWithGaps() throws IOException {
+  @MethodSource("data")
+  @ParameterizedTest
+  public void testLoadingWithGaps(Boolean async) throws IOException {
+    initTestEditLog(async);
     File f1 = new File(TEST_DIR + "/gaptest0");
     List<URI> editUris = ImmutableList.of(f1.toURI());
 
@@ -1470,8 +1494,10 @@ public class TestEditLog {
    * This tests that we can read random garbage from the edit log without
    * crashing the JVM or throwing an unchecked exception.
    */
-  @Test
-  public void testFuzzSequences() throws IOException {
+  @MethodSource("data")
+  @ParameterizedTest
+  public void testFuzzSequences(Boolean async) throws IOException {
+    initTestEditLog(async);
     final int MAX_GARBAGE_LENGTH = 512;
     final int MAX_INVALID_SEQ = 5000;
     // The seed to use for our random number generator.  When given the same
@@ -1514,8 +1540,10 @@ public class TestEditLog {
    * Test edit log failover.  If a single edit log is missing, other 
    * edits logs should be used instead.
    */
-  @Test
-  public void testEditLogFailOverFromMissing() throws IOException {
+  @MethodSource("data")
+  @ParameterizedTest
+  public void testEditLogFailOverFromMissing(Boolean async) throws IOException {
+    initTestEditLog(async);
     File f1 = new File(TEST_DIR + "/failover0");
     File f2 = new File(TEST_DIR + "/failover1");
     List<URI> editUris = ImmutableList.of(f1.toURI(), f2.toURI());
@@ -1557,8 +1585,10 @@ public class TestEditLog {
   /** 
    * Test edit log failover from a corrupt edit log
    */
-  @Test
-  public void testEditLogFailOverFromCorrupt() throws IOException {
+  @MethodSource("data")
+  @ParameterizedTest
+  public void testEditLogFailOverFromCorrupt(Boolean async) throws IOException {
+    initTestEditLog(async);
     File f1 = new File(TEST_DIR + "/failover0");
     File f2 = new File(TEST_DIR + "/failover1");
     List<URI> editUris = ImmutableList.of(f1.toURI(), f2.toURI());
@@ -1608,8 +1638,10 @@ public class TestEditLog {
   /**
    * Test creating a directory with lots and lots of edit log segments
    */
-  @Test
-  public void testManyEditLogSegments() throws IOException {
+  @MethodSource("data")
+  @ParameterizedTest
+  public void testManyEditLogSegments(Boolean async) throws IOException {
+    initTestEditLog(async);
     final int NUM_EDIT_LOG_ROLLS = 1000;
     // start a cluster
     Configuration conf = getConf();
@@ -1664,8 +1696,10 @@ public class TestEditLog {
    *
    * @throws IOException if there is an I/O error
    */
-  @Test
-  public void testResetThreadLocalCachedOps() throws IOException {
+  @MethodSource("data")
+  @ParameterizedTest
+  public void testResetThreadLocalCachedOps(Boolean async) throws IOException {
+    initTestEditLog(async);
     Configuration conf = new HdfsConfiguration();
     conf.setBoolean(DFSConfigKeys.DFS_NAMENODE_ACLS_ENABLED_KEY, true);
     // Set single handler thread, so all transactions hit same thread-local ops.
@@ -1743,8 +1777,10 @@ public class TestEditLog {
    *
    * @throws Exception
    */
-  @Test
-  public void testReadActivelyUpdatedLog() throws Exception {
+  @MethodSource("data")
+  @ParameterizedTest
+  public void testReadActivelyUpdatedLog(Boolean async) throws Exception {
+    initTestEditLog(async);
     final TestAppender appender = new TestAppender();
     LogManager.getRootLogger().addAppender(appender);
     Configuration conf = new HdfsConfiguration();
@@ -1815,9 +1851,11 @@ public class TestEditLog {
   /**
    * Test edits can be writen and read without ErasureCoding supported.
    */
-  @Test
-  public void testEditLogWithoutErasureCodingSupported()
+  @MethodSource("data")
+  @ParameterizedTest
+  public void testEditLogWithoutErasureCodingSupported(Boolean async)
       throws IOException {
+    initTestEditLog(async);
     Configuration conf = getConf();
     MiniDFSCluster cluster = null;
 

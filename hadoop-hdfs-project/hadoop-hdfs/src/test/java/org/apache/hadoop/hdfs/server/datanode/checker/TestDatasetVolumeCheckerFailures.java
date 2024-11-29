@@ -24,8 +24,9 @@ import org.apache.hadoop.hdfs.HdfsConfiguration;
 import org.apache.hadoop.hdfs.server.datanode.StorageLocation;
 import org.apache.hadoop.hdfs.server.datanode.fsdataset.*;
 import org.apache.hadoop.util.FakeTimer;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.Timeout;
 import org.mockito.stubbing.Answer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -34,8 +35,8 @@ import java.nio.channels.ClosedChannelException;
 import java.util.concurrent.TimeUnit;
 import java.util.*;
 
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.core.Is.is;
-import static org.junit.Assert.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
@@ -55,7 +56,7 @@ public class TestDatasetVolumeCheckerFailures {
 
   private static final long MIN_DISK_CHECK_GAP_MS = 1000; // 1 second.
 
-  @Before
+  @BeforeEach
   public void commonInit() {
     timer = new FakeTimer();
     conf = new HdfsConfiguration();
@@ -67,7 +68,8 @@ public class TestDatasetVolumeCheckerFailures {
    * Test timeout in {@link DatasetVolumeChecker#checkAllVolumes}.
    * @throws Exception
    */
-  @Test(timeout=60000)
+  @Test
+  @Timeout(value = 60000, unit = TimeUnit.MILLISECONDS)
   public void testTimeout() throws Exception {
     // Add a volume whose check routine hangs forever.
     final List<FsVolumeSpi> volumes =
@@ -92,7 +94,8 @@ public class TestDatasetVolumeCheckerFailures {
    *
    * @throws Exception
    */
-  @Test(timeout=60000)
+  @Test
+  @Timeout(value = 60000, unit = TimeUnit.MILLISECONDS)
   public void testCheckingClosedVolume() throws Exception {
     // Add a volume that cannot be referenced.
     final List<FsVolumeSpi> volumes =
@@ -111,7 +114,8 @@ public class TestDatasetVolumeCheckerFailures {
     verify(volumes.get(0), times(0)).check(any());
   }
 
-  @Test(timeout=60000)
+  @Test
+  @Timeout(value = 60000, unit = TimeUnit.MILLISECONDS)
   public void testMinGapIsEnforcedForSyncChecks() throws Exception {
     final List<FsVolumeSpi> volumes =
         TestDatasetVolumeChecker.makeVolumes(1, VolumeCheckResult.HEALTHY);

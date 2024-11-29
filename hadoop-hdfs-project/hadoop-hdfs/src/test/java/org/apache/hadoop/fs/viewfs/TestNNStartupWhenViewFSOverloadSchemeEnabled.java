@@ -17,6 +17,9 @@
  */
 package org.apache.hadoop.fs.viewfs;
 
+import java.util.concurrent.TimeUnit;
+
+
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.CommonConfigurationKeysPublic;
 import org.apache.hadoop.fs.FsConstants;
@@ -24,9 +27,10 @@ import org.apache.hadoop.hdfs.DFSConfigKeys;
 import org.apache.hadoop.hdfs.DistributedFileSystem;
 import org.apache.hadoop.hdfs.MiniDFSCluster;
 import org.apache.hadoop.hdfs.MiniDFSNNTopology;
-import org.junit.After;
-import org.junit.BeforeClass;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.Timeout;
 
 /**
  * Tests that the NN startup is successful with ViewFSOverloadScheme.
@@ -37,7 +41,7 @@ public class TestNNStartupWhenViewFSOverloadSchemeEnabled {
   private static final String HDFS_SCHEME = "hdfs";
   private static final Configuration CONF = new Configuration();
 
-  @BeforeClass
+  @BeforeAll
   public static void setUp() {
     CONF.setInt(DFSConfigKeys.DFS_HEARTBEAT_INTERVAL_KEY, 1);
     CONF.setInt(DFSConfigKeys.DFS_HA_TAILEDITS_PERIOD_KEY, 1);
@@ -57,7 +61,8 @@ public class TestNNStartupWhenViewFSOverloadSchemeEnabled {
    * Tests that the HA mode NameNode startup is successful when
    * ViewFSOverloadScheme configured.
    */
-  @Test(timeout = 30000)
+  @Test
+  @Timeout(value = 30000, unit = TimeUnit.MILLISECONDS)
   public void testHANameNodeAndDataNodeStartup() throws Exception {
     cluster = new MiniDFSCluster.Builder(CONF)
         .nnTopology(MiniDFSNNTopology.simpleHATopology()).numDataNodes(0)
@@ -70,7 +75,8 @@ public class TestNNStartupWhenViewFSOverloadSchemeEnabled {
    * Tests that the NameNode startup is successful when ViewFSOverloadScheme
    * configured.
    */
-  @Test(timeout = 30000)
+  @Test
+  @Timeout(value = 30000, unit = TimeUnit.MILLISECONDS)
   public void testNameNodeAndDataNodeStartup() throws Exception {
     cluster =
         new MiniDFSCluster.Builder(CONF).numDataNodes(0).waitSafeMode(false)
@@ -78,7 +84,7 @@ public class TestNNStartupWhenViewFSOverloadSchemeEnabled {
     cluster.waitActive();
   }
 
-  @After
+  @AfterEach
   public void shutdownCluster() {
     if (cluster != null) {
       cluster.shutdown();

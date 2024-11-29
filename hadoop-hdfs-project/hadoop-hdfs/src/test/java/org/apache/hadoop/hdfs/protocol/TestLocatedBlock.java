@@ -20,16 +20,23 @@ package org.apache.hadoop.hdfs.protocol;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.apache.hadoop.hdfs.server.blockmanagement.DatanodeDescriptor;
-import org.junit.Test;
 
-import static org.junit.Assert.fail;
+
+import org.apache.hadoop.hdfs.server.blockmanagement.DatanodeDescriptor;
+
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.Timeout;
+
+import static org.junit.jupiter.api.Assertions.fail;
+
+import java.util.concurrent.TimeUnit;
 
 public class TestLocatedBlock {
   public static final Logger LOG =
       LoggerFactory.getLogger(TestLocatedBlock.class);
 
-  @Test(timeout = 10000)
+  @Test
+  @Timeout(value = 10000, unit = TimeUnit.MILLISECONDS)
   public void testAddCachedLocWhenEmpty() {
     DatanodeInfo[] ds = DatanodeInfo.EMPTY_ARRAY;
     ExtendedBlock b1 = new ExtendedBlock("bpid", 1, 1, 1);

@@ -17,14 +17,13 @@
  */
 package org.apache.hadoop.hdfs.server.namenode.snapshot;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.*;
 
 import java.io.IOException;
 import java.util.EnumSet;
 import java.util.List;
 import java.util.Random;
+import java.util.concurrent.TimeUnit;
 
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FSDataOutputStream;
@@ -49,9 +48,10 @@ import org.apache.hadoop.hdfs.server.namenode.NameNodeAdapter;
 import org.apache.hadoop.hdfs.server.namenode.snapshot.DirectoryWithSnapshotFeature.DirectoryDiff;
 import org.apache.hadoop.test.GenericTestUtils;
 import org.slf4j.event.Level;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.Timeout;
 
 /**
  * Test snapshot functionalities while file appending.
@@ -74,7 +74,7 @@ public class TestINodeFileUnderConstructionWithSnapshot {
   DistributedFileSystem hdfs;
   FSDirectory fsdir;
   
-  @Before
+  @BeforeEach
   public void setUp() throws Exception {
     conf = new Configuration();
     conf.setLong(DFSConfigKeys.DFS_BLOCK_SIZE_KEY, BLOCKSIZE);
@@ -87,18 +87,19 @@ public class TestINodeFileUnderConstructionWithSnapshot {
     hdfs.mkdirs(dir);
   }
 
-  @After
+  @AfterEach
   public void tearDown() throws Exception {
     if (cluster != null) {
       cluster.shutdown();
       cluster = null;
     }
   }
-  
+
   /**
    * Test snapshot after file appending
    */
-  @Test (timeout=60000)
+  @Test
+  @Timeout(value = 60000, unit = TimeUnit.MILLISECONDS)
   public void testSnapshotAfterAppending() throws Exception {
     Path file = new Path(dir, "file");
     // 1. create snapshot --> create file --> append
@@ -137,12 +138,13 @@ public class TestINodeFileUnderConstructionWithSnapshot {
     out.write(toAppend);
     return out;
   }
-  
+
   /**
    * Test snapshot during file appending, before the corresponding
    * {@link FSDataOutputStream} instance closes.
    */
-  @Test (timeout=60000)
+  @Test
+  @Timeout(value = 60000, unit = TimeUnit.MILLISECONDS)
   public void testSnapshotWhileAppending() throws Exception {
     Path file = new Path(dir, "file");
     DFSTestUtil.createFile(hdfs, file, BLOCKSIZE, REPLICATION, seed);

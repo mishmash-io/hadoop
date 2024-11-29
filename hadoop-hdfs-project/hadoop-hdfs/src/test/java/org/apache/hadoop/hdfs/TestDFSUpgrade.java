@@ -22,14 +22,12 @@ import static org.apache.hadoop.hdfs.server.common.HdfsServerConstants.NodeType.
 import static org.apache.hadoop.hdfs.server.namenode.NNStorage.getImageFileName;
 import static org.apache.hadoop.hdfs.server.namenode.NNStorage.getInProgressEditsFileName;
 import static org.apache.hadoop.test.GenericTestUtils.assertExists;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
+import static org.junit.jupiter.api.Assertions.*;
 
 import java.io.File;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
+import java.util.concurrent.TimeUnit;
 import java.util.regex.Pattern;
 
 import org.slf4j.Logger;
@@ -46,9 +44,10 @@ import org.apache.hadoop.hdfs.server.datanode.DataNodeLayoutVersion;
 import org.apache.hadoop.hdfs.server.namenode.TestParallelImageWrite;
 import org.apache.hadoop.ipc.RemoteException;
 import org.apache.hadoop.util.StringUtils;
-import org.junit.BeforeClass;
-import org.junit.Ignore;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Disabled;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.Timeout;
 
 import org.apache.hadoop.thirdparty.com.google.common.base.Joiner;
 
@@ -171,16 +170,16 @@ public class TestDFSUpgrade {
     } catch (Exception e) {
       // expect exception
       if (exceptionClass != null) {
-        assertTrue("Caught exception is not of expected class "
+        assertTrue(exceptionClass.isInstance(e), 
+            "Caught exception is not of expected class "
             + exceptionClass.getSimpleName() + ": "
-            + StringUtils.stringifyException(e), 
-            exceptionClass.isInstance(e));
+            + StringUtils.stringifyException(e));
       }
       if (messagePattern != null) {
-        assertTrue("Caught exception message string does not match expected pattern \""
+        assertTrue(messagePattern.matcher(e.getMessage()).find(), 
+            "Caught exception message string does not match expected pattern \""
             + messagePattern.pattern() + "\" : "
-            + StringUtils.stringifyException(e), 
-            messagePattern.matcher(e.getMessage()).find());
+            + StringUtils.stringifyException(e));
       }
       LOG.info("Successfully detected expected NameNode startup failure.");
     }
@@ -195,8 +194,8 @@ public class TestDFSUpgrade {
    */
   void startBlockPoolShouldFail(StartupOption operation, String bpid) throws IOException {
     cluster.startDataNodes(conf, 1, false, operation, null); // should fail
-    assertFalse("Block pool " + bpid + " should have failed to start",
-        cluster.getDataNodes().get(0).isBPServiceAlive(bpid));
+    assertFalse(cluster.getDataNodes().get(0).isBPServiceAlive(bpid),
+        "Block pool " + bpid + " should have failed to start");
   }
  
   /**
@@ -212,16 +211,17 @@ public class TestDFSUpgrade {
                                            .build();
   }
   
-  @BeforeClass
+  @BeforeAll
   public static void initialize() throws Exception {
     UpgradeUtilities.initialize();
   }
-  
+
   /**
    * This test attempts to upgrade the NameNode and DataNode under
    * a number of valid and invalid conditions.
    */
-  @Test(timeout = 60000)
+  @Test
+  @Timeout(value = 60000, unit = TimeUnit.MILLISECONDS)
   public void testUpgrade() throws Exception {
     File[] baseDirs;
     StorageInfo storageInfo = null;
@@ -404,7 +404,7 @@ public class TestDFSUpgrade {
    * Stand-alone test to detect failure of one SD during parallel upgrade.
    * At this time, can only be done with manual hack of {@link FSImage.doUpgrade()}
    */
-  @Ignore
+  @Disabled
   public void testUpgrade4() throws Exception {
     int numDirs = 4;
     conf = new HdfsConfiguration();
@@ -432,21 +432,23 @@ public class TestDFSUpgrade {
       File currentDir = new File(baseDir, "current");
       for (File f : currentDir.listFiles()) {
         if (f.getName().startsWith(prefix)) {
-          assertTrue("Deleting " + f, f.delete());
+          assertTrue(f.delete(), "Deleting " + f);
         }
       }
     }
   }
 
-  @Test(expected=IOException.class)
-  public void testUpgradeFromPreUpgradeLVFails() throws IOException {
-    // Upgrade from versions prior to Storage#LAST_UPGRADABLE_LAYOUT_VERSION
-    // is not allowed
-    Storage.checkVersionUpgradable(Storage.LAST_PRE_UPGRADE_LAYOUT_VERSION + 1);
-    fail("Expected IOException is not thrown");
+  @Test
+  public void testUpgradeFromPreUpgradeLVFails() {
+    assertThrows(IOException.class, () -> {
+      // Upgrade from versions prior to Storage#LAST_UPGRADABLE_LAYOUT_VERSION
+      // is not allowed
+      Storage.checkVersionUpgradable(Storage.LAST_PRE_UPGRADE_LAYOUT_VERSION + 1);
+      fail("Expected IOException is not thrown");
+    });
   }
   
-  @Ignore
+  @Disabled
   public void test203LayoutVersion() {
     for (int lv : Storage.LAYOUT_VERSIONS_203) {
       assertTrue(Storage.is203LayoutVersion(lv));

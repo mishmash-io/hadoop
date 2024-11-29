@@ -23,13 +23,15 @@ import static org.apache.hadoop.hdfs.DFSConfigKeys.DFS_DATANODE_AVAILABLE_SPACE_
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
+import java.util.concurrent.TimeUnit;
 
 import org.apache.hadoop.conf.Configurable;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.test.GenericTestUtils;
 import org.apache.hadoop.util.ReflectionUtils;
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.Timeout;
 import org.mockito.Mockito;
 
 public class TestAvailableSpaceVolumeChoosingPolicy {
@@ -52,10 +54,11 @@ public class TestAvailableSpaceVolumeChoosingPolicy {
         preferencePercent);
     ((Configurable) policy).setConf(conf);
   }
-  
+
   // Test the Round-Robin block-volume fallback path when all volumes are within
   // the threshold.
-  @Test(timeout=60000)
+  @Test
+  @Timeout(value = 60000, unit = TimeUnit.MILLISECONDS)
   public void testRR() throws Exception {
     @SuppressWarnings("unchecked")
     final AvailableSpaceVolumeChoosingPolicy<FsVolumeSpi> policy = 
@@ -63,18 +66,20 @@ public class TestAvailableSpaceVolumeChoosingPolicy {
     initPolicy(policy, BALANCED_SPACE_THRESHOLD, 1.0f);
     TestRoundRobinVolumeChoosingPolicy.testRR(policy);
   }
-  
+
   // ChooseVolume should throw DiskOutOfSpaceException
   // with volume and block sizes in exception message.
-  @Test(timeout=60000)
+  @Test
+  @Timeout(value = 60000, unit = TimeUnit.MILLISECONDS)
   public void testRRPolicyExceptionMessage() throws Exception {
     final AvailableSpaceVolumeChoosingPolicy<FsVolumeSpi> policy
         = new AvailableSpaceVolumeChoosingPolicy<FsVolumeSpi>();
     initPolicy(policy, BALANCED_SPACE_THRESHOLD, 1.0f);
     TestRoundRobinVolumeChoosingPolicy.testRRPolicyExceptionMessage(policy);
   }
-  
-  @Test(timeout=60000)
+
+  @Test
+  @Timeout(value = 60000, unit = TimeUnit.MILLISECONDS)
   public void testTwoUnbalancedVolumes() throws Exception {
     @SuppressWarnings("unchecked")
     final AvailableSpaceVolumeChoosingPolicy<FsVolumeSpi> policy = 
@@ -91,15 +96,16 @@ public class TestAvailableSpaceVolumeChoosingPolicy {
     // than the threshold of 1MB.
     volumes.add(Mockito.mock(FsVolumeSpi.class));
     Mockito.when(volumes.get(1).getAvailable()).thenReturn(1024L * 1024L * 3);
-    Assert.assertEquals(volumes.get(1), policy.chooseVolume(volumes, 100,
+    Assertions.assertEquals(volumes.get(1), policy.chooseVolume(volumes, 100,
         null));
-    Assert.assertEquals(volumes.get(1), policy.chooseVolume(volumes, 100,
+    Assertions.assertEquals(volumes.get(1), policy.chooseVolume(volumes, 100,
         null));
-    Assert.assertEquals(volumes.get(1), policy.chooseVolume(volumes, 100,
+    Assertions.assertEquals(volumes.get(1), policy.chooseVolume(volumes, 100,
         null));
   }
-  
-  @Test(timeout=60000)
+
+  @Test
+  @Timeout(value = 60000, unit = TimeUnit.MILLISECONDS)
   public void testThreeUnbalancedVolumes() throws Exception {
     @SuppressWarnings("unchecked")
     final AvailableSpaceVolumeChoosingPolicy<FsVolumeSpi> policy = 
@@ -123,29 +129,30 @@ public class TestAvailableSpaceVolumeChoosingPolicy {
     // We should alternate assigning between the two volumes with a lot of free
     // space.
     initPolicy(policy, BALANCED_SPACE_THRESHOLD, 1.0f);
-    Assert.assertEquals(volumes.get(1), policy.chooseVolume(volumes, 100,
+    Assertions.assertEquals(volumes.get(1), policy.chooseVolume(volumes, 100,
         null));
-    Assert.assertEquals(volumes.get(2), policy.chooseVolume(volumes, 100,
+    Assertions.assertEquals(volumes.get(2), policy.chooseVolume(volumes, 100,
         null));
-    Assert.assertEquals(volumes.get(1), policy.chooseVolume(volumes, 100,
+    Assertions.assertEquals(volumes.get(1), policy.chooseVolume(volumes, 100,
         null));
-    Assert.assertEquals(volumes.get(2), policy.chooseVolume(volumes, 100,
+    Assertions.assertEquals(volumes.get(2), policy.chooseVolume(volumes, 100,
         null));
 
     // All writes should be assigned to the volume with the least free space.
     initPolicy(policy, BALANCED_SPACE_THRESHOLD, 0.0f);
-    Assert.assertEquals(volumes.get(0), policy.chooseVolume(volumes, 100,
+    Assertions.assertEquals(volumes.get(0), policy.chooseVolume(volumes, 100,
         null));
-    Assert.assertEquals(volumes.get(0), policy.chooseVolume(volumes, 100,
+    Assertions.assertEquals(volumes.get(0), policy.chooseVolume(volumes, 100,
         null));
-    Assert.assertEquals(volumes.get(0), policy.chooseVolume(volumes, 100,
+    Assertions.assertEquals(volumes.get(0), policy.chooseVolume(volumes, 100,
         null));
-    Assert.assertEquals(volumes.get(0), policy.chooseVolume(volumes, 100,
+    Assertions.assertEquals(volumes.get(0), policy.chooseVolume(volumes, 100,
         null));
   }
 
 
-  @Test(timeout=60000)
+  @Test
+  @Timeout(value = 60000, unit = TimeUnit.MILLISECONDS)
   public void testSameAvailableVolumeSpace() throws Exception {
     @SuppressWarnings("unchecked")
     final AvailableSpaceVolumeChoosingPolicy<FsVolumeSpi> policy =
@@ -172,29 +179,30 @@ public class TestAvailableSpaceVolumeChoosingPolicy {
     // We should alternate assigning between all the above volumes
     // for they have the same available space
     initPolicy(policy, 0, 1.0f);
-    Assert.assertEquals(volumes.get(0), policy.chooseVolume(volumes, 100,
+    Assertions.assertEquals(volumes.get(0), policy.chooseVolume(volumes, 100,
             null));
-    Assert.assertEquals(volumes.get(1), policy.chooseVolume(volumes, 100,
+    Assertions.assertEquals(volumes.get(1), policy.chooseVolume(volumes, 100,
             null));
-    Assert.assertEquals(volumes.get(2), policy.chooseVolume(volumes, 100,
+    Assertions.assertEquals(volumes.get(2), policy.chooseVolume(volumes, 100,
             null));
-    Assert.assertEquals(volumes.get(3), policy.chooseVolume(volumes, 100,
+    Assertions.assertEquals(volumes.get(3), policy.chooseVolume(volumes, 100,
             null));
 
     // We should alternate assigning between all the above volumes
     // for they have the same available space
     initPolicy(policy, 0, 0.0f);
-    Assert.assertEquals(volumes.get(0), policy.chooseVolume(volumes, 100,
+    Assertions.assertEquals(volumes.get(0), policy.chooseVolume(volumes, 100,
             null));
-    Assert.assertEquals(volumes.get(1), policy.chooseVolume(volumes, 100,
+    Assertions.assertEquals(volumes.get(1), policy.chooseVolume(volumes, 100,
             null));
-    Assert.assertEquals(volumes.get(2), policy.chooseVolume(volumes, 100,
+    Assertions.assertEquals(volumes.get(2), policy.chooseVolume(volumes, 100,
             null));
-    Assert.assertEquals(volumes.get(3), policy.chooseVolume(volumes, 100,
+    Assertions.assertEquals(volumes.get(3), policy.chooseVolume(volumes, 100,
             null));
   }
 
-  @Test(timeout=60000)
+  @Test
+  @Timeout(value = 60000, unit = TimeUnit.MILLISECONDS)
   public void testFourUnbalancedVolumes() throws Exception {
     @SuppressWarnings("unchecked")
     final AvailableSpaceVolumeChoosingPolicy<FsVolumeSpi> policy = 
@@ -222,29 +230,30 @@ public class TestAvailableSpaceVolumeChoosingPolicy {
     // We should alternate assigning between the two volumes with a lot of free
     // space.
     initPolicy(policy, BALANCED_SPACE_THRESHOLD, 1.0f);
-    Assert.assertEquals(volumes.get(2), policy.chooseVolume(volumes, 100,
+    Assertions.assertEquals(volumes.get(2), policy.chooseVolume(volumes, 100,
         null));
-    Assert.assertEquals(volumes.get(3), policy.chooseVolume(volumes, 100,
+    Assertions.assertEquals(volumes.get(3), policy.chooseVolume(volumes, 100,
         null));
-    Assert.assertEquals(volumes.get(2), policy.chooseVolume(volumes, 100,
+    Assertions.assertEquals(volumes.get(2), policy.chooseVolume(volumes, 100,
         null));
-    Assert.assertEquals(volumes.get(3), policy.chooseVolume(volumes, 100,
+    Assertions.assertEquals(volumes.get(3), policy.chooseVolume(volumes, 100,
         null));
 
     // We should alternate assigning between the two volumes with less free
     // space.
     initPolicy(policy, BALANCED_SPACE_THRESHOLD, 0.0f);
-    Assert.assertEquals(volumes.get(0), policy.chooseVolume(volumes, 100,
+    Assertions.assertEquals(volumes.get(0), policy.chooseVolume(volumes, 100,
         null));
-    Assert.assertEquals(volumes.get(1), policy.chooseVolume(volumes, 100,
+    Assertions.assertEquals(volumes.get(1), policy.chooseVolume(volumes, 100,
         null));
-    Assert.assertEquals(volumes.get(0), policy.chooseVolume(volumes, 100,
+    Assertions.assertEquals(volumes.get(0), policy.chooseVolume(volumes, 100,
          null));
-    Assert.assertEquals(volumes.get(1), policy.chooseVolume(volumes, 100,
+    Assertions.assertEquals(volumes.get(1), policy.chooseVolume(volumes, 100,
         null));
   }
-  
-  @Test(timeout=60000)
+
+  @Test
+  @Timeout(value = 60000, unit = TimeUnit.MILLISECONDS)
   public void testNotEnoughSpaceOnSelectedVolume() throws Exception {
     @SuppressWarnings("unchecked")
     final AvailableSpaceVolumeChoosingPolicy<FsVolumeSpi> policy = 
@@ -266,11 +275,12 @@ public class TestAvailableSpaceVolumeChoosingPolicy {
     // space to accept the replica size, and another volume does have enough
     // free space, that should be chosen instead.
     initPolicy(policy, BALANCED_SPACE_THRESHOLD, 0.0f);
-    Assert.assertEquals(volumes.get(1), policy.chooseVolume(volumes,
+    Assertions.assertEquals(volumes.get(1), policy.chooseVolume(volumes,
         1024L * 1024L * 2, null));
   }
-  
-  @Test(timeout=60000)
+
+  @Test
+  @Timeout(value = 60000, unit = TimeUnit.MILLISECONDS)
   public void testAvailableSpaceChanges() throws Exception {
     @SuppressWarnings("unchecked")
     final AvailableSpaceVolumeChoosingPolicy<FsVolumeSpi> policy = 
@@ -294,26 +304,30 @@ public class TestAvailableSpaceVolumeChoosingPolicy {
 
     // Should still be able to get a volume for the replica even though the
     // available space on the second volume changed.
-    Assert.assertEquals(volumes.get(1), policy.chooseVolume(volumes,
+    Assertions.assertEquals(volumes.get(1), policy.chooseVolume(volumes,
         100, null));
   }
-  
-  @Test(timeout=60000)
+
+  @Test
+  @Timeout(value = 60000, unit = TimeUnit.MILLISECONDS)
   public void randomizedTest1() throws Exception {
     doRandomizedTest(0.75f, 1, 1);
   }
-  
-  @Test(timeout=60000)
+
+  @Test
+  @Timeout(value = 60000, unit = TimeUnit.MILLISECONDS)
   public void randomizedTest2() throws Exception {
     doRandomizedTest(0.75f, 5, 1);
   }
-  
-  @Test(timeout=60000)
+
+  @Test
+  @Timeout(value = 60000, unit = TimeUnit.MILLISECONDS)
   public void randomizedTest3() throws Exception {
     doRandomizedTest(0.75f, 1, 5);
   }
-  
-  @Test(timeout=60000)
+
+  @Test
+  @Timeout(value = 60000, unit = TimeUnit.MILLISECONDS)
   public void randomizedTest4() throws Exception {
     doRandomizedTest(0.90f, 5, 1);
   }

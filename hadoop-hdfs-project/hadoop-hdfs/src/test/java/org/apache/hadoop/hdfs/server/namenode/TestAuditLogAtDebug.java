@@ -28,7 +28,7 @@ import org.apache.hadoop.hdfs.server.namenode.FSNamesystem.FSNamesystemAuditLogg
 import org.apache.hadoop.test.GenericTestUtils;
 
 import org.junit.Rule;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.junit.rules.Timeout;
 import org.slf4j.event.Level;
 

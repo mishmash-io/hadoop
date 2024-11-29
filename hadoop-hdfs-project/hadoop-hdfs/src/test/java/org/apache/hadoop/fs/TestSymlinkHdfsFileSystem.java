@@ -17,35 +17,40 @@
  */
 package org.apache.hadoop.fs;
 
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.io.IOException;
+import java.util.concurrent.TimeUnit;
 
-import org.junit.BeforeClass;
-import org.junit.Ignore;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Disabled;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.Timeout;
 
 public class TestSymlinkHdfsFileSystem extends TestSymlinkHdfs {
 
-  @BeforeClass
+  @BeforeAll
   public static void testSetup() throws Exception {
     wrapper = new FileSystemTestWrapper(dfs, "/tmp/TestSymlinkHdfsFileSystem");
   }
 
   @Override
-  @Ignore("FileSystem adds missing authority in absolute URIs")
-  @Test(timeout=10000)
+  @Disabled("FileSystem adds missing authority in absolute URIs")
+  @Test
+  @Timeout(value = 10000, unit = TimeUnit.MILLISECONDS)
   public void testCreateWithPartQualPathFails() throws IOException {}
 
-  @Ignore("FileSystem#create creates parent directories," +
+  @Disabled("FileSystem#create creates parent directories," +
       " so dangling links to directories are created")
   @Override
-  @Test(timeout=10000)
+  @Test
+  @Timeout(value = 10000, unit = TimeUnit.MILLISECONDS)
   public void testCreateFileViaDanglingLinkParent() throws IOException {}
 
   // Additional tests for DFS-only methods
 
-  @Test(timeout=10000)
+  @Test
+  @Timeout(value = 10000, unit = TimeUnit.MILLISECONDS)
   public void testRecoverLease() throws IOException {
     Path dir  = new Path(testBaseDir1());
     Path file = new Path(testBaseDir1(), "file");
@@ -55,10 +60,11 @@ public class TestSymlinkHdfsFileSystem extends TestSymlinkHdfs {
     wrapper.createSymlink(file, link, false);
     // Attempt recoverLease through a symlink
     boolean closed = dfs.recoverLease(link);
-    assertTrue("Expected recoverLease to return true", closed);
+    assertTrue(closed, "Expected recoverLease to return true");
   }
 
-  @Test(timeout=10000)
+  @Test
+  @Timeout(value = 10000, unit = TimeUnit.MILLISECONDS)
   public void testIsFileClosed() throws IOException {
     Path dir  = new Path(testBaseDir1());
     Path file = new Path(testBaseDir1(), "file");
@@ -68,10 +74,11 @@ public class TestSymlinkHdfsFileSystem extends TestSymlinkHdfs {
     wrapper.createSymlink(file, link, false);
     // Attempt recoverLease through a symlink
     boolean closed = dfs.isFileClosed(link);
-    assertTrue("Expected isFileClosed to return true", closed);
+    assertTrue(closed, "Expected isFileClosed to return true");
   }
 
-  @Test(timeout=10000)
+  @Test
+  @Timeout(value = 10000, unit = TimeUnit.MILLISECONDS)
   public void testConcat() throws Exception {
     Path dir  = new Path(testBaseDir1());
     Path link = new Path(testBaseDir1(), "link");
@@ -89,7 +96,8 @@ public class TestSymlinkHdfsFileSystem extends TestSymlinkHdfs {
     dfs.concat(target, srcs);
   }
 
-  @Test(timeout=10000)
+  @Test
+  @Timeout(value = 10000, unit = TimeUnit.MILLISECONDS)
   public void testSnapshot() throws Exception {
     Path dir  = new Path(testBaseDir1());
     Path link = new Path(testBaseDir1(), "link");

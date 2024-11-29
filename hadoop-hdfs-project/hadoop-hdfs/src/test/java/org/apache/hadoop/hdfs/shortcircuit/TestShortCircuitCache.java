@@ -33,9 +33,12 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 
 import net.jcip.annotations.NotThreadSafe;
+import org.hamcrest.junit.MatcherAssume;
+
 import org.apache.commons.collections.map.LinkedMap;
 import org.apache.commons.lang3.mutable.MutableBoolean;
 import org.slf4j.Logger;
@@ -83,9 +86,9 @@ import org.apache.hadoop.test.GenericTestUtils;
 import org.apache.hadoop.test.LambdaTestUtils;
 import org.apache.hadoop.util.DataChecksum;
 import org.apache.hadoop.util.Time;
-import org.junit.Assert;
-import org.junit.Assume;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.Timeout;
 import org.mockito.Mockito;
 import org.mockito.invocation.InvocationOnMock;
 import org.mockito.stubbing.Answer;
@@ -166,14 +169,16 @@ public class TestShortCircuitCache {
     }
   }
 
-  @Test(timeout=60000)
+  @Test
+  @Timeout(value = 60000, unit = TimeUnit.MILLISECONDS)
   public void testCreateAndDestroy() throws Exception {
     ShortCircuitCache cache =
         new ShortCircuitCache(10, 1, 10, 1, 1, 10000, 0);
     cache.close();
   }
 
-  @Test(timeout=5000)
+  @Test
+  @Timeout(value = 5000, unit = TimeUnit.MILLISECONDS)
   public void testInvalidConfiguration() throws Exception {
     LambdaTestUtils.intercept(IllegalArgumentException.class,
         "maxTotalSize must be greater than zero.",
@@ -189,7 +194,8 @@ public class TestShortCircuitCache {
         () -> new ShortCircuitCache(10, 1, 10, -1, 1, 10000, 0));
   }
 
-  @Test(timeout=60000)
+  @Test
+  @Timeout(value = 60000, unit = TimeUnit.MILLISECONDS)
   public void testAddAndRetrieve() throws Exception {
     final ShortCircuitCache cache =
         new ShortCircuitCache(10, 10000000, 10, 10000000, 1, 10000, 0);
@@ -206,7 +212,7 @@ public class TestShortCircuitCache {
           new ShortCircuitReplicaCreator() {
         @Override
         public ShortCircuitReplicaInfo createShortCircuitReplicaInfo() {
-          Assert.fail("expected to use existing entry.");
+          Assertions.fail("expected to use existing entry.");
           return null;
         }
       });
@@ -226,7 +232,7 @@ public class TestShortCircuitCache {
           new ExtendedBlockId(123, "test_bp1"), new ShortCircuitReplicaCreator() {
         @Override
         public ShortCircuitReplicaInfo createShortCircuitReplicaInfo() {
-          Assert.fail("expected to use existing entry.");
+          Assertions.fail("expected to use existing entry.");
           return null;
         }
       });
@@ -238,7 +244,8 @@ public class TestShortCircuitCache {
     cache.close();
   }
 
-  @Test(timeout=100000)
+  @Test
+  @Timeout(value = 100000, unit = TimeUnit.MILLISECONDS)
   public void testExpiry() throws Exception {
     final ShortCircuitCache cache =
         new ShortCircuitCache(2, 1, 1, 10000000, 1, 10000000, 0);
@@ -270,9 +277,10 @@ public class TestShortCircuitCache {
     } while (triedToCreate.isFalse());
     cache.close();
   }
-  
-  
-  @Test(timeout=60000)
+
+
+  @Test
+  @Timeout(value = 60000, unit = TimeUnit.MILLISECONDS)
   public void testEviction() throws Exception {
     final ShortCircuitCache cache =
         new ShortCircuitCache(2, 10000000, 1, 10000000, 1, 10000, 0);
@@ -308,7 +316,7 @@ public class TestShortCircuitCache {
             new ShortCircuitReplicaCreator() {
         @Override
         public ShortCircuitReplicaInfo createShortCircuitReplicaInfo() {
-          Assert.fail("expected to use existing entry for " + iVal);
+          Assertions.fail("expected to use existing entry for " + iVal);
           return null;
         }
       });
@@ -329,7 +337,7 @@ public class TestShortCircuitCache {
         }
       });
     Preconditions.checkState(replicaInfos[0].getReplica() == null);
-    Assert.assertTrue(calledCreate.isTrue());
+    Assertions.assertTrue(calledCreate.isTrue());
     // Clean up
     for (int i = 1; i < pairs.length; i++) {
       replicaInfos[i].getReplica().unref();
@@ -339,8 +347,9 @@ public class TestShortCircuitCache {
     }
     cache.close();
   }
-  
-  @Test(timeout=60000)
+
+  @Test
+  @Timeout(value = 60000, unit = TimeUnit.MILLISECONDS)
   public void testTimeBasedStaleness() throws Exception {
     // Set up the cache with a short staleness time.
     final ShortCircuitCache cache =
@@ -402,7 +411,7 @@ public class TestShortCircuitCache {
         new ExtendedBlockId(1, "test_bp1"), new ShortCircuitReplicaCreator() {
       @Override
       public ShortCircuitReplicaInfo createShortCircuitReplicaInfo() {
-        Assert.fail("second replica went stale, despite 1 " +
+        Assertions.fail("second replica went stale, despite 1 " +
             "hour staleness time.");
         return null;
       }
@@ -429,7 +438,7 @@ public class TestShortCircuitCache {
     conf.setBoolean(DFS_CLIENT_DOMAIN_SOCKET_DATA_TRAFFIC, false);
     DFSInputStream.tcpReadsDisabledForTesting = true;
     DomainSocket.disableBindPathValidation();
-    Assume.assumeThat(DomainSocket.getLoadingFailureReason(), equalTo(null));
+    MatcherAssume.assumeThat(DomainSocket.getLoadingFailureReason(), equalTo(null));
     return conf;
   }
   
@@ -439,8 +448,9 @@ public class TestShortCircuitCache {
         DomainSocket.connect(conf.get(DFS_DOMAIN_SOCKET_PATH_KEY));
     return new DomainPeer(sock);
   }
-  
-  @Test(timeout=60000)
+
+  @Test
+  @Timeout(value = 60000, unit = TimeUnit.MILLISECONDS)
   public void testAllocShm() throws Exception {
     BlockReaderTestUtil.enableShortCircuitShmTracing();
     TemporarySocketDirectory sockDir = new TemporarySocketDirectory();
@@ -456,7 +466,7 @@ public class TestShortCircuitCache {
       public void visit(HashMap<DatanodeInfo, PerDatanodeVisitorInfo> info)
           throws IOException {
         // The ClientShmManager starts off empty
-        Assert.assertEquals(0,  info.size());
+        Assertions.assertEquals(0,  info.size());
       }
     });
     DomainPeer peer = getDomainPeerToDn(conf);
@@ -468,18 +478,18 @@ public class TestShortCircuitCache {
     // Allocating the first shm slot requires using up a peer.
     Slot slot = cache.allocShmSlot(datanode, peer, usedPeer,
                     blockId, "testAllocShm_client");
-    Assert.assertNotNull(slot);
-    Assert.assertTrue(usedPeer.booleanValue());
+    Assertions.assertNotNull(slot);
+    Assertions.assertTrue(usedPeer.booleanValue());
     cache.getDfsClientShmManager().visit(new Visitor() {
       @Override
       public void visit(HashMap<DatanodeInfo, PerDatanodeVisitorInfo> info)
           throws IOException {
         // The ClientShmManager starts off empty
-        Assert.assertEquals(1,  info.size());
+        Assertions.assertEquals(1,  info.size());
         PerDatanodeVisitorInfo vinfo = info.get(datanode);
-        Assert.assertFalse(vinfo.disabled);
-        Assert.assertEquals(0, vinfo.full.size());
-        Assert.assertEquals(1, vinfo.notFull.size());
+        Assertions.assertFalse(vinfo.disabled);
+        Assertions.assertEquals(0, vinfo.full.size());
+        Assertions.assertEquals(1, vinfo.notFull.size());
       }
     });
     cache.scheduleSlotReleaser(slot);
@@ -510,7 +520,8 @@ public class TestShortCircuitCache {
     sockDir.close();
   }
 
-  @Test(timeout=60000)
+  @Test
+  @Timeout(value = 60000, unit = TimeUnit.MILLISECONDS)
   public void testShmBasedStaleness() throws Exception {
     BlockReaderTestUtil.enableShortCircuitShmTracing();
     TemporarySocketDirectory sockDir = new TemporarySocketDirectory();
@@ -530,7 +541,7 @@ public class TestShortCircuitCache {
     int first = fis.read();
     final ExtendedBlock block =
         DFSTestUtil.getFirstBlock(fs, new Path(TEST_FILE));
-    Assert.assertTrue(first != -1);
+    Assertions.assertTrue(first != -1);
     cache.accept(new CacheVisitor() {
       @Override
       public void visit(int numOutstandingMmaps,
@@ -540,8 +551,8 @@ public class TestShortCircuitCache {
           LinkedMap evictableMmapped) {
         ShortCircuitReplica replica = replicas.get(
             ExtendedBlockId.fromExtendedBlock(block));
-        Assert.assertNotNull(replica);
-        Assert.assertTrue(replica.getSlot().isValid());
+        Assertions.assertNotNull(replica);
+        Assertions.assertTrue(replica.getSlot().isValid());
       }
     });
     // Stop the Namenode.  This will close the socket keeping the client's
@@ -556,8 +567,8 @@ public class TestShortCircuitCache {
           LinkedMap evictableMmapped) {
         ShortCircuitReplica replica = replicas.get(
             ExtendedBlockId.fromExtendedBlock(block));
-        Assert.assertNotNull(replica);
-        Assert.assertFalse(replica.getSlot().isValid());
+        Assertions.assertNotNull(replica);
+        Assertions.assertFalse(replica.getSlot().isValid());
       }
     });
     cluster.shutdown();
@@ -569,7 +580,8 @@ public class TestShortCircuitCache {
    * The DataNode will notify the DFSClient that the replica is stale via the
    * ShortCircuitShm.
    */
-  @Test(timeout=60000)
+  @Test
+  @Timeout(value = 60000, unit = TimeUnit.MILLISECONDS)
   public void testUnlinkingReplicasInFileDescriptorCache() throws Exception {
     BlockReaderTestUtil.enableShortCircuitShmTracing();
     TemporarySocketDirectory sockDir = new TemporarySocketDirectory();
@@ -590,7 +602,7 @@ public class TestShortCircuitCache {
       public void visit(HashMap<DatanodeInfo, PerDatanodeVisitorInfo> info)
           throws IOException {
         // The ClientShmManager starts off empty.
-        Assert.assertEquals(0,  info.size());
+        Assertions.assertEquals(0,  info.size());
       }
     });
     final Path TEST_PATH = new Path("/test_file");
@@ -601,7 +613,7 @@ public class TestShortCircuitCache {
     byte contents[] = DFSTestUtil.readFileBuffer(fs, TEST_PATH);
     byte expected[] = DFSTestUtil.
         calculateFileContentsFromSeed(SEED, TEST_FILE_LEN);
-    Assert.assertTrue(Arrays.equals(contents, expected));
+    Assertions.assertTrue(Arrays.equals(contents, expected));
     // Loading this file brought the ShortCircuitReplica into our local
     // replica cache.
     final DatanodeInfo datanode = new DatanodeInfoBuilder()
@@ -611,12 +623,12 @@ public class TestShortCircuitCache {
       @Override
       public void visit(HashMap<DatanodeInfo, PerDatanodeVisitorInfo> info)
           throws IOException {
-        Assert.assertTrue(info.get(datanode).full.isEmpty());
-        Assert.assertFalse(info.get(datanode).disabled);
-        Assert.assertEquals(1, info.get(datanode).notFull.values().size());
+        Assertions.assertTrue(info.get(datanode).full.isEmpty());
+        Assertions.assertFalse(info.get(datanode).disabled);
+        Assertions.assertEquals(1, info.get(datanode).notFull.values().size());
         DfsClientShm shm =
             info.get(datanode).notFull.values().iterator().next();
-        Assert.assertFalse(shm.isDisconnected());
+        Assertions.assertFalse(shm.isDisconnected());
       }
     });
     // Remove the file whose blocks we just read.
@@ -633,9 +645,9 @@ public class TestShortCircuitCache {
             @Override
             public void visit(HashMap<DatanodeInfo,
                   PerDatanodeVisitorInfo> info) throws IOException {
-              Assert.assertTrue(info.get(datanode).full.isEmpty());
-              Assert.assertFalse(info.get(datanode).disabled);
-              Assert.assertEquals(1,
+              Assertions.assertTrue(info.get(datanode).full.isEmpty());
+              Assertions.assertFalse(info.get(datanode).disabled);
+              Assertions.assertEquals(1,
                   info.get(datanode).notFull.values().size());
               DfsClientShm shm = info.get(datanode).notFull.values().
                   iterator().next();
@@ -687,7 +699,8 @@ public class TestShortCircuitCache {
   }
 
   // Regression test for HDFS-7915
-  @Test(timeout=60000)
+  @Test
+  @Timeout(value = 60000, unit = TimeUnit.MILLISECONDS)
   public void testDataXceiverCleansUpSlotsOnFailure() throws Exception {
     BlockReaderTestUtil.enableShortCircuitShmTracing();
     TemporarySocketDirectory sockDir = new TemporarySocketDirectory();
@@ -729,7 +742,8 @@ public class TestShortCircuitCache {
   }
 
   // Regression test for HADOOP-11802
-  @Test(timeout=60000)
+  @Test
+  @Timeout(value = 60000, unit = TimeUnit.MILLISECONDS)
   public void testDataXceiverHandlesRequestShortCircuitShmFailure()
       throws Exception {
     BlockReaderTestUtil.enableShortCircuitShmTracing();
@@ -762,7 +776,7 @@ public class TestShortCircuitCache {
       // The shared memory segment allocation will fail because of the failure
       // injector.
       DFSTestUtil.readFileBuffer(fs, TEST_PATH1);
-      Assert.fail("expected readFileBuffer to fail, but it succeeded.");
+      Assertions.fail("expected readFileBuffer to fail, but it succeeded.");
     } catch (Throwable t) {
       GenericTestUtils.assertExceptionContains("TCP reads were disabled for " +
           "testing, but we failed to do a non-TCP read.", t);
@@ -796,7 +810,8 @@ public class TestShortCircuitCache {
   }
 
   // Regression test for HDFS-8070
-  @Test(timeout=60000)
+  @Test
+  @Timeout(value = 60000, unit = TimeUnit.MILLISECONDS)
   public void testPreReceiptVerificationDfsClientCanDoScr() throws Exception {
     BlockReaderTestUtil.enableShortCircuitShmTracing();
     TemporarySocketDirectory sockDir = new TemporarySocketDirectory();
@@ -915,7 +930,7 @@ public class TestShortCircuitCache {
       DatanodeInfo[] nodes = blk.getLocations();
 
       try {
-        Assert.assertNull(new BlockReaderFactory(new DfsClientConf(conf))
+        Assertions.assertNull(new BlockReaderFactory(new DfsClientConf(conf))
             .setInetSocketAddress(NetUtils.createSocketAddr(nodes[0]
                 .getXferAddr()))
             .setClientCacheContext(clientContext)
@@ -924,13 +939,14 @@ public class TestShortCircuitCache {
             .setBlockToken(new Token())
             .createShortCircuitReplicaInfo());
       } catch (NullPointerException ex) {
-        Assert.fail("Should not throw NPE when the native library is unable " +
+        Assertions.fail("Should not throw NPE when the native library is unable " +
             "to create new files!");
       }
     }
   }
 
-  @Test(timeout = 60000)
+  @Test
+  @Timeout(value = 60000, unit = TimeUnit.MILLISECONDS)
   public void testDomainSocketClosedByDN() throws Exception {
     TemporarySocketDirectory sockDir = new TemporarySocketDirectory();
     Configuration conf =
@@ -966,16 +982,17 @@ public class TestShortCircuitCache {
       Thread.sleep(2000);
       cache.scheduleSlotReleaser(slot2);
       Thread.sleep(2000);
-      Assert.assertEquals(0,
+      Assertions.assertEquals(0,
           cluster.getDataNodes().get(0).getShortCircuitRegistry().getShmNum());
-      Assert.assertEquals(0, cache.getDfsClientShmManager().getShmNum());
+      Assertions.assertEquals(0, cache.getDfsClientShmManager().getShmNum());
     } finally {
       cluster.shutdown();
     }
   }
 
   // Regression test for HDFS-16535
-  @Test(timeout = 60000)
+  @Test
+  @Timeout(value = 60000, unit = TimeUnit.MILLISECONDS)
   public void testDomainSocketClosedByMultipleDNs() throws Exception {
     TemporarySocketDirectory sockDir = new TemporarySocketDirectory();
     String testName = "testDomainSocketClosedByMultipleDNs";
@@ -1025,33 +1042,33 @@ public class TestShortCircuitCache {
       dn1.getShortCircuitRegistry()
           .registerSlot(blockId1, slot3.getSlotId(), false);
 
-      Assert.assertEquals(2, cache.getDfsClientShmManager().getShmNum());
-      Assert.assertEquals(1, dn0.getShortCircuitRegistry().getShmNum());
-      Assert.assertEquals(1, dn1.getShortCircuitRegistry().getShmNum());
+      Assertions.assertEquals(2, cache.getDfsClientShmManager().getShmNum());
+      Assertions.assertEquals(1, dn0.getShortCircuitRegistry().getShmNum());
+      Assertions.assertEquals(1, dn1.getShortCircuitRegistry().getShmNum());
 
       // Release the slot of DataNode-1 first.
       cache.scheduleSlotReleaser(slot3);
       Thread.sleep(2000);
-      Assert.assertEquals(1, cache.getDfsClientShmManager().getShmNum());
+      Assertions.assertEquals(1, cache.getDfsClientShmManager().getShmNum());
 
       // Release the slots of DataNode-0.
       cache.scheduleSlotReleaser(slot1);
       Thread.sleep(2000);
-      Assert.assertEquals("0 ShmNum means the shm of DataNode-0 is shutdown" +
-              " due to slot release failures.",
-          1, cache.getDfsClientShmManager().getShmNum());
+      Assertions.assertEquals(1, cache.getDfsClientShmManager().getShmNum(), "0 ShmNum means the shm of DataNode-0 is shutdown" +
+              " due to slot release failures.");
       cache.scheduleSlotReleaser(slot2);
       Thread.sleep(2000);
 
-      Assert.assertEquals(0, dn0.getShortCircuitRegistry().getShmNum());
-      Assert.assertEquals(0, dn1.getShortCircuitRegistry().getShmNum());
-      Assert.assertEquals(0, cache.getDfsClientShmManager().getShmNum());
+      Assertions.assertEquals(0, dn0.getShortCircuitRegistry().getShmNum());
+      Assertions.assertEquals(0, dn1.getShortCircuitRegistry().getShmNum());
+      Assertions.assertEquals(0, cache.getDfsClientShmManager().getShmNum());
     } finally {
       cluster.shutdown();
     }
   }
 
-  @Test(timeout = 60000)
+  @Test
+  @Timeout(value = 60000, unit = TimeUnit.MILLISECONDS)
   public void testDNRestart() throws Exception {
     TemporarySocketDirectory sockDir = new TemporarySocketDirectory();
     Configuration conf = createShortCircuitConf("testDNRestart", sockDir);
@@ -1089,9 +1106,9 @@ public class TestShortCircuitCache {
       }
       cache.scheduleSlotReleaser(slot2);
       Thread.sleep(2000);
-      Assert.assertEquals(0,
+      Assertions.assertEquals(0,
           cluster.getDataNodes().get(0).getShortCircuitRegistry().getShmNum());
-      Assert.assertEquals(0, cache.getDfsClientShmManager().getShmNum());
+      Assertions.assertEquals(0, cache.getDfsClientShmManager().getShmNum());
     } finally {
       cluster.shutdown();
     }

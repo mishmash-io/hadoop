@@ -40,9 +40,9 @@ import org.apache.hadoop.test.GenericTestUtils;
 import org.apache.hadoop.test.GenericTestUtils.LogCapturer;
 import org.apache.hadoop.util.Lists;
 
-import org.junit.Before;
-import org.junit.Test;
-
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.Timeout;
 import org.mockito.Mockito;
 
 import org.slf4j.Logger;
@@ -55,6 +55,7 @@ import java.net.InetAddress;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 import java.util.regex.Pattern;
 
 import static org.apache.hadoop.fs.CommonConfigurationKeysPublic.HADOOP_CALLER_CONTEXT_ENABLED_KEY;
@@ -72,11 +73,7 @@ import static org.apache.hadoop.hdfs.DFSConfigKeys.DFS_NAMENODE_ACLS_ENABLED_KEY
 import static org.apache.hadoop.hdfs.DFSConfigKeys.DFS_NAMENODE_AUDIT_LOGGERS_KEY;
 import static org.apache.hadoop.hdfs.DFSConfigKeys.DFS_NAMENODE_AUDIT_LOG_WITH_REMOTE_PORT_KEY;
 import static org.apache.hadoop.hdfs.DFSConfigKeys.NNTOP_ENABLED_KEY;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
+import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doThrow;
 
@@ -106,7 +103,7 @@ public class TestAuditLogger {
       "proto=.*?" +
       "callerContext=.*?clientPort\\:(\\d{0,9}).*?");
 
-  @Before
+  @BeforeEach
   public void setup() {
     DummyAuditLogger.initialized = false;
     DummyAuditLogger.logCount = 0;
@@ -155,8 +152,8 @@ public class TestAuditLogger {
           cluster.getNameNode().getNamesystem().getAuditLoggers();
       for (AuditLogger auditLogger : auditLoggers) {
         assertFalse(
-            "top audit logger is still hooked in after it is disabled",
-            auditLogger instanceof TopAuditLogger);
+            auditLogger instanceof TopAuditLogger,
+            "top audit logger is still hooked in after it is disabled");
       }
     } finally {
       cluster.shutdown();
@@ -475,7 +472,8 @@ public class TestAuditLogger {
    * Verify Audit log entries for the successful ACL API calls and ACL commands
    * over FS Shell.
    */
-  @Test (timeout = 60000)
+  @Test
+  @Timeout(value = 60000, unit = TimeUnit.MILLISECONDS)
   public void testAuditLogForAcls() throws Exception {
     final Configuration conf = new HdfsConfiguration();
     conf.setBoolean(DFS_NAMENODE_ACLS_ENABLED_KEY, true);

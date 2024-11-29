@@ -23,17 +23,15 @@ import org.apache.hadoop.hdfs.server.datanode.DataNodeFaultInjector;
 
 import static org.apache.hadoop.hdfs.DFSConfigKeys.*;
 import static org.apache.hadoop.test.MetricsAsserts.getMetrics;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
-import static org.junit.Assume.assumeTrue;
+import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assumptions.assumeTrue;
 
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 
@@ -55,12 +53,8 @@ import org.apache.hadoop.io.nativeio.NativeIO.POSIX.NoMlockCacheManipulator;
 import org.apache.hadoop.metrics2.MetricsRecordBuilder;
 import org.apache.hadoop.test.GenericTestUtils;
 import org.apache.hadoop.test.MetricsAsserts;
-import org.junit.After;
-import org.junit.AfterClass;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.BeforeClass;
-import org.junit.Test;
+import org.junit.jupiter.api.*;
+
 import org.slf4j.event.Level;
 
 import java.util.function.Supplier;
@@ -102,9 +96,9 @@ public class TestPmemCacheRecovery {
         LoggerFactory.getLogger(FsDatasetCache.class), Level.DEBUG);
   }
 
-  @BeforeClass
+  @BeforeAll
   public static void setUpClass() throws Exception {
-    assumeTrue("Requires PMDK", NativeIO.POSIX.isPmdkAvailable());
+    assumeTrue(NativeIO.POSIX.isPmdkAvailable(), "Requires PMDK");
 
     oldInjector = DataNodeFaultInjector.get();
     DataNodeFaultInjector.set(new DataNodeFaultInjector() {
@@ -120,12 +114,12 @@ public class TestPmemCacheRecovery {
     });
   }
 
-  @AfterClass
+  @AfterAll
   public static void tearDownClass() throws Exception {
     DataNodeFaultInjector.set(oldInjector);
   }
 
-  @Before
+  @BeforeEach
   public void setUp() throws Exception {
     conf = new HdfsConfiguration();
     conf.setBoolean(DFS_DATANODE_PMEM_CACHE_RECOVERY_KEY, true);
@@ -155,7 +149,7 @@ public class TestPmemCacheRecovery {
     cacheManager = ((FsDatasetImpl) dn.getFSDataset()).cacheManager;
   }
 
-  @After
+  @AfterEach
   public void tearDown() throws Exception {
     if (fs != null) {
       fs.close();
@@ -215,12 +209,13 @@ public class TestPmemCacheRecovery {
     return keys;
   }
 
-  @Test(timeout = 60000)
+  @Test
+  @Timeout(value = 60000, unit = TimeUnit.MILLISECONDS)
   public void testCacheRecovery() throws Exception {
     final int cacheBlocksNum =
         Ints.checkedCast(CACHE_AMOUNT / BLOCK_SIZE);
     BlockReaderTestUtil.enableHdfsCachingTracing();
-    Assert.assertEquals(0, CACHE_AMOUNT % BLOCK_SIZE);
+    Assertions.assertEquals(0, CACHE_AMOUNT % BLOCK_SIZE);
 
     final Path testFile = new Path("/testFile");
     final long testFileLen = cacheBlocksNum * BLOCK_SIZE;

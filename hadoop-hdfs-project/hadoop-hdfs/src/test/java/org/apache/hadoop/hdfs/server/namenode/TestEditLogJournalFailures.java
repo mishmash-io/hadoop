@@ -18,9 +18,7 @@
 package org.apache.hadoop.hdfs.server.namenode;
 
 import static org.apache.hadoop.test.LambdaTestUtils.intercept;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
+import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.ArgumentMatchers.anyInt;
@@ -45,15 +43,12 @@ import org.apache.hadoop.ipc.RemoteException;
 import org.apache.hadoop.test.GenericTestUtils;
 import org.apache.hadoop.test.PathUtils;
 import org.apache.hadoop.util.ExitUtil.ExitException;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.junit.runners.Parameterized;
-import org.junit.runners.Parameterized.Parameters;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.MethodSource;
 import org.mockito.Mockito;
 
-@RunWith(Parameterized.class)
 public class TestEditLogJournalFailures {
 
   private int editsPerformed = 0;
@@ -61,7 +56,6 @@ public class TestEditLogJournalFailures {
   private FileSystem fs;
   private boolean useAsyncEdits;
 
-  @Parameters
   public static Collection<Object[]> data() {
     Collection<Object[]> params = new ArrayList<Object[]>();
     params.add(new Object[]{Boolean.FALSE});
@@ -69,7 +63,7 @@ public class TestEditLogJournalFailures {
     return params;
   }
 
-  public TestEditLogJournalFailures(boolean useAsyncEdits) {
+  public void initTestEditLogJournalFailures(boolean useAsyncEdits) {
     this.useAsyncEdits = useAsyncEdits;
   }
 
@@ -84,7 +78,7 @@ public class TestEditLogJournalFailures {
    * Create the mini cluster for testing and sub in a custom runtime so that
    * edit log journal failures don't actually cause the JVM to exit.
    */
-  @Before
+  @BeforeEach
   public void setUpMiniCluster() throws IOException {
     setUpMiniCluster(getConf(), true);
   }
@@ -97,7 +91,7 @@ public class TestEditLogJournalFailures {
     fs = cluster.getFileSystem();
   }
   
-  @After
+  @AfterEach
   public void shutDownMiniCluster() throws IOException {
     if (fs != null) {
       fs.close();
@@ -113,9 +107,11 @@ public class TestEditLogJournalFailures {
       }
     }
   }
-   
-  @Test
-  public void testSingleFailedEditsDirOnFlush() throws IOException {
+
+  @MethodSource("data")
+  @ParameterizedTest
+  public void testSingleFailedEditsDirOnFlush(boolean useAsyncEdits) throws IOException {
+    initTestEditLogJournalFailures(useAsyncEdits);
     assertTrue(doAnEdit());
     // Invalidate one edits journal.
     invalidateEditsDirAtIndex(0, true, false);
@@ -124,9 +120,11 @@ public class TestEditLogJournalFailures {
     // A single journal failure should not result in a call to terminate
     assertFalse(cluster.getNameNode().isInSafeMode());
   }
-   
-  @Test
-  public void testAllEditsDirsFailOnFlush() throws IOException {
+
+  @MethodSource("data")
+  @ParameterizedTest
+  public void testAllEditsDirsFailOnFlush(boolean useAsyncEdits) throws IOException {
+    initTestEditLogJournalFailures(useAsyncEdits);
     assertTrue(doAnEdit());
     // Invalidate both edits journals.
     invalidateEditsDirAtIndex(0, true, false);
@@ -143,9 +141,11 @@ public class TestEditLogJournalFailures {
           "Unsynced transactions: 1", re);
     }
   }
-  
-  @Test
-  public void testAllEditsDirFailOnWrite() throws IOException {
+
+  @MethodSource("data")
+  @ParameterizedTest
+  public void testAllEditsDirFailOnWrite(boolean useAsyncEdits) throws IOException {
+    initTestEditLogJournalFailures(useAsyncEdits);
     assertTrue(doAnEdit());
     // Invalidate both edits journals.
     invalidateEditsDirAtIndex(0, true, true);
@@ -163,9 +163,11 @@ public class TestEditLogJournalFailures {
           "Unsynced transactions: 1", re);
     }
   }
-  
-  @Test
-  public void testSingleFailedEditsDirOnSetReadyToFlush() throws IOException {
+
+  @MethodSource("data")
+  @ParameterizedTest
+  public void testSingleFailedEditsDirOnSetReadyToFlush(boolean useAsyncEdits) throws IOException {
+    initTestEditLogJournalFailures(useAsyncEdits);
     assertTrue(doAnEdit());
     // Invalidate one edits journal.
     invalidateEditsDirAtIndex(0, false, false);
@@ -174,10 +176,12 @@ public class TestEditLogJournalFailures {
     // A single journal failure should not result in a call to terminate
     assertFalse(cluster.getNameNode().isInSafeMode());
   }
-  
-  @Test
-  public void testSingleRequiredFailedEditsDirOnSetReadyToFlush()
+
+  @MethodSource("data")
+  @ParameterizedTest
+  public void testSingleRequiredFailedEditsDirOnSetReadyToFlush(boolean useAsyncEdits)
       throws IOException {
+    initTestEditLogJournalFailures(useAsyncEdits);
     // Set one of the edits dirs to be required.
     String[] editsDirs = cluster.getConfiguration(0).getTrimmedStrings(
         DFSConfigKeys.DFS_NAMENODE_NAME_DIR_KEY);
@@ -216,10 +220,12 @@ public class TestEditLogJournalFailures {
     Mockito.verify(nonRequiredSpy, Mockito.never()).setReadyToFlush();
     assertFalse(nonRequiredJas.isActive());
   }
-  
-  @Test
-  public void testMultipleRedundantFailedEditsDirOnSetReadyToFlush()
+
+  @MethodSource("data")
+  @ParameterizedTest
+  public void testMultipleRedundantFailedEditsDirOnSetReadyToFlush(boolean useAsyncEdits)
       throws IOException {
+    initTestEditLogJournalFailures(useAsyncEdits);
     // Set up 4 name/edits dirs.
     shutDownMiniCluster();
     Configuration conf = getConf();
@@ -266,9 +272,11 @@ public class TestEditLogJournalFailures {
     }
   }
 
-  @Test
-  public void testMultipleRedundantFailedEditsDirOnStartLogSegment()
+  @MethodSource("data")
+  @ParameterizedTest
+  public void testMultipleRedundantFailedEditsDirOnStartLogSegment(boolean useAsyncEdits)
       throws Exception {
+    initTestEditLogJournalFailures(useAsyncEdits);
     // Set up 4 name/edits dirs.
     shutDownMiniCluster();
     Configuration conf = getConf();

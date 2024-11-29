@@ -18,6 +18,7 @@
 package org.apache.hadoop.hdfs.server.namenode;
 
 import java.io.File;
+import java.util.concurrent.TimeUnit;
 
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileSystem;
@@ -31,19 +32,16 @@ import org.apache.hadoop.hdfs.MiniDFSCluster;
 import org.apache.hadoop.hdfs.protocol.DirectoryListing;
 import org.apache.hadoop.hdfs.protocol.HdfsFileStatus;
 import org.apache.hadoop.util.ExitUtil;
-import org.junit.After;
-import org.junit.Assert;
-import org.junit.BeforeClass;
-import org.junit.Test;
+import org.junit.jupiter.api.*;
 
 public class TestNNThroughputBenchmark {
 
-  @BeforeClass
+  @BeforeAll
   public static void setUp() {
     ExitUtil.disableSystemExit();
   }
 
-  @After
+  @AfterEach
   public void cleanUp() {
     FileUtil.fullyDeleteContents(new File(MiniDFSCluster.getBaseDirectory()));
   }
@@ -66,7 +64,8 @@ public class TestNNThroughputBenchmark {
    * This test runs all benchmarks defined in {@link NNThroughputBenchmark},
    * with explicit local -fs option.
    */
-  @Test(timeout = 120000)
+  @Test
+  @Timeout(value = 120000, unit = TimeUnit.MILLISECONDS)
   public void testNNThroughputWithFsOption() throws Exception {
     Configuration conf = new HdfsConfiguration();
     conf.setInt(DFSConfigKeys.DFS_BLOCK_SIZE_KEY, 16);
@@ -81,7 +80,8 @@ public class TestNNThroughputBenchmark {
   /**
    * This test runs {@link NNThroughputBenchmark} against a mini DFS cluster.
    */
-  @Test(timeout = 120000)
+  @Test
+  @Timeout(value = 120000, unit = TimeUnit.MILLISECONDS)
   public void testNNThroughputAgainstRemoteNN() throws Exception {
     final Configuration conf = new HdfsConfiguration();
     conf.setInt(DFSConfigKeys.DFS_NAMENODE_MIN_BLOCK_SIZE_KEY, 16);
@@ -105,7 +105,8 @@ public class TestNNThroughputBenchmark {
    * This test runs {@link NNThroughputBenchmark} against a mini DFS cluster
    * with explicit -fs option.
    */
-  @Test(timeout = 120000)
+  @Test
+  @Timeout(value = 120000, unit = TimeUnit.MILLISECONDS)
   public void testNNThroughputRemoteAgainstNNWithFsOption() throws Exception {
     final Configuration conf = new HdfsConfiguration();
     conf.setInt(DFSConfigKeys.DFS_NAMENODE_MIN_BLOCK_SIZE_KEY, 16);
@@ -130,7 +131,8 @@ public class TestNNThroughputBenchmark {
    * This test runs {@link NNThroughputBenchmark} against a mini DFS cluster
    * for append operation.
    */
-  @Test(timeout = 120000)
+  @Test
+  @Timeout(value = 120000, unit = TimeUnit.MILLISECONDS)
   public void testNNThroughputForAppendOp() throws Exception {
     final Configuration conf = new HdfsConfiguration();
     conf.setInt(DFSConfigKeys.DFS_NAMENODE_MIN_BLOCK_SIZE_KEY, 16);
@@ -155,10 +157,10 @@ public class TestNNThroughputBenchmark {
       listing = fsNamesystem.getListing("/", HdfsFileStatus.EMPTY_NAME, false);
       HdfsFileStatus[] partialListingAfter = listing.getPartialListing();
 
-      Assert.assertEquals(partialListing.length, partialListingAfter.length);
+      Assertions.assertEquals(partialListing.length, partialListingAfter.length);
       for (int i = 0; i < partialListing.length; i++) {
         //Check the modification time after append operation
-        Assert.assertNotEquals(partialListing[i].getModificationTime(),
+        Assertions.assertNotEquals(partialListing[i].getModificationTime(),
             partialListingAfter[i].getModificationTime());
       }
 
@@ -173,7 +175,8 @@ public class TestNNThroughputBenchmark {
    * This test runs {@link NNThroughputBenchmark} against a mini DFS cluster
    * for block report operation.
    */
-  @Test(timeout = 120000)
+  @Test
+  @Timeout(value = 120000, unit = TimeUnit.MILLISECONDS)
   public void testNNThroughputForBlockReportOp() throws Exception {
     final Configuration conf = new HdfsConfiguration();
     conf.setInt(DFSConfigKeys.DFS_NAMENODE_MIN_BLOCK_SIZE_KEY, 16);
@@ -194,7 +197,8 @@ public class TestNNThroughputBenchmark {
    * This test runs {@link NNThroughputBenchmark} against a mini DFS cluster
    * with explicit -baseDirName option.
    */
-  @Test(timeout = 120000)
+  @Test
+  @Timeout(value = 120000, unit = TimeUnit.MILLISECONDS)
   public void testNNThroughputWithBaseDir() throws Exception {
     final Configuration conf = new HdfsConfiguration();
     conf.setInt(DFSConfigKeys.DFS_NAMENODE_MIN_BLOCK_SIZE_KEY, 16);
@@ -210,13 +214,13 @@ public class TestNNThroughputBenchmark {
       NNThroughputBenchmark.runBenchmark(benchConf,
           new String[] {"-op", "create", "-keepResults", "-files", "3", "-baseDirName",
               "/nnThroughputBenchmark1", "-close"});
-      Assert.assertTrue(fs.exists(new Path("/nnThroughputBenchmark1")));
-      Assert.assertFalse(fs.exists(new Path("/nnThroughputBenchmark")));
+      Assertions.assertTrue(fs.exists(new Path("/nnThroughputBenchmark1")));
+      Assertions.assertFalse(fs.exists(new Path("/nnThroughputBenchmark")));
 
       NNThroughputBenchmark.runBenchmark(benchConf,
           new String[] {"-op", "all", "-baseDirName", "/nnThroughputBenchmark1"});
-      Assert.assertTrue(fs.exists(new Path("/nnThroughputBenchmark1")));
-      Assert.assertFalse(fs.exists(new Path("/nnThroughputBenchmark")));
+      Assertions.assertTrue(fs.exists(new Path("/nnThroughputBenchmark1")));
+      Assertions.assertFalse(fs.exists(new Path("/nnThroughputBenchmark")));
     } finally {
       if (cluster != null) {
         cluster.shutdown();

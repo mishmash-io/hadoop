@@ -21,8 +21,9 @@ import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.Options;
 import org.apache.hadoop.fs.contract.AbstractContractPathHandleTest;
 import org.apache.hadoop.fs.contract.AbstractFSContract;
-import org.junit.AfterClass;
-import org.junit.BeforeClass;
+
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.BeforeAll;
 
 import java.io.IOException;
 
@@ -38,12 +39,12 @@ public class TestHDFSContractPathHandle
     super(testname, opts, serialized);
   }
 
-  @BeforeClass
+  @BeforeAll
   public static void createCluster() throws IOException {
     HDFSContract.createCluster();
   }
 
-  @AfterClass
+  @AfterAll
   public static void teardownCluster() throws IOException {
     HDFSContract.destroyCluster();
   }

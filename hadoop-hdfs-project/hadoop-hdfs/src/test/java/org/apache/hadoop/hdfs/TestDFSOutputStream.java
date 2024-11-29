@@ -30,6 +30,7 @@ import java.util.EnumSet;
 import java.util.LinkedList;
 import java.util.Map;
 import java.util.Random;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 import java.util.concurrent.atomic.AtomicBoolean;
 
@@ -58,15 +59,10 @@ import org.apache.hadoop.io.IOUtils;
 import org.apache.hadoop.test.GenericTestUtils;
 import org.apache.hadoop.test.PathUtils;
 import org.apache.hadoop.test.Whitebox;
-import org.junit.AfterClass;
-import org.junit.Assert;
-import org.junit.BeforeClass;
-import org.junit.Test;
+import org.junit.jupiter.api.*;
 
 import static org.apache.hadoop.hdfs.client.HdfsClientConfigKeys.Write.RECOVER_LEASE_ON_CLOSE_EXCEPTION_KEY;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
+import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.anyBoolean;
 import org.mockito.Mockito;
 
@@ -74,7 +70,6 @@ import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 
-import static org.junit.Assert.assertEquals;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.doThrow;
@@ -87,7 +82,7 @@ import static org.apache.hadoop.hdfs.client.HdfsClientConfigKeys.DFS_CLIENT_WRIT
 public class TestDFSOutputStream {
   static MiniDFSCluster cluster;
 
-  @BeforeClass
+  @BeforeAll
   public static void setup() throws IOException {
     Configuration conf = new Configuration();
     cluster = new MiniDFSCluster.Builder(conf).numDataNodes(3).build();
@@ -109,7 +104,7 @@ public class TestDFSOutputStream {
     LastExceptionInStreamer ex = (LastExceptionInStreamer) Whitebox
         .getInternalState(streamer, "lastException");
     Throwable thrown = (Throwable) Whitebox.getInternalState(ex, "thrown");
-    Assert.assertNull(thrown);
+    Assertions.assertNull(thrown);
 
     dos.close();
 
@@ -121,7 +116,7 @@ public class TestDFSOutputStream {
       assertEquals(e, dummy);
     }
     thrown = (Throwable) Whitebox.getInternalState(ex, "thrown");
-    Assert.assertNull(thrown);
+    Assertions.assertNull(thrown);
     dos.close();
   }
 
@@ -147,10 +142,10 @@ public class TestDFSOutputStream {
     Field field = dos.getClass().getDeclaredField("packetSize");
     field.setAccessible(true);
 
-    Assert.assertTrue((Integer) field.get(dos) + 33 < packetSize);
+    Assertions.assertTrue((Integer) field.get(dos) + 33 < packetSize);
     // If PKT_MAX_HEADER_LEN is 257, actual packet size come to over 64KB
     // without a fix on HDFS-7308.
-    Assert.assertTrue((Integer) field.get(dos) + 257 < packetSize);
+    Assertions.assertTrue((Integer) field.get(dos) + 257 < packetSize);
   }
 
   /**
@@ -166,7 +161,8 @@ public class TestDFSOutputStream {
    * @throws IllegalAccessException
    * @throws NoSuchMethodException
    */
-  @Test(timeout=60000)
+  @Test
+  @Timeout(value = 60000, unit = TimeUnit.MILLISECONDS)
   public void testPreventOverflow() throws IOException, NoSuchFieldException,
       SecurityException, IllegalAccessException, IllegalArgumentException,
       InvocationTargetException, NoSuchMethodException {
@@ -248,21 +244,21 @@ public class TestDFSOutputStream {
       final Field writePacketSizeField = dos.getClass()
           .getDeclaredField("writePacketSize");
       writePacketSizeField.setAccessible(true);
-      Assert.assertEquals(writePacketSizeField.getInt(dos),
+      Assertions.assertEquals(writePacketSizeField.getInt(dos),
           finalWritePacketSize);
 
       /* get and verify chunksPerPacket */
       final Field chunksPerPacketField = dos.getClass()
           .getDeclaredField("chunksPerPacket");
       chunksPerPacketField.setAccessible(true);
-      Assert.assertEquals(chunksPerPacketField.getInt(dos),
+      Assertions.assertEquals(chunksPerPacketField.getInt(dos),
           (finalWritePacketSize - packateMaxHeaderLength) / chunkSize);
 
       /* get and verify packetSize */
       final Field packetSizeField = dos.getClass()
           .getDeclaredField("packetSize");
       packetSizeField.setAccessible(true);
-      Assert.assertEquals(packetSizeField.getInt(dos),
+      Assertions.assertEquals(packetSizeField.getInt(dos),
           chunksPerPacketField.getInt(dos) * chunkSize);
     } finally {
       if (dfsCluster != null) {
@@ -301,10 +297,11 @@ public class TestDFSOutputStream {
     DFSPacket packet = mock(DFSPacket.class);
     dataQueue.add(packet);
     stream.run();
-    Assert.assertTrue(congestedNodes.isEmpty());
+    Assertions.assertTrue(congestedNodes.isEmpty());
   }
 
-  @Test(timeout=60000)
+  @Test
+  @Timeout(value = 60000, unit = TimeUnit.MILLISECONDS)
   public void testCongestionAckDelay() {
     DfsClientConf dfsClientConf = mock(DfsClientConf.class);
     DFSClient client = mock(DFSClient.class);
@@ -383,7 +380,7 @@ public class TestDFSOutputStream {
       }
     }).start();
     stream.run();
-    Assert.assertFalse(isDelay.get());
+    Assertions.assertFalse(isDelay.get());
   }
 
   @Test
@@ -446,10 +443,10 @@ public class TestDFSOutputStream {
     FileSystem fs = cluster.getFileSystem();
     FSDataOutputStream os = fs.create(new Path("/normal-file"));
     // Verify output stream supports hsync() and hflush().
-    assertTrue("DFSOutputStream should support hflush()!",
-        os.hasCapability(StreamCapability.HFLUSH.getValue()));
-    assertTrue("DFSOutputStream should support hsync()!",
-        os.hasCapability(StreamCapability.HSYNC.getValue()));
+    assertTrue(os.hasCapability(StreamCapability.HFLUSH.getValue()),
+        "DFSOutputStream should support hflush()!");
+    assertTrue(os.hasCapability(StreamCapability.HSYNC.getValue()),
+        "DFSOutputStream should support hsync()!");
     byte[] bytes = new byte[1024];
     InputStream is = new ByteArrayInputStream(bytes);
     IOUtils.copyBytes(is, os, bytes.length);
@@ -508,7 +505,7 @@ public class TestDFSOutputStream {
     }
   }
 
-  @AfterClass
+  @AfterAll
   public static void tearDown() {
     if (cluster != null) {
       cluster.shutdown();

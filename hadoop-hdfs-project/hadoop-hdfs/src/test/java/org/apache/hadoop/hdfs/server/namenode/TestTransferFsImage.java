@@ -17,9 +17,7 @@
  */
 package org.apache.hadoop.hdfs.server.namenode;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
+import static org.junit.jupiter.api.Assertions.*;
 
 import java.io.File;
 import java.io.FileOutputStream;
@@ -28,6 +26,7 @@ import java.net.SocketTimeoutException;
 import java.net.URL;
 import java.util.Collections;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
@@ -44,7 +43,9 @@ import org.apache.hadoop.http.HttpServer2;
 import org.apache.hadoop.http.HttpServerFunctionalTest;
 import org.apache.hadoop.test.PathUtils;
 import org.apache.hadoop.util.StringUtils;
-import org.junit.Test;
+
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.Timeout;
 import org.mockito.Mockito;
 
 import org.apache.hadoop.thirdparty.com.google.common.collect.ImmutableList;
@@ -79,8 +80,8 @@ public class TestTransferFsImage {
     } catch (IOException ioe) {
       Mockito.verify(mockStorage).reportErrorOnFile(localPath.get(0));
       assertTrue(
-          "Unexpected exception: " + StringUtils.stringifyException(ioe),
-          ioe.getMessage().contains("Unable to download to any storage"));
+          ioe.getMessage().contains("Unable to download to any storage"),
+          "Unexpected exception: " + StringUtils.stringifyException(ioe));
     } finally {
       cluster.shutdown();      
     }
@@ -110,8 +111,8 @@ public class TestTransferFsImage {
 
       TransferFsImage.getFileClient(fsName, id, localPaths, mockStorage, false);      
       Mockito.verify(mockStorage).reportErrorOnFile(localPaths.get(0));
-      assertTrue("The valid local file should get saved properly",
-          localPaths.get(1).length() > 0);
+      assertTrue(localPaths.get(1).length() > 0,
+          "The valid local file should get saved properly");
     } finally {
       cluster.shutdown();      
     }
@@ -120,7 +121,8 @@ public class TestTransferFsImage {
   /**
    * Test to verify the read timeout
    */
-  @Test(timeout = 10000)
+  @Test
+  @Timeout(value = 10000, unit = TimeUnit.MILLISECONDS)
   public void testGetImageTimeout() throws Exception {
     HttpServer2 testServer = HttpServerFunctionalTest.createServer("hdfs");
     try {
@@ -134,7 +136,7 @@ public class TestTransferFsImage {
             null, false);
         fail("TransferImage Should fail with timeout");
       } catch (SocketTimeoutException e) {
-        assertEquals("Read should timeout", "Read timed out", e.getMessage());
+        assertEquals("Read timed out", e.getMessage(), "Read should timeout");
       }
     } finally {
       if (testServer != null) {
@@ -146,7 +148,8 @@ public class TestTransferFsImage {
   /**
    * Test to verify the timeout of Image upload
    */
-  @Test(timeout = 10000)
+  @Test
+  @Timeout(value = 10000, unit = TimeUnit.MILLISECONDS)
   public void testImageUploadTimeout() throws Exception {
     Configuration conf = new HdfsConfiguration();
     NNStorage mockStorage = Mockito.mock(NNStorage.class);
@@ -177,7 +180,7 @@ public class TestTransferFsImage {
             NameNodeFile.IMAGE, 1L);
         fail("TransferImage Should fail with timeout");
       } catch (SocketTimeoutException e) {
-        assertEquals("Upload should timeout", "Read timed out", e.getMessage());
+        assertEquals("Read timed out", e.getMessage(), "Upload should timeout");
       }
     } finally {
       testServer.stop();

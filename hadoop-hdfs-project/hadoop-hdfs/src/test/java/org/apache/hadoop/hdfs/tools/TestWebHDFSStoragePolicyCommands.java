@@ -20,9 +20,10 @@ package org.apache.hadoop.hdfs.tools;
 import org.apache.hadoop.fs.CommonConfigurationKeysPublic;
 import org.apache.hadoop.hdfs.web.WebHdfsConstants;
 import org.apache.hadoop.hdfs.web.WebHdfsTestUtil;
-import org.junit.Before;
 
 import java.io.IOException;
+
+import org.junit.jupiter.api.BeforeEach;
 import java.net.URISyntaxException;
 
 /**
@@ -31,7 +32,7 @@ import java.net.URISyntaxException;
 public class TestWebHDFSStoragePolicyCommands
     extends TestStoragePolicyCommands {
 
-  @Before
+  @BeforeEach
   public void clusterSetUp() throws IOException, URISyntaxException {
     super.clusterSetUp();
     fs = WebHdfsTestUtil.getWebHdfsFileSystem(conf,

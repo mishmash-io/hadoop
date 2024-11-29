@@ -17,14 +17,13 @@
  */
 package org.apache.hadoop.hdfs.server.namenode;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.assertNotNull;
+import static org.junit.jupiter.api.Assertions.*;
 
 import java.lang.management.ManagementFactory;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.TimeUnit;
 
 import javax.management.MBeanAttributeInfo;
 import javax.management.MBeanInfo;
@@ -40,8 +39,9 @@ import org.apache.hadoop.hdfs.MiniDFSCluster;
 import org.apache.hadoop.metrics2.impl.ConfigBuilder;
 import org.apache.hadoop.metrics2.impl.TestMetricsConfig;
 import org.apache.hadoop.test.GenericTestUtils;
-import org.junit.Test;
 import org.eclipse.jetty.util.ajax.JSON;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.Timeout;
 
 /**
  * Class for testing {@link NameNodeMXBean} implementation
@@ -159,8 +159,8 @@ public class TestFSNamesystemMBean {
       MBeanClient client = new MBeanClient();
       client.start();
       client.join(20000);
-      assertTrue("JMX calls are blocked when FSNamesystem's writerlock" +
-          "is owned by another thread", client.succeeded);
+      assertTrue(client.succeeded, "JMX calls are blocked when FSNamesystem's writerlock" +
+          "is owned by another thread");
       client.interrupt();
     } finally {
       if (fsn != null && fsn.hasWriteLock()) {
@@ -189,8 +189,8 @@ public class TestFSNamesystemMBean {
         MBeanClient client = new MBeanClient();
         client.start();
         client.join(20000);
-        assertTrue("JMX calls are blocked when FSEditLog" +
-            " is synchronized by another thread", client.succeeded);
+        assertTrue(client.succeeded, "JMX calls are blocked when FSEditLog" +
+            " is synchronized by another thread");
         client.interrupt();
       }
     } finally {
@@ -200,7 +200,8 @@ public class TestFSNamesystemMBean {
     }
   }
 
-  @Test(timeout = 120000)
+  @Test
+  @Timeout(value = 120000, unit = TimeUnit.MILLISECONDS)
   public void testFsEditLogMetrics() throws Exception {
     final Configuration conf = new Configuration();
     MiniDFSCluster cluster = null;

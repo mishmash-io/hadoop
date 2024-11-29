@@ -17,8 +17,8 @@
  */
 package org.apache.hadoop.hdfs.server.namenode;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.lang.management.ManagementFactory;
 import java.util.Arrays;
@@ -38,28 +38,27 @@ import org.apache.hadoop.hdfs.server.blockmanagement.CombinedHostFileManager;
 import org.apache.hadoop.hdfs.server.blockmanagement.HostConfigManager;
 import org.apache.hadoop.hdfs.server.blockmanagement.HostFileManager;
 import org.apache.hadoop.hdfs.util.HostsFileWriter;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.junit.runners.Parameterized;
 
 import javax.management.MBeanServer;
+
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.MethodSource;
+
 import javax.management.ObjectName;
 
 /**
  * DFS_HOSTS and DFS_HOSTS_EXCLUDE tests
  * 
  */
-@RunWith(Parameterized.class)
 public class TestHostsFiles {
   private static final Logger LOG =
       LoggerFactory.getLogger(TestHostsFiles.class.getName());
   private Class hostFileMgrClass;
 
-  public TestHostsFiles(Class hostFileMgrClass) {
+  public void initTestHostsFiles(Class hostFileMgrClass) {
     this.hostFileMgrClass = hostFileMgrClass;
   }
 
-  @Parameterized.Parameters
   public static Iterable<Object[]> data() {
     return Arrays.asList(new Object[][]{
         {HostFileManager.class}, {CombinedHostFileManager.class}});
@@ -97,8 +96,10 @@ public class TestHostsFiles {
     return conf;
   }
 
-  @Test
-  public void testHostsExcludeInUI() throws Exception {
+  @MethodSource("data")
+  @ParameterizedTest
+  public void testHostsExcludeInUI(Class hostFileMgrClass) throws Exception {
+    initTestHostsFiles(hostFileMgrClass);
     Configuration conf = getConf();
     short REPLICATION_FACTOR = 2;
     final Path filePath = new Path("/testFile");
@@ -136,8 +137,8 @@ public class TestHostsFiles {
       ObjectName mxbeanName = new ObjectName(
               "Hadoop:service=NameNode,name=NameNodeInfo");
       String nodes = (String) mbs.getAttribute(mxbeanName, "LiveNodes");
-      assertTrue("Live nodes should contain the decommissioned node",
-              nodes.contains("Decommissioned"));
+      assertTrue(nodes.contains("Decommissioned"),
+              "Live nodes should contain the decommissioned node");
     } finally {
       if (cluster != null) {
         cluster.shutdown();
@@ -146,8 +147,10 @@ public class TestHostsFiles {
     }
   }
 
-  @Test
-  public void testHostsIncludeForDeadCount() throws Exception {
+  @MethodSource("data")
+  @ParameterizedTest
+  public void testHostsIncludeForDeadCount(Class hostFileMgrClass) throws Exception {
+    initTestHostsFiles(hostFileMgrClass);
     Configuration conf = getConf();
 
     HostsFileWriter hostsFileWriter = new HostsFileWriter();
@@ -177,8 +180,10 @@ public class TestHostsFiles {
     }
   }
 
-  @Test
-  public void testNewHostAndExcludeFile() throws Exception {
+  @MethodSource("data")
+  @ParameterizedTest
+  public void testNewHostAndExcludeFile(Class hostFileMgrClass) throws Exception {
+    initTestHostsFiles(hostFileMgrClass);
     Configuration conf = getConf();
 
     HostsFileWriter writer1 = new HostsFileWriter();

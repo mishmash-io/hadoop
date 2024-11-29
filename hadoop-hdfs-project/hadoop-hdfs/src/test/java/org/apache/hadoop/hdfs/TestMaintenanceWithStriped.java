@@ -17,14 +17,15 @@
  */
 package org.apache.hadoop.hdfs;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 
 import org.apache.hadoop.conf.Configuration;
@@ -49,10 +50,8 @@ import org.apache.hadoop.hdfs.server.namenode.NameNode;
 import org.apache.hadoop.hdfs.server.namenode.NameNodeAdapter;
 import org.apache.hadoop.hdfs.util.HostsFileWriter;
 import org.apache.hadoop.test.GenericTestUtils;
-import org.junit.After;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.*;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -92,7 +91,7 @@ public class TestMaintenanceWithStriped {
     return new HdfsConfiguration();
   }
 
-  @Before
+  @BeforeEach
   public void setup() throws IOException {
     // Set up the hosts/exclude files.
     hostsFileWriter = new HostsFileWriter();
@@ -136,7 +135,7 @@ public class TestMaintenanceWithStriped {
         StripedFileTestUtil.getDefaultECPolicy().getName());
   }
 
-  @After
+  @AfterEach
   public void teardown() throws IOException {
     hostsFileWriter.cleanup();
     if (cluster != null) {
@@ -149,14 +148,15 @@ public class TestMaintenanceWithStriped {
    * test DN maintenance with striped blocks.
    * @throws Exception
    */
-  @Test(timeout = 120000)
+  @Test
+  @Timeout(value = 120000, unit = TimeUnit.MILLISECONDS)
   public void testInMaintenance() throws Exception {
     //1. create EC file
     // d0 d1 d2 d3 d4 d5 d6 d7 d8
     final Path ecFile = new Path(ecDir, "testInMaintenance");
     int writeBytes = cellSize * dataBlocks;
     writeStripedFile(dfs, ecFile, writeBytes);
-    Assert.assertEquals(0, bm.numOfUnderReplicatedBlocks());
+    Assertions.assertEquals(0, bm.numOfUnderReplicatedBlocks());
     FileChecksum fileChecksum1 = dfs.getFileChecksum(ecFile, writeBytes);
 
     final INodeFile fileNode = cluster.getNamesystem().getFSDirectory()
@@ -197,7 +197,7 @@ public class TestMaintenanceWithStriped {
     assertEquals(5, bm.countNodes(blockInfo).maintenanceNotForReadReplicas());
 
     FileChecksum fileChecksum2 = dfs.getFileChecksum(ecFile, writeBytes);
-    Assert.assertEquals("Checksum mismatches!", fileChecksum1, fileChecksum2);
+    Assertions.assertEquals(fileChecksum1, fileChecksum2, "Checksum mismatches!");
   }
 
 
@@ -239,7 +239,7 @@ public class TestMaintenanceWithStriped {
           break;
         }
       }
-      assertTrue("Datanode: " + dn + " is not LIVE", nodeExists);
+      assertTrue(nodeExists, "Datanode: " + dn + " is not LIVE");
       maintenanceNodes.put(dn.getName(), maintenanceExpirationInMS);
       LOG.info("Maintenance node: " + dn.getName());
     }

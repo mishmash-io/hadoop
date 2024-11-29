@@ -25,29 +25,24 @@ import org.apache.hadoop.hdfs.server.namenode.NameNode;
 import org.apache.hadoop.hdfs.server.protocol.OutlierMetrics;
 
 import org.apache.hadoop.test.GenericTestUtils;
-import org.junit.Assert;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.junit.runners.Parameterized;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.MethodSource;
 
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Set;
 
 import static org.apache.hadoop.hdfs.DFSConfigKeys.DFS_DATANODE_PEER_STATS_ENABLED_KEY;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.*;
 
-@RunWith(Parameterized.class)
 public class TestReplicationPolicyExcludeSlowNodes
     extends BaseReplicationPolicyTest {
 
-  public TestReplicationPolicyExcludeSlowNodes(String blockPlacementPolicy) {
+  public void initTestReplicationPolicyExcludeSlowNodes(String blockPlacementPolicy) {
     this.blockPlacementPolicy = blockPlacementPolicy;
   }
 
-  @Parameterized.Parameters
   public static Iterable<Object[]> data() {
     return Arrays.asList(new Object[][] {
         {BlockPlacementPolicyDefault.class.getName()},
@@ -83,8 +78,10 @@ public class TestReplicationPolicyExcludeSlowNodes
   /**
    * Tests that chooseTarget when excludeSlowNodesEnabled set to true.
    */
-  @Test
-  public void testChooseTargetExcludeSlowNodes() throws Exception {
+  @MethodSource("data")
+  @ParameterizedTest
+  public void testChooseTargetExcludeSlowNodes(String blockPlacementPolicy) throws Exception {
+    initTestReplicationPolicyExcludeSlowNodes(blockPlacementPolicy);
     namenode.getNamesystem().writeLock();
     try {
       // add nodes
@@ -140,8 +137,10 @@ public class TestReplicationPolicyExcludeSlowNodes
     NameNode.LOG.info("Done working on it");
   }
 
-  @Test
-  public void testSlowPeerTrackerEnabledClearSlowNodes() throws Exception {
+  @MethodSource("data")
+  @ParameterizedTest
+  public void testSlowPeerTrackerEnabledClearSlowNodes(String blockPlacementPolicy) throws Exception {
+    initTestReplicationPolicyExcludeSlowNodes(blockPlacementPolicy);
     namenode.getNamesystem().writeLock();
     try {
       // add nodes
@@ -151,7 +150,7 @@ public class TestReplicationPolicyExcludeSlowNodes
 
       // mock slow nodes
       SlowPeerTracker tracker = dnManager.getSlowPeerTracker();
-      Assert.assertNotNull(tracker);
+      Assertions.assertNotNull(tracker);
 
       OutlierMetrics outlierMetrics = new OutlierMetrics(0.0, 0.0, 0.0, 5.0);
       tracker.addReport(dataNodes[0].getInfoAddr(), dataNodes[3].getInfoAddr(),

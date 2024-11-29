@@ -24,12 +24,16 @@ import org.apache.hadoop.hdfs.MiniDFSCluster;
 import org.apache.hadoop.hdfs.MiniDFSNNTopology;
 import org.apache.hadoop.hdfs.server.blockmanagement.BlockManager;
 import org.apache.hadoop.test.LambdaTestUtils;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.Timeout;
+
 import java.io.IOException;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
+import java.util.concurrent.TimeUnit;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /**
  * This class tests the replication related parameters in the namenode can
@@ -39,7 +43,7 @@ public class TestRefreshNamenodeReplicationConfig {
   private MiniDFSCluster cluster = null;
   private BlockManager bm;
 
-  @Before
+  @BeforeEach
   public void setup() throws IOException {
     Configuration config = new Configuration();
     config.setInt(
@@ -60,7 +64,7 @@ public class TestRefreshNamenodeReplicationConfig {
     bm = cluster.getNameNode().getNamesystem().getBlockManager();
   }
 
-  @After
+  @AfterEach
   public void teardown() throws IOException {
     cluster.shutdown();
   }
@@ -69,7 +73,8 @@ public class TestRefreshNamenodeReplicationConfig {
    * Tests to ensure each of the block replication parameters can be passed
    * updated successfully.
    */
-  @Test(timeout = 90000)
+  @Test
+  @Timeout(value = 90000, unit = TimeUnit.MILLISECONDS)
   public void testParamsCanBeReconfigured() throws ReconfigurationException {
 
     assertEquals(8, bm.getMaxReplicationStreams());
@@ -99,7 +104,8 @@ public class TestRefreshNamenodeReplicationConfig {
    * Tests to ensure reconfiguration fails with a negative, zero or string value
    * value for each parameter.
    */
-  @Test(timeout = 90000)
+  @Test
+  @Timeout(value = 90000, unit = TimeUnit.MILLISECONDS)
   public void testReconfigureFailsWithInvalidValues() throws Exception {
     String[] keys = new String[]{
         DFSConfigKeys.DFS_NAMENODE_REPLICATION_MAX_STREAMS_KEY,

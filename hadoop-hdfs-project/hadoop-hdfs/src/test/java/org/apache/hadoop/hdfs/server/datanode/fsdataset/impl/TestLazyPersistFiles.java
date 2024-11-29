@@ -23,22 +23,19 @@ import org.apache.hadoop.hdfs.server.datanode.DataNodeTestUtils;
 import org.apache.hadoop.hdfs.server.datanode.fsdataset.FsDatasetSpi;
 import org.apache.hadoop.test.GenericTestUtils;
 import org.apache.hadoop.util.ThreadUtil;
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.Timeout;
 
 import java.io.IOException;
 import java.util.EnumSet;
-import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.TimeoutException;
+import java.util.concurrent.*;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import static org.apache.hadoop.fs.StorageType.RAM_DISK;
-
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.core.Is.is;
-import static org.junit.Assert.assertThat;
-import static org.junit.Assert.fail;
+import static org.junit.jupiter.api.Assertions.fail;
 
 public class TestLazyPersistFiles extends LazyPersistTestCase {
   private static final int THREADPOOL_SIZE = 10;
@@ -137,10 +134,11 @@ public class TestLazyPersistFiles extends LazyPersistTestCase {
     waitForFile(path1, true);
   }
 
- /**
-  * If NN restarted then lazyPersist files should not deleted
-  */
-  @Test(timeout = 20000)
+  /**
+   * If NN restarted then lazyPersist files should not deleted
+   */
+  @Test
+  @Timeout(value = 20000, unit = TimeUnit.MILLISECONDS)
   public void testFileShouldNotDiscardedIfNNRestarted()
       throws IOException, InterruptedException, TimeoutException {
     getClusterBuilder().setRamDiskReplicaCapacity(2).build();
@@ -182,7 +180,7 @@ public class TestLazyPersistFiles extends LazyPersistTestCase {
       @Override
       public void run() {
         try {
-          Assert.assertTrue(verifyReadRandomFile(path1, BLOCK_SIZE, SEED));
+          Assertions.assertTrue(verifyReadRandomFile(path1, BLOCK_SIZE, SEED));
         } catch (Throwable e) {
           LOG.error("readerRunnable error", e);
           testFailed.set(true);
@@ -201,7 +199,7 @@ public class TestLazyPersistFiles extends LazyPersistTestCase {
     for (int i = 0; i < NUM_TASKS; i++) {
       ThreadUtil.joinUninterruptibly(threads[i]);
     }
-    Assert.assertFalse(testFailed.get());
+    Assertions.assertFalse(testFailed.get());
   }
 
   /**
@@ -284,7 +282,8 @@ public class TestLazyPersistFiles extends LazyPersistTestCase {
     }
   }
 
-  @Test(timeout = 20000)
+  @Test
+  @Timeout(value = 20000, unit = TimeUnit.MILLISECONDS)
   public void testReleaseVolumeRefIfExceptionThrown()
       throws IOException, InterruptedException {
     getClusterBuilder().setRamDiskReplicaCapacity(2).build();
@@ -313,7 +312,7 @@ public class TestLazyPersistFiles extends LazyPersistTestCase {
       // asyncLazyPersistService is already shutdown.
       // If we do not release references, the number of
       // references will increase infinitely.
-      Assert.assertTrue(
+      Assertions.assertTrue(
           beforeCnts[i] == afterCnt || beforeCnts[i] == (afterCnt - 1));
     }
   }

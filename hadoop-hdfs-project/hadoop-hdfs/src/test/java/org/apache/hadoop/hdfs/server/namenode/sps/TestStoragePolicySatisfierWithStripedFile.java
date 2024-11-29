@@ -20,6 +20,7 @@ package org.apache.hadoop.hdfs.server.namenode.sps;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 
 import org.apache.hadoop.conf.Configuration;
@@ -46,9 +47,11 @@ import org.apache.hadoop.hdfs.server.balancer.NameNodeConnector;
 import org.apache.hadoop.hdfs.server.common.HdfsServerConstants;
 import org.apache.hadoop.hdfs.server.sps.ExternalSPSContext;
 import org.apache.hadoop.test.GenericTestUtils;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.Timeout;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -83,7 +86,7 @@ public class TestStoragePolicySatisfierWithStripedFile {
   /**
    * Initialize erasure coding policy.
    */
-  @Before
+  @BeforeEach
   public void init(){
     ecPolicy = getEcPolicy();
     dataBlocks = ecPolicy.getNumDataUnits();
@@ -105,7 +108,8 @@ public class TestStoragePolicySatisfierWithStripedFile {
    * Tests to verify that all the striped blocks(data + parity blocks) are
    * moving to satisfy the storage policy.
    */
-  @Test(timeout = 300000)
+  @Test
+  @Timeout(value = 300000, unit = TimeUnit.MILLISECONDS)
   public void testMoverWithFullStripe() throws Exception {
     // start 11 datanodes
     int numOfDatanodes = 11;
@@ -165,7 +169,7 @@ public class TestStoragePolicySatisfierWithStripedFile {
           fileLen);
       for (LocatedBlock lb : locatedBlocks.getLocatedBlocks()) {
         for (StorageType type : lb.getStorageTypes()) {
-          Assert.assertEquals(StorageType.DISK, type);
+          Assertions.assertEquals(StorageType.DISK, type);
         }
       }
       StripedFileTestUtil.verifyLocatedStripedBlocks(locatedBlocks,
@@ -215,7 +219,8 @@ public class TestStoragePolicySatisfierWithStripedFile {
    * while choosing the target node for A, it shouldn't choose C. For C, it
    * should do local block movement as it has ARCHIVE storage type.
    */
-  @Test(timeout = 300000)
+  @Test
+  @Timeout(value = 300000, unit = TimeUnit.MILLISECONDS)
   public void testWhenOnlyFewTargetNodesAreAvailableToSatisfyStoragePolicy()
       throws Exception {
     // start 10 datanodes
@@ -275,7 +280,7 @@ public class TestStoragePolicySatisfierWithStripedFile {
           fileLen);
       for (LocatedBlock lb : locatedBlocks.getLocatedBlocks()) {
         for (StorageType type : lb.getStorageTypes()) {
-          Assert.assertEquals(StorageType.DISK, type);
+          Assertions.assertEquals(StorageType.DISK, type);
         }
       }
       Thread.sleep(5000);
@@ -324,7 +329,8 @@ public class TestStoragePolicySatisfierWithStripedFile {
    * 5. Start remaining 5 datanode.
    * 6. All replica  should be moved in proper storage based on policy.
    */
-  @Test(timeout = 300000)
+  @Test
+  @Timeout(value = 300000, unit = TimeUnit.MILLISECONDS)
   public void testSPSWhenFileHasLowRedundancyBlocks() throws Exception {
     // start 9 datanodes
     int numOfDatanodes = 9;
@@ -420,7 +426,8 @@ public class TestStoragePolicySatisfierWithStripedFile {
    *
    * SPS won't schedule any block movement for this path.
    */
-  @Test(timeout = 300000)
+  @Test
+  @Timeout(value = 300000, unit = TimeUnit.MILLISECONDS)
   public void testWhenNoTargetDatanodeToSatisfyStoragePolicy()
       throws Exception {
     // start 10 datanodes
@@ -479,7 +486,7 @@ public class TestStoragePolicySatisfierWithStripedFile {
           fileLen);
       for (LocatedBlock lb : locatedBlocks.getLocatedBlocks()) {
         for (StorageType type : lb.getStorageTypes()) {
-          Assert.assertEquals(StorageType.DISK, type);
+          Assertions.assertEquals(StorageType.DISK, type);
         }
       }
       StripedFileTestUtil.verifyLocatedStripedBlocks(locatedBlocks,

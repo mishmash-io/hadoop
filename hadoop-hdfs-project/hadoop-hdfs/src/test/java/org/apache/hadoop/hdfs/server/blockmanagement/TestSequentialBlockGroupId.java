@@ -21,12 +21,13 @@ import static org.apache.hadoop.hdfs.server.common.HdfsServerConstants.BLOCK_GRO
 import static org.apache.hadoop.hdfs.server.common.HdfsServerConstants.MAX_BLOCKS_IN_GROUP;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.not;
-import static org.junit.Assert.assertThat;
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.spy;
 
 import java.io.IOException;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -43,10 +44,7 @@ import org.apache.hadoop.hdfs.protocol.LocatedBlock;
 import org.apache.hadoop.hdfs.server.namenode.FSNamesystem;
 import org.apache.hadoop.test.GenericTestUtils;
 import org.apache.hadoop.test.Whitebox;
-import org.junit.After;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.*;
 import org.mockito.stubbing.Answer;
 
 /**
@@ -76,7 +74,7 @@ public class TestSequentialBlockGroupId {
   private SequentialBlockGroupIdGenerator blockGrpIdGenerator;
   private Path ecDir = new Path("/ecDir");
 
-  @Before
+  @BeforeEach
   public void setup() throws Exception {
     Configuration conf = new HdfsConfiguration();
     conf.setInt(DFSConfigKeys.DFS_REPLICATION_KEY, 1);
@@ -94,7 +92,7 @@ public class TestSequentialBlockGroupId {
         StripedFileTestUtil.getDefaultECPolicy().getName());
   }
 
-  @After
+  @AfterEach
   public void teardown() {
     if (cluster != null) {
       cluster.shutdown();
@@ -105,7 +103,8 @@ public class TestSequentialBlockGroupId {
   /**
    * Test that blockGroup IDs are generating unique value.
    */
-  @Test(timeout = 60000)
+  @Test
+  @Timeout(value = 60000, unit = TimeUnit.MILLISECONDS)
   public void testBlockGroupIdGeneration() throws IOException {
     long blockGroupIdInitialValue = blockGrpIdGenerator.getCurrentValue();
 
@@ -139,7 +138,8 @@ public class TestSequentialBlockGroupId {
   /**
    * Test that collisions in the blockGroup ID space are handled gracefully.
    */
-  @Test(timeout = 60000)
+  @Test
+  @Timeout(value = 60000, unit = TimeUnit.MILLISECONDS)
   public void testTriggerBlockGroupIdCollision() throws IOException {
     long blockGroupIdInitialValue = blockGrpIdGenerator.getCurrentValue();
 
@@ -176,7 +176,8 @@ public class TestSequentialBlockGroupId {
    * Test that collisions in the blockGroup ID when the id is occupied by legacy
    * block.
    */
-  @Test(timeout = 60000)
+  @Test
+  @Timeout(value = 60000, unit = TimeUnit.MILLISECONDS)
   public void testTriggerBlockGroupIdCollisionWithLegacyBlockId()
       throws Exception {
     long blockGroupIdInitialValue = blockGrpIdGenerator.getCurrentValue();
@@ -209,8 +210,9 @@ public class TestSequentialBlockGroupId {
 
     List<LocatedBlock> contiguousBlocks = DFSTestUtil.getAllBlocks(fs, path1);
     assertThat(contiguousBlocks.size(), is(1));
-    Assert.assertEquals("Unexpected BlockId!", curBlockGroupIdValue,
-        contiguousBlocks.get(0).getBlock().getBlockId());
+    Assertions.assertEquals(curBlockGroupIdValue,
+        contiguousBlocks.get(0).getBlock().getBlockId(),
+        "Unexpected BlockId!");
 
     // Reset back to the initial value to trigger collision
     blockGrpIdGenerator.setCurrentValue(blockGroupIdInitialValue);

@@ -24,8 +24,9 @@ import org.apache.hadoop.hdfs.HdfsConfiguration;
 import org.apache.hadoop.hdfs.MiniDFSCluster;
 import org.apache.hadoop.tools.GetGroupsTestBase;
 import org.apache.hadoop.util.cli.Tool;
-import org.junit.After;
-import org.junit.Before;
+
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
 
 /**
  * Tests for the HDFS implementation of {@link GetGroups}
@@ -34,13 +35,13 @@ public class TestGetGroups extends GetGroupsTestBase {
   
   private MiniDFSCluster cluster;
 
-  @Before
+  @BeforeEach
   public void setUpNameNode() throws IOException {
     conf = new HdfsConfiguration();
     cluster = new MiniDFSCluster.Builder(conf).numDataNodes(0).build();
   }
   
-  @After
+  @AfterEach
   public void tearDownNameNode() {
     if (cluster != null) {
       cluster.shutdown();

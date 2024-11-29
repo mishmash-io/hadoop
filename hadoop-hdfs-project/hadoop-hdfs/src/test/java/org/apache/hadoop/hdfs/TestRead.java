@@ -23,6 +23,7 @@ import java.io.InputStream;
 import java.io.InterruptedIOException;
 import java.nio.ByteBuffer;
 import java.nio.channels.ClosedByInterruptException;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.apache.hadoop.hdfs.client.HdfsClientConfigKeys;
@@ -32,14 +33,15 @@ import org.apache.hadoop.hdfs.server.datanode.DataStorage;
 import org.apache.hadoop.hdfs.server.datanode.SimulatedFSDataset;
 import org.apache.hadoop.hdfs.server.datanode.fsdataset.FsDatasetSpi;
 import org.apache.hadoop.io.IOUtils;
-import org.junit.Assert;
 
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FSDataInputStream;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hdfs.DFSTestUtil.ShortCircuitTestContext;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.Timeout;
 
 public class TestRead {
   final private int BLOCK_SIZE = 512;
@@ -51,19 +53,20 @@ public class TestRead {
     FSDataInputStream fis = fs.open(path);
     ByteBuffer empty = ByteBuffer.allocate(0);
     // A read into an empty bytebuffer at the beginning of the file gives 0.
-    Assert.assertEquals(0, fis.read(empty));
+    Assertions.assertEquals(0, fis.read(empty));
     fis.seek(fileLength);
     // A read into an empty bytebuffer at the end of the file gives -1.
-    Assert.assertEquals(-1, fis.read(empty));
+    Assertions.assertEquals(-1, fis.read(empty));
     if (fileLength > BLOCK_SIZE) {
       fis.seek(fileLength - BLOCK_SIZE + 1);
       ByteBuffer dbb = ByteBuffer.allocateDirect(BLOCK_SIZE);
-      Assert.assertEquals(BLOCK_SIZE - 1, fis.read(dbb));
+      Assertions.assertEquals(BLOCK_SIZE - 1, fis.read(dbb));
     }
     fis.close();
   }
 
-  @Test(timeout=60000)
+  @Test
+  @Timeout(value = 60000, unit = TimeUnit.MILLISECONDS)
   public void testEOFWithBlockReaderLocal() throws Exception {
     ShortCircuitTestContext testContext = 
         new ShortCircuitTestContext("testEOFWithBlockReaderLocal");
@@ -81,7 +84,8 @@ public class TestRead {
     }
   }
 
-  @Test(timeout=60000)
+  @Test
+  @Timeout(value = 60000, unit = TimeUnit.MILLISECONDS)
   public void testEOFWithRemoteBlockReader() throws Exception {
     final Configuration conf = new Configuration();
     conf.setLong(HdfsClientConfigKeys.DFS_CLIENT_CACHE_READAHEAD, BLOCK_SIZE);
@@ -98,7 +102,8 @@ public class TestRead {
    * If deadlock happen, the test will time out.
    * @throws Exception
    */
-  @Test(timeout=60000)
+  @Test
+  @Timeout(value = 60000, unit = TimeUnit.MILLISECONDS)
   public void testReadReservedPath() throws Exception {
     Configuration conf = new Configuration();
     MiniDFSCluster cluster = new MiniDFSCluster.Builder(conf).
@@ -106,7 +111,7 @@ public class TestRead {
     try {
       FileSystem fs = cluster.getFileSystem();
       fs.open(new Path("/.reserved/.inodes/file"));
-      Assert.fail("Open a non existing file should fail.");
+      Assertions.fail("Open a non existing file should fail.");
     } catch (FileNotFoundException e) {
       // Expected
     } finally {
@@ -114,7 +119,8 @@ public class TestRead {
     }
   }
 
-  @Test(timeout=60000)
+  @Test
+  @Timeout(value = 60000, unit = TimeUnit.MILLISECONDS)
   public void testInterruptReader() throws Exception {
     final Configuration conf = new HdfsConfiguration();
     conf.set(DFSConfigKeys.DFS_DATANODE_FSDATASET_FACTORY_KEY,
@@ -149,7 +155,7 @@ public class TestRead {
       reader.interrupt();
       reader.join();
 
-      Assert.assertTrue(readInterrupted.get());
+      Assertions.assertTrue(readInterrupted.get());
     } finally {
       cluster.shutdown();
     }

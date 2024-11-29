@@ -21,11 +21,14 @@ import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hdfs.HdfsConfiguration;
 import org.apache.hadoop.hdfs.server.common.HdfsServerConstants.StartupOption;
 
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.Timeout;
 
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.core.Is.is;
-import static org.junit.Assert.assertThat;
+
+import java.util.concurrent.TimeUnit;
 
 /**
  * This test verifies DataNode command line processing.
@@ -69,7 +72,7 @@ public class TestDatanodeStartupOptions {
    * Reinitialize configuration before every test since DN stores the
    * parsed StartupOption in the configuration.
    */
-  @Before
+  @BeforeEach
   public void initConfiguration() {
     conf = new HdfsConfiguration();
   }
@@ -77,7 +80,8 @@ public class TestDatanodeStartupOptions {
   /**
    * A few options that should all parse successfully.
    */
-  @Test (timeout=60000)
+  @Test
+  @Timeout(value = 60000, unit = TimeUnit.MILLISECONDS)
   public void testStartupSuccess() {
     checkExpected(true, StartupOption.REGULAR, conf);
     checkExpected(true, StartupOption.REGULAR, conf, "-regular");
@@ -88,7 +92,8 @@ public class TestDatanodeStartupOptions {
   /**
    * A few options that should all fail to parse.
    */
-  @Test (timeout=60000)
+  @Test
+  @Timeout(value = 60000, unit = TimeUnit.MILLISECONDS)
   public void testStartupFailure() {
     checkExpected(false, StartupOption.REGULAR, conf, "unknownoption");
     checkExpected(false, StartupOption.REGULAR, conf, "-regular -rollback");

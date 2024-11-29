@@ -18,6 +18,8 @@
 package org.apache.hadoop.hdfs.server.namenode;
 
 import static org.apache.hadoop.hdfs.server.namenode.AclTestHelpers.*;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.apache.hadoop.fs.permission.AclEntryScope.*;
 import static org.apache.hadoop.fs.permission.AclEntryType.*;
 import static org.apache.hadoop.fs.permission.FsAction.*;
@@ -30,10 +32,8 @@ import org.apache.hadoop.hdfs.MiniDFSCluster;
 import org.apache.hadoop.hdfs.protocol.AclException;
 import org.apache.hadoop.io.IOUtils;
 import org.apache.hadoop.util.Lists;
-import org.junit.After;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.ExpectedException;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.Test;
 
 /**
  * Tests that the configuration flag that controls support for ACLs is off by
@@ -46,10 +46,7 @@ public class TestAclConfigFlag {
   private MiniDFSCluster cluster;
   private DistributedFileSystem fs;
 
-  @Rule
-  public ExpectedException exception = ExpectedException.none();
-
-  @After
+  @AfterEach
   public void shutdown() throws Exception {
     IOUtils.cleanupWithLogger(null, fs);
     if (cluster != null) {
@@ -142,8 +139,9 @@ public class TestAclConfigFlag {
    * configuration key that controls ACL support.
    */
   private void expectException() {
-    exception.expect(AclException.class);
-    exception.expectMessage(DFSConfigKeys.DFS_NAMENODE_ACLS_ENABLED_KEY);
+    Throwable exception = assertThrows(AclException.class, () -> {
+    });
+    assertTrue(exception.getMessage().contains(DFSConfigKeys.DFS_NAMENODE_ACLS_ENABLED_KEY));
   }
 
   /**

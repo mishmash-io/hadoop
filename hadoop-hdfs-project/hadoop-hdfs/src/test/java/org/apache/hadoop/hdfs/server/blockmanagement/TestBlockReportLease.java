@@ -39,19 +39,17 @@ import org.apache.hadoop.hdfs.server.protocol.SlowPeerReports;
 import org.apache.hadoop.hdfs.server.protocol.StorageBlockReport;
 import org.apache.hadoop.hdfs.server.protocol.StorageReport;
 import org.apache.hadoop.test.GenericTestUtils.DelayAnswer;
-import org.junit.Test;
 
 import java.util.ArrayList;
+
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.Timeout;
+
 import java.util.List;
 import java.util.Random;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.Future;
+import java.util.concurrent.*;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.spy;
@@ -272,7 +270,8 @@ public class TestBlockReportLease {
     return storageBlockReports;
   }
 
-  @Test(timeout = 360000)
+  @Test
+  @Timeout(value = 360000, unit = TimeUnit.MILLISECONDS)
   public void testFirstIncompleteBlockReport() throws Exception {
     HdfsConfiguration conf = new HdfsConfiguration();
     Random rand = new Random();

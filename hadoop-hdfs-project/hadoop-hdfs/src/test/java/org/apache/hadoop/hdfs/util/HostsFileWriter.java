@@ -18,6 +18,8 @@
 
 package org.apache.hadoop.hdfs.util;
 
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -39,8 +41,6 @@ import org.apache.hadoop.hdfs.server.blockmanagement.HostFileManager;
 
 import org.apache.hadoop.hdfs.protocol.DatanodeAdminProperties;
 import org.apache.hadoop.hdfs.protocol.DatanodeInfo.AdminStates;
-
-import static org.junit.Assert.assertTrue;
 
 public class HostsFileWriter {
   private FileSystem localFileSys;

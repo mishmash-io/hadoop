@@ -40,17 +40,17 @@ import org.apache.hadoop.hdfs.server.blockmanagement.BlockPlacementPolicyRackFau
 import org.apache.hadoop.hdfs.server.protocol.NamenodeProtocols;
 import org.apache.hadoop.net.StaticMapping;
 import org.apache.hadoop.test.GenericTestUtils;
-import org.junit.After;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import java.io.IOException;
 import java.util.*;
 import java.util.function.Supplier;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public class TestBlockPlacementPolicyRackFaultTolerant {
 
@@ -60,7 +60,7 @@ public class TestBlockPlacementPolicyRackFaultTolerant {
   private FSNamesystem namesystem = null;
   private PermissionStatus perm = null;
 
-  @Before
+  @BeforeEach
   public void setup() throws IOException {
     StaticMapping.resetMap();
     Configuration conf = new HdfsConfiguration();
@@ -89,7 +89,7 @@ public class TestBlockPlacementPolicyRackFaultTolerant {
         FsPermission.getDefault());
   }
 
-  @After
+  @AfterEach
   public void teardown() {
     if (cluster != null) {
       cluster.shutdown();
@@ -276,7 +276,7 @@ public class TestBlockPlacementPolicyRackFaultTolerant {
     for (LocatedBlock block : locatedBlocks.getLocatedBlocks()) {
       BlockPlacementStatus status = bm.getStriptedBlockPlacementPolicy()
               .verifyBlockPlacement(block.getLocations(), 5);
-      Assert.assertTrue(status.isPlacementPolicySatisfied());
+      Assertions.assertTrue(status.isPlacementPolicySatisfied());
     }
   }
 

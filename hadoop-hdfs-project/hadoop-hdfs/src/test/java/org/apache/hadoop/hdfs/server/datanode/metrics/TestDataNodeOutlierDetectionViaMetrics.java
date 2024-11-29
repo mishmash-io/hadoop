@@ -24,9 +24,9 @@ import org.apache.hadoop.hdfs.HdfsConfiguration;
 import org.apache.hadoop.hdfs.server.protocol.OutlierMetrics;
 import org.apache.hadoop.metrics2.lib.MetricsTestHelper;
 import org.apache.hadoop.test.GenericTestUtils;
-import org.junit.Before;
 import org.junit.Rule;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.junit.rules.Timeout;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -36,9 +36,9 @@ import java.util.Map;
 import java.util.Random;
 import java.util.concurrent.TimeUnit;
 
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.core.Is.is;
-import static org.junit.Assert.assertThat;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 
 /**
@@ -66,7 +66,7 @@ public class TestDataNodeOutlierDetectionViaMetrics {
 
   private Configuration conf;
 
-  @Before
+  @BeforeEach
   public void setup() {
     GenericTestUtils.setLogLevel(DataNodePeerMetrics.LOG, Level.TRACE);
     GenericTestUtils.setLogLevel(OutlierDetector.LOG, Level.TRACE);

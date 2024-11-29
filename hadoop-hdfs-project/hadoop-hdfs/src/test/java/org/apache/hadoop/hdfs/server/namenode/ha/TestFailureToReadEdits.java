@@ -17,9 +17,7 @@
  */
 package org.apache.hadoop.hdfs.server.namenode.ha;
 
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
+import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyBoolean;
 import static org.mockito.ArgumentMatchers.anyLong;
@@ -52,18 +50,15 @@ import org.apache.hadoop.hdfs.server.namenode.NameNode;
 import org.apache.hadoop.hdfs.server.namenode.NameNodeAdapter;
 import org.apache.hadoop.test.GenericTestUtils;
 import org.apache.hadoop.util.ExitUtil.ExitException;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.junit.runners.Parameterized;
-import org.junit.runners.Parameterized.Parameters;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.MethodSource;
 import org.mockito.invocation.InvocationOnMock;
 import org.mockito.stubbing.Answer;
 
 import org.apache.hadoop.thirdparty.com.google.common.collect.ImmutableList;
 
-@RunWith(Parameterized.class)
 public class TestFailureToReadEdits {
   private static final Logger LOG =
       LoggerFactory.getLogger(TestFailureToReadEdits.class);
@@ -73,8 +68,8 @@ public class TestFailureToReadEdits {
   private static final String TEST_DIR3 = "/test3";
   private static final Random RANDOM = new Random();
 
-  private final TestType clusterType;
-  private final boolean useAsyncEditLogging;
+  private TestType clusterType;
+  private boolean useAsyncEditLogging;
   private Configuration conf;
   private MiniDFSCluster cluster;
   private MiniQJMHACluster miniQjmHaCluster; // for QJM case only
@@ -94,7 +89,6 @@ public class TestFailureToReadEdits {
    * TODO: Enable the test cases with async edit logging on. See HDFS-12603
    * and HDFS-12660.
    */
-  @Parameters
   public static Iterable<Object[]> data() {
     return Arrays.asList(new Object[][]{
         {TestType.SHARED_DIR_HA, Boolean.FALSE},
@@ -104,13 +98,13 @@ public class TestFailureToReadEdits {
     });
   }
 
-  public TestFailureToReadEdits(TestType clusterType, Boolean
+  public void initTestFailureToReadEdits(TestType clusterType, Boolean
       useAsyncEditLogging) {
     this.clusterType = clusterType;
     this.useAsyncEditLogging = useAsyncEditLogging;
   }
 
-  @Before
+  @BeforeEach
   public void setUpCluster() throws Exception {
     conf = new Configuration();
     conf.setInt(DFSConfigKeys.DFS_NAMENODE_CHECKPOINT_CHECK_PERIOD_KEY, 1);
@@ -161,7 +155,7 @@ public class TestFailureToReadEdits {
     fs = HATestUtil.configureFailoverFs(cluster, conf);
   }
   
-  @After
+  @AfterEach
   public void tearDownCluster() throws Exception {
     if (fs != null) {
       fs.close();
@@ -185,8 +179,11 @@ public class TestFailureToReadEdits {
    * Test that the standby NN won't double-replay earlier edits if it encounters
    * a failure to read a later edit.
    */
-  @Test
-  public void testFailuretoReadEdits() throws Exception {
+  @MethodSource("data")
+  @ParameterizedTest
+  public void testFailuretoReadEdits(TestType clusterType, Boolean
+      useAsyncEditLogging) throws Exception {
+    initTestFailureToReadEdits(clusterType, useAsyncEditLogging);
     assertTrue(fs.mkdirs(new Path(TEST_DIR1)));
     HATestUtil.waitForStandbyToCatchUp(nn0, nn1);
     
@@ -234,7 +231,7 @@ public class TestFailureToReadEdits {
     assertTrue(NameNodeAdapter.getFileInfo(nn1,
         TEST_DIR3, false, false, false).isDirectory());
   }
-  
+
   /**
    * Test the following case:
    * 1. SBN is reading a finalized edits file when NFS disappears halfway
@@ -246,8 +243,11 @@ public class TestFailureToReadEdits {
    * 
    * This is a regression test for HDFS-2766.
    */
-  @Test
-  public void testCheckpointStartingMidEditsFile() throws Exception {
+  @MethodSource("data")
+  @ParameterizedTest
+  public void testCheckpointStartingMidEditsFile(TestType clusterType, Boolean
+      useAsyncEditLogging) throws Exception {
+    initTestFailureToReadEdits(clusterType, useAsyncEditLogging);
     assertTrue(fs.mkdirs(new Path(TEST_DIR1)));
     
     HATestUtil.waitForStandbyToCatchUp(nn0, nn1);
@@ -302,8 +302,11 @@ public class TestFailureToReadEdits {
    * available edits in the shared edits dir when it is transitioning to active
    * state.
    */
-  @Test
-  public void testFailureToReadEditsOnTransitionToActive() throws Exception {
+  @MethodSource("data")
+  @ParameterizedTest
+  public void testFailureToReadEditsOnTransitionToActive(TestType clusterType, Boolean
+      useAsyncEditLogging) throws Exception {
+    initTestFailureToReadEdits(clusterType, useAsyncEditLogging);
     assertTrue(fs.mkdirs(new Path(TEST_DIR1)));
     
     HATestUtil.waitForStandbyToCatchUp(nn0, nn1);

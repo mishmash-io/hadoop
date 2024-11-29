@@ -20,6 +20,7 @@ package org.apache.hadoop.hdfs.server.datanode;
 
 import java.io.IOException;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -32,15 +33,17 @@ import org.apache.hadoop.hdfs.server.namenode.NameNode;
 import org.apache.hadoop.hdfs.server.protocol.DatanodeRegistration;
 import org.apache.hadoop.hdfs.server.protocol.StorageBlockReport;
 import static org.apache.hadoop.hdfs.DFSConfigKeys.DFS_BLOCKREPORT_SPLIT_THRESHOLD_KEY;
+import static org.hamcrest.MatcherAssert.assertThat;
+
 import org.apache.hadoop.test.GenericTestUtils;
 
-import org.junit.After;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.Timeout;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Mockito;
 
 import static org.hamcrest.core.Is.is;
-import static org.junit.Assert.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.times;
@@ -73,7 +76,7 @@ public class TestDnRespectsBlockReportSplitThreshold {
     bpid = cluster.getNamesystem().getBlockPoolId();
   }
 
-  @After
+  @AfterEach
   public void shutDownCluster() throws IOException {
     if (cluster != null) {
       fs.close();
@@ -112,7 +115,8 @@ public class TestDnRespectsBlockReportSplitThreshold {
    * Test that if splitThreshold is zero, then we always get a separate
    * call per storage.
    */
-  @Test(timeout=300000)
+  @Test
+  @Timeout(value = 300000, unit = TimeUnit.MILLISECONDS)
   public void testAlwaysSplit() throws IOException, InterruptedException {
     startUpCluster(0);
     NameNode nn = cluster.getNameNode();
@@ -144,7 +148,8 @@ public class TestDnRespectsBlockReportSplitThreshold {
    * Tests the behavior when the count of blocks is exactly one less than
    * the threshold.
    */
-  @Test(timeout=300000)
+  @Test
+  @Timeout(value = 300000, unit = TimeUnit.MILLISECONDS)
   public void testCornerCaseUnderThreshold() throws IOException, InterruptedException {
     startUpCluster(BLOCKS_IN_FILE + 1);
     NameNode nn = cluster.getNameNode();
@@ -176,7 +181,8 @@ public class TestDnRespectsBlockReportSplitThreshold {
    * Tests the behavior when the count of blocks is exactly equal to the
    * threshold.
    */
-  @Test(timeout=300000)
+  @Test
+  @Timeout(value = 300000, unit = TimeUnit.MILLISECONDS)
   public void testCornerCaseAtThreshold() throws IOException, InterruptedException {
     startUpCluster(BLOCKS_IN_FILE);
     NameNode nn = cluster.getNameNode();

@@ -40,21 +40,19 @@ import org.apache.hadoop.test.MetricsAsserts;
 import org.apache.hadoop.test.PathUtils;
 import org.apache.hadoop.util.Shell;
 import org.apache.hadoop.util.StopWatch;
-import org.junit.After;
-import org.junit.Assert;
-import static org.junit.Assert.*;
-import org.junit.Before;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.TestName;
+import static org.junit.jupiter.api.Assertions.*;
+
+import org.junit.jupiter.api.*;
 import org.mockito.Mockito;
 
 import java.io.File;
 import java.io.IOException;
+import java.lang.reflect.Method;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.util.Collection;
+import java.util.Optional;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 
@@ -62,8 +60,8 @@ import java.util.concurrent.TimeUnit;
 public class TestJournalNode {
   private static final NamespaceInfo FAKE_NSINFO = new NamespaceInfo(
       12345, "mycluster", "my-bp", 0L);
-  @Rule
-  public TestName testName = new TestName();
+  
+  public String testName;
 
   private static final File TEST_BUILD_DATA = PathUtils.getTestDir(TestJournalNode.class);
 
@@ -77,32 +75,36 @@ public class TestJournalNode {
     // Avoid an error when we double-initialize JvmMetrics
     DefaultMetricsSystem.setMiniClusterMode(true);
   }
-  
-  @Before
-  public void setup() throws Exception {
+
+  @BeforeEach
+  public void setup(TestInfo testInfo) throws Exception {
+    Optional<Method> testMethod = testInfo.getTestMethod();
+    if (testMethod.isPresent()) {
+      this.testName = testMethod.get().getName();
+    }
     File editsDir = new File(MiniDFSCluster.getBaseDirectory() +
         File.separator + "TestJournalNode");
     FileUtil.fullyDelete(editsDir);
     journalId = "test-journalid-" + GenericTestUtils.uniqueSequenceId();
 
-    if (testName.getMethodName().equals("testJournalDirPerNameSpace")) {
+    if ( testName.equals("testJournalDirPerNameSpace")) {
       setFederationConf();
-      conf.set(DFSConfigKeys.DFS_JOURNALNODE_EDITS_DIR_KEY+ ".ns1",
+      conf.set(DFSConfigKeys.DFS_JOURNALNODE_EDITS_DIR_KEY + ".ns1",
           editsDir + File.separator + "ns1");
-      conf.set(DFSConfigKeys.DFS_JOURNALNODE_EDITS_DIR_KEY+ ".ns2",
+      conf.set(DFSConfigKeys.DFS_JOURNALNODE_EDITS_DIR_KEY + ".ns2",
           editsDir + File.separator + "ns2");
-    } else if (testName.getMethodName().equals(
-        "testJournalCommonDirAcrossNameSpace")){
+    } else if ( testName.equals(
+        "testJournalCommonDirAcrossNameSpace")) {
       setFederationConf();
       conf.set(DFSConfigKeys.DFS_JOURNALNODE_EDITS_DIR_KEY,
           editsDir.getAbsolutePath());
-    } else if (testName.getMethodName().equals(
+    } else if ( testName.equals(
         "testJournalDefaultDirForOneNameSpace") ||
-        testName.getMethodName().equals("testJournalMetricTags")) {
+         testName.equals("testJournalMetricTags")) {
       FileUtil.fullyDelete(new File(DFSConfigKeys
           .DFS_JOURNALNODE_EDITS_DIR_DEFAULT));
       setFederationConf();
-      conf.set(DFSConfigKeys.DFS_JOURNALNODE_EDITS_DIR_KEY+ ".ns1",
+      conf.set(DFSConfigKeys.DFS_JOURNALNODE_EDITS_DIR_KEY + ".ns1",
           editsDir + File.separator + "ns1");
     } else {
       conf.set(DFSConfigKeys.DFS_JOURNALNODE_EDITS_DIR_KEY,
@@ -110,41 +112,41 @@ public class TestJournalNode {
     }
     conf.set(DFSConfigKeys.DFS_JOURNALNODE_RPC_ADDRESS_KEY,
         "0.0.0.0:0");
-    if (testName.getMethodName().equals(
+    if ( testName.equals(
         "testJournalNodeSyncerNotStartWhenSyncDisabled")) {
       conf.setBoolean(DFSConfigKeys.DFS_JOURNALNODE_ENABLE_SYNC_KEY,
           false);
       conf.set(DFSConfigKeys.DFS_NAMENODE_SHARED_EDITS_DIR_KEY,
           "qjournal://jn0:9900;jn1:9901/" + journalId);
-    } else if (testName.getMethodName().equals(
+    } else if ( testName.equals(
         "testJournalNodeSyncerNotStartWhenSyncEnabledIncorrectURI")) {
       conf.set(DFSConfigKeys.DFS_NAMENODE_SHARED_EDITS_DIR_KEY,
           "qjournal://journal0\\:9900;journal1:9901/" + journalId);
-    } else if (testName.getMethodName().equals(
+    } else if ( testName.equals(
         "testJournalNodeSyncerNotStartWhenSyncEnabled")) {
       conf.set(DFSConfigKeys.DFS_NAMENODE_SHARED_EDITS_DIR_KEY,
           "qjournal://jn0:9900;jn1:9901/" + journalId);
-    } else if (testName.getMethodName().equals(
+    } else if ( testName.equals(
         "testJournalNodeSyncwithFederationTypeConfigWithNameServiceId")) {
-      conf.set(DFSConfigKeys.DFS_NAMENODE_SHARED_EDITS_DIR_KEY +".ns1",
+      conf.set(DFSConfigKeys.DFS_NAMENODE_SHARED_EDITS_DIR_KEY + ".ns1",
           "qjournal://journalnode0:9900;journalnode0:9901/" + journalId);
-    } else if (testName.getMethodName().equals(
+    } else if ( testName.equals(
         "testJournalNodeSyncwithFederationTypeConfigWithNamenodeId")) {
       conf.set(DFSConfigKeys.DFS_HA_NAMENODES_KEY_PREFIX + ".ns1", "nn1,nn2");
-      conf.set(DFSConfigKeys.DFS_NAMENODE_SHARED_EDITS_DIR_KEY +".ns1" +".nn1",
-          "qjournal://journalnode0:9900;journalnode1:9901/" +journalId);
-      conf.set(DFSConfigKeys.DFS_NAMENODE_SHARED_EDITS_DIR_KEY +".ns1" +".nn2",
-          "qjournal://journalnode0:9900;journalnode1:9901/" +journalId);
-    } else if (testName.getMethodName().equals(
+      conf.set(DFSConfigKeys.DFS_NAMENODE_SHARED_EDITS_DIR_KEY + ".ns1" + ".nn1",
+          "qjournal://journalnode0:9900;journalnode1:9901/" + journalId);
+      conf.set(DFSConfigKeys.DFS_NAMENODE_SHARED_EDITS_DIR_KEY + ".ns1" + ".nn2",
+          "qjournal://journalnode0:9900;journalnode1:9901/" + journalId);
+    } else if ( testName.equals(
         "testJournalNodeSyncwithFederationTypeIncorrectConfigWithNamenodeId")) {
       conf.set(DFSConfigKeys.DFS_HA_NAMENODES_KEY_PREFIX + ".ns1", "nn1,nn2");
-      conf.set(DFSConfigKeys.DFS_NAMENODE_SHARED_EDITS_DIR_KEY +".ns1" +".nn1",
+      conf.set(DFSConfigKeys.DFS_NAMENODE_SHARED_EDITS_DIR_KEY + ".ns1" + ".nn1",
           "qjournal://journalnode0:9900;journalnode1:9901/" + journalId);
-      conf.set(DFSConfigKeys.DFS_NAMENODE_SHARED_EDITS_DIR_KEY +".ns1" +".nn2",
+      conf.set(DFSConfigKeys.DFS_NAMENODE_SHARED_EDITS_DIR_KEY + ".ns1" + ".nn2",
           "qjournal://journalnode0:9902;journalnode1:9903/" + journalId);
-    } else if (testName.getMethodName().equals("testConfAbnormalHandlerNumber")) {
+    } else if ( testName.equals("testConfAbnormalHandlerNumber")) {
       conf.setInt(DFSConfigKeys.DFS_JOURNALNODE_HANDLER_COUNT_KEY, -1);
-    } else if (testName.getMethodName().equals("testConfNormalHandlerNumber")) {
+    } else if ( testName.equals("testConfNormalHandlerNumber")) {
       conf.setInt(DFSConfigKeys.DFS_JOURNALNODE_HANDLER_COUNT_KEY, 10);
     }
     jn = new JournalNode();
@@ -152,19 +154,19 @@ public class TestJournalNode {
     jn.start();
 
 
-    if (testName.getMethodName().equals("testJournalDirPerNameSpace") ||
-        testName.getMethodName().equals(
+    if ( testName.equals("testJournalDirPerNameSpace") ||
+         testName.equals(
             "testJournalCommonDirAcrossNameSpace") ||
-        testName.getMethodName().equals(
+         testName.equals(
             "testJournalDefaultDirForOneNameSpace") ||
-        testName.getMethodName().equals("testJournalMetricTags")) {
+         testName.equals("testJournalMetricTags")) {
       Collection<String> nameServiceIds = DFSUtilClient.getNameServiceIds(conf);
-      for(String nsId: nameServiceIds) {
+      for (String nsId : nameServiceIds) {
         journalId = "test-journalid-" + nsId;
         journal = jn.getOrCreateJournal(journalId, nsId,
             HdfsServerConstants.StartupOption.REGULAR);
         NamespaceInfo fakeNameSpaceInfo = new NamespaceInfo(
-            12345, "mycluster", "my-bp"+nsId, 0L);
+            12345, "mycluster", "my-bp" + nsId, 0L);
         journal.format(fakeNameSpaceInfo, false);
       }
     } else {
@@ -172,7 +174,7 @@ public class TestJournalNode {
       journal.format(FAKE_NSINFO, false);
     }
 
-    
+
     ch = new IPCLoggerChannel(conf, FAKE_NSINFO, journalId, jn.getBoundIpcAddress());
   }
 
@@ -194,12 +196,13 @@ public class TestJournalNode {
         "qjournal://journalnode0:9900;journalnode1:9901/test-journalid-ns2");
   }
   
-  @After
+  @AfterEach
   public void teardown() throws Exception {
     jn.stop(0);
   }
 
-  @Test(timeout=100000)
+  @Test
+  @Timeout(value = 100000, unit = TimeUnit.MILLISECONDS)
   public void testJournalDirPerNameSpace() {
     Collection<String> nameServiceIds = DFSUtilClient.getNameServiceIds(conf);
     setupStaticHostResolution(2, "journalnode");
@@ -214,7 +217,8 @@ public class TestJournalNode {
     }
   }
 
-  @Test(timeout=100000)
+  @Test
+  @Timeout(value = 100000, unit = TimeUnit.MILLISECONDS)
   public void testJournalCommonDirAcrossNameSpace() {
     Collection<String> nameServiceIds = DFSUtilClient.getNameServiceIds(conf);
     setupStaticHostResolution(2, "journalnode");
@@ -228,7 +232,8 @@ public class TestJournalNode {
     }
   }
 
-  @Test(timeout=100000)
+  @Test
+  @Timeout(value = 100000, unit = TimeUnit.MILLISECONDS)
   public void testJournalDefaultDirForOneNameSpace() {
     Collection<String> nameServiceIds = DFSUtilClient.getNameServiceIds(conf);
     setupStaticHostResolution(2, "journalnode");
@@ -247,7 +252,8 @@ public class TestJournalNode {
     assertEquals(editsDir.toString(), journalStorage.getRoot().toString());
   }
 
-  @Test(timeout=100000)
+  @Test
+  @Timeout(value = 100000, unit = TimeUnit.MILLISECONDS)
   public void testJournalMetricTags() {
     setupStaticHostResolution(2, "journalnode");
     String jid = "test-journalid-ns1";
@@ -263,7 +269,8 @@ public class TestJournalNode {
     MetricsAsserts.assertTag("JournalId", jid, metrics);
   }
 
-  @Test(timeout=100000)
+  @Test
+  @Timeout(value = 100000, unit = TimeUnit.MILLISECONDS)
   public void testJournal() throws Exception {
     MetricsRecordBuilder metrics = MetricsAsserts.getMetrics(
         journal.getMetrics().getName());
@@ -303,9 +310,10 @@ public class TestJournalNode {
     assertTrue(lastJournalTimestamp > beginTimestamp);
 
   }
-  
-  
-  @Test(timeout=100000)
+
+
+  @Test
+  @Timeout(value = 100000, unit = TimeUnit.MILLISECONDS)
   public void testReturnsSegmentInfoAtEpochTransition() throws Exception {
     ch.newEpoch(1).get();
     ch.setEpoch(1);
@@ -332,16 +340,17 @@ public class TestJournalNode {
     // started writing it. Hence, we should return the prior segment txid.
     assertEquals(1, response.getLastSegmentTxId());
   }
-  
-  @Test(timeout=100000)
+
+  @Test
+  @Timeout(value = 100000, unit = TimeUnit.MILLISECONDS)
   public void testHttpServer() throws Exception {
     String urlRoot = jn.getHttpServerURI();
     
     // Check default servlets.
     String pageContents = DFSTestUtil.urlGet(new URL(urlRoot + "/jmx"));
-    assertTrue("Bad contents: " + pageContents,
-        pageContents.contains(
-            "Hadoop:service=JournalNode,name=JvmMetrics"));
+    assertTrue(pageContents.contains(
+            "Hadoop:service=JournalNode,name=JvmMetrics"),
+        "Bad contents: " + pageContents);
 
     // Create some edits on server side
     byte[] EDITS_DATA = QJMTestUtil.createTxnData(1, 3);
@@ -379,7 +388,8 @@ public class TestJournalNode {
    * Test that the JournalNode performs correctly as a Paxos
    * <em>Acceptor</em> process.
    */
-  @Test(timeout=100000)
+  @Test
+  @Timeout(value = 100000, unit = TimeUnit.MILLISECONDS)
   public void testAcceptRecoveryBehavior() throws Exception {
     // We need to run newEpoch() first, or else we have no way to distinguish
     // different proposals for the same decision.
@@ -438,8 +448,9 @@ public class TestJournalNode {
           ioe);
     }
   }
-  
-  @Test(timeout=100000)
+
+  @Test
+  @Timeout(value = 100000, unit = TimeUnit.MILLISECONDS)
   public void testFailToStartWithBadConfig() throws Exception {
     Configuration conf = new Configuration();
     conf.set(DFSConfigKeys.DFS_JOURNALNODE_EDITS_DIR_KEY, "non-absolute-path");
@@ -473,7 +484,7 @@ public class TestJournalNode {
       GenericTestUtils.assertExceptionContains(errString, e);
     }
   }
-  
+
   /**
    * Simple test of how fast the code path is to write edits.
    * This isn't a true unit test, but can be run manually to
@@ -482,7 +493,8 @@ public class TestJournalNode {
    * At the time of development, this test ran in ~4sec on an
    * SSD-enabled laptop (1.8ms/batch).
    */
-  @Test(timeout=100000)
+  @Test
+  @Timeout(value = 100000, unit = TimeUnit.MILLISECONDS)
   public void testPerformance() throws Exception {
     doPerfTest(8192, 1024); // 8MB
   }
@@ -532,17 +544,17 @@ public class TestJournalNode {
     //JournalSyncer will not be started, as journalsync is not enabled
     conf.setBoolean(DFSConfigKeys.DFS_JOURNALNODE_ENABLE_SYNC_KEY, false);
     jn.getOrCreateJournal(journalId);
-    Assert.assertEquals(false,
+    Assertions.assertEquals(false,
         jn.getJournalSyncerStatus(journalId));
-    Assert.assertEquals(false,
+    Assertions.assertEquals(false,
         jn.getJournal(journalId).getTriedJournalSyncerStartedwithnsId());
 
     //Trying by passing nameserviceId still journalnodesyncer should not start
     // IstriedJournalSyncerStartWithnsId should also be false
     jn.getOrCreateJournal(journalId, "mycluster");
-    Assert.assertEquals(false,
+    Assertions.assertEquals(false,
         jn.getJournalSyncerStatus(journalId));
-    Assert.assertEquals(false,
+    Assertions.assertEquals(false,
         jn.getJournal(journalId).getTriedJournalSyncerStartedwithnsId());
 
   }
@@ -553,9 +565,9 @@ public class TestJournalNode {
     //JournalSyncer will not be started,
     // as shared edits hostnames are not resolved
     jn.getOrCreateJournal(journalId);
-    Assert.assertEquals(false,
+    Assertions.assertEquals(false,
         jn.getJournalSyncerStatus(journalId));
-    Assert.assertEquals(false,
+    Assertions.assertEquals(false,
         jn.getJournal(journalId).getTriedJournalSyncerStartedwithnsId());
 
     //Trying by passing nameserviceId, now
@@ -563,9 +575,9 @@ public class TestJournalNode {
     // but journalnode syncer will not be started,
     // as hostnames are not resolved
     jn.getOrCreateJournal(journalId, "mycluster");
-    Assert.assertEquals(false,
+    Assertions.assertEquals(false,
         jn.getJournalSyncerStatus(journalId));
-    Assert.assertEquals(true,
+    Assertions.assertEquals(true,
         jn.getJournal(journalId).getTriedJournalSyncerStartedwithnsId());
 
   }
@@ -576,9 +588,9 @@ public class TestJournalNode {
     //JournalSyncer will not be started,
     // as shared edits hostnames are not resolved
     jn.getOrCreateJournal(journalId);
-    Assert.assertEquals(false,
+    Assertions.assertEquals(false,
         jn.getJournalSyncerStatus(journalId));
-    Assert.assertEquals(false,
+    Assertions.assertEquals(false,
         jn.getJournal(journalId).getTriedJournalSyncerStartedwithnsId());
 
     //Trying by passing nameserviceId and resolve hostnames
@@ -586,9 +598,9 @@ public class TestJournalNode {
     // and also journalnode syncer will also be started
     setupStaticHostResolution(2, "jn");
     jn.getOrCreateJournal(journalId, "mycluster");
-    Assert.assertEquals(true,
+    Assertions.assertEquals(true,
         jn.getJournalSyncerStatus(journalId));
-    Assert.assertEquals(true,
+    Assertions.assertEquals(true,
         jn.getJournal(journalId).getTriedJournalSyncerStartedwithnsId());
 
   }
@@ -601,9 +613,9 @@ public class TestJournalNode {
     // but configured shared edits dir is appended with nameserviceId
     setupStaticHostResolution(2, "journalnode");
     jn.getOrCreateJournal(journalId);
-    Assert.assertEquals(false,
+    Assertions.assertEquals(false,
         jn.getJournalSyncerStatus(journalId));
-    Assert.assertEquals(false,
+    Assertions.assertEquals(false,
         jn.getJournal(journalId).getTriedJournalSyncerStartedwithnsId());
 
     //Trying by passing nameserviceId and resolve hostnames
@@ -611,9 +623,9 @@ public class TestJournalNode {
     // and also journalnode syncer will also be started
 
     jn.getOrCreateJournal(journalId, "ns1");
-    Assert.assertEquals(true,
+    Assertions.assertEquals(true,
         jn.getJournalSyncerStatus(journalId));
-    Assert.assertEquals(true,
+    Assertions.assertEquals(true,
         jn.getJournal(journalId).getTriedJournalSyncerStartedwithnsId());
   }
 
@@ -625,9 +637,9 @@ public class TestJournalNode {
     // namenodeId
     setupStaticHostResolution(2, "journalnode");
     jn.getOrCreateJournal(journalId);
-    Assert.assertEquals(false,
+    Assertions.assertEquals(false,
         jn.getJournalSyncerStatus(journalId));
-    Assert.assertEquals(false,
+    Assertions.assertEquals(false,
         jn.getJournal(journalId).getTriedJournalSyncerStartedwithnsId());
 
     //Trying by passing nameserviceId and resolve hostnames
@@ -635,9 +647,9 @@ public class TestJournalNode {
     // and also journalnode syncer will also be started
 
     jn.getOrCreateJournal(journalId, "ns1");
-    Assert.assertEquals(true,
+    Assertions.assertEquals(true,
         jn.getJournalSyncerStatus(journalId));
-    Assert.assertEquals(true,
+    Assertions.assertEquals(true,
         jn.getJournal(journalId).getTriedJournalSyncerStartedwithnsId());
   }
 
@@ -650,9 +662,9 @@ public class TestJournalNode {
     // namenodeId
     setupStaticHostResolution(2, "journalnode");
     jn.getOrCreateJournal(journalId);
-    Assert.assertEquals(false,
+    Assertions.assertEquals(false,
         jn.getJournalSyncerStatus(journalId));
-    Assert.assertEquals(false,
+    Assertions.assertEquals(false,
         jn.getJournal(journalId).getTriedJournalSyncerStartedwithnsId());
 
     //Trying by passing nameserviceId and resolve hostnames
@@ -661,9 +673,9 @@ public class TestJournalNode {
     // as for each nnId, different shared Edits dir value is configured
 
     jn.getOrCreateJournal(journalId, "ns1");
-    Assert.assertEquals(false,
+    Assertions.assertEquals(false,
         jn.getJournalSyncerStatus(journalId));
-    Assert.assertEquals(true,
+    Assertions.assertEquals(true,
         jn.getJournal(journalId).getTriedJournalSyncerStartedwithnsId());
   }
 

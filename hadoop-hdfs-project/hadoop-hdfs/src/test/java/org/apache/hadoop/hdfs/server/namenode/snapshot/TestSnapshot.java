@@ -17,12 +17,7 @@
  */
 package org.apache.hadoop.hdfs.server.namenode.snapshot;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
+import static org.junit.jupiter.api.Assertions.*;
 
 import java.io.File;
 import java.io.IOException;
@@ -33,6 +28,7 @@ import java.util.Arrays;
 import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.Random;
+import java.util.concurrent.TimeUnit;
 
 import org.apache.commons.io.output.NullOutputStream;
 import org.apache.hadoop.conf.Configuration;
@@ -61,11 +57,10 @@ import org.apache.hadoop.ipc.RemoteException;
 import org.apache.hadoop.test.GenericTestUtils;
 import org.apache.hadoop.util.Time;
 import org.slf4j.event.Level;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.ExpectedException;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.Timeout;
 
 /**
  * This class tests snapshot functionality. One or multiple snapshots are
@@ -100,9 +95,6 @@ public class TestSnapshot {
   
   private static final String testDir =
       GenericTestUtils.getTestDir().getAbsolutePath();
-
-  @Rule
-  public ExpectedException exception = ExpectedException.none();
   
   /**
    * The list recording all previous snapshots. Each element in the array
@@ -114,7 +106,7 @@ public class TestSnapshot {
    */
   private TestDirectoryTree dirTree;
 
-  @Before
+  @BeforeEach
   public void setUp() throws Exception {
     conf = new Configuration();
     conf.setLong(DFSConfigKeys.DFS_BLOCK_SIZE_KEY, BLOCKSIZE);
@@ -128,7 +120,7 @@ public class TestSnapshot {
     dirTree = new TestDirectoryTree(DIRECTORY_TREE_LEVEL, hdfs);
   }
 
-  @After
+  @AfterEach
   public void tearDown() throws Exception {
     if (cluster != null) {
       cluster.shutdown();
@@ -256,7 +248,7 @@ public class TestSnapshot {
     File originalFsimage = FSImageTestUtil.findLatestImageFile(
         FSImageTestUtil.getFSImage(
         cluster.getNameNode()).getStorage().getStorageDir(0));
-    assertNotNull("Didn't generate or can't find fsimage", originalFsimage);
+    assertNotNull(originalFsimage, "Didn't generate or can't find fsimage");
     PrintStream o = new PrintStream(NullOutputStream.INSTANCE);
     PBImageXmlWriter v = new PBImageXmlWriter(new Configuration(), o);
     v.visit(new RandomAccessFile(originalFsimage, "r"));
@@ -304,7 +296,8 @@ public class TestSnapshot {
    * A simple test that updates a sub-directory of a snapshottable directory
    * with snapshots
    */
-  @Test (timeout=60000)
+  @Test
+  @Timeout(value = 60000, unit = TimeUnit.MILLISECONDS)
   public void testUpdateDirectory() throws Exception {
     Path dir = new Path("/dir");
     Path sub = new Path(dir, "sub");
@@ -354,11 +347,12 @@ public class TestSnapshot {
       }
     }
   }
-  
+
   /**
    * Creating snapshots for a directory that is not snapshottable must fail.
    */
-  @Test (timeout=60000)
+  @Test
+  @Timeout(value = 60000, unit = TimeUnit.MILLISECONDS)
   public void testSnapshottableDirectory() throws Exception {
     Path dir = new Path("/TestSnapshot/sub");
     Path file0 = new Path(dir, "file0");
@@ -457,7 +451,8 @@ public class TestSnapshot {
     assertEquals(0, rootNode.getDirectorySnapshottableFeature().getSnapshotQuota());
   }
 
-  @Test(timeout = 60000)
+  @Test
+  @Timeout(value = 60000, unit = TimeUnit.MILLISECONDS)
   public void testSnapshotMtime() throws Exception {
     Path dir = new Path("/dir");
     Path sub = new Path(dir, "sub");
@@ -473,7 +468,8 @@ public class TestSnapshot {
         newSnapshotStatus.getModificationTime());
   }
 
-  @Test(timeout = 60000)
+  @Test
+  @Timeout(value = 60000, unit = TimeUnit.MILLISECONDS)
   public void testRenameSnapshotMtime() throws Exception {
     Path dir = new Path("/dir");
     Path sub = new Path(dir, "sub");
@@ -493,7 +489,8 @@ public class TestSnapshot {
   /**
    * Test snapshot directory mtime after snapshot deletion.
    */
-  @Test(timeout = 60000)
+  @Test
+  @Timeout(value = 60000, unit = TimeUnit.MILLISECONDS)
   public void testDeletionSnapshotMtime() throws Exception {
     Path dir = new Path("/dir");
     Path sub = new Path(dir, "sub");
@@ -517,7 +514,8 @@ public class TestSnapshot {
    * HDFS-15446 - ensure that snapshot operations on /.reserved/raw
    * paths work and the NN can load the resulting edits.
    */
-  @Test(timeout = 60000)
+  @Test
+  @Timeout(value = 60000, unit = TimeUnit.MILLISECONDS)
   public void testSnapshotOpsOnReservedPath() throws Exception {
     Path dir = new Path("/dir");
     Path nestedDir = new Path("/nested/dir");
@@ -548,7 +546,8 @@ public class TestSnapshot {
    * paths work and the NN can load the resulting edits. This test if for
    * snapshots at the root level.
    */
-  @Test(timeout = 120000)
+  @Test
+  @Timeout(value = 120000, unit = TimeUnit.MILLISECONDS)
   public void testSnapshotOpsOnRootReservedPath() throws Exception {
     Path dir = new Path("/");
     Path sub = new Path(dir, "sub");
@@ -749,7 +748,7 @@ public class TestSnapshot {
             
             SnapshotTestHelper.dumpTree(s, cluster);
           }
-          assertEquals(s, currentStatus.toString(), originalStatus.toString());
+          assertEquals(currentStatus.toString(), originalStatus.toString(), s);
         }
       }
     }
@@ -860,7 +859,7 @@ public class TestSnapshot {
               + "\n\nsnapshotFile: " + fsdir.getINode(snapshotFile.toString()).toDetailString();
           SnapshotTestHelper.dumpTree(s, cluster);
         }
-        assertEquals(s, originalSnapshotFileLen, currentSnapshotFileLen);
+        assertEquals(originalSnapshotFileLen, currentSnapshotFileLen, s);
         // Read the snapshot file out of the boundary
         if (currentSnapshotFileLen != -1L
             && !(this instanceof FileAppendNotClose)) {
@@ -875,7 +874,7 @@ public class TestSnapshot {
                 + "\n\nsnapshotFile: " + fsdir.getINode(snapshotFile.toString()).toDetailString();
             SnapshotTestHelper.dumpTree(s, cluster);
           }
-          assertEquals(s, -1, readLen);
+          assertEquals(-1, readLen, s);
           input.close();
         }
       }

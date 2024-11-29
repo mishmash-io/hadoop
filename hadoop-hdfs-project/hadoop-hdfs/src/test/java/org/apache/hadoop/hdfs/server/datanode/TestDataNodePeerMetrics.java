@@ -29,20 +29,23 @@ import org.apache.hadoop.metrics2.lib.MutableRollingAverages;
 import org.apache.hadoop.test.GenericTestUtils;
 import org.apache.hadoop.util.Time;
 import org.apache.hadoop.conf.Configuration;
-import org.junit.Test;
+
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.Timeout;
 
 import static org.apache.hadoop.hdfs.DFSConfigKeys.DFS_DATANODE_PEER_METRICS_MIN_OUTLIER_DETECTION_SAMPLES_KEY;
 import static org.apache.hadoop.hdfs.DFSConfigKeys.DFS_DATANODE_PEER_STATS_ENABLED_KEY;
 import static org.hamcrest.CoreMatchers.containsString;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertThat;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 /**
  * This class tests various cases of DataNode peer metrics.
  */
 public class TestDataNodePeerMetrics {
 
-  @Test(timeout = 30000)
+  @Test
+  @Timeout(value = 30000, unit = TimeUnit.MILLISECONDS)
   public void testGetSendPacketDownstreamAvgInfo() throws Exception {
     final int windowSize = 5; // 5s roll over interval
     final int numWindows = 2; // 2 rolling windows
@@ -87,7 +90,8 @@ public class TestDataNodePeerMetrics {
     }
   }
 
-  @Test(timeout = 30000)
+  @Test
+  @Timeout(value = 30000, unit = TimeUnit.MILLISECONDS)
   public void testRemoveStaleRecord() throws Exception {
     final int numWindows = 5;
     final long scheduleInterval = 1000;

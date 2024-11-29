@@ -20,9 +20,10 @@ package org.apache.hadoop.hdfs;
 
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.test.GenericTestUtils;
-import org.junit.Test;
 
 import java.io.File;
+
+import org.junit.jupiter.api.Test;
 import java.io.IOException;
 
 public class TestDatanodeLayoutUpgrade {

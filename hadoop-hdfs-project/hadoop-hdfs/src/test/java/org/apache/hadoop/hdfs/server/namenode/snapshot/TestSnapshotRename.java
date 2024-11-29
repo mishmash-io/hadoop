@@ -17,13 +17,11 @@
  */
 package org.apache.hadoop.hdfs.server.namenode.snapshot;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
+import static org.junit.jupiter.api.Assertions.*;
 
 import java.io.ByteArrayOutputStream;
 import java.io.PrintStream;
+import java.util.concurrent.TimeUnit;
 
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileStatus;
@@ -43,11 +41,10 @@ import org.apache.hadoop.hdfs.util.ReadOnlyList;
 import org.apache.hadoop.ipc.RemoteException;
 import org.apache.hadoop.test.GenericTestUtils;
 import org.apache.hadoop.test.LambdaTestUtils;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.ExpectedException;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.Timeout;
 
 /**
  * Test for renaming snapshot
@@ -68,7 +65,7 @@ public class TestSnapshotRename {
   DistributedFileSystem hdfs;
   FSDirectory fsdir;
   
-  @Before
+  @BeforeEach
   public void setUp() throws Exception {
     conf = new Configuration();
     cluster = new MiniDFSCluster.Builder(conf).numDataNodes(REPLICATION)
@@ -79,16 +76,13 @@ public class TestSnapshotRename {
     fsdir = fsn.getFSDirectory();
   }
 
-  @After
+  @AfterEach
   public void tearDown() throws Exception {
     if (cluster != null) {
       cluster.shutdown();
       cluster = null;
     }
   }
-  
-  @Rule
-  public ExpectedException exception = ExpectedException.none();
   
   /**
    * Check the correctness of snapshot list within snapshottable dir
@@ -110,12 +104,13 @@ public class TestSnapshotRename {
       assertEquals(names[i], s.getRoot().getLocalName());
     }
   }
-  
+
   /**
    * Rename snapshot(s), and check the correctness of the snapshot list within
    * {@link INodeDirectorySnapshottable}
    */
-  @Test (timeout=60000)
+  @Test
+  @Timeout(value = 60000, unit = TimeUnit.MILLISECONDS)
   public void testSnapshotList() throws Exception {
     DFSTestUtil.createFile(hdfs, file1, BLOCKSIZE, REPLICATION, seed);
     // Create three snapshots for sub1
@@ -140,11 +135,12 @@ public class TestSnapshotRename {
     checkSnapshotList(srcRoot, new String[] { "s0", "s2", "s4" },
         new String[] { "s4", "s2", "s0" });
   }
-  
+
   /**
    * Test FileStatus of snapshot file before/after rename
    */
-  @Test (timeout=60000)
+  @Test
+  @Timeout(value = 60000, unit = TimeUnit.MILLISECONDS)
   public void testSnapshotRename() throws Exception {
     DFSTestUtil.createFile(hdfs, file1, BLOCKSIZE, REPLICATION, seed);
     // Create snapshot for sub1
@@ -169,54 +165,57 @@ public class TestSnapshotRename {
     statusBeforeRename.setPath(statusAfterRename.getPath());
     assertEquals(statusBeforeRename.toString(), statusAfterRename.toString());
   }
-  
+
   /**
    * Test rename a non-existing snapshot
    */
-  @Test (timeout=60000)
-  public void testRenameNonExistingSnapshot() throws Exception {
-    DFSTestUtil.createFile(hdfs, file1, BLOCKSIZE, REPLICATION, seed);
-    // Create snapshot for sub1
-    SnapshotTestHelper.createSnapshot(hdfs, sub1, "s1");
-    
-    exception.expect(SnapshotException.class);
-    String error = "The snapshot wrongName does not exist for directory "
-        + sub1.toString();
-    exception.expectMessage(error);
-    hdfs.renameSnapshot(sub1, "wrongName", "s2");
+  @Test
+  @Timeout(value = 60000, unit = TimeUnit.MILLISECONDS)
+  public void testRenameNonExistingSnapshot() {
+    Throwable exception = assertThrows(SnapshotException.class, () -> {
+      DFSTestUtil.createFile(hdfs, file1, BLOCKSIZE, REPLICATION, seed);
+      // Create snapshot for sub1
+      SnapshotTestHelper.createSnapshot(hdfs, sub1, "s1");
+      String error = "The snapshot wrongName does not exist for directory "
+          + sub1.toString();
+      hdfs.renameSnapshot(sub1, "wrongName", "s2");
+    });
+    assertTrue(exception.getMessage().contains(error));
   }
 
   /**
    * Test rename a non-existing snapshot to itself.
    */
-  @Test (timeout=60000)
-  public void testRenameNonExistingSnapshotToItself() throws Exception {
-    DFSTestUtil.createFile(hdfs, file1, BLOCKSIZE, REPLICATION, seed);
-    // Create snapshot for sub1
-    SnapshotTestHelper.createSnapshot(hdfs, sub1, "s1");
-
-    exception.expect(SnapshotException.class);
-    String error = "The snapshot wrongName does not exist for directory "
-        + sub1.toString();
-    exception.expectMessage(error);
-    hdfs.renameSnapshot(sub1, "wrongName", "wrongName");
+  @Test
+  @Timeout(value = 60000, unit = TimeUnit.MILLISECONDS)
+  public void testRenameNonExistingSnapshotToItself() {
+    Throwable exception = assertThrows(SnapshotException.class, () -> {
+      DFSTestUtil.createFile(hdfs, file1, BLOCKSIZE, REPLICATION, seed);
+      // Create snapshot for sub1
+      SnapshotTestHelper.createSnapshot(hdfs, sub1, "s1");
+      String error = "The snapshot wrongName does not exist for directory "
+          + sub1.toString();
+      hdfs.renameSnapshot(sub1, "wrongName", "wrongName");
+    });
+    assertTrue(exception.getMessage().contains(error));
   }
-  
+
   /**
    * Test rename a snapshot to another existing snapshot 
    */
-  @Test (timeout=60000)
-  public void testRenameToExistingSnapshot() throws Exception {
-    DFSTestUtil.createFile(hdfs, file1, BLOCKSIZE, REPLICATION, seed);
-    // Create snapshots for sub1
-    SnapshotTestHelper.createSnapshot(hdfs, sub1, "s1");
-    SnapshotTestHelper.createSnapshot(hdfs, sub1, "s2");
-    
-    exception.expect(SnapshotException.class);
-    String error = "The snapshot s2 already exists for directory "
-        + sub1.toString();
-    exception.expectMessage(error);
-    hdfs.renameSnapshot(sub1, "s1", "s2");
+  @Test
+  @Timeout(value = 60000, unit = TimeUnit.MILLISECONDS)
+  public void testRenameToExistingSnapshot() {
+    Throwable exception = assertThrows(SnapshotException.class, () -> {
+      DFSTestUtil.createFile(hdfs, file1, BLOCKSIZE, REPLICATION, seed);
+      // Create snapshots for sub1
+      SnapshotTestHelper.createSnapshot(hdfs, sub1, "s1");
+      SnapshotTestHelper.createSnapshot(hdfs, sub1, "s2");
+      String error = "The snapshot s2 already exists for directory "
+          + sub1.toString();
+      hdfs.renameSnapshot(sub1, "s1", "s2");
+    });
+    assertTrue(exception.getMessage().contains(error));
   }
   
   /**

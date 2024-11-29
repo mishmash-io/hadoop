@@ -51,9 +51,10 @@ import org.apache.hadoop.io.MultipleIOException;
 import org.apache.hadoop.test.GenericTestUtils;
 import org.apache.hadoop.util.Lists;
 import org.apache.hadoop.util.Time;
-import org.junit.After;
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.Timeout;
 
 import org.apache.hadoop.thirdparty.com.google.common.base.Joiner;
 
@@ -86,13 +87,9 @@ import static org.apache.hadoop.test.PlatformAssumptions.assumeNotWindows;
 import static org.hamcrest.CoreMatchers.anyOf;
 import static org.hamcrest.CoreMatchers.containsString;
 import static org.hamcrest.CoreMatchers.not;
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.core.Is.is;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertThat;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
+import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.doAnswer;
@@ -106,7 +103,7 @@ public class TestDataNodeHotSwapVolumes {
   private MiniDFSCluster cluster;
   private Configuration conf;
 
-  @After
+  @AfterEach
   public void tearDown() {
     shutdown();
   }
@@ -370,8 +367,7 @@ public class TestDataNodeHotSwapVolumes {
     };
     Collections.sort(expectedStorageLocations, comparator);
     Collections.sort(effectiveStorageLocations, comparator);
-    assertEquals("Effective volumes doesnt match expected",
-        expectedStorageLocations, effectiveStorageLocations);
+    assertEquals(expectedStorageLocations, effectiveStorageLocations, "Effective volumes doesnt match expected");
 
     // Check that all newly created volumes are appropriately formatted.
     for (File volumeDir : newVolumeDirs) {
@@ -399,7 +395,8 @@ public class TestDataNodeHotSwapVolumes {
   /**
    * Test adding one volume on a running MiniDFSCluster with only one NameNode.
    */
-  @Test(timeout=60000)
+  @Test
+  @Timeout(value = 60000, unit = TimeUnit.MILLISECONDS)
   public void testAddOneNewVolume()
       throws IOException, ReconfigurationException,
       InterruptedException, TimeoutException {
@@ -433,7 +430,8 @@ public class TestDataNodeHotSwapVolumes {
    * Test re-adding one volume with some blocks on a running MiniDFSCluster
    * with only one NameNode to reproduce HDFS-13677.
    */
-  @Test(timeout=60000)
+  @Test
+  @Timeout(value = 60000, unit = TimeUnit.MILLISECONDS)
   public void testReAddVolumeWithBlocks()
       throws IOException, ReconfigurationException,
       InterruptedException, TimeoutException {
@@ -497,7 +495,8 @@ public class TestDataNodeHotSwapVolumes {
     assertEquals(15, maxNumBlocks);
   }
 
-  @Test(timeout=60000)
+  @Test
+  @Timeout(value = 60000, unit = TimeUnit.MILLISECONDS)
   public void testAddVolumesDuringWrite()
       throws IOException, InterruptedException, TimeoutException,
       ReconfigurationException {
@@ -540,7 +539,8 @@ public class TestDataNodeHotSwapVolumes {
     assertEquals(expectedNumBlocks, actualNumBlocks);
   }
 
-  @Test(timeout=180000)
+  @Test
+  @Timeout(value = 180000, unit = TimeUnit.MILLISECONDS)
   public void testAddVolumesConcurrently()
       throws IOException, InterruptedException, TimeoutException,
       ReconfigurationException {
@@ -627,9 +627,8 @@ public class TestDataNodeHotSwapVolumes {
     listStorageThread.join();
 
     // Verify errors while adding volumes and listing storage directories
-    Assert.assertEquals("Error adding volumes!", false, addVolumeError.get());
-    Assert.assertEquals("Error listing storage!",
-        false, listStorageError.get());
+    Assertions.assertEquals(false, addVolumeError.get(), "Error adding volumes!");
+    Assertions.assertEquals(false, listStorageError.get(), "Error listing storage!");
 
     int additionalBlockCount = 9;
     int totalBlockCount = initialBlockCount + additionalBlockCount;
@@ -645,7 +644,8 @@ public class TestDataNodeHotSwapVolumes {
     assertEquals(numVolumes, blockReports.get(0).size());
   }
 
-  @Test(timeout=60000)
+  @Test
+  @Timeout(value = 60000, unit = TimeUnit.MILLISECONDS)
   public void testAddVolumesToFederationNN()
       throws IOException, TimeoutException, InterruptedException,
       ReconfigurationException {
@@ -680,7 +680,8 @@ public class TestDataNodeHotSwapVolumes {
         Collections.frequency(actualNumBlocks.get(0), 0));
   }
 
-  @Test(timeout=60000)
+  @Test
+  @Timeout(value = 60000, unit = TimeUnit.MILLISECONDS)
   public void testRemoveOneVolume()
       throws ReconfigurationException, InterruptedException, TimeoutException,
       IOException {
@@ -722,7 +723,8 @@ public class TestDataNodeHotSwapVolumes {
     assertEquals(10 / 2 + 6, blocksForVolume1.getNumberOfBlocks());
   }
 
-  @Test(timeout=60000)
+  @Test
+  @Timeout(value = 60000, unit = TimeUnit.MILLISECONDS)
   public void testReplicatingAfterRemoveVolume()
       throws InterruptedException, TimeoutException, IOException,
       ReconfigurationException {
@@ -840,7 +842,8 @@ public class TestDataNodeHotSwapVolumes {
     }
   }
 
-  @Test(timeout=600000)
+  @Test
+  @Timeout(value = 600000, unit = TimeUnit.MILLISECONDS)
   public void testRemoveVolumeBeingWritten()
       throws InterruptedException, TimeoutException, ReconfigurationException,
       IOException, BrokenBarrierException {
@@ -968,8 +971,7 @@ public class TestDataNodeHotSwapVolumes {
         System.out.println("Vol: " +
             fsVolumeReferences.get(i).getBaseURI().toString());
       }
-      assertEquals("Volume remove wasn't successful.",
-          1, fsVolumeReferences.size());
+      assertEquals(1, fsVolumeReferences.size(), "Volume remove wasn't successful.");
     }
 
     // Verify the file has sufficient replications.
@@ -990,8 +992,7 @@ public class TestDataNodeHotSwapVolumes {
 
     try (FsDatasetSpi.FsVolumeReferences fsVolumeReferences = fsDatasetSpi
         .getFsVolumeReferences()) {
-      assertEquals("Volume remove wasn't successful.",
-          1, fsVolumeReferences.size());
+      assertEquals(1, fsVolumeReferences.size(), "Volume remove wasn't successful.");
       FsVolumeSpi volume = fsVolumeReferences.get(0);
       String bpid = cluster.getNamesystem().getBlockPoolId();
       FsVolumeSpi.BlockIterator blkIter = volume.newBlockIterator(bpid, "test");
@@ -1000,12 +1001,13 @@ public class TestDataNodeHotSwapVolumes {
         blkIter.nextBlock();
         blockCount++;
       }
-      assertTrue(String.format("DataNode(%d) should have more than 1 blocks",
-          dataNodeIdx), blockCount > 1);
+      assertTrue(blockCount > 1, String.format("DataNode(%d) should have more than 1 blocks",
+          dataNodeIdx));
     }
   }
 
-  @Test(timeout=60000)
+  @Test
+  @Timeout(value = 60000, unit = TimeUnit.MILLISECONDS)
   public void testAddBackRemovedVolume()
       throws IOException, TimeoutException, InterruptedException,
       ReconfigurationException {
@@ -1050,7 +1052,8 @@ public class TestDataNodeHotSwapVolumes {
    * DataNode upon a volume failure. Thus we can run reconfig on the same
    * configuration to reload the new volume on the same directory as the failed one.
    */
-  @Test(timeout=60000)
+  @Test
+  @Timeout(value = 60000, unit = TimeUnit.MILLISECONDS)
   public void testDirectlyReloadAfterCheckDiskError()
       throws Exception {
     // The test uses DataNodeTestUtils#injectDataDirFailure() to simulate
@@ -1065,8 +1068,8 @@ public class TestDataNodeHotSwapVolumes {
     File dirToFail = cluster.getInstanceStorageDir(0, 0);
 
     FsVolumeImpl failedVolume = DataNodeTestUtils.getVolume(dn, dirToFail);
-    assertTrue("No FsVolume was found for " + dirToFail,
-        failedVolume != null);
+    assertTrue(failedVolume != null,
+        "No FsVolume was found for " + dirToFail);
     long used = failedVolume.getDfsUsed();
 
     DataNodeTestUtils.injectDataDirFailure(dirToFail);
@@ -1092,7 +1095,8 @@ public class TestDataNodeHotSwapVolumes {
   }
 
   /** Test that a full block report is sent after hot swapping volumes */
-  @Test(timeout=100000)
+  @Test
+  @Timeout(value = 100000, unit = TimeUnit.MILLISECONDS)
   public void testFullBlockReportAfterRemovingVolumes()
       throws IOException, ReconfigurationException {
 
@@ -1129,7 +1133,8 @@ public class TestDataNodeHotSwapVolumes {
         any(BlockReportContext.class));
   }
 
-  @Test(timeout=60000)
+  @Test
+  @Timeout(value = 60000, unit = TimeUnit.MILLISECONDS)
   public void testAddVolumeWithVolumeOnSameMount()
       throws IOException {
     shutdown();

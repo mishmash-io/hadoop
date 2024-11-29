@@ -27,6 +27,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Scanner;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 import java.util.function.Supplier;
 
@@ -91,10 +92,11 @@ import org.apache.hadoop.test.PathUtils;
 import org.apache.hadoop.util.Lists;
 import org.apache.hadoop.util.cli.ToolRunner;
 import org.assertj.core.api.Assertions;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.Assert;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.Timeout;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -104,12 +106,8 @@ import static org.hamcrest.CoreMatchers.allOf;
 import static org.hamcrest.CoreMatchers.anyOf;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.not;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotEquals;
-import static org.junit.Assert.assertThat;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.junit.jupiter.api.Assertions.*;
 import static org.hamcrest.CoreMatchers.containsString;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
@@ -132,7 +130,7 @@ public class TestDFSAdmin {
   private String tempResource = null;
   private static final int NUM_DATANODES = 2;
 
-  @Before
+  @BeforeEach
   public void setUp() throws Exception {
     conf = new Configuration();
     conf.setInt(IPC_CLIENT_CONNECT_MAX_RETRIES_KEY, 3);
@@ -156,7 +154,7 @@ public class TestDFSAdmin {
     err.reset();
   }
 
-  @After
+  @AfterEach
   public void tearDown() throws Exception {
     try {
       System.out.flush();
@@ -236,7 +234,8 @@ public class TestDFSAdmin {
     scanner.close();
   }
 
-  @Test(timeout = 30000)
+  @Test
+  @Timeout(value = 30000, unit = TimeUnit.MILLISECONDS)
   public void testGetDatanodeInfo() throws Exception {
     redirectStream();
     final DFSAdmin dfsAdmin = new DFSAdmin(conf);
@@ -257,9 +256,8 @@ public class TestDFSAdmin {
       scanIntoList(out, outs);
       /* verify results */
       assertEquals(
-          "One line per DataNode like: Uptime: XXX, Software version: x.y.z,"
-              + " Config version: core-x.y.z,hdfs-x",
-          1, outs.size());
+          1, outs.size(), "One line per DataNode like: Uptime: XXX, Software version: x.y.z,"
+              + " Config version: core-x.y.z,hdfs-x");
       assertThat(outs.get(0),
           is(allOf(containsString("Uptime:"),
               containsString("Software version"),
@@ -267,7 +265,8 @@ public class TestDFSAdmin {
     }
   }
 
-  @Test(timeout = 30000)
+  @Test
+  @Timeout(value = 30000, unit = TimeUnit.MILLISECONDS)
   public void testTriggerBlockReport() throws Exception {
     redirectStream();
     final DFSAdmin dfsAdmin = new DFSAdmin(conf);
@@ -292,7 +291,8 @@ public class TestDFSAdmin {
             containsString(" to namenode "))));
   }
 
-  @Test(timeout = 30000)
+  @Test
+  @Timeout(value = 30000, unit = TimeUnit.MILLISECONDS)
   public void testGetVolumeReport() throws Exception {
     redirectStream();
     final DFSAdmin dfsAdmin = new DFSAdmin(conf);
@@ -312,11 +312,13 @@ public class TestDFSAdmin {
       assertEquals(outs.get(0), "Active Volumes : 2");
     }
   }
+
   /**
    * Test that if datanode is not reachable, some DFSAdmin commands will fail
    * elegantly with non-zero ret error code along with exception error message.
    */
-  @Test(timeout = 60000)
+  @Test
+  @Timeout(value = 60000, unit = TimeUnit.MILLISECONDS)
   public void testDFSAdminUnreachableDatanode() throws Exception {
     redirectStream();
     final DFSAdmin dfsAdmin = new DFSAdmin(conf);
@@ -333,13 +335,14 @@ public class TestDFSAdmin {
       assertEquals(-1, ret);
 
       scanIntoList(out, outs);
-      assertTrue("Unexpected " + command + " stdout: " + out, outs.isEmpty());
-      assertTrue("Unexpected " + command + " stderr: " + err,
-          err.toString().contains("Exception"));
+      assertTrue(outs.isEmpty(), "Unexpected " + command + " stdout: " + out);
+      assertTrue(err.toString().contains("Exception"),
+          "Unexpected " + command + " stderr: " + err);
     }
   }
 
-  @Test(timeout = 30000)
+  @Test
+  @Timeout(value = 30000, unit = TimeUnit.MILLISECONDS)
   public void testDataNodeGetReconfigurableProperties() throws IOException, InterruptedException {
     final int port = datanode.getIpcPort();
     final String address = "localhost:" + port;
@@ -427,7 +430,8 @@ public class TestDFSAdmin {
         is(allOf(containsString("To"), containsString("data_new"))));
   }
 
-  @Test(timeout = 30000)
+  @Test
+  @Timeout(value = 30000, unit = TimeUnit.MILLISECONDS)
   public void testDataNodeGetReconfigurationStatus() throws IOException,
       InterruptedException, TimeoutException {
     testDataNodeGetReconfigurationStatus(true);
@@ -435,7 +439,8 @@ public class TestDFSAdmin {
     testDataNodeGetReconfigurationStatus(false);
   }
 
-  @Test(timeout = 30000)
+  @Test
+  @Timeout(value = 30000, unit = TimeUnit.MILLISECONDS)
   public void testNameNodeGetReconfigurableProperties() throws IOException, InterruptedException {
     final String address = namenode.getHostAndPort();
     final List<String> outs = Lists.newArrayList();
@@ -481,7 +486,8 @@ public class TestDFSAdmin {
     }, 100, 100 * 100);
   }
 
-  @Test(timeout = 30000)
+  @Test
+  @Timeout(value = 30000, unit = TimeUnit.MILLISECONDS)
   public void testPrintTopology() throws Exception {
     redirectStream();
 
@@ -515,10 +521,9 @@ public class TestDFSAdmin {
       /* verify results */
       assertEquals(0, ret);
       assertEquals(
-          "There should be three lines per Datanode: the 1st line is"
+          12, outs.size(), "There should be three lines per Datanode: the 1st line is"
               + " rack info, 2nd node info, 3rd empty line. The total"
-              + " should be as a result of 3 * numDn.",
-          12, outs.size());
+              + " should be as a result of 3 * numDn.");
       assertThat(outs.get(0),
           is(allOf(containsString("Rack:"), containsString("/d1/r1"))));
       assertThat(outs.get(3),
@@ -530,7 +535,8 @@ public class TestDFSAdmin {
     }
   }
 
-  @Test(timeout = 30000)
+  @Test
+  @Timeout(value = 30000, unit = TimeUnit.MILLISECONDS)
   public void testPrintTopologyWithStatus() throws Exception {
     redirectStream();
     final Configuration dfsConf = new HdfsConfiguration();
@@ -576,7 +582,8 @@ public class TestDFSAdmin {
     }
   }
 
-  @Test(timeout = 30000)
+  @Test
+  @Timeout(value = 30000, unit = TimeUnit.MILLISECONDS)
   public void testNameNodeGetReconfigurationStatus() throws IOException,
       InterruptedException, TimeoutException {
     ReconfigurationUtil ru = mock(ReconfigurationUtil.class);
@@ -600,19 +607,19 @@ public class TestDFSAdmin {
 
     // verify change
     assertEquals(
-        DFS_HEARTBEAT_INTERVAL_KEY + " has wrong value",
         6,
         namenode
           .getConf()
           .getLong(DFS_HEARTBEAT_INTERVAL_KEY,
-                DFS_HEARTBEAT_INTERVAL_DEFAULT));
-    assertEquals(DFS_HEARTBEAT_INTERVAL_KEY + " has wrong value",
-        6,
+                DFS_HEARTBEAT_INTERVAL_DEFAULT),
+        DFS_HEARTBEAT_INTERVAL_KEY + " has wrong value");
+    assertEquals(6,
         namenode
           .getNamesystem()
           .getBlockManager()
           .getDatanodeManager()
-          .getHeartbeatInterval());
+          .getHeartbeatInterval(),
+        DFS_HEARTBEAT_INTERVAL_KEY + " has wrong value");
 
     int offset = 1;
     assertThat(outs.get(offset), containsString("SUCCESS: Changed property "
@@ -653,7 +660,8 @@ public class TestDFSAdmin {
     }, 1000, 60000);
   }
 
-  @Test(timeout = 180000)
+  @Test
+  @Timeout(value = 180000, unit = TimeUnit.MILLISECONDS)
   public void testReportCommand() throws Exception {
     tearDown();
     redirectStream();
@@ -698,8 +706,8 @@ public class TestDFSAdmin {
       LocatedBlocks lbs = miniCluster.getFileSystem().getClient().
           getNamenode().getBlockLocations(
           file.toString(), 0, fileLength);
-      assertTrue("Unexpected block type: " + lbs.get(0),
-          lbs.get(0) instanceof LocatedBlock);
+      assertTrue(lbs.get(0) instanceof LocatedBlock,
+          "Unexpected block type: " + lbs.get(0));
       LocatedBlock locatedBlock = lbs.get(0);
       DatanodeInfo locatedDataNode = locatedBlock.getLocations()[0];
       LOG.info("Replica block located on: " + locatedDataNode);
@@ -732,8 +740,8 @@ public class TestDFSAdmin {
           break;
         }
       }
-      assertTrue("Unable to choose a DataNode to shutdown!",
-          dataNodeToShutdown != null);
+      assertTrue(dataNodeToShutdown != null,
+          "Unable to choose a DataNode to shutdown!");
 
       // Shut down the DataNode not hosting the replicated block
       LOG.info("Shutting down: " + dataNodeToShutdown);
@@ -747,8 +755,7 @@ public class TestDFSAdmin {
       // Corrupt the replicated block
       final int blockFilesCorrupted = miniCluster
           .corruptBlockOnDataNodes(block);
-      assertEquals("Fail to corrupt all replicas for block " + block,
-          replFactor, blockFilesCorrupted);
+      assertEquals(replFactor, blockFilesCorrupted, "Fail to corrupt all replicas for block " + block);
 
       try {
         IOUtils.copyBytes(fs.open(file), new IOUtils.NullOutputStream(),
@@ -775,8 +782,8 @@ public class TestDFSAdmin {
       lbs = miniCluster.getFileSystem().getClient().
           getNamenode().getBlockLocations(
           ecFile.toString(), 0, blockGroupSize);
-      assertTrue("Unexpected block type: " + lbs.get(0),
-          lbs.get(0) instanceof LocatedStripedBlock);
+      assertTrue(lbs.get(0) instanceof LocatedStripedBlock,
+          "Unexpected block type: " + lbs.get(0));
       LocatedStripedBlock bg =
           (LocatedStripedBlock)(lbs.get(0));
 
@@ -807,7 +814,8 @@ public class TestDFSAdmin {
     }
   }
 
-  @Test(timeout = 300000L)
+  @Test
+  @Timeout(value = 300000L, unit = TimeUnit.MILLISECONDS)
   public void testListOpenFiles() throws Exception {
     redirectStream();
 
@@ -1113,23 +1121,23 @@ public class TestDFSAdmin {
     assertEquals(0, ToolRunner.run(dfsAdmin,
         new String[]{"-setBalancerBandwidth", "10000"}));
     outStr = scanIntoString(out);
-    assertTrue("Did not set bandwidth!", outStr.contains("Balancer " +
-        "bandwidth is set to 10000"));
+    assertTrue(outStr.contains("Balancer " +
+        "bandwidth is set to 10000"), "Did not set bandwidth!");
 
     // Test parsing with units
     resetStream();
     assertEquals(0, ToolRunner.run(dfsAdmin,
         new String[]{"-setBalancerBandwidth", "10m"}));
     outStr = scanIntoString(out);
-    assertTrue("Did not set bandwidth!", outStr.contains("Balancer " +
-        "bandwidth is set to 10485760"));
+    assertTrue(outStr.contains("Balancer " +
+        "bandwidth is set to 10485760"), "Did not set bandwidth!");
 
     resetStream();
     assertEquals(0, ToolRunner.run(dfsAdmin,
         new String[]{"-setBalancerBandwidth", "10k"}));
     outStr = scanIntoString(out);
-    assertTrue("Did not set bandwidth!", outStr.contains("Balancer " +
-        "bandwidth is set to 10240"));
+    assertTrue(outStr.contains("Balancer " +
+        "bandwidth is set to 10240"), "Did not set bandwidth!");
 
     // Test negative numbers
     assertEquals(-1, ToolRunner.run(dfsAdmin,
@@ -1138,7 +1146,8 @@ public class TestDFSAdmin {
         new String[]{"-setBalancerBandwidth", "-10m"}));
   }
 
-  @Test(timeout = 300000L)
+  @Test
+  @Timeout(value = 300000L, unit = TimeUnit.MILLISECONDS)
   public void testCheckNumOfBlocksInReportCommand() throws Exception {
     DistributedFileSystem dfs = cluster.getFileSystem();
     Path path = new Path("/tmp.txt");
@@ -1203,9 +1212,9 @@ public class TestDFSAdmin {
         }
       });
     } catch (RemoteException re) {
-      Assert.assertTrue(re.unwrapRemoteException()
+      assertTrue(re.unwrapRemoteException()
           instanceof AccessControlException);
-      Assert.assertTrue(re.unwrapRemoteException().getMessage()
+      assertTrue(re.unwrapRemoteException().getMessage()
           .equals("User: " + realUser +
               " is not allowed to impersonate " + proxyUser));
     }

@@ -18,11 +18,7 @@
 
 package org.apache.hadoop.hdfs.protocol;
 
-import static org.junit.Assert.assertArrayEquals;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.mock;
@@ -53,7 +49,8 @@ import org.apache.hadoop.hdfs.server.protocol.DatanodeStorage;
 import org.apache.hadoop.hdfs.server.protocol.NamespaceInfo;
 import org.apache.hadoop.hdfs.server.protocol.NamespaceInfo.Capability;
 import org.apache.hadoop.hdfs.server.protocol.StorageBlockReport;
-import org.junit.Test;
+
+import org.junit.jupiter.api.Test;
 import org.mockito.invocation.InvocationOnMock;
 import org.mockito.stubbing.Answer;
 
@@ -177,12 +174,9 @@ public class TestBlockListAsLongs {
       assertNotNull(replica);
       Replica expected = reportReplicas.remove(replica.getBlockId());
       assertNotNull(expected);
-      assertEquals("wrong bytes",
-          expected.getNumBytes(), replica.getNumBytes());
-      assertEquals("wrong genstamp",
-          expected.getGenerationStamp(), replica.getGenerationStamp());
-      assertEquals("wrong replica state",
-          expected.getState(), replica.getState());
+      assertEquals(expected.getNumBytes(), replica.getNumBytes(), "wrong bytes");
+      assertEquals(expected.getGenerationStamp(), replica.getGenerationStamp(), "wrong genstamp");
+      assertEquals(expected.getState(), replica.getState(), "wrong replica state");
     }
     assertTrue(reportReplicas.isEmpty());
   }

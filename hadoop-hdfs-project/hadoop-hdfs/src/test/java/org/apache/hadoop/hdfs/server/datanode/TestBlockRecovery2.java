@@ -46,12 +46,7 @@ import org.apache.hadoop.hdfs.server.protocol.NNHAStatusHeartbeat;
 import org.apache.hadoop.hdfs.server.protocol.NamenodeProtocols;
 import org.apache.hadoop.hdfs.server.protocol.NamespaceInfo;
 import org.apache.hadoop.test.GenericTestUtils;
-import org.junit.After;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.TestName;
+import org.junit.jupiter.api.*;
 import org.mockito.Mockito;
 import org.mockito.invocation.InvocationOnMock;
 import org.mockito.stubbing.Answer;
@@ -62,12 +57,11 @@ import org.slf4j.event.Level;
 import java.io.File;
 import java.io.IOException;
 import java.io.OutputStream;
+import java.lang.reflect.Method;
 import java.net.InetSocketAddress;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Random;
+import java.util.*;
 import java.util.concurrent.ThreadLocalRandom;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
@@ -75,7 +69,7 @@ import java.util.concurrent.atomic.AtomicReference;
 import static org.apache.hadoop.hdfs.DFSConfigKeys.DFS_BLOCK_SIZE_KEY;
 import static org.apache.hadoop.hdfs.DFSConfigKeys.DFS_NAMENODE_HEARTBEAT_RECHECK_INTERVAL_KEY;
 import static org.apache.hadoop.hdfs.DFSConfigKeys.DFS_NAMENODE_REPLICATION_MIN_KEY;
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.ArgumentMatchers.anyString;
@@ -104,8 +98,8 @@ public class TestBlockRecovery2 {
   private final static InetSocketAddress NN_ADDR = new InetSocketAddress(
       "localhost", 5020);
 
-  @Rule
-  public TestName currentTestName = new TestName();
+  
+  public String currentTestName;
 
   static {
     GenericTestUtils.setLogLevel(FSNamesystem.LOG, Level.TRACE);
@@ -116,8 +110,12 @@ public class TestBlockRecovery2 {
    * Starts an instance of DataNode.
    * @throws IOException
    */
-  @Before
-  public void startUp() throws IOException {
+  @BeforeEach
+  public void startUp(TestInfo testInfo) throws IOException {
+    Optional<Method> testMethod = testInfo.getTestMethod();
+    if (testMethod.isPresent()) {
+      this.currentTestName = testMethod.get().getName();
+    }
     tearDownDone = false;
     conf = new HdfsConfiguration();
     conf.set(DFSConfigKeys.DFS_DATANODE_DATA_DIR_KEY, DATA_DIR);
@@ -166,7 +164,7 @@ public class TestBlockRecovery2 {
       @Override
       DatanodeProtocolClientSideTranslatorPB connectToNN(
           InetSocketAddress nnAddr) throws IOException {
-        Assert.assertEquals(NN_ADDR, nnAddr);
+        Assertions.assertEquals(NN_ADDR, nnAddr);
         return namenode;
       }
     };
@@ -190,15 +188,15 @@ public class TestBlockRecovery2 {
     } catch (InterruptedException e) {
       LOG.warn("InterruptedException while waiting to see active NN", e);
     }
-    Assert.assertNotNull("Failed to get ActiveNN",
-        dn.getAllBpOs().get(0).getActiveNN());
+    Assertions.assertNotNull(dn.getAllBpOs().get(0).getActiveNN(),
+        "Failed to get ActiveNN");
   }
 
   /**
    * Cleans the resources and closes the instance of datanode.
    * @throws IOException if an error occurred
    */
-  @After
+  @AfterEach
   public void tearDown() throws IOException {
     if (!tearDownDone && dn != null) {
       try {
@@ -208,8 +206,8 @@ public class TestBlockRecovery2 {
       } finally {
         File dir = new File(DATA_DIR);
         if (dir.exists()) {
-          Assert.assertTrue(
-              "Cannot delete data-node dirs", FileUtil.fullyDelete(dir));
+          Assertions.assertTrue(
+              FileUtil.fullyDelete(dir), "Cannot delete data-node dirs");
         }
       }
       tearDownDone = true;
@@ -221,7 +219,8 @@ public class TestBlockRecovery2 {
    *
    * @throws Exception
    */
-  @Test(timeout = 20000)
+  @Test
+  @Timeout(value = 20000, unit = TimeUnit.MILLISECONDS)
   public void testRaceBetweenReplicaRecoveryAndFinalizeBlock()
       throws Exception {
     // Stop the Mocked DN started in startup()
@@ -262,13 +261,13 @@ public class TestBlockRecovery2 {
       try {
         out.close();
       } catch (IOException e) {
-        Assert.assertTrue("Writing should fail",
-            e.getMessage().contains("are bad. Aborting..."));
+        Assertions.assertTrue(e.getMessage().contains("are bad. Aborting..."),
+            "Writing should fail");
       } finally {
         recoveryThread.join();
       }
-      Assert.assertTrue("Recovery should be initiated successfully",
-          recoveryInitResult.get());
+      Assertions.assertTrue(recoveryInitResult.get(),
+          "Recovery should be initiated successfully");
 
       dataNode.updateReplicaUnderRecovery(block.getBlock(), block.getBlock()
               .getGenerationStamp() + 1, block.getBlock().getBlockId(),
@@ -284,7 +283,8 @@ public class TestBlockRecovery2 {
    * Test for block recovery timeout. All recovery attempts will be delayed
    * and the first attempt will be lost to trigger recovery timeout and retry.
    */
-  @Test(timeout = 300000L)
+  @Test
+  @Timeout(value = 300000L, unit = TimeUnit.MILLISECONDS)
   public void testRecoveryTimeout() throws Exception {
     tearDown(); // Stop the Mocked DN started in startup()
     final Random r = new Random();
@@ -323,7 +323,8 @@ public class TestBlockRecovery2 {
   /**
    * Test for block recovery taking longer than the heartbeat interval.
    */
-  @Test(timeout = 300000L)
+  @Test
+  @Timeout(value = 300000L, unit = TimeUnit.MILLISECONDS)
   public void testRecoverySlowerThanHeartbeat() throws Exception {
     tearDown(); // Stop the Mocked DN started in startup()
 
@@ -332,7 +333,8 @@ public class TestBlockRecovery2 {
     TestBlockRecovery.testRecoveryWithDatanodeDelayed(delayer);
   }
 
-  @Test(timeout = 60000)
+  @Test
+  @Timeout(value = 60000, unit = TimeUnit.MILLISECONDS)
   public void testEcRecoverBlocks() throws Throwable {
     // Stop the Mocked DN started in startup()
     tearDown();
@@ -392,7 +394,8 @@ public class TestBlockRecovery2 {
    *
    * Check that, after recovering, the block will be successfully replicated.
    */
-  @Test(timeout = 300000L)
+  @Test
+  @Timeout(value = 300000L, unit = TimeUnit.MILLISECONDS)
   public void testRecoveryWillIgnoreMinReplication() throws Exception {
     tearDown(); // Stop the Mocked DN started in startup()
 

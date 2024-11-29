@@ -17,9 +17,11 @@
  */
 package org.apache.hadoop.hdfs.server.namenode.snapshot;
 
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
+import static org.junit.jupiter.api.Assertions.*;
+
 import java.util.ArrayList;
+import java.util.concurrent.TimeUnit;
+
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.Options;
 import org.apache.hadoop.fs.Path;
@@ -29,9 +31,10 @@ import org.apache.hadoop.hdfs.DistributedFileSystem;
 import org.apache.hadoop.hdfs.MiniDFSCluster;
 import org.apache.hadoop.hdfs.protocol.SnapshotAccessControlException;
 import org.apache.hadoop.hdfs.server.namenode.FSNamesystem;
-import org.junit.AfterClass;
-import org.junit.BeforeClass;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.Timeout;
 
 /**
  * This class tests snapshot functionality. One or multiple snapshots are
@@ -55,7 +58,7 @@ public class TestDisallowModifyROSnapshot {
   protected static ArrayList<Path> snapshotList = new ArrayList<Path>();
   static Path objInSnapshot = null;
 
-  @BeforeClass
+  @BeforeAll
   public static void setUp() throws Exception {
     conf = new Configuration();
     cluster = new MiniDFSCluster.Builder(conf).numDataNodes(1).build();
@@ -73,29 +76,36 @@ public class TestDisallowModifyROSnapshot {
         "dir1");
   }
 
-  @AfterClass
+  @AfterAll
   public static void tearDown() throws Exception {
     if (cluster != null) {
       cluster.shutdown();
     }
   }
 
-  @Test(timeout=60000, expected = SnapshotAccessControlException.class)
-  public void testSetReplication() throws Exception {
-    fs.setReplication(objInSnapshot, (short) 1);
+  @Test
+  @Timeout(value = 60000, unit = TimeUnit.MILLISECONDS)
+  public void testSetReplication() {
+    assertThrows(SnapshotAccessControlException.class, () ->
+      fs.setReplication(objInSnapshot, (short) 1));
   }
 
-  @Test(timeout=60000, expected = SnapshotAccessControlException.class)
-  public void testSetPermission() throws Exception {
-    fs.setPermission(objInSnapshot, new FsPermission("777"));
+  @Test
+  @Timeout(value = 60000, unit = TimeUnit.MILLISECONDS)
+  public void testSetPermission() {
+    assertThrows(SnapshotAccessControlException.class, () ->
+      fs.setPermission(objInSnapshot, new FsPermission("777")));
   }
 
-  @Test(timeout=60000, expected = SnapshotAccessControlException.class)
-  public void testSetOwner() throws Exception {
-    fs.setOwner(objInSnapshot, "username", "groupname");
+  @Test
+  @Timeout(value = 60000, unit = TimeUnit.MILLISECONDS)
+  public void testSetOwner() {
+    assertThrows(SnapshotAccessControlException.class, () ->
+      fs.setOwner(objInSnapshot, "username", "groupname"));
   }
 
-  @Test (timeout=60000)
+  @Test
+  @Timeout(value = 60000, unit = TimeUnit.MILLISECONDS)
   public void testRename() throws Exception {
     try {
       fs.rename(objInSnapshot, new Path("/invalid/path"));
@@ -113,43 +123,59 @@ public class TestDisallowModifyROSnapshot {
     } catch (SnapshotAccessControlException e) { /* Ignored */ }
   }
 
-  @Test(timeout=60000, expected = SnapshotAccessControlException.class)
-  public void testDelete() throws Exception {
-    fs.delete(objInSnapshot, true);
+  @Test
+  @Timeout(value = 60000, unit = TimeUnit.MILLISECONDS)
+  public void testDelete() {
+    assertThrows(SnapshotAccessControlException.class, () ->
+      fs.delete(objInSnapshot, true));
   }
 
-  @Test(timeout=60000, expected = SnapshotAccessControlException.class)
-  public void testQuota() throws Exception {
-    fs.setQuota(objInSnapshot, 100, 100);
+  @Test
+  @Timeout(value = 60000, unit = TimeUnit.MILLISECONDS)
+  public void testQuota() {
+    assertThrows(SnapshotAccessControlException.class, () ->
+      fs.setQuota(objInSnapshot, 100, 100));
   }
 
-  @Test(timeout=60000, expected = SnapshotAccessControlException.class)
-  public void testSetTime() throws Exception {
-    fs.setTimes(objInSnapshot, 100, 100);
+  @Test
+  @Timeout(value = 60000, unit = TimeUnit.MILLISECONDS)
+  public void testSetTime() {
+    assertThrows(SnapshotAccessControlException.class, () ->
+      fs.setTimes(objInSnapshot, 100, 100));
   }
 
-  @Test(timeout=60000, expected = SnapshotAccessControlException.class)
-  public void testCreate() throws Exception {
-    @SuppressWarnings("deprecation")
-    DFSClient dfsclient = new DFSClient(conf);
-    dfsclient.create(objInSnapshot.toString(), true);
+  @Test
+  @Timeout(value = 60000, unit = TimeUnit.MILLISECONDS)
+  public void testCreate() {
+    assertThrows(SnapshotAccessControlException.class, () -> {
+      @SuppressWarnings("deprecation")
+      DFSClient dfsclient = new DFSClient(conf);
+      dfsclient.create(objInSnapshot.toString(), true);
+    });
   }
 
-  @Test(timeout=60000, expected = SnapshotAccessControlException.class)
-  public void testAppend() throws Exception {
-    fs.append(objInSnapshot, 65535, null);
+  @Test
+  @Timeout(value = 60000, unit = TimeUnit.MILLISECONDS)
+  public void testAppend() {
+    assertThrows(SnapshotAccessControlException.class, () ->
+      fs.append(objInSnapshot, 65535, null));
   }
 
-  @Test(timeout=60000, expected = SnapshotAccessControlException.class)
-  public void testMkdir() throws Exception {
-    fs.mkdirs(objInSnapshot, new FsPermission("777"));
+  @Test
+  @Timeout(value = 60000, unit = TimeUnit.MILLISECONDS)
+  public void testMkdir() {
+    assertThrows(SnapshotAccessControlException.class, () ->
+      fs.mkdirs(objInSnapshot, new FsPermission("777")));
   }
 
-  @Test(timeout=60000, expected = SnapshotAccessControlException.class)
-  public void testCreateSymlink() throws Exception {
-    @SuppressWarnings("deprecation")
-    DFSClient dfsclient = new DFSClient(conf);
-    dfsclient.createSymlink(sub2.toString(), "/TestSnapshot/sub1/.snapshot",
-        false);
+  @Test
+  @Timeout(value = 60000, unit = TimeUnit.MILLISECONDS)
+  public void testCreateSymlink() {
+    assertThrows(SnapshotAccessControlException.class, () -> {
+      @SuppressWarnings("deprecation")
+      DFSClient dfsclient = new DFSClient(conf);
+      dfsclient.createSymlink(sub2.toString(), "/TestSnapshot/sub1/.snapshot",
+          false);
+    });
   }
 }

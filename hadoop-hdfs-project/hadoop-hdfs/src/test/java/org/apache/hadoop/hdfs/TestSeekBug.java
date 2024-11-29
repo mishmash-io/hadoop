@@ -17,8 +17,7 @@
  */
 package org.apache.hadoop.hdfs;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.*;
 
 import java.io.IOException;
 import java.util.Random;
@@ -30,7 +29,8 @@ import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.io.IOUtils;
 import org.apache.hadoop.test.GenericTestUtils;
-import org.junit.Test;
+
+import org.junit.jupiter.api.Test;
 
 /**
  * This class tests the presence of seek bug as described
@@ -42,9 +42,8 @@ public class TestSeekBug {
   
   private void checkAndEraseData(byte[] actual, int from, byte[] expected, String message) {
     for (int idx = 0; idx < actual.length; idx++) {
-      assertEquals(message+" byte "+(from+idx)+" differs. expected "+
-                        expected[from+idx]+" actual "+actual[idx],
-                        actual[idx], expected[from+idx]);
+      assertEquals(actual[idx], expected[from+idx], message+" byte "+(from+idx)+" differs. expected "+
+                        expected[from+idx]+" actual "+actual[idx]);
       actual[idx] = 0;
     }
   }
@@ -138,62 +137,66 @@ public class TestSeekBug {
   * Test (expected to throw IOE) for negative
   * <code>FSDataInpuStream#seek</code> argument
   */
-  @Test (expected=IOException.class)
-  public void testNegativeSeek() throws IOException {
-    Configuration conf = new HdfsConfiguration();
-    MiniDFSCluster cluster = new MiniDFSCluster.Builder(conf).build();
-    FileSystem fs = cluster.getFileSystem();
-    try {
-      Path seekFile = new Path("seekboundaries.dat");
-      DFSTestUtil.createFile(
-        fs,
-        seekFile,
-        ONEMB,
-        ONEMB,
-        fs.getDefaultBlockSize(seekFile),
-        fs.getDefaultReplication(seekFile),
-        seed);
-      FSDataInputStream stream = fs.open(seekFile);
-      // Perform "safe seek" (expected to pass)
-      stream.seek(65536);
-      assertEquals(65536, stream.getPos());
-      // expect IOE for this call
-      stream.seek(-73);
-    } finally {
-      fs.close();
-      cluster.shutdown();
-    }
+  @Test
+  public void testNegativeSeek() {
+    assertThrows(IOException.class, () -> {
+      Configuration conf = new HdfsConfiguration();
+      MiniDFSCluster cluster = new MiniDFSCluster.Builder(conf).build();
+      FileSystem fs = cluster.getFileSystem();
+      try {
+        Path seekFile = new Path("seekboundaries.dat");
+        DFSTestUtil.createFile(
+            fs,
+            seekFile,
+            ONEMB,
+            ONEMB,
+            fs.getDefaultBlockSize(seekFile),
+            fs.getDefaultReplication(seekFile),
+            seed);
+        FSDataInputStream stream = fs.open(seekFile);
+        // Perform "safe seek" (expected to pass)
+        stream.seek(65536);
+        assertEquals(65536, stream.getPos());
+        // expect IOE for this call
+        stream.seek(-73);
+      } finally {
+        fs.close();
+        cluster.shutdown();
+      }
+    });
   }
 
  /**
   * Test (expected to throw IOE) for <code>FSDataInpuStream#seek</code>
   * when the position argument is larger than the file size.
   */
-  @Test (expected=IOException.class)
-  public void testSeekPastFileSize() throws IOException {
-    Configuration conf = new HdfsConfiguration();
-    MiniDFSCluster cluster = new MiniDFSCluster.Builder(conf).build();
-    FileSystem fs = cluster.getFileSystem();
-    try {
-      Path seekFile = new Path("seekboundaries.dat");
-      DFSTestUtil.createFile(
-        fs,
-        seekFile,
-        ONEMB,
-        ONEMB,
-        fs.getDefaultBlockSize(seekFile),
-        fs.getDefaultReplication(seekFile),
-        seed);
-      FSDataInputStream stream = fs.open(seekFile);
-      // Perform "safe seek" (expected to pass)
-      stream.seek(65536);
-      assertEquals(65536, stream.getPos());
-      // expect IOE for this call
-      stream.seek(ONEMB + ONEMB + ONEMB);
-    } finally {
-      fs.close();
-      cluster.shutdown();
-    }
+  @Test
+  public void testSeekPastFileSize() {
+    assertThrows(IOException.class, () -> {
+      Configuration conf = new HdfsConfiguration();
+      MiniDFSCluster cluster = new MiniDFSCluster.Builder(conf).build();
+      FileSystem fs = cluster.getFileSystem();
+      try {
+        Path seekFile = new Path("seekboundaries.dat");
+        DFSTestUtil.createFile(
+            fs,
+            seekFile,
+            ONEMB,
+            ONEMB,
+            fs.getDefaultBlockSize(seekFile),
+            fs.getDefaultReplication(seekFile),
+            seed);
+        FSDataInputStream stream = fs.open(seekFile);
+        // Perform "safe seek" (expected to pass)
+        stream.seek(65536);
+        assertEquals(65536, stream.getPos());
+        // expect IOE for this call
+        stream.seek(ONEMB + ONEMB + ONEMB);
+      } finally {
+        fs.close();
+        cluster.shutdown();
+      }
+    });
   }
  
   /**

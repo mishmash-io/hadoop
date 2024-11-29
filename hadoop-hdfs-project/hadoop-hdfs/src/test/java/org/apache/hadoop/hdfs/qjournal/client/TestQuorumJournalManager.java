@@ -24,22 +24,21 @@ import static org.apache.hadoop.hdfs.qjournal.QJMTestUtil.writeSegment;
 import static org.apache.hadoop.hdfs.qjournal.QJMTestUtil.writeTxns;
 import static org.apache.hadoop.hdfs.qjournal.client.SpyQJournalUtil.spyGetJournaledEdits;
 import static org.apache.hadoop.hdfs.qjournal.client.TestQuorumJournalManagerUnit.futureThrows;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
+import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.eq;
 import java.io.Closeable;
 import java.io.File;
 import java.io.IOException;
+import java.lang.reflect.Method;
 import java.net.InetSocketAddress;
 import java.net.URI;
 import java.net.URL;
 import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import java.util.concurrent.Semaphore;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 import java.util.concurrent.atomic.AtomicInteger;
 
@@ -69,11 +68,7 @@ import org.apache.hadoop.hdfs.server.namenode.NameNodeLayoutVersion;
 import org.apache.hadoop.io.IOUtils;
 import org.apache.hadoop.ipc.ProtobufRpcEngine2;
 import org.apache.hadoop.test.GenericTestUtils;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.TestName;
+import org.junit.jupiter.api.*;
 import org.mockito.Mockito;
 import org.mockito.stubbing.Stubber;
 
@@ -98,13 +93,17 @@ public class TestQuorumJournalManager {
     GenericTestUtils.setLogLevel(ProtobufRpcEngine2.LOG, Level.TRACE);
   }
 
-  @Rule
-  public TestName name = new TestName();
+  
+  public String name;
 
-  @Before
-  public void setup() throws Exception {
+  @BeforeEach
+  public void setup(TestInfo testInfo) throws Exception {
+    Optional<Method> testMethod = testInfo.getTestMethod();
+    if (testMethod.isPresent()) {
+      this.name = testMethod.get().getName();
+    }
     conf = new Configuration();
-    if (!name.getMethodName().equals("testSelectThreadCounts")) {
+    if (! name.equals("testSelectThreadCounts")) {
       // Don't retry connections - it just slows down the tests.
       conf.setInt(
           CommonConfigurationKeysPublic.IPC_CLIENT_CONNECT_MAX_RETRIES_KEY, 0);
@@ -113,12 +112,12 @@ public class TestQuorumJournalManager {
     conf.setInt(
         CommonConfigurationKeysPublic.IPC_CLIENT_CONNECTION_MAXIDLETIME_KEY, 0);
     conf.setBoolean(DFSConfigKeys.DFS_HA_TAILEDITS_INPROGRESS_KEY, true);
-    
+
     cluster = new MiniJournalCluster.Builder(conf)
         .baseDir(GenericTestUtils.getRandomizedTestDir().getAbsolutePath())
         .build();
     cluster.waitActive();
-    
+
     qjm = createSpyingQJM();
     spies = qjm.getLoggerSetForTests().getLoggersForTests();
 
@@ -127,7 +126,7 @@ public class TestQuorumJournalManager {
     assertEquals(1, qjm.getLoggerSetForTests().getEpoch());
   }
 
-  @After
+  @AfterEach
   public void shutdown() throws IOException, InterruptedException,
       TimeoutException {
     IOUtils.cleanupWithLogger(LOG, toClose.toArray(new Closeable[0]));
@@ -807,8 +806,9 @@ public class TestQuorumJournalManager {
       qjm.close();
     }
   }
-  
-  @Test(timeout=20000)
+
+  @Test
+  @Timeout(value = 20000, unit = TimeUnit.MILLISECONDS)
   public void testCrashBetweenSyncLogAndPersistPaxosData() throws Exception {
     JournalFaultInjector faultInjector =
         JournalFaultInjector.instance = Mockito.mock(JournalFaultInjector.class);
@@ -1073,8 +1073,8 @@ public class TestQuorumJournalManager {
         .filter((t) -> t.getName().contains(expectedName)).count();
     // The number of threads for the stopped jn shouldn't be more than the
     // configured value.
-    assertTrue("Number of threads are : " + num,
-        num <= DFSConfigKeys.DFS_QJOURNAL_PARALLEL_READ_NUM_THREADS_DEFAULT);
+    assertTrue(num <= DFSConfigKeys.DFS_QJOURNAL_PARALLEL_READ_NUM_THREADS_DEFAULT,
+        "Number of threads are : " + num);
   }
 
   @Test

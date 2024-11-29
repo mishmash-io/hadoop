@@ -38,10 +38,8 @@ import org.apache.hadoop.hdfs.server.namenode.snapshot.SnapshotTestHelper;
 import org.apache.hadoop.hdfs.server.namenode.visitor.NamespacePrintVisitor;
 import org.apache.hadoop.hdfs.util.Canceler;
 import org.apache.hadoop.test.GenericTestUtils;
-import org.junit.After;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.*;
+
 import org.slf4j.event.Level;
 
 import java.io.File;
@@ -51,9 +49,10 @@ import java.util.ArrayList;
 import java.util.EnumSet;
 import java.util.List;
 import java.util.Random;
+import java.util.concurrent.TimeUnit;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /**
  * Test FSImage save/load when Snapshot is supported
@@ -78,7 +77,7 @@ public class TestFSImageWithSnapshot {
   FSNamesystem fsn;
   DistributedFileSystem hdfs;
   
-  @Before
+  @BeforeEach
   public void setUp() throws Exception {
     conf = new Configuration();
     cluster = new MiniDFSCluster.Builder(conf).numDataNodes(NUM_DATANODES)
@@ -88,7 +87,7 @@ public class TestFSImageWithSnapshot {
     hdfs = cluster.getFileSystem();
   }
 
-  @After
+  @AfterEach
   public void tearDown() throws Exception {
     if (cluster != null) {
       cluster.shutdown();
@@ -197,8 +196,8 @@ public class TestFSImageWithSnapshot {
     fsn = cluster.getNamesystem();
     hdfs = cluster.getFileSystem();
     final INodeDirectory rootNode = fsn.dir.getRoot();
-    assertTrue("The children list of root should be empty",
-        rootNode.getChildrenList(Snapshot.CURRENT_STATE_ID).isEmpty());
+    assertTrue(rootNode.getChildrenList(Snapshot.CURRENT_STATE_ID).isEmpty(),
+        "The children list of root should be empty");
     // one snapshot on root: s1
     DiffList<DirectoryDiff> diffList = rootNode.getDiffs().asList();
     assertEquals(1, diffList.size());
@@ -320,22 +319,23 @@ public class TestFSImageWithSnapshot {
     long numSnapshotAfter = fsn.getNumSnapshots();
     SnapshottableDirectoryStatus[] dirAfter = hdfs.getSnapshottableDirListing();
     
-    Assert.assertEquals(numSdirBefore, numSdirAfter);
-    Assert.assertEquals(numSnapshotBefore, numSnapshotAfter);
-    Assert.assertEquals(dirBefore.length, dirAfter.length);
+    Assertions.assertEquals(numSdirBefore, numSdirAfter);
+    Assertions.assertEquals(numSnapshotBefore, numSnapshotAfter);
+    Assertions.assertEquals(dirBefore.length, dirAfter.length);
     List<String> pathListBefore = new ArrayList<String>();
     for (SnapshottableDirectoryStatus sBefore : dirBefore) {
       pathListBefore.add(sBefore.getFullPath().toString());
     }
     for (SnapshottableDirectoryStatus sAfter : dirAfter) {
-      Assert.assertTrue(pathListBefore.contains(sAfter.getFullPath().toString()));
+      Assertions.assertTrue(pathListBefore.contains(sAfter.getFullPath().toString()));
     }
   }
-  
+
   /**
    * Test the fsimage saving/loading while file appending.
    */
-  @Test (timeout=60000)
+  @Test
+  @Timeout(value = 60000, unit = TimeUnit.MILLISECONDS)
   public void testSaveLoadImageWithAppending() throws Exception {
     Path sub1 = new Path(dir, "sub1");
     Path sub1file1 = new Path(sub1, "sub1file1");
@@ -387,11 +387,12 @@ public class TestFSImageWithSnapshot {
     // compare two dumped tree
     SnapshotTestHelper.compareDumpedTreeInFile(fsnBefore, fsnAfter, true);
   }
-  
+
   /**
    * Test the fsimage loading while there is file under construction.
    */
-  @Test (timeout=60000)
+  @Test
+  @Timeout(value = 60000, unit = TimeUnit.MILLISECONDS)
   public void testLoadImageWithAppending() throws Exception {
     Path sub1 = new Path(dir, "sub1");
     Path sub1file1 = new Path(sub1, "sub1file1");
@@ -417,12 +418,13 @@ public class TestFSImageWithSnapshot {
     fsn = cluster.getNamesystem();
     hdfs = cluster.getFileSystem();
   }
-  
+
   /**
    * Test fsimage loading when 1) there is an empty file loaded from fsimage,
    * and 2) there is later an append operation to be applied from edit log.
    */
-  @Test (timeout=60000)
+  @Test
+  @Timeout(value = 60000, unit = TimeUnit.MILLISECONDS)
   public void testLoadImageWithEmptyFile() throws Exception {
     // create an empty file
     Path file = new Path(dir, "file");
@@ -449,7 +451,7 @@ public class TestFSImageWithSnapshot {
     FileStatus status = hdfs.getFileStatus(file);
     assertEquals(1, status.getLen());
   }
-  
+
   /**
    * Testing a special case with snapshots. When the following steps happen:
    * <pre>
@@ -464,7 +466,8 @@ public class TestFSImageWithSnapshot {
    * we may save these files/dirs to the fsimage, and cause FileNotFound 
    * Exception while loading fsimage.  
    */
-  @Test (timeout=300000)
+  @Test
+  @Timeout(value = 300000, unit = TimeUnit.MILLISECONDS)
   public void testSaveLoadImageAfterSnapshotDeletion()
       throws Exception {
     // create initial dir and subdir
@@ -534,7 +537,8 @@ public class TestFSImageWithSnapshot {
     printTree("deleted snapshot " + snapshotName);
   }
 
-  @Test (timeout=60000)
+  @Test
+  @Timeout(value = 60000, unit = TimeUnit.MILLISECONDS)
   public void testDoubleRename() throws Exception {
     final Path parent = new Path("/parent");
     hdfs.mkdirs(parent);
@@ -608,11 +612,12 @@ public class TestFSImageWithSnapshot {
     output.println(b);
 
     final String s = NamespacePrintVisitor.print2Sting(fsn);
-    Assert.assertEquals(b, s);
+    Assertions.assertEquals(b, s);
     return b;
   }
 
-  @Test (timeout=60000)
+  @Test
+  @Timeout(value = 60000, unit = TimeUnit.MILLISECONDS)
   public void testFSImageWithDoubleRename() throws Exception {
     final Path dir1 = new Path("/dir1");
     final Path dir2 = new Path("/dir2");
@@ -653,7 +658,8 @@ public class TestFSImageWithSnapshot {
   }
 
 
-  @Test (timeout=60000)
+  @Test
+  @Timeout(value = 60000, unit = TimeUnit.MILLISECONDS)
   public void testFSImageWithRename1() throws Exception {
     final Path dir1 = new Path("/dir1");
     final Path dir2 = new Path("/dir2");
@@ -698,7 +704,8 @@ public class TestFSImageWithSnapshot {
     hdfs = cluster.getFileSystem();
   }
 
-  @Test (timeout=60000)
+  @Test
+  @Timeout(value = 60000, unit = TimeUnit.MILLISECONDS)
   public void testFSImageWithRename2() throws Exception {
     final Path dir1 = new Path("/dir1");
     final Path dir2 = new Path("/dir2");
@@ -739,7 +746,8 @@ public class TestFSImageWithSnapshot {
     hdfs = cluster.getFileSystem();
   }
 
-  @Test(timeout = 60000)
+  @Test
+  @Timeout(value = 60000, unit = TimeUnit.MILLISECONDS)
   public void testFSImageWithRename3() throws Exception {
     final Path dir1 = new Path("/dir1");
     final Path dir2 = new Path("/dir2");
@@ -784,7 +792,8 @@ public class TestFSImageWithSnapshot {
     hdfs = cluster.getFileSystem();
   }
 
-  @Test (timeout=60000)
+  @Test
+  @Timeout(value = 60000, unit = TimeUnit.MILLISECONDS)
   public void testFSImageWithRename4() throws Exception {
     final Path dir1 = new Path("/dir1");
     final Path dir2 = new Path("/dir2");

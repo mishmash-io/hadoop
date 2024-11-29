@@ -33,13 +33,13 @@ import org.apache.hadoop.metrics2.lib.DefaultMetricsSystem;
 import org.apache.hadoop.test.GenericTestUtils;
 import org.apache.hadoop.test.MetricsAsserts;
 import org.apache.hadoop.util.cli.Tool;
-import org.junit.Test;
 
 import java.util.concurrent.TimeUnit;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.Timeout;
+
+import static org.junit.jupiter.api.Assertions.*;
 
 /**
  * Test balancer run as a service.
@@ -118,7 +118,8 @@ public class TestBalancerService {
    * should balance succeed but not exit, then make the cluster imbalanced and
    * wait for balancer to balance it again
    */
-  @Test(timeout = 60000)
+  @Test
+  @Timeout(value = 60000, unit = TimeUnit.MILLISECONDS)
   public void testBalancerServiceBalanceTwice() throws Exception {
     Configuration conf = new HdfsConfiguration();
     conf.setTimeDuration(DFSConfigKeys.DFS_BALANCER_SERVICE_INTERVAL_KEY, 5,
@@ -168,7 +169,8 @@ public class TestBalancerService {
     }
   }
 
-  @Test(timeout = 120000)
+  @Test
+  @Timeout(value = 120000, unit = TimeUnit.MILLISECONDS)
   public void testBalancerServiceOnError() throws Exception {
     Configuration conf = new HdfsConfiguration();
     // retry for every 5 seconds

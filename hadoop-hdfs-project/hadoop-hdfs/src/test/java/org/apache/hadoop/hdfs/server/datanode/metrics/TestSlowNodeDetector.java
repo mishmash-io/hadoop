@@ -23,21 +23,22 @@ import org.apache.hadoop.thirdparty.com.google.common.collect.ImmutableMap;
 import org.apache.hadoop.thirdparty.com.google.common.collect.ImmutableSet;
 import org.apache.commons.lang3.tuple.Pair;
 import org.apache.hadoop.test.GenericTestUtils;
-import org.junit.Before;
 import org.junit.Rule;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.junit.rules.Timeout;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.slf4j.event.Level;
 
 import java.util.ArrayList;
+
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-
-import static org.junit.Assert.assertTrue;
 
 /**
  * Unit tests for {@link OutlierDetector}.
@@ -235,7 +236,7 @@ public class TestSlowNodeDetector {
 
   private OutlierDetector slowNodeDetector;
 
-  @Before
+  @BeforeEach
   public void setup() {
     slowNodeDetector = new OutlierDetector(MIN_OUTLIER_DETECTION_PEERS,
         (long) LOW_THRESHOLD);
@@ -251,10 +252,10 @@ public class TestSlowNodeDetector {
       final Set<String> outliers =
           slowNodeDetector.getOutliers(entry.getKey()).keySet();
       assertTrue(
+          outliers.equals(entry.getValue()),
           "Running outlier detection on " + entry.getKey() +
               " was expected to yield set " + entry.getValue() + ", but " +
-              " we got set " + outliers,
-          outliers.equals(entry.getValue()));
+              " we got set " + outliers);
     }
   }
 
@@ -276,9 +277,9 @@ public class TestSlowNodeDetector {
           Math.abs(median - expectedMedian) * 100.0 / expectedMedian;
 
       assertTrue(
+          errorPercent < 0.001,
           "Set " + inputList + "; Expected median: " +
-              expectedMedian + ", got: " + median,
-          errorPercent < 0.001);
+              expectedMedian + ", got: " + median);
     }
   }
 
@@ -301,16 +302,16 @@ public class TestSlowNodeDetector {
             Math.abs(mad - expectedMad) * 100.0 / expectedMad;
 
         assertTrue(
+            errorPercent < 0.001,
             "Set " + entry.getKey() + "; Expected M.A.D.: " +
-                expectedMad + ", got: " + mad,
-            errorPercent < 0.001);
+                expectedMad + ", got: " + mad);
       } else {
         // For an input list of size 1, the MAD should be 0.0.
         final Double epsilon = 0.000001; // Allow for some FP math error.
         assertTrue(
+            mad < epsilon,
             "Set " + entry.getKey() + "; Expected M.A.D.: " +
-                expectedMad + ", got: " + mad,
-            mad < epsilon);
+                expectedMad + ", got: " + mad);
       }
     }
   }
@@ -319,17 +320,19 @@ public class TestSlowNodeDetector {
    * Verify that {@link OutlierDetector#computeMedian(List)} throws when
    * passed an empty list.
    */
-  @Test(expected=IllegalArgumentException.class)
+  @Test
   public void testMedianOfEmptyList() {
-    OutlierDetector.computeMedian(Collections.emptyList());
+    assertThrows(IllegalArgumentException.class, () ->
+      OutlierDetector.computeMedian(Collections.emptyList()));
   }
 
   /**
    * Verify that {@link OutlierDetector#computeMad(List)} throws when
    * passed an empty list.
    */
-  @Test(expected=IllegalArgumentException.class)
+  @Test
   public void testMadOfEmptyList() {
-    OutlierDetector.computeMedian(Collections.emptyList());
+    assertThrows(IllegalArgumentException.class, () ->
+      OutlierDetector.computeMedian(Collections.emptyList()));
   }
 }

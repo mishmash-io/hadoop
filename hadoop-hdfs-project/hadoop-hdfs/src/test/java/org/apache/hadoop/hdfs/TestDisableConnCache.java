@@ -17,15 +17,18 @@
  */
 package org.apache.hadoop.hdfs;
 
-import static org.junit.Assert.assertEquals;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+
 import org.apache.hadoop.fs.FileSystem;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hdfs.client.HdfsClientConfigKeys;
 import org.apache.hadoop.hdfs.client.impl.BlockReaderTestUtil;
-import org.junit.Test;
+
+import org.junit.jupiter.api.Test;
 
 /**
  * This class tests disabling client connection caching in a single node

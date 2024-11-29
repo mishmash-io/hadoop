@@ -19,9 +19,7 @@
 package org.apache.hadoop.security;
 
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.fail;
+import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
@@ -52,9 +50,9 @@ import org.apache.hadoop.test.GenericTestUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.slf4j.event.Level;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 
 public class TestRefreshUserMappings {
@@ -100,7 +98,7 @@ public class TestRefreshUserMappings {
     }
   }
   
-  @Before
+  @BeforeEach
   public void setUp() throws Exception {
     config = new Configuration();
     config.setClass("hadoop.security.group.mapping",
@@ -116,7 +114,7 @@ public class TestRefreshUserMappings {
     GenericTestUtils.setLogLevel(Groups.LOG, Level.DEBUG);
   }
 
-  @After
+  @AfterEach
   public void tearDown() throws Exception {
     if(cluster!=null) {
       cluster.shutdown();
@@ -144,7 +142,7 @@ public class TestRefreshUserMappings {
     List<String> g2 = groups.getGroups(user);
     LOG.debug(g2.toString());
     for(int i=0; i<g2.size(); i++) {
-      assertEquals("Should be same group ", g1.get(i), g2.get(i));
+      assertEquals(g1.get(i), g2.get(i), "Should be same group ");
     }
 
     // Test refresh command
@@ -153,8 +151,8 @@ public class TestRefreshUserMappings {
     List<String> g3 = groups.getGroups(user);
     LOG.debug(g3.toString());
     for(int i=0; i<g3.size(); i++) {
-      assertFalse("Should be different group: "
-              + g1.get(i) + " and " + g3.get(i), g1.get(i).equals(g3.get(i)));
+      assertFalse(g1.get(i).equals(g3.get(i)), "Should be different group: "
+              + g1.get(i) + " and " + g3.get(i));
     }
 
     // Test timeout

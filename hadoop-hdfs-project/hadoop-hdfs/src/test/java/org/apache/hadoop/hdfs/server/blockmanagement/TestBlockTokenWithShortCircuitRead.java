@@ -42,8 +42,9 @@ import org.apache.hadoop.net.unix.DomainSocket;
 import org.apache.hadoop.net.unix.TemporarySocketDirectory;
 import org.apache.hadoop.security.token.Token;
 import org.apache.hadoop.test.GenericTestUtils;
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
+
 import org.slf4j.event.Level;
 
 import java.io.File;
@@ -57,8 +58,8 @@ import static org.apache.hadoop.hdfs.DFSConfigKeys.DFS_BLOCK_ACCESS_TOKEN_ENABLE
 import static org.apache.hadoop.hdfs.DFSConfigKeys.DFS_BLOCK_SIZE_KEY;
 import static org.apache.hadoop.hdfs.DFSConfigKeys.DFS_BYTES_PER_CHECKSUM_KEY;
 import static org.apache.hadoop.hdfs.DFSConfigKeys.DFS_DOMAIN_SOCKET_PATH_KEY;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 
 public class TestBlockTokenWithShortCircuitRead {
 
@@ -78,7 +79,7 @@ public class TestBlockTokenWithShortCircuitRead {
       toRead.length - totalRead)) > 0) {
       totalRead += nRead;
     }
-    assertEquals("Cannot read file.", toRead.length, totalRead);
+    assertEquals(toRead.length, totalRead, "Cannot read file.");
   }
 
   @Test
@@ -128,7 +129,7 @@ public class TestBlockTokenWithShortCircuitRead {
         @Override
         public void visit(HashMap<DatanodeInfo, PerDatanodeVisitorInfo> info) {
           // The ClientShmManager starts off empty
-          Assert.assertEquals(0, info.size());
+          Assertions.assertEquals(0, info.size());
         }
       });
 
@@ -184,11 +185,11 @@ public class TestBlockTokenWithShortCircuitRead {
     cache.getDfsClientShmManager().visit(new Visitor() {
       @Override
       public void visit(HashMap<DatanodeInfo, PerDatanodeVisitorInfo> info) {
-        Assert.assertEquals(1, info.size());
+        Assertions.assertEquals(1, info.size());
         PerDatanodeVisitorInfo vinfo = info.get(datanode);
-        Assert.assertFalse(vinfo.disabled);
-        Assert.assertEquals(0, vinfo.full.size());
-        Assert.assertEquals(1, vinfo.notFull.size());
+        Assertions.assertFalse(vinfo.disabled);
+        Assertions.assertEquals(0, vinfo.full.size());
+        Assertions.assertEquals(1, vinfo.notFull.size());
 
         int slotCnt = 0;
         DfsClientShm shm = vinfo.notFull.values().iterator().next();
@@ -196,7 +197,7 @@ public class TestBlockTokenWithShortCircuitRead {
           iter.next();
           slotCnt++;
         }
-        Assert.assertEquals(expectedSlotCnt, slotCnt);
+        Assertions.assertEquals(expectedSlotCnt, slotCnt);
       }
     });
   }

@@ -32,16 +32,13 @@ import org.apache.hadoop.hdfs.server.namenode.EditLogFileOutputStream;
 import org.apache.hadoop.hdfs.server.namenode.NameNodeLayoutVersion;
 import org.apache.hadoop.test.GenericTestUtils.LogCapturer;
 import org.apache.hadoop.test.PathUtils;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import static org.apache.hadoop.hdfs.qjournal.QJMTestUtil.createGabageTxns;
 import static org.apache.hadoop.hdfs.qjournal.QJMTestUtil.createTxnData;
-import static org.junit.Assert.assertArrayEquals;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
+import static org.junit.jupiter.api.Assertions.*;
 
 
 /**
@@ -56,7 +53,7 @@ public class TestJournaledEditsCache {
       PathUtils.getTestDir(TestJournaledEditsCache.class, false);
   private JournaledEditsCache cache;
 
-  @Before
+  @BeforeEach
   public void setup() throws Exception {
     Configuration conf = new Configuration();
     conf.setInt(DFSConfigKeys.DFS_JOURNALNODE_EDIT_CACHE_SIZE_KEY,
@@ -65,7 +62,7 @@ public class TestJournaledEditsCache {
     TEST_DIR.mkdirs();
   }
 
-  @After
+  @AfterEach
   public void cleanup() throws Exception {
     FileUtils.deleteQuietly(TEST_DIR);
   }
@@ -210,15 +207,18 @@ public class TestJournaledEditsCache {
     assertTxnCountAndContents(10, 10, 15);
   }
 
-  @Test(expected = JournaledEditsCache.CacheMissException.class)
-  public void testReadUninitializedCache() throws Exception {
-    cache.retrieveEdits(1, 10, new ArrayList<>());
+  @Test
+  public void testReadUninitializedCache() {
+    assertThrows(JournaledEditsCache.CacheMissException.class, () ->
+      cache.retrieveEdits(1, 10, new ArrayList<>()));
   }
 
-  @Test(expected = JournaledEditsCache.CacheMissException.class)
-  public void testCacheMalformedInput() throws Exception {
-    storeEdits(1, 1);
-    cache.retrieveEdits(-1, 10, new ArrayList<>());
+  @Test
+  public void testCacheMalformedInput() {
+    assertThrows(JournaledEditsCache.CacheMissException.class, () -> {
+      storeEdits(1, 1);
+      cache.retrieveEdits(-1, 10, new ArrayList<>());
+    });
   }
 
   @Test

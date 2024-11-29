@@ -22,16 +22,20 @@ import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hdfs.server.protocol.DatanodeStorage;
 import org.apache.hadoop.hdfs.server.protocol.StorageReport;
 import org.apache.hadoop.test.GenericTestUtils;
-import org.junit.Test;
 
 import java.io.File;
+
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.Timeout;
+
 import java.io.IOException;
+import java.util.concurrent.TimeUnit;
 
 import org.apache.hadoop.hdfs.TestDFSUpgradeFromImage.ClusterVerifier;
 
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.core.Is.is;
-import static org.junit.Assert.assertThat;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 
 /**
@@ -110,7 +114,8 @@ public class TestDatanodeStartupFixesLegacyStorageIDs {
    * Upgrade from 2.2 (no storage IDs per volume) correctly generates
    * GUID-based storage IDs. Test case for HDFS-7575.
    */
-  @Test (timeout=300000)
+  @Test
+  @Timeout(value = 300000, unit = TimeUnit.MILLISECONDS)
   public void testUpgradeFrom22FixesStorageIDs() throws IOException {
     runLayoutUpgradeTest(GenericTestUtils.getMethodName(), null);
   }
@@ -120,7 +125,8 @@ public class TestDatanodeStartupFixesLegacyStorageIDs {
    * generates new storage IDs.
    * Test case for HDFS-7575.
    */
-  @Test (timeout=300000)
+  @Test
+  @Timeout(value = 300000, unit = TimeUnit.MILLISECONDS)
   public void testUpgradeFrom22via26FixesStorageIDs() throws IOException {
     runLayoutUpgradeTest(GenericTestUtils.getMethodName(), null);
   }
@@ -130,7 +136,8 @@ public class TestDatanodeStartupFixesLegacyStorageIDs {
    * not regenerate the storage IDs.
    * Test case for HDFS-7575.
    */
-  @Test (timeout=300000)
+  @Test
+  @Timeout(value = 300000, unit = TimeUnit.MILLISECONDS)
   public void testUpgradeFrom26PreservesStorageIDs() throws IOException {
     // StorageId present in the image testUpgradeFrom26PreservesStorageId.tgz
     runLayoutUpgradeTest(GenericTestUtils.getMethodName(),

@@ -17,9 +17,10 @@
  */
 package org.apache.hadoop.hdfs.server.namenode.ha;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import java.io.IOException;
+import java.util.concurrent.TimeUnit;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -39,8 +40,10 @@ import org.apache.hadoop.hdfs.server.datanode.DataNode;
 import org.apache.hadoop.hdfs.server.namenode.NameNode;
 import org.apache.hadoop.hdfs.server.namenode.NameNodeAdapter;
 import org.apache.hadoop.test.GenericTestUtils;
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.Timeout;
+
 import org.slf4j.event.Level;
 
 import java.util.function.Supplier;
@@ -60,7 +63,8 @@ public class TestStandbyIsHot {
     DFSTestUtil.setNameNodeLogLevel(Level.TRACE);
   }
 
-  @Test(timeout=60000)
+  @Test
+  @Timeout(value = 60000, unit = TimeUnit.MILLISECONDS)
   public void testStandbyIsHot() throws Exception {
     Configuration conf = new Configuration();
     // We read from the standby to watch block locations
@@ -121,7 +125,7 @@ public class TestStandbyIsHot {
       cluster.shutdown();
     }
   }
-  
+
   /**
    * Regression test for HDFS-2795:
    *  - Start an HA cluster with a DN.
@@ -132,7 +136,8 @@ public class TestStandbyIsHot {
    * In the bug, the standby node would only very slowly notice the blocks returning
    * to the cluster.
    */
-  @Test(timeout=60000)
+  @Test
+  @Timeout(value = 60000, unit = TimeUnit.MILLISECONDS)
   public void testDatanodeRestarts() throws Exception {
     Configuration conf = new Configuration();
     conf.setInt(DFSConfigKeys.DFS_BLOCK_SIZE_KEY, 1024);
@@ -175,8 +180,7 @@ public class TestStandbyIsHot {
       
       LocatedBlocks locs = nn1.getRpcServer().getBlockLocations(
           TEST_FILE, 0, 1);
-      assertEquals("Standby should have registered that the block has no replicas",
-          0, locs.get(0).getLocations().length);
+      assertEquals(0, locs.get(0).getLocations().length, "Standby should have registered that the block has no replicas");
       
       cluster.restartDataNode(dnProps);
       // Wait for both NNs to re-register the DN.
@@ -192,8 +196,7 @@ public class TestStandbyIsHot {
       
       locs = nn1.getRpcServer().getBlockLocations(
           TEST_FILE, 0, 1);
-      assertEquals("Standby should have registered that the block has replicas again",
-          1, locs.get(0).getLocations().length);
+      assertEquals(1, locs.get(0).getLocations().length, "Standby should have registered that the block has replicas again");
     } finally {
       cluster.shutdown();
     }
@@ -211,7 +214,7 @@ public class TestStandbyIsHot {
           LocatedBlocks locs = NameNodeAdapter.getBlockLocations(nn, path, 0, 1000);
           DatanodeInfo[] dnis = locs.getLastLocatedBlock().getLocations();
           for (DatanodeInfo dni : dnis) {
-            Assert.assertNotNull(dni);
+            Assertions.assertNotNull(dni);
           }
           int numReplicas = dnis.length;
           

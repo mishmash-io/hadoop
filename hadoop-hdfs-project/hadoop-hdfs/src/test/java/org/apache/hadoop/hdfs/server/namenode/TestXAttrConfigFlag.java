@@ -17,6 +17,9 @@
  */
 package org.apache.hadoop.hdfs.server.namenode;
 
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
 import java.io.IOException;
 
 import org.apache.hadoop.conf.Configuration;
@@ -27,10 +30,8 @@ import org.apache.hadoop.hdfs.MiniDFSCluster;
 import org.apache.hadoop.hdfs.server.namenode.NameNode;
 import org.apache.hadoop.hdfs.server.namenode.NameNodeAdapter;
 import org.apache.hadoop.io.IOUtils;
-import org.junit.After;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.ExpectedException;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.Test;
 
 /**
  * Tests that the configuration flag that controls support for XAttrs is off
@@ -43,10 +44,7 @@ public class TestXAttrConfigFlag {
   private MiniDFSCluster cluster;
   private DistributedFileSystem fs;
 
-  @Rule
-  public ExpectedException exception = ExpectedException.none();
-
-  @After
+  @AfterEach
   public void shutdown() throws Exception {
     IOUtils.cleanupWithLogger(null, fs);
     if (cluster != null) {
@@ -109,8 +107,9 @@ public class TestXAttrConfigFlag {
    * configuration key that controls XAttr support.
    */
   private void expectException() {
-    exception.expect(IOException.class);
-    exception.expectMessage(DFSConfigKeys.DFS_NAMENODE_XATTRS_ENABLED_KEY);
+    Throwable exception = assertThrows(IOException.class, () -> {
+    });
+    assertTrue(exception.getMessage().contains(DFSConfigKeys.DFS_NAMENODE_XATTRS_ENABLED_KEY));
   }
 
   /**

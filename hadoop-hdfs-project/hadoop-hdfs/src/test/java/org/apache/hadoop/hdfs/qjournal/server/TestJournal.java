@@ -17,11 +17,7 @@
  */
 package org.apache.hadoop.hdfs.qjournal.server;
 
-import static org.junit.Assert.assertArrayEquals;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
+import static org.junit.jupiter.api.Assertions.*;
 
 import org.apache.hadoop.thirdparty.com.google.common.primitives.Bytes;
 import java.io.ByteArrayOutputStream;
@@ -29,6 +25,7 @@ import java.io.DataOutputStream;
 import java.io.File;
 import java.io.IOException;
 import java.io.RandomAccessFile;
+import java.util.concurrent.TimeUnit;
 
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileUtil;
@@ -50,11 +47,7 @@ import org.apache.hadoop.hdfs.server.namenode.NameNodeLayoutVersion;
 import org.apache.hadoop.hdfs.server.protocol.NamespaceInfo;
 import org.apache.hadoop.io.IOUtils;
 import org.apache.hadoop.test.GenericTestUtils;
-import org.junit.After;
-import org.junit.Assert;
-import org.junit.Assume;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.*;
 import org.mockito.Mockito;
 
 public class TestJournal {
@@ -75,7 +68,7 @@ public class TestJournal {
   private Journal journal;
 
   
-  @Before
+  @BeforeEach
   public void setup() throws Exception {
     FileUtil.fullyDelete(TEST_LOG_DIR);
     conf = new Configuration();
@@ -86,13 +79,13 @@ public class TestJournal {
     journal.format(FAKE_NSINFO, false);
   }
   
-  @After
+  @AfterEach
   public void verifyNoStorageErrors() throws Exception{
     Mockito.verify(mockErrorReporter, Mockito.never())
       .reportErrorOnFile(Mockito.<File>any());
   }
   
-  @After
+  @AfterEach
   public void cleanup() {
     IOUtils.closeStream(journal);
   }
@@ -115,15 +108,15 @@ public class TestJournal {
     // verify the in-progress editlog segment
     SegmentStateProto segmentState = journal.getSegmentInfo(1);
     assertTrue(segmentState.getIsInProgress());
-    Assert.assertEquals(numTxns, segmentState.getEndTxId());
-    Assert.assertEquals(1, segmentState.getStartTxId());
+    Assertions.assertEquals(numTxns, segmentState.getEndTxId());
+    Assertions.assertEquals(1, segmentState.getStartTxId());
     
     // finalize the segment and verify it again
     journal.finalizeLogSegment(makeRI(3), 1, numTxns);
     segmentState = journal.getSegmentInfo(1);
     assertFalse(segmentState.getIsInProgress());
-    Assert.assertEquals(numTxns, segmentState.getEndTxId());
-    Assert.assertEquals(1, segmentState.getStartTxId());
+    Assertions.assertEquals(numTxns, segmentState.getEndTxId());
+    Assertions.assertEquals(1, segmentState.getStartTxId());
   }
 
   /**
@@ -168,7 +161,8 @@ public class TestJournal {
     assertTrue(movedTo.exists());
   }
 
-  @Test (timeout = 10000)
+  @Test
+  @Timeout(value = 10000, unit = TimeUnit.MILLISECONDS)
   public void testEpochHandling() throws Exception {
     assertEquals(0, journal.getLastPromisedEpoch());
     NewEpochResponseProto newEpoch =
@@ -201,8 +195,9 @@ public class TestJournal {
           "epoch 1 is less than the last promised epoch 3", ioe);
     }
   }
-  
-  @Test (timeout = 10000)
+
+  @Test
+  @Timeout(value = 10000, unit = TimeUnit.MILLISECONDS)
   public void testMaintainCommittedTxId() throws Exception {
     journal.newEpoch(FAKE_NSINFO, 1);
     journal.startLogSegment(makeRI(1), 1,
@@ -217,8 +212,9 @@ public class TestJournal {
         QJMTestUtil.createTxnData(4, 6));
     assertEquals(3, journal.getCommittedTxnId());
   }
-  
-  @Test (timeout = 10000)
+
+  @Test
+  @Timeout(value = 10000, unit = TimeUnit.MILLISECONDS)
   public void testRestartJournal() throws Exception {
     journal.newEpoch(FAKE_NSINFO, 1);
     journal.startLogSegment(makeRI(1), 1,
@@ -243,8 +239,9 @@ public class TestJournal {
     NewEpochResponseProtoOrBuilder newEpoch = journal.newEpoch(FAKE_NSINFO, 2);
     assertEquals(1, newEpoch.getLastSegmentTxId());
   }
-  
-  @Test (timeout = 10000)
+
+  @Test
+  @Timeout(value = 10000, unit = TimeUnit.MILLISECONDS)
   public void testFormatResetsCachedValues() throws Exception {
     journal.newEpoch(FAKE_NSINFO, 12345L);
     journal.startLogSegment(new RequestInfo(JID, null, 12345L, 1L, 0L), 1L,
@@ -265,13 +262,14 @@ public class TestJournal {
     assertEquals(0, journal.getLastWriterEpoch());
     assertTrue(journal.isFormatted());
   }
-  
+
   /**
    * Test that, if the writer crashes at the very beginning of a segment,
    * before any transactions are written, that the next newEpoch() call
    * returns the prior segment txid as its most recent segment.
    */
-  @Test (timeout = 10000)
+  @Test
+  @Timeout(value = 10000, unit = TimeUnit.MILLISECONDS)
   public void testNewEpochAtBeginningOfSegment() throws Exception {
     journal.newEpoch(FAKE_NSINFO, 1);
     journal.startLogSegment(makeRI(1), 1,
@@ -284,10 +282,11 @@ public class TestJournal {
     NewEpochResponseProto resp = journal.newEpoch(FAKE_NSINFO, 2);
     assertEquals(1, resp.getLastSegmentTxId());
   }
-  
-  @Test (timeout = 10000)
+
+  @Test
+  @Timeout(value = 10000, unit = TimeUnit.MILLISECONDS)
   public void testJournalLocking() throws Exception {
-    Assume.assumeTrue(journal.getStorage().getStorageDir(0).isLockSupported());
+    Assumptions.assumeTrue(journal.getStorage().getStorageDir(0).isLockSupported());
     StorageDirectory sd = journal.getStorage().getStorageDir(0);
     File lockFile = new File(sd.getRoot(), Storage.STORAGE_FILE_LOCK);
     
@@ -313,12 +312,13 @@ public class TestJournal {
     journal2.newEpoch(FAKE_NSINFO, 2);
     journal2.close();
   }
-  
+
   /**
    * Test finalizing a segment after some batch of edits were missed.
    * This should fail, since we validate the log before finalization.
    */
-  @Test (timeout = 10000)
+  @Test
+  @Timeout(value = 10000, unit = TimeUnit.MILLISECONDS)
   public void testFinalizeWhenEditsAreMissed() throws Exception {
     journal.newEpoch(FAKE_NSINFO, 1);
     journal.startLogSegment(makeRI(1), 1,
@@ -349,12 +349,13 @@ public class TestJournal {
           "disk only contains up to txid 3", e);
     }
   }
-  
+
   /**
    * Ensure that finalizing a segment which doesn't exist throws the
    * appropriate exception.
    */
-  @Test (timeout = 10000)
+  @Test
+  @Timeout(value = 10000, unit = TimeUnit.MILLISECONDS)
   public void testFinalizeMissingSegment() throws Exception {
     journal.newEpoch(FAKE_NSINFO, 1);
     try {
@@ -375,7 +376,8 @@ public class TestJournal {
    * Eventually, the connection comes back, and the NN tries to start a new
    * segment at a higher txid. This should abort the old one and succeed.
    */
-  @Test (timeout = 10000)
+  @Test
+  @Timeout(value = 10000, unit = TimeUnit.MILLISECONDS)
   public void testAbortOldSegmentIfFinalizeIsMissed() throws Exception {
     journal.newEpoch(FAKE_NSINFO, 1);
     
@@ -401,12 +403,13 @@ public class TestJournal {
     GenericTestUtils.assertExists(
         journal.getStorage().getInProgressEditLog(6));
   }
-  
+
   /**
    * Test behavior of startLogSegment() when a segment with the
    * same transaction ID already exists.
    */
-  @Test (timeout = 10000)
+  @Test
+  @Timeout(value = 10000, unit = TimeUnit.MILLISECONDS)
   public void testStartLogSegmentWhenAlreadyExists() throws Exception {
     journal.newEpoch(FAKE_NSINFO, 1);
     
@@ -458,8 +461,9 @@ public class TestJournal {
   private static RequestInfo makeRI(int serial) {
     return new RequestInfo(JID, null, 1, serial, 0);
   }
-  
-  @Test (timeout = 10000)
+
+  @Test
+  @Timeout(value = 10000, unit = TimeUnit.MILLISECONDS)
   public void testNamespaceVerification() throws Exception {
     journal.newEpoch(FAKE_NSINFO, 1);
 

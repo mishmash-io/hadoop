@@ -42,9 +42,10 @@ import org.apache.hadoop.ipc.StandbyException;
 import org.apache.hadoop.security.UserGroupInformation;
 import org.apache.hadoop.tools.GetUserMappingsProtocol;
 import org.apache.hadoop.util.StopWatch;
-import org.junit.Before;
-import org.junit.BeforeClass;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.Timeout;
 import org.mockito.Mockito;
 import org.mockito.invocation.InvocationOnMock;
 import org.mockito.stubbing.Answer;
@@ -53,11 +54,7 @@ import org.slf4j.event.Level;
 import static org.apache.hadoop.ha.HAServiceProtocol.HAServiceState;
 
 import static org.apache.hadoop.hdfs.server.namenode.ha.ObserverReadProxyProvider.*;
-import static org.junit.Assert.assertArrayEquals;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
+import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.Mockito.mock;
@@ -86,12 +83,12 @@ public class TestObserverReadProxyProvider {
   private NameNodeAnswer[] namenodeAnswers;
   private String[] namenodeAddrs;
 
-  @BeforeClass
+  @BeforeAll
   public static void setLogLevel() {
     GenericTestUtils.setLogLevel(ObserverReadProxyProvider.LOG, Level.DEBUG);
   }
 
-  @Before
+  @BeforeEach
   public void setup() throws Exception {
     ns = "testcluster";
     nnURI = URI.create("hdfs://" + ns);
@@ -503,15 +500,16 @@ public class TestObserverReadProxyProvider {
     watch.start();
     doRead();
     long runtime = watch.now(TimeUnit.MILLISECONDS);
-    assertTrue("Read operation finished earlier than we expected",
-        runtime > SLOW_RESPONSE_SLEEP_TIME);
+    assertTrue(runtime > SLOW_RESPONSE_SLEEP_TIME,
+        "Read operation finished earlier than we expected");
   }
 
   /**
    * Test getHAServiceState using a 2s timeout with a slow standby.
    * Fail the test if we don't complete it in 4s.
    */
-  @Test(timeout = 4000)
+  @Test
+  @Timeout(value = 4000, unit = TimeUnit.MILLISECONDS)
   public void testStandbyGetHAServiceStateTimeout() throws Exception {
     setupProxyProvider(4, NAMENODE_HA_STATE_PROBE_TIMEOUT_SHORT);
     namenodeAnswers[0].setActiveState();

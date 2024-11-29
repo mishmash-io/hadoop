@@ -17,8 +17,8 @@
  */
 package org.apache.hadoop.hdfs.server.blockmanagement;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -31,19 +31,17 @@ import org.apache.hadoop.hdfs.DFSTestUtil;
 import org.apache.hadoop.hdfs.TestBlockStoragePolicy;
 import org.apache.hadoop.hdfs.server.namenode.NameNode;
 import org.apache.hadoop.hdfs.DFSConfigKeys;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.junit.runners.Parameterized;
 
-@RunWith(Parameterized.class)
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.MethodSource;
+
 public class TestReplicationPolicyConsiderLoad
     extends BaseReplicationPolicyTest {
 
-  public TestReplicationPolicyConsiderLoad(String blockPlacementPolicy) {
+  public void initTestReplicationPolicyConsiderLoad(String blockPlacementPolicy) {
     this.blockPlacementPolicy = blockPlacementPolicy;
   }
 
-  @Parameterized.Parameters
   public static Iterable<Object[]> data() {
     return Arrays.asList(new Object[][] {
         { BlockPlacementPolicyDefault.class.getName() },
@@ -66,12 +64,15 @@ public class TestReplicationPolicyConsiderLoad
   }
 
   private final double EPSILON = 0.0001;
+
   /**
    * Tests that chooseTarget with considerLoad set to true correctly calculates
    * load with decommissioned nodes.
    */
-  @Test
-  public void testChooseTargetWithDecomNodes() throws IOException {
+  @MethodSource("data")
+  @ParameterizedTest
+  public void testChooseTargetWithDecomNodes(String blockPlacementPolicy) throws IOException {
+    initTestReplicationPolicyConsiderLoad(blockPlacementPolicy);
     namenode.getNamesystem().writeLock();
     try {
       dnManager.getHeartbeatManager().updateHeartbeat(dataNodes[3],
@@ -129,8 +130,10 @@ public class TestReplicationPolicyConsiderLoad
     NameNode.LOG.info("Done working on it");
   }
 
-  @Test
-  public void testConsiderLoadFactor() throws IOException {
+  @MethodSource("data")
+  @ParameterizedTest
+  public void testConsiderLoadFactor(String blockPlacementPolicy) throws IOException {
+    initTestReplicationPolicyConsiderLoad(blockPlacementPolicy);
     namenode.getNamesystem().writeLock();
     try {
       dnManager.getHeartbeatManager().updateHeartbeat(dataNodes[0],
@@ -173,9 +176,9 @@ public class TestReplicationPolicyConsiderLoad
               new ArrayList<DatanodeStorageInfo>(), false, null,
               1024, TestBlockStoragePolicy.DEFAULT_STORAGE_POLICY, null);
       for(DatanodeStorageInfo info : targets) {
-        assertTrue("The node "+info.getDatanodeDescriptor().getName()+
-                " has higher load and should not have been picked!",
-            info.getDatanodeDescriptor().getXceiverCount() <= (load/6)*1.2);
+        assertTrue(info.getDatanodeDescriptor().getXceiverCount() <= (load/6)*1.2,
+            "The node "+info.getDatanodeDescriptor().getName()+
+                " has higher load and should not have been picked!");
       }
     } finally {
       namenode.getNamesystem().writeUnlock();

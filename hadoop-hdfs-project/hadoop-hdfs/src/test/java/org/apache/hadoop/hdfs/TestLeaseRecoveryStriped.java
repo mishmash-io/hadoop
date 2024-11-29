@@ -39,10 +39,11 @@ import org.apache.hadoop.security.UserGroupInformation;
 import org.apache.hadoop.test.GenericTestUtils;
 import org.apache.hadoop.test.Whitebox;
 import org.apache.hadoop.util.StringUtils;
-import org.junit.After;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+
 import org.slf4j.event.Level;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -91,7 +92,7 @@ public class TestLeaseRecoveryStriped {
   final Path p = new Path(dir, "testfile");
   private final int testFileLength = (stripesPerBlock - 1) * stripeSize;
 
-  @Before
+  @BeforeEach
   public void setup() throws IOException {
     conf = new HdfsConfiguration();
     conf.setLong(DFSConfigKeys.DFS_BLOCK_SIZE_KEY, blockSize);
@@ -107,7 +108,7 @@ public class TestLeaseRecoveryStriped {
     dfs.setErasureCodingPolicy(dir, ecPolicy.getName());
   }
 
-  @After
+  @AfterEach
   public void tearDown() {
     if (cluster != null) {
       cluster.shutdown();
@@ -187,7 +188,7 @@ public class TestLeaseRecoveryStriped {
         String msg = "failed testCase at i=" + i + ", blockLengths="
             + blockLengths + "\n"
             + StringUtils.stringifyException(e);
-        Assert.fail(msg);
+        Assertions.fail(msg);
       }
     }
   }
@@ -243,7 +244,7 @@ public class TestLeaseRecoveryStriped {
         String msg = "failed testCase at i=" + i + ", blockLengths="
             + blockLengths + "\n"
             + StringUtils.stringifyException(e);
-        Assert.fail(msg);
+        Assertions.fail(msg);
       }
     }
   }
@@ -263,7 +264,7 @@ public class TestLeaseRecoveryStriped {
     int[] blockLengths = new int[]{blockLength, blockLength, blockLength, blockLength,
         blockLength, blockLength};
     long safeLength = new BlockLengths(ecPolicy, blockLengths).getSafeLength();
-    Assert.assertEquals(expectedSafeLength, safeLength);
+    Assertions.assertEquals(expectedSafeLength, safeLength);
   }
 
   private void runTest(int[] blockLengths, long safeLength) throws Exception {

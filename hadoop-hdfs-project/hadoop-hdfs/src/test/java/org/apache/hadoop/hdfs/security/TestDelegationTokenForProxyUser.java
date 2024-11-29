@@ -28,6 +28,7 @@ import java.net.NetworkInterface;
 import java.security.PrivilegedExceptionAction;
 import java.util.ArrayList;
 import java.util.Enumeration;
+import java.util.concurrent.TimeUnit;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -50,10 +51,7 @@ import org.apache.hadoop.security.authorize.DefaultImpersonationProvider;
 import org.apache.hadoop.security.authorize.ProxyUsers;
 import org.apache.hadoop.security.token.Token;
 import org.apache.hadoop.test.Whitebox;
-import org.junit.AfterClass;
-import org.junit.Assert;
-import org.junit.BeforeClass;
-import org.junit.Test;
+import org.junit.jupiter.api.*;
 
 public class TestDelegationTokenForProxyUser {
   private static MiniDFSCluster cluster;
@@ -96,7 +94,7 @@ public class TestDelegationTokenForProxyUser {
         builder.toString());
   }
   
-  @BeforeClass
+  @BeforeAll
   public static void setUp() throws Exception {
     config = new HdfsConfiguration();
     config.setLong(
@@ -118,14 +116,15 @@ public class TestDelegationTokenForProxyUser {
         GROUP_NAMES);
   }
 
-  @AfterClass
+  @AfterAll
   public static void tearDown() throws Exception {
     if(cluster!=null) {
       cluster.shutdown();
     }
   }
- 
-  @Test(timeout=20000)
+
+  @Test
+  @Timeout(value = 20000, unit = TimeUnit.MILLISECONDS)
   public void testDelegationTokenWithRealUser() throws IOException {
     try {
       Token<?>[] tokens = proxyUgi
@@ -139,15 +138,16 @@ public class TestDelegationTokenForProxyUser {
       byte[] tokenId = tokens[0].getIdentifier();
       identifier.readFields(new DataInputStream(new ByteArrayInputStream(
           tokenId)));
-      Assert.assertEquals(identifier.getUser().getUserName(), PROXY_USER);
-      Assert.assertEquals(identifier.getUser().getRealUser().getUserName(),
+      Assertions.assertEquals(identifier.getUser().getUserName(), PROXY_USER);
+      Assertions.assertEquals(identifier.getUser().getRealUser().getUserName(),
           REAL_USER);
     } catch (InterruptedException e) {
       //Do Nothing
     }
   }
-  
-  @Test(timeout=5000)
+
+  @Test
+  @Timeout(value = 5000, unit = TimeUnit.MILLISECONDS)
   public void testWebHdfsDoAs() throws Exception {
     WebHdfsTestUtil.LOG.info("START: testWebHdfsDoAs()");
     WebHdfsTestUtil.LOG.info("ugi.getShortUserName()=" + ugi.getShortUserName());
@@ -161,7 +161,7 @@ public class TestDelegationTokenForProxyUser {
     {
       Path responsePath = webhdfs.getHomeDirectory();
       WebHdfsTestUtil.LOG.info("responsePath=" + responsePath);
-      Assert.assertEquals(webhdfs.getUri() + "/user/" + PROXY_USER, responsePath.toString());
+      Assertions.assertEquals(webhdfs.getUri() + "/user/" + PROXY_USER, responsePath.toString());
     }
 
     final Path f = new Path("/testWebHdfsDoAs/a.txt");
@@ -172,7 +172,7 @@ public class TestDelegationTokenForProxyUser {
   
       final FileStatus status = webhdfs.getFileStatus(f);
       WebHdfsTestUtil.LOG.info("status.getOwner()=" + status.getOwner());
-      Assert.assertEquals(PROXY_USER, status.getOwner());
+      Assertions.assertEquals(PROXY_USER, status.getOwner());
     }
 
     {
@@ -183,7 +183,7 @@ public class TestDelegationTokenForProxyUser {
       final FileStatus status = webhdfs.getFileStatus(f);
       WebHdfsTestUtil.LOG.info("status.getOwner()=" + status.getOwner());
       WebHdfsTestUtil.LOG.info("status.getLen()  =" + status.getLen());
-      Assert.assertEquals(PROXY_USER, status.getOwner());
+      Assertions.assertEquals(PROXY_USER, status.getOwner());
     }
   }
 }

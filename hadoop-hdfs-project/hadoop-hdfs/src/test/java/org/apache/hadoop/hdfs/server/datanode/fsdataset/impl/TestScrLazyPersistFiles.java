@@ -28,13 +28,13 @@ import org.apache.hadoop.io.nativeio.NativeIO;
 import org.apache.hadoop.net.unix.DomainSocket;
 import org.apache.hadoop.test.GenericTestUtils;
 import org.apache.hadoop.util.NativeCodeLoader;
-import org.junit.Assert;
-import org.junit.Assume;
-import org.junit.Before;
-import org.junit.BeforeClass;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.ExpectedException;
+
+import org.hamcrest.junit.MatcherAssume;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Assumptions;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import java.io.File;
 import java.io.IOException;
@@ -44,9 +44,10 @@ import static org.apache.hadoop.fs.StorageType.DEFAULT;
 import static org.apache.hadoop.fs.StorageType.RAM_DISK;
 import static org.apache.hadoop.test.PlatformAssumptions.assumeNotWindows;
 import static org.hamcrest.CoreMatchers.equalTo;
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.core.Is.is;
-import static org.junit.Assert.assertThat;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /**
  * Test Lazy persist behavior with short-circuit reads. These tests
@@ -55,24 +56,21 @@ import static org.junit.Assert.assertTrue;
  */
 public class TestScrLazyPersistFiles extends LazyPersistTestCase {
 
-  @BeforeClass
+  @BeforeAll
   public static void init() {
     DomainSocket.disableBindPathValidation();
   }
 
-  @Before
+  @BeforeEach
   public void before() {
-    Assume.assumeTrue(NativeCodeLoader.isNativeCodeLoaded());
+    Assumptions.assumeTrue(NativeCodeLoader.isNativeCodeLoaded());
     assumeNotWindows();
-    Assume.assumeThat(DomainSocket.getLoadingFailureReason(), equalTo(null));
+    MatcherAssume.assumeThat(DomainSocket.getLoadingFailureReason(), equalTo(null));
 
     final long osPageSize = NativeIO.POSIX.getCacheManipulator().getOperatingSystemPageSize();
     Preconditions.checkState(BLOCK_SIZE >= osPageSize);
     Preconditions.checkState(BLOCK_SIZE % osPageSize == 0);
   }
-
-  @Rule
-  public ExpectedException exception = ExpectedException.none();
 
   /**
    * Read in-memory block with Short Circuit Read
@@ -97,9 +95,9 @@ public class TestScrLazyPersistFiles extends LazyPersistTestCase {
     try {
       byte[] buf = new byte[BUFFER_LENGTH];
       fis.read(0, buf, 0, BUFFER_LENGTH);
-      Assert.assertEquals(BUFFER_LENGTH,
+      Assertions.assertEquals(BUFFER_LENGTH,
         fis.getReadStatistics().getTotalBytesRead());
-      Assert.assertEquals(BUFFER_LENGTH,
+      Assertions.assertEquals(BUFFER_LENGTH,
         fis.getReadStatistics().getTotalShortCircuitBytesRead());
     } finally {
       fis.close();
@@ -162,7 +160,7 @@ public class TestScrLazyPersistFiles extends LazyPersistTestCase {
     // subsequent legacy short-circuit reads in the ClientContext.
     // Assert that it didn't get disabled.
     ClientContext clientContext = client.getClientContext();
-    Assert.assertFalse(clientContext.getDisableLegacyBlockReaderLocal());
+    Assertions.assertFalse(clientContext.getDisableLegacyBlockReaderLocal());
   }
 
   private void doShortCircuitReadAfterEvictionTest() throws IOException,
@@ -210,22 +208,22 @@ public class TestScrLazyPersistFiles extends LazyPersistTestCase {
     doShortCircuitReadBlockFileCorruptionTest();
   }
 
-  public void doShortCircuitReadBlockFileCorruptionTest() throws IOException,
-      InterruptedException, TimeoutException {
-    final String METHOD_NAME = GenericTestUtils.getMethodName();
-    Path path1 = new Path("/" + METHOD_NAME + ".01.dat");
+  public void doShortCircuitReadBlockFileCorruptionTest() {
+    assertThrows(ChecksumException.class, () -> {
+      final String METHOD_NAME = GenericTestUtils.getMethodName();
+      Path path1 = new Path("/" + METHOD_NAME + ".01.dat");
 
-    makeTestFile(path1, BLOCK_SIZE, true);
-    ensureFileReplicasOnStorageType(path1, RAM_DISK);
-    waitForMetric("RamDiskBlocksLazyPersisted", 1);
-    triggerEviction(cluster.getDataNodes().get(0));
+      makeTestFile(path1, BLOCK_SIZE, true);
+      ensureFileReplicasOnStorageType(path1, RAM_DISK);
+      waitForMetric("RamDiskBlocksLazyPersisted", 1);
+      triggerEviction(cluster.getDataNodes().get(0));
 
-    // Corrupt the lazy-persisted block file, and verify that checksum
-    // verification catches it.
-    ensureFileReplicasOnStorageType(path1, DEFAULT);
-    cluster.corruptReplica(0, DFSTestUtil.getFirstBlock(fs, path1));
-    exception.expect(ChecksumException.class);
-    DFSTestUtil.readFileBuffer(fs, path1);
+      // Corrupt the lazy-persisted block file, and verify that checksum
+      // verification catches it.
+      ensureFileReplicasOnStorageType(path1, DEFAULT);
+      cluster.corruptReplica(0, DFSTestUtil.getFirstBlock(fs, path1));
+      DFSTestUtil.readFileBuffer(fs, path1);
+    });
   }
 
   @Test
@@ -246,21 +244,21 @@ public class TestScrLazyPersistFiles extends LazyPersistTestCase {
     doShortCircuitReadMetaFileCorruptionTest();
   }
 
-  public void doShortCircuitReadMetaFileCorruptionTest() throws IOException,
-      InterruptedException, TimeoutException {
-    final String METHOD_NAME = GenericTestUtils.getMethodName();
-    Path path1 = new Path("/" + METHOD_NAME + ".01.dat");
+  public void doShortCircuitReadMetaFileCorruptionTest() {
+    assertThrows(ChecksumException.class, () -> {
+      final String METHOD_NAME = GenericTestUtils.getMethodName();
+      Path path1 = new Path("/" + METHOD_NAME + ".01.dat");
 
-    makeTestFile(path1, BLOCK_SIZE, true);
-    ensureFileReplicasOnStorageType(path1, RAM_DISK);
-    waitForMetric("RamDiskBlocksLazyPersisted", 1);
-    triggerEviction(cluster.getDataNodes().get(0));
+      makeTestFile(path1, BLOCK_SIZE, true);
+      ensureFileReplicasOnStorageType(path1, RAM_DISK);
+      waitForMetric("RamDiskBlocksLazyPersisted", 1);
+      triggerEviction(cluster.getDataNodes().get(0));
 
-    // Corrupt the lazy-persisted checksum file, and verify that checksum
-    // verification catches it.
-    ensureFileReplicasOnStorageType(path1, DEFAULT);
-    cluster.corruptMeta(0, DFSTestUtil.getFirstBlock(fs, path1));
-    exception.expect(ChecksumException.class);
-    DFSTestUtil.readFileBuffer(fs, path1);
+      // Corrupt the lazy-persisted checksum file, and verify that checksum
+      // verification catches it.
+      ensureFileReplicasOnStorageType(path1, DEFAULT);
+      cluster.corruptMeta(0, DFSTestUtil.getFirstBlock(fs, path1));
+      DFSTestUtil.readFileBuffer(fs, path1);
+    });
   }
 }

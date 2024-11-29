@@ -17,7 +17,7 @@
  */
 package org.apache.hadoop.hdfs.qjournal;
 
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.*;
 
 import java.io.File;
 import java.io.IOException;
@@ -31,8 +31,9 @@ import org.apache.hadoop.hdfs.qjournal.server.JournalNode;
 import org.apache.hadoop.net.NetUtils;
 import org.apache.hadoop.test.LambdaTestUtils;
 
-import org.junit.Test;
 import org.slf4j.Logger;
+
+import org.junit.jupiter.api.Test;
 import org.slf4j.LoggerFactory;
 
 public class TestMiniJournalCluster {
@@ -103,8 +104,9 @@ public class TestMiniJournalCluster {
     LOG.info("Free socket ports: {}", httpAndRpcPorts);
 
     for (Integer httpAndRpcPort : httpAndRpcPorts) {
-      assertNotEquals("None of the acquired socket port should not be zero", 0,
-          httpAndRpcPort.intValue());
+      assertNotEquals(0,
+          httpAndRpcPort.intValue(),
+          "None of the acquired socket port should not be zero");
     }
 
     final int[] httpPorts = new int[3];

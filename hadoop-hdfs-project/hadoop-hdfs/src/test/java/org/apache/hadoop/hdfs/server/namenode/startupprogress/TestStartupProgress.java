@@ -21,7 +21,7 @@ import static org.apache.hadoop.hdfs.server.namenode.startupprogress.Phase.*;
 import static org.apache.hadoop.hdfs.server.namenode.startupprogress.StartupProgressTestHelper.*;
 import static org.apache.hadoop.hdfs.server.namenode.startupprogress.Status.*;
 import static org.apache.hadoop.hdfs.server.namenode.startupprogress.StepType.*;
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.*;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -34,19 +34,21 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 
 import org.apache.hadoop.hdfs.server.namenode.startupprogress.StartupProgress.Counter;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.Timeout;
 
 public class TestStartupProgress {
 
   private StartupProgress startupProgress;
 
-  @Before
+  @BeforeEach
   public void setUp() {
     startupProgress = new StartupProgress();
   }
 
-  @Test(timeout=10000)
+  @Test
+  @Timeout(value = 10000, unit = TimeUnit.MILLISECONDS)
   public void testCounter() {
     startupProgress.beginPhase(LOADING_FSIMAGE);
     Step loadingFsImageInodes = new Step(INODES);
@@ -87,7 +89,8 @@ public class TestStartupProgress {
     assertEquals(6000L, view.getCount(LOADING_EDITS, loadingEditsFile));
   }
 
-  @Test(timeout=10000)
+  @Test
+  @Timeout(value = 10000, unit = TimeUnit.MILLISECONDS)
   public void testElapsedTime() throws Exception {
     startupProgress.beginPhase(LOADING_FSIMAGE);
     Step loadingFsImageInodes = new Step(INODES);
@@ -147,7 +150,8 @@ public class TestStartupProgress {
       loadingEditsFile));
   }
 
-  @Test(timeout=10000)
+  @Test
+  @Timeout(value = 10000, unit = TimeUnit.MILLISECONDS)
   public void testFrozenAfterStartupCompletes() {
     // Do some updates and counter increments.
     startupProgress.beginPhase(LOADING_FSIMAGE);
@@ -233,7 +237,8 @@ public class TestStartupProgress {
     }
   }
 
-  @Test(timeout=10000)
+  @Test
+  @Timeout(value = 10000, unit = TimeUnit.MILLISECONDS)
   public void testInitialState() {
     StartupProgressView view = startupProgress.createView();
     assertNotNull(view);
@@ -259,7 +264,8 @@ public class TestStartupProgress {
     assertArrayEquals(EnumSet.allOf(Phase.class).toArray(), phases.toArray());
   }
 
-  @Test(timeout=10000)
+  @Test
+  @Timeout(value = 10000, unit = TimeUnit.MILLISECONDS)
   public void testPercentComplete() {
     startupProgress.beginPhase(LOADING_FSIMAGE);
     Step loadingFsImageInodes = new Step(INODES);
@@ -318,7 +324,8 @@ public class TestStartupProgress {
       new Step(INODES)), 0.001f);
   }
 
-  @Test(timeout=10000)
+  @Test
+  @Timeout(value = 10000, unit = TimeUnit.MILLISECONDS)
   public void testStatus() {
     startupProgress.beginPhase(LOADING_FSIMAGE);
     startupProgress.endPhase(LOADING_FSIMAGE);
@@ -330,7 +337,8 @@ public class TestStartupProgress {
     assertEquals(PENDING, view.getStatus(SAVING_CHECKPOINT));
   }
 
-  @Test(timeout=10000)
+  @Test
+  @Timeout(value = 10000, unit = TimeUnit.MILLISECONDS)
   public void testStepSequence() {
     // Test that steps are returned in the correct sort order (by file and then
     // sequence number) by starting a few steps in a randomly shuffled order and
@@ -362,7 +370,8 @@ public class TestStartupProgress {
     assertArrayEquals(expectedSteps, actualSteps.toArray());
   }
 
-  @Test(timeout=10000)
+  @Test
+  @Timeout(value = 10000, unit = TimeUnit.MILLISECONDS)
   public void testThreadSafety() throws Exception {
     // Test for thread safety by starting multiple threads that mutate the same
     // StartupProgress instance in various ways.  We expect no internal
@@ -431,7 +440,8 @@ public class TestStartupProgress {
     assertEquals(2500L, view.getCount(LOADING_EDITS, new Step(DELEGATION_KEYS)));
   }
 
-  @Test(timeout=10000)
+  @Test
+  @Timeout(value = 10000, unit = TimeUnit.MILLISECONDS)
   public void testTotal() {
     startupProgress.beginPhase(LOADING_FSIMAGE);
     Step loadingFsImageInodes = new Step(INODES);

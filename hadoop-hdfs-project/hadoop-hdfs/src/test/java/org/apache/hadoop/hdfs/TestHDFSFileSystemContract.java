@@ -20,6 +20,7 @@ package org.apache.hadoop.hdfs;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.concurrent.TimeUnit;
 
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.CommonConfigurationKeys;
@@ -29,19 +30,21 @@ import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.fs.SafeMode;
 import org.apache.hadoop.security.UserGroupInformation;
 import org.apache.hadoop.test.GenericTestUtils;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.Timeout;
 
 import static org.apache.hadoop.fs.CommonPathCapabilities.LEASE_RECOVERABLE;
 import static org.assertj.core.api.Assertions.assertThat;
 
+@Timeout(value=60000, unit=TimeUnit.MILLISECONDS)
 public class TestHDFSFileSystemContract extends FileSystemContractBaseTest {
   
   private MiniDFSCluster cluster;
   private String defaultWorkingDirectory;
 
-  @Before
+  @BeforeEach
   public void setUp() throws Exception {
     Configuration conf = new HdfsConfiguration();
     conf.set(CommonConfigurationKeys.FS_PERMISSIONS_UMASK_KEY,
@@ -54,7 +57,7 @@ public class TestHDFSFileSystemContract extends FileSystemContractBaseTest {
            UserGroupInformation.getCurrentUser().getShortUserName();
   }
   
-  @After
+  @AfterEach
   public void tearDown() throws Exception {
     super.tearDown();
     if (cluster != null) {
@@ -66,11 +69,6 @@ public class TestHDFSFileSystemContract extends FileSystemContractBaseTest {
   @Override
   protected String getDefaultWorkingDirectory() {
     return defaultWorkingDirectory;
-  }
-
-  @Override
-  protected int getGlobalTimeout() {
-    return 60 * 1000;
   }
 
   @Test
