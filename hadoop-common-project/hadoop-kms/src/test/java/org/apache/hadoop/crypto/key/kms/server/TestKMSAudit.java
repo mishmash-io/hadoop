@@ -65,9 +65,9 @@ public class TestKMSAudit {
   }
 
   @BeforeAll
-  public void setUpAll() throws URISyntaxException {
+  public static void setUpAll() throws URISyntaxException {
     LoggerContext ctx = LoggerContext.getContext(false);
-    ctx.setConfigLocation(getClass().getClassLoader()
+    ctx.setConfigLocation(TestKMSAudit.class.getClassLoader()
         .getResource("log4j2-kmsaudit.properties").toURI());
     ctx.reconfigure();
   }
