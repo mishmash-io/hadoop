@@ -231,7 +231,7 @@ public class TestKMS {
   protected <T> T runServer(int[] ports, String keystore, String password,
       File confDir, KMSCallable<T> callable) throws Exception {
     MiniKMS.Builder miniKMSBuilder = new MiniKMS.Builder().setKmsConfDir(confDir)
-        .setLog4jConfFile("log4j.properties");
+        .setLog4jConfFile("log4j2.properties");
     if (keystore != null) {
       miniKMSBuilder.setSslConf(new File(keystore), password);
     }

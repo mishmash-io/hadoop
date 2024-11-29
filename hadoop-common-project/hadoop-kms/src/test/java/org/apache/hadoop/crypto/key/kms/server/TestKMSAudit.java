@@ -72,7 +72,7 @@ public class TestKMSAudit {
     System.setErr(capturedOut);
     LoggerContext ctx = LoggerContext.getContext(false);
     ctx.setConfigLocation(getClass().getClassLoader()
-        .getResource("log4j-kmsaudit.properties").toURI());
+        .getResource("log4j2-kmsaudit.properties").toURI());
     ctx.reconfigure();
     Configuration conf = new Configuration();
     this.kmsAudit = new KMSAudit(conf);
