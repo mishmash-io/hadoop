@@ -52,8 +52,8 @@ import java.util.Set;
 import java.util.StringTokenizer;
 import java.util.concurrent.TimeUnit;
 
-import javax.ws.rs.core.HttpHeaders;
-import javax.ws.rs.core.MediaType;
+import jakarta.ws.rs.core.HttpHeaders;
+import jakarta.ws.rs.core.MediaType;
 
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.io.input.BoundedInputStream;

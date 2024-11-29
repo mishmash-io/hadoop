@@ -23,6 +23,7 @@ import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.TimeUnit;
 
 import org.apache.hadoop.classification.InterfaceAudience;
 import org.apache.hadoop.classification.InterfaceStability;
@@ -30,17 +31,19 @@ import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hdfs.web.URLConnectionFactory;
 import org.apache.hadoop.util.JsonSerialization;
 import org.apache.hadoop.util.Timer;
-import org.apache.http.HttpHeaders;
-import org.apache.http.HttpStatus;
-import org.apache.http.NameValuePair;
-import org.apache.http.client.config.RequestConfig;
-import org.apache.http.client.entity.UrlEncodedFormEntity;
-import org.apache.http.client.methods.CloseableHttpResponse;
-import org.apache.http.client.methods.HttpPost;
-import org.apache.http.impl.client.CloseableHttpClient;
-import org.apache.http.impl.client.HttpClientBuilder;
-import org.apache.http.message.BasicNameValuePair;
-import org.apache.http.util.EntityUtils;
+import org.apache.hc.core5.http.HttpHeaders;
+import org.apache.hc.core5.http.HttpStatus;
+import org.apache.hc.core5.http.NameValuePair;
+import org.apache.hc.client5.http.config.ConnectionConfig;
+import org.apache.hc.client5.http.config.RequestConfig;
+import org.apache.hc.client5.http.entity.UrlEncodedFormEntity;
+import org.apache.hc.client5.http.impl.classic.CloseableHttpResponse;
+import org.apache.hc.client5.http.classic.methods.HttpPost;
+import org.apache.hc.client5.http.impl.classic.CloseableHttpClient;
+import org.apache.hc.client5.http.impl.classic.HttpClientBuilder;
+import org.apache.hc.client5.http.impl.io.PoolingHttpClientConnectionManager;
+import org.apache.hc.core5.http.message.BasicNameValuePair;
+import org.apache.hc.core5.http.io.entity.EntityUtils;
 
 import static org.apache.hadoop.hdfs.client.HdfsClientConfigKeys.OAUTH_CLIENT_ID_KEY;
 import static org.apache.hadoop.hdfs.client.HdfsClientConfigKeys.OAUTH_REFRESH_URL_KEY;
@@ -108,35 +111,43 @@ public abstract class CredentialBasedAccessTokenProvider
     pairs.add(new BasicNameValuePair(CLIENT_SECRET, getCredential()));
     pairs.add(new BasicNameValuePair(GRANT_TYPE, CLIENT_CREDENTIALS));
     pairs.add(new BasicNameValuePair(CLIENT_ID, clientId));
-    final RequestConfig config = RequestConfig.custom()
-        .setConnectTimeout(URLConnectionFactory.DEFAULT_SOCKET_TIMEOUT)
-        .setConnectionRequestTimeout(URLConnectionFactory.DEFAULT_SOCKET_TIMEOUT)
-        .setSocketTimeout(URLConnectionFactory.DEFAULT_SOCKET_TIMEOUT)
+    final ConnectionConfig connConfig = ConnectionConfig.custom()
+        .setConnectTimeout(URLConnectionFactory.DEFAULT_SOCKET_TIMEOUT, TimeUnit.MILLISECONDS)
+        .setSocketTimeout(URLConnectionFactory.DEFAULT_SOCKET_TIMEOUT, TimeUnit.MILLISECONDS)
         .build();
-    try (CloseableHttpClient client =
-             HttpClientBuilder.create().setDefaultRequestConfig(config).build()) {
-      final HttpPost httpPost = new HttpPost(refreshURL);
-      httpPost.setEntity(new UrlEncodedFormEntity(pairs, StandardCharsets.UTF_8));
-      httpPost.setHeader(HttpHeaders.CONTENT_TYPE, URLENCODED);
-      try (CloseableHttpResponse response = client.execute(httpPost)) {
-        final int statusCode = response.getStatusLine().getStatusCode();
-        if (statusCode != HttpStatus.SC_OK) {
-          throw new IllegalArgumentException(
-              "Received invalid http response: " + statusCode + ", text = " +
-                  EntityUtils.toString(response.getEntity()));
+    final RequestConfig config = RequestConfig.custom()
+        .setConnectionRequestTimeout(URLConnectionFactory.DEFAULT_SOCKET_TIMEOUT, TimeUnit.MILLISECONDS)
+        .build();
+    try (PoolingHttpClientConnectionManager connMgr = new PoolingHttpClientConnectionManager()) {
+      connMgr.setDefaultConnectionConfig(connConfig);
+      try (CloseableHttpClient client =
+             HttpClientBuilder.create()
+                 .setDefaultRequestConfig(config)
+                 .setConnectionManager(connMgr)
+                 .build()) {
+        final HttpPost httpPost = new HttpPost(refreshURL);
+        httpPost.setEntity(new UrlEncodedFormEntity(pairs, StandardCharsets.UTF_8));
+        httpPost.setHeader(HttpHeaders.CONTENT_TYPE, URLENCODED);
+        try (CloseableHttpResponse response = client.execute(httpPost)) {
+          final int statusCode = response.getCode();
+          if (statusCode != HttpStatus.SC_OK) {
+            throw new IllegalArgumentException(
+                "Received invalid http response: " + statusCode + ", text = " +
+                    EntityUtils.toString(response.getEntity()));
+          }
+          Map<?, ?> responseBody = JsonSerialization.mapReader().readValue(
+              EntityUtils.toString(response.getEntity()));
+
+          String newExpiresIn = responseBody.get(EXPIRES_IN).toString();
+          timer.setExpiresIn(newExpiresIn);
+
+          accessToken = responseBody.get(ACCESS_TOKEN).toString();
         }
-        Map<?, ?> responseBody = JsonSerialization.mapReader().readValue(
-            EntityUtils.toString(response.getEntity()));
-
-        String newExpiresIn = responseBody.get(EXPIRES_IN).toString();
-        timer.setExpiresIn(newExpiresIn);
-
-        accessToken = responseBody.get(ACCESS_TOKEN).toString();
+      } catch (RuntimeException e) {
+        throw new IOException("Unable to obtain access token from credential", e);
+      } catch (Exception e) {
+        throw new IOException("Unable to obtain access token from credential", e);
       }
-    } catch (RuntimeException e) {
-      throw new IOException("Unable to obtain access token from credential", e);
-    } catch (Exception e) {
-      throw new IOException("Unable to obtain access token from credential", e);
     }
   }
 }
