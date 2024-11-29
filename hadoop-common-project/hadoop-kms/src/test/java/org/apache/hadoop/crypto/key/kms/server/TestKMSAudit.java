@@ -36,7 +36,9 @@ import org.apache.hadoop.crypto.key.kms.server.KMS.KMSOp;
 import org.apache.hadoop.security.UserGroupInformation;
 import org.apache.hadoop.test.GenericTestUtils;
 import org.apache.logging.log4j.core.LoggerContext;
+import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.Timeout;
@@ -44,10 +46,10 @@ import org.junit.jupiter.api.Timeout;
 @Timeout(value=180000, unit=TimeUnit.MILLISECONDS)
 public class TestKMSAudit {
 
-  private PrintStream originalOut;
-  private ByteArrayOutputStream memOut;
-  private FilterOut filterOut;
-  private PrintStream capturedOut;
+  private static PrintStream originalOut;
+  private static ByteArrayOutputStream memOut;
+  private static FilterOut filterOut;
+  private static PrintStream capturedOut;
   
   private KMSAudit kmsAudit;
   private UserGroupInformation luser =
@@ -63,25 +65,32 @@ public class TestKMSAudit {
     }
   }
 
-  @BeforeEach
-  public void setUp() throws IOException, URISyntaxException {
+  @BeforeAll
+  public static void setUpAll() throws URISyntaxException {
     originalOut = System.err;
     memOut = new ByteArrayOutputStream();
     filterOut = new FilterOut(memOut);
     capturedOut = new PrintStream(filterOut);
     System.setErr(capturedOut);
     LoggerContext ctx = LoggerContext.getContext(false);
-    ctx.setConfigLocation(getClass().getClassLoader()
+    ctx.setConfigLocation(TestKMSAudit.class.getClassLoader()
         .getResource("log4j2-kmsaudit.properties").toURI());
-    ctx.reconfigure();
+  }
+
+  @BeforeEach
+  public void setUp() throws IOException {
     Configuration conf = new Configuration();
     this.kmsAudit = new KMSAudit(conf);
   }
 
   @AfterEach
   public void cleanUp() {
-    System.setErr(originalOut);
     kmsAudit.shutdown();
+  }
+
+  @AfterAll
+  public static void cleanUpAll() {
+    System.setErr(capturedOut);
   }
 
   private String getAndResetLogOutput() {
