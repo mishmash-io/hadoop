@@ -36,8 +36,8 @@ import org.apache.hadoop.security.authorize.AuthorizationException;
 import org.apache.hadoop.security.token.SecretManager.InvalidToken;
 
 import org.apache.hadoop.classification.VisibleForTesting;
-import com.sun.jersey.api.ParamException;
-import com.sun.jersey.api.container.ContainerException;
+import org.glassfish.jersey.server.ParamException;
+import org.glassfish.jersey.server.ContainerException;
 
 /** Handle exceptions. */
 @Provider

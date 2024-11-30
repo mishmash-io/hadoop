@@ -17,46 +17,37 @@
  */
 package org.apache.hadoop.hdfs.web;
 
+import java.io.IOException;
+import java.lang.annotation.ElementType;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
+import java.lang.annotation.Target;
 import java.net.URI;
 import java.util.List;
 import java.util.Map;
 
+import jakarta.ws.rs.NameBinding;
+import jakarta.ws.rs.container.ContainerRequestContext;
+import jakarta.ws.rs.container.ContainerRequestFilter;
 import jakarta.ws.rs.core.MultivaluedMap;
 import jakarta.ws.rs.core.UriBuilder;
+import jakarta.ws.rs.core.UriInfo;
+import jakarta.ws.rs.ext.Provider;
 
-import com.sun.jersey.spi.container.ContainerRequest;
-import com.sun.jersey.spi.container.ContainerRequestFilter;
-import com.sun.jersey.spi.container.ContainerResponseFilter;
-import com.sun.jersey.spi.container.ResourceFilter;
 import org.apache.hadoop.util.StringUtils;
 
 /**
  * A filter to change parameter names to lower cases
  * so that parameter names are considered as case insensitive.
  */
-public class ParamFilter implements ResourceFilter {
-  private static final ContainerRequestFilter LOWER_CASE
-      = new ContainerRequestFilter() {
-    @Override
-    public ContainerRequest filter(final ContainerRequest request) {
-      final MultivaluedMap<String, String> parameters = request.getQueryParameters();
-      if (containsUpperCase(parameters.keySet())) {
-        //rebuild URI
-        final URI lower = rebuildQuery(request.getRequestUri(), parameters);
-        request.setUris(request.getBaseUri(), lower);
-      }
-      return request;
-    }
-  };
-
-  @Override
-  public ContainerRequestFilter getRequestFilter() {
-    return LOWER_CASE;
-  }
-
-  @Override
-  public ContainerResponseFilter getResponseFilter() {
-    return null;
+@Provider
+@ParamFilter.LowerCaseParams
+public class ParamFilter implements ContainerRequestFilter {
+  @NameBinding
+  @Target({ElementType.TYPE, ElementType.METHOD})
+  @Retention(value=RetentionPolicy.RUNTIME)
+  public @interface LowerCaseParams {
+      
   }
 
   /** Do the strings contain upper case letters? */
@@ -82,5 +73,16 @@ public class ParamFilter implements ResourceFilter {
       }
     }
     return b.build();
+  }
+
+  @Override
+  public void filter(ContainerRequestContext requestContext) throws IOException {
+    final UriInfo uriInfo = requestContext.getUriInfo();
+    final MultivaluedMap<String, String> parameters = uriInfo.getQueryParameters();
+    if (containsUpperCase(parameters.keySet())) {
+      //rebuild URI
+      final URI lower = rebuildQuery(uriInfo.getRequestUri(), parameters);
+      requestContext.setRequestUri(uriInfo.getBaseUri(), lower);
+    }
   }
 }
