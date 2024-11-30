@@ -32,6 +32,8 @@ https://maven.apache.org/xsd/maven-4.0.0.xsd">
   <properties>
     <hadoop.component>hdfs</hadoop.component>
     <is.hadoop.component>true</is.hadoop.component>
+    <!-- override default for project -->
+    <servlet-api.version>6.0.0</servlet-api.version>
   </properties>
 
   <dependencies>
@@ -133,8 +135,9 @@ https://maven.apache.org/xsd/maven-4.0.0.xsd">
       <scope>${transient.protobuf2.scope}</scope>
     </dependency>
     <dependency>
-      <groupId>javax.servlet</groupId>
-      <artifactId>javax.servlet-api</artifactId>
+      <groupId>jakarta.servlet</groupId>
+      <artifactId>jakarta.servlet-api</artifactId>
+      <version>${servlet-api.version}</version>
       <scope>compile</scope>
     </dependency>
     <dependency>
