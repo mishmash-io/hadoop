@@ -20,6 +20,7 @@ package org.apache.hadoop.hdfs.server.blockmanagement;
 import static org.junit.jupiter.api.Assertions.*;
 
 import java.util.ArrayList;
+import java.util.concurrent.TimeUnit;
 
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hdfs.DFSConfigKeys;
@@ -40,22 +41,16 @@ import org.apache.hadoop.hdfs.server.protocol.DatanodeCommand;
 import org.apache.hadoop.hdfs.server.protocol.DatanodeProtocol;
 import org.apache.hadoop.hdfs.server.protocol.DatanodeRegistration;
 import org.apache.hadoop.hdfs.server.protocol.DatanodeStorage;
-import org.junit.Rule;
 import org.junit.jupiter.api.Test;
-import org.junit.rules.Timeout;
+import org.junit.jupiter.api.Timeout;
 import org.mockito.Mockito;
 
 /**
  * Test if FSNamesystem handles heartbeat right
  */
+@Timeout(value=300000, unit=TimeUnit.MILLISECONDS)
 public class TestHeartbeatHandling {
 
-
-  /**
-   * Set a timeout for every test case.
-   */
-  @Rule
-  public Timeout testTimeout = new Timeout(300_000);
 
   /**
    * Test if

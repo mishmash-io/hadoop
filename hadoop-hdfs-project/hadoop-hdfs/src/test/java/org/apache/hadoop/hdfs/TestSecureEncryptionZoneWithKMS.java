@@ -43,6 +43,7 @@ import java.security.PrivilegedExceptionAction;
 import java.util.EnumSet;
 import java.util.Properties;
 import java.util.UUID;
+import java.util.concurrent.TimeUnit;
 
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.crypto.key.kms.KMSClientProvider;
@@ -63,13 +64,12 @@ import org.apache.hadoop.security.SecurityUtil;
 import org.apache.hadoop.security.UserGroupInformation;
 import org.apache.hadoop.security.UserGroupInformation.AuthenticationMethod;
 import org.apache.hadoop.security.ssl.KeyStoreTestUtil;
-import org.junit.Rule;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.junit.rules.Timeout;
+import org.junit.jupiter.api.Timeout;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -78,6 +78,7 @@ import org.slf4j.LoggerFactory;
  * Kerby-based MiniKDC, MiniKMS and MiniDFSCluster. This provides additional
  * unit test coverage on Secure(Kerberos) KMS + HDFS.
  */
+@Timeout(value=120000, unit=TimeUnit.MILLISECONDS)
 public class TestSecureEncryptionZoneWithKMS {
   public static final Logger LOG = LoggerFactory.getLogger(
       TestSecureEncryptionZoneWithKMS.class);
@@ -127,9 +128,6 @@ public class TestSecureEncryptionZoneWithKMS {
     }
     return file;
   }
-
-  @Rule
-  public Timeout timeout = new Timeout(120000);
 
   @BeforeAll
   public static void init() throws Exception {

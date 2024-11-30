@@ -27,15 +27,15 @@ import org.apache.hadoop.hdfs.protocol.NoECPolicySetException;
 import org.apache.hadoop.io.erasurecode.CodecUtil;
 import org.apache.hadoop.io.erasurecode.ErasureCodeNative;
 import org.apache.hadoop.io.erasurecode.rawcoder.NativeRSRawErasureCoderFactory;
-import org.junit.Rule;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.junit.rules.Timeout;
+import org.junit.jupiter.api.Timeout;
 
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.util.concurrent.TimeUnit;
 
 import static org.apache.hadoop.test.GenericTestUtils.assertExceptionContains;
 import static org.junit.jupiter.api.Assertions.fail;
@@ -43,6 +43,7 @@ import static org.junit.jupiter.api.Assertions.fail;
 /**
  * Test unset and change directory's erasure coding policy.
  */
+@Timeout(value=300000, unit=TimeUnit.MILLISECONDS)
 public class TestUnsetAndChangeDirectoryEcPolicy {
 
   public static final Logger LOG =
@@ -58,9 +59,6 @@ public class TestUnsetAndChangeDirectoryEcPolicy {
   private final int stripsPerBlock = 2;
   private final int blockSize = stripsPerBlock * cellSize;
   private final int blockGroupSize =  dataBlocks * blockSize;
-
-  @Rule
-  public Timeout globalTimeout = new Timeout(300000);
 
   @BeforeEach
   public void setup() throws IOException {

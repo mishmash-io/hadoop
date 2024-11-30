@@ -36,14 +36,15 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.junit.Rule;
-import org.junit.rules.Timeout;
+import org.junit.jupiter.api.Timeout;
 
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.util.Arrays;
 import java.util.Random;
+import java.util.concurrent.TimeUnit;
 
+@Timeout(value=300000, unit=TimeUnit.MILLISECONDS)
 public class TestWriteReadStripedFile {
   public static final Logger LOG =
       LoggerFactory.getLogger(TestWriteReadStripedFile.class);
@@ -68,9 +69,6 @@ public class TestWriteReadStripedFile {
     GenericTestUtils.setLogLevel(DFSClient.LOG, Level.TRACE);
     GenericTestUtils.setLogLevel(BlockPlacementPolicy.LOG, Level.TRACE);
   }
-
-  @Rule
-  public Timeout globalTimeout = new Timeout(300000);
 
   @BeforeEach
   public void setup() throws IOException {

@@ -28,6 +28,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 import java.util.concurrent.atomic.AtomicBoolean;
 
@@ -60,21 +61,21 @@ import org.apache.hadoop.ipc.RemoteException;
 import org.apache.hadoop.ipc.RetriableException;
 import org.apache.hadoop.test.GenericTestUtils;
 import org.apache.hadoop.test.Whitebox;
-import org.junit.Rule;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.Timeout;
 
 import static org.apache.hadoop.test.GenericTestUtils.assertExceptionContains;
 import static org.junit.jupiter.api.Assertions.*;
 
-import org.junit.rules.Timeout;
 import org.slf4j.LoggerFactory;
 import org.slf4j.event.Level;
 
 /**
  * Test class for re-encryption.
  */
+@Timeout(value=180000, unit=TimeUnit.MILLISECONDS)
 public class TestReencryption {
 
   protected static final org.slf4j.Logger LOG =
@@ -100,9 +101,6 @@ public class TestReencryption {
     return JavaKeyStoreProvider.SCHEME_NAME + "://file" + new Path(
         testRootDir.toString(), "test.jks").toUri();
   }
-
-  @Rule
-  public Timeout globalTimeout = new Timeout(180 * 1000);
 
   @BeforeEach
   public void setup() throws Exception {

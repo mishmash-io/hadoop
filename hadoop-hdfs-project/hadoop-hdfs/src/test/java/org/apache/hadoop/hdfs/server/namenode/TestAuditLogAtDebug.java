@@ -27,16 +27,15 @@ import org.apache.hadoop.hdfs.HdfsConfiguration;
 import org.apache.hadoop.hdfs.server.namenode.FSNamesystem.FSNamesystemAuditLogger;
 import org.apache.hadoop.test.GenericTestUtils;
 
-import org.junit.Rule;
 import org.junit.jupiter.api.Test;
-import org.junit.rules.Timeout;
+import org.junit.jupiter.api.Timeout;
 import org.slf4j.event.Level;
 
 import java.net.Inet4Address;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
-
+import java.util.concurrent.TimeUnit;
 
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.*;
@@ -44,12 +43,10 @@ import static org.mockito.Mockito.*;
 /**
  * Test that the HDFS Audit logger respects DFS_NAMENODE_AUDIT_LOG_DEBUG_CMDLIST. 
  */
+@Timeout(value=300000, unit=TimeUnit.MILLISECONDS)
 public class TestAuditLogAtDebug {
   static final Logger LOG = LoggerFactory.getLogger(TestAuditLogAtDebug.class);
 
-  @Rule
-  public Timeout timeout = new Timeout(300000);
-  
   private static final String DUMMY_COMMAND_1 = "dummycommand1";
   private static final String DUMMY_COMMAND_2 = "dummycommand2";
   

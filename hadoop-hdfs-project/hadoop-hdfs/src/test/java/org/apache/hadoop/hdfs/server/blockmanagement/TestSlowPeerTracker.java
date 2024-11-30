@@ -25,15 +25,15 @@ import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hdfs.HdfsConfiguration;
 import org.apache.hadoop.hdfs.server.protocol.OutlierMetrics;
 import org.apache.hadoop.util.FakeTimer;
-import org.junit.Rule;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.junit.rules.Timeout;
+import org.junit.jupiter.api.Timeout;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.util.Set;
+import java.util.concurrent.TimeUnit;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.core.Is.is;
@@ -42,14 +42,9 @@ import static org.junit.jupiter.api.Assertions.*;
 /**
  * Tests for {@link SlowPeerTracker}.
  */
+@Timeout(value=300000, unit=TimeUnit.MILLISECONDS)
 public class TestSlowPeerTracker {
   private static final Logger LOG = LoggerFactory.getLogger(TestSlowPeerTracker.class);
-
-  /**
-   * Set a timeout for every test case.
-   */
-  @Rule
-  public Timeout testTimeout = new Timeout(300_000);
 
   private Configuration conf;
   private SlowPeerTracker tracker;

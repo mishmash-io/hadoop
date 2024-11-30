@@ -32,15 +32,15 @@ import org.apache.hadoop.hdfs.HdfsConfiguration;
 import org.apache.hadoop.hdfs.MiniDFSCluster;
 import org.apache.hadoop.security.AccessControlException;
 import org.apache.hadoop.hdfs.server.namenode.FSDirectory;
-import org.junit.Rule;
 import org.junit.jupiter.api.Test;
-import org.junit.rules.Timeout;
+import org.junit.jupiter.api.Timeout;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.*;
+import java.util.concurrent.TimeUnit;
 
 import static org.apache.hadoop.hdfs.DFSConfigKeys.DFS_PROTECTED_SUBDIRECTORIES_ENABLE;
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -52,12 +52,10 @@ import static org.apache.hadoop.fs.CommonConfigurationKeysPublic.FS_PROTECTED_DI
 /**
  * Verify that the dfs.namenode.protected.directories setting is respected.
  */
+@Timeout(value=300000, unit=TimeUnit.MILLISECONDS)
 public class TestProtectedDirectories {
   static final Logger LOG = LoggerFactory.getLogger(
       TestProtectedDirectories.class);
-
-  @Rule
-  public Timeout timeout = new Timeout(300000);
 
   /**
    * Start a namenode-only 'cluster' which is configured to protect

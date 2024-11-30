@@ -21,17 +21,15 @@ import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hdfs.DFSConfigKeys;
 import org.apache.hadoop.hdfs.MiniDFSCluster;
 import org.apache.hadoop.hdfs.protocol.datatransfer.PipelineAck;
-import org.junit.Rule;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
-import org.junit.rules.Timeout;
+import org.junit.jupiter.api.Timeout;
 
 import java.io.IOException;
+import java.util.concurrent.TimeUnit;
 
+@Timeout(value=300000, unit=TimeUnit.MILLISECONDS)
 public class TestDataNodeECN {
-
-  @Rule
-  public Timeout globalTimeout = new Timeout(300000);
 
   @Test
   public void testECNFlag() throws IOException {

@@ -27,6 +27,7 @@ import java.net.InetSocketAddress;
 import java.util.Collections;
 import java.util.List;
 import java.util.Random;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 
 import org.slf4j.Logger;
@@ -42,17 +43,17 @@ import org.apache.hadoop.metrics2.util.MBeans;
 import org.apache.hadoop.test.GenericTestUtils;
 import org.apache.log4j.Appender;
 import org.apache.log4j.AsyncAppender;
-import org.junit.Rule;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
-import org.junit.rules.Timeout;
+import org.junit.jupiter.api.Timeout;
 
 import java.util.function.Supplier;
 
 /**
  * Test periodic logging of DataNode metrics.
  */
+@Timeout(value=300000, unit=TimeUnit.MILLISECONDS)
 public class TestDataNodeMetricsLogger {
   static final Logger LOG =
       LoggerFactory.getLogger(TestDataNodeMetricsLogger.class);
@@ -66,9 +67,6 @@ public class TestDataNodeMetricsLogger {
   private DataNode dn;
 
   static final Random random = new Random(System.currentTimeMillis());
-
-  @Rule
-  public Timeout timeout = new Timeout(300000);
 
   /**
    * Starts an instance of DataNode

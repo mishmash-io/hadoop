@@ -24,10 +24,9 @@ import org.apache.hadoop.hdfs.HdfsConfiguration;
 import org.apache.hadoop.hdfs.server.protocol.OutlierMetrics;
 import org.apache.hadoop.metrics2.lib.MetricsTestHelper;
 import org.apache.hadoop.test.GenericTestUtils;
-import org.junit.Rule;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.junit.rules.Timeout;
+import org.junit.jupiter.api.Timeout;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.slf4j.event.Level;
@@ -45,15 +44,10 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
  * Test that the {@link DataNodePeerMetrics} class is able to detect
  * outliers i.e. slow nodes via the metrics it maintains.
  */
+@Timeout(value=300000, unit=TimeUnit.MILLISECONDS)
 public class TestDataNodeOutlierDetectionViaMetrics {
   public static final Logger LOG =
       LoggerFactory.getLogger(TestDataNodeOutlierDetectionViaMetrics.class);
-
-  /**
-   * Set a timeout for every test case.
-   */
-  @Rule
-  public Timeout testTimeout = new Timeout(300_000);
 
   // A few constants to keep the test run time short.
   private static final int WINDOW_INTERVAL_SECONDS = 3;

@@ -31,13 +31,13 @@ import org.apache.hadoop.hdfs.server.blockmanagement.BlockIdManager;
 import static org.apache.hadoop.hdfs.util.StripedBlockUtil.*;
 
 import org.apache.hadoop.hdfs.protocol.ErasureCodingPolicy;
-import org.junit.Rule;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.junit.rules.Timeout;
+import org.junit.jupiter.api.Timeout;
 
 import java.nio.ByteBuffer;
 import java.util.Random;
+import java.util.concurrent.TimeUnit;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -78,6 +78,7 @@ import static org.junit.jupiter.api.Assertions.*;
  * We should test in total 11 x 15 x 11 = 1815 combinations
  * TODO: test parity block logic
  */
+@Timeout(value=300000, unit=TimeUnit.MILLISECONDS)
 public class TestStripedBlockUtil {
   // use hard coded policy - see HDFS-9816
   private final ErasureCodingPolicy ecPolicy =
@@ -94,9 +95,6 @@ public class TestStripedBlockUtil {
   private int[] blockGroupSizes;
   private int[] byteRangeStartOffsets;
   private int[] byteRangeSizes;
-
-  @Rule
-  public Timeout globalTimeout = new Timeout(300000);
 
   @BeforeEach
   public void setup(){

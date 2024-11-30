@@ -23,10 +23,9 @@ import org.apache.hadoop.thirdparty.com.google.common.collect.ImmutableMap;
 import org.apache.hadoop.thirdparty.com.google.common.collect.ImmutableSet;
 import org.apache.commons.lang3.tuple.Pair;
 import org.apache.hadoop.test.GenericTestUtils;
-import org.junit.Rule;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.junit.rules.Timeout;
+import org.junit.jupiter.api.Timeout;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.slf4j.event.Level;
@@ -39,19 +38,15 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.TimeUnit;
 
 /**
  * Unit tests for {@link OutlierDetector}.
  */
+@Timeout(value=300000, unit=TimeUnit.MILLISECONDS)
 public class TestSlowNodeDetector {
   public static final Logger LOG =
       LoggerFactory.getLogger(TestSlowNodeDetector.class);
-
-  /**
-   * Set a timeout for every test case.
-   */
-  @Rule
-  public Timeout testTimeout = new Timeout(300_000);
 
   private final static double LOW_THRESHOLD = 1000;
   private final static long MIN_OUTLIER_DETECTION_PEERS = 3;

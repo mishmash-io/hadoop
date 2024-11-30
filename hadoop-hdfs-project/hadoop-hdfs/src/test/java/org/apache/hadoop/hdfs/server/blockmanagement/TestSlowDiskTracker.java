@@ -45,10 +45,9 @@ import org.apache.hadoop.util.FakeTimer;
 import java.util.function.Supplier;
 import org.apache.hadoop.thirdparty.com.google.common.collect.Maps;
 
-import org.junit.Rule;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.junit.rules.Timeout;
+import org.junit.jupiter.api.Timeout;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -61,15 +60,10 @@ import java.util.concurrent.TimeUnit;
 /**
  * Tests for {@link SlowDiskTracker}.
  */
+@Timeout(value=300000, unit=TimeUnit.MILLISECONDS)
 public class TestSlowDiskTracker {
   public static final Logger LOG = LoggerFactory.getLogger(
       TestSlowDiskTracker.class);
-
-  /**
-   * Set a timeout for every test case.
-   */
-  @Rule
-  public Timeout testTimeout = new Timeout(300_000);
 
   private static Configuration conf;
   private SlowDiskTracker tracker;

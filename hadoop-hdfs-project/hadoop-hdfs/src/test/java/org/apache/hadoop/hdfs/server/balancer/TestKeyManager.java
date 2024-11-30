@@ -25,21 +25,20 @@ import org.apache.hadoop.hdfs.security.token.block.DataEncryptionKey;
 import org.apache.hadoop.hdfs.server.protocol.NamenodeProtocol;
 import org.apache.hadoop.test.Whitebox;
 import org.apache.hadoop.util.FakeTimer;
-import org.junit.Rule;
 import org.junit.jupiter.api.Test;
-import org.junit.rules.Timeout;
+import org.junit.jupiter.api.Timeout;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
+import java.util.concurrent.TimeUnit;
+
 /**
  * Test KeyManager class.
  */
+@Timeout(value=120000, unit=TimeUnit.MILLISECONDS)
 public class TestKeyManager {
-  @Rule
-  public Timeout globalTimeout = new Timeout(120000);
-
   @Test
   public void testNewDataEncryptionKey() throws Exception {
     final Configuration conf = new HdfsConfiguration();

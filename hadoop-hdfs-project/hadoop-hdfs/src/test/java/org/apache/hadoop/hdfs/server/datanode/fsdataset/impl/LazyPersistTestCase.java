@@ -80,11 +80,11 @@ import org.apache.hadoop.io.nativeio.NativeIO;
 import org.apache.hadoop.net.unix.TemporarySocketDirectory;
 import org.apache.hadoop.security.UserGroupInformation;
 import org.apache.hadoop.test.GenericTestUtils;
-import org.junit.Rule;
 import org.junit.jupiter.api.AfterEach;
-import org.junit.rules.Timeout;
+import org.junit.jupiter.api.Timeout;
 import org.slf4j.event.Level;
 
+@Timeout(value=300, unit=TimeUnit.SECONDS)
 public abstract class LazyPersistTestCase {
   static final byte LAZY_PERSIST_POLICY_ID = (byte) 15;
 
@@ -154,9 +154,6 @@ public abstract class LazyPersistTestCase {
     IOUtils.closeStream(sockDir);
     sockDir = null;
   }
-
-  @Rule
-  public Timeout timeout = Timeout.seconds(300);
 
   protected final LocatedBlocks ensureFileReplicasOnStorageType(
       Path path, StorageType storageType)

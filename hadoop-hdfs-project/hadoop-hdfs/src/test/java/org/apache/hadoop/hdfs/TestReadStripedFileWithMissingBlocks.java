@@ -28,15 +28,16 @@ import org.apache.hadoop.hdfs.protocol.HdfsConstants.DatanodeReportType;
 import org.apache.hadoop.hdfs.server.datanode.DataNode;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
-import org.junit.Rule;
-import org.junit.rules.Timeout;
+import org.junit.jupiter.api.Timeout;
 
 import java.io.IOException;
+import java.util.concurrent.TimeUnit;
 
 /**
  * Test reading a striped file when some of its blocks are missing (not included
  * in the block locations returned by the NameNode).
  */
+@Timeout(value=300000, unit=TimeUnit.MILLISECONDS)
 public class TestReadStripedFileWithMissingBlocks {
   public static final Logger LOG = LoggerFactory
       .getLogger(TestReadStripedFileWithMissingBlocks.class);
@@ -56,9 +57,6 @@ public class TestReadStripedFileWithMissingBlocks {
   // test to pass.
   private final int numDNs = dataBlocks + parityBlocks + 2;
   private final int fileLength = blockSize * dataBlocks + 123;
-
-  @Rule
-  public Timeout globalTimeout = new Timeout(300000);
 
   public void setup() throws IOException {
     conf.setLong(DFSConfigKeys.DFS_BLOCK_SIZE_KEY, blockSize);

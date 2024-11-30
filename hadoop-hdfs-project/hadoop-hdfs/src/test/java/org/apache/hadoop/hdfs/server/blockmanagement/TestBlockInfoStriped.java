@@ -30,11 +30,10 @@ import org.apache.hadoop.hdfs.tools.DFSck;
 import org.apache.hadoop.test.GenericTestUtils;
 import org.apache.hadoop.test.Whitebox;
 import org.apache.hadoop.util.cli.ToolRunner;
-import org.junit.Rule;
 import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Timeout;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.MethodSource;
-import org.junit.rules.Timeout;
 
 import java.io.DataOutput;
 import java.io.DataOutputStream;
@@ -43,12 +42,14 @@ import java.io.PrintStream;
 import java.io.ByteArrayOutputStream;
 import java.nio.ByteBuffer;
 import java.util.Collection;
+import java.util.concurrent.TimeUnit;
 
 import static org.junit.jupiter.api.Assertions.*;
 
 /**
  * Test {@link BlockInfoStriped}.
  */
+@Timeout(value=300000, unit=TimeUnit.MILLISECONDS)
 public class TestBlockInfoStriped {
   private static final long BASE_ID = -1600;
   private final Block baseBlock = new Block(BASE_ID);
@@ -74,9 +75,6 @@ public class TestBlockInfoStriped {
     }
     return blocks;
   }
-
-  @Rule
-  public Timeout globalTimeout = new Timeout(300000);
 
   /**
    * Test adding storage and reported block.

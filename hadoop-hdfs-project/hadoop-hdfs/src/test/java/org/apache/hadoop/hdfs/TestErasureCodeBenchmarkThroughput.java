@@ -27,21 +27,19 @@ import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
-import org.junit.Rule;
-import org.junit.rules.Timeout;
+import org.junit.jupiter.api.Timeout;
 
 import java.io.IOException;
+import java.util.concurrent.TimeUnit;
 
 /**
  * To test {@link org.apache.hadoop.hdfs.ErasureCodeBenchmarkThroughput}.
  */
+@Timeout(value=300000, unit=TimeUnit.MILLISECONDS)
 public class TestErasureCodeBenchmarkThroughput {
   private static MiniDFSCluster cluster;
   private static Configuration conf;
   private static FileSystem fs;
-
-  @Rule
-  public Timeout globalTimeout = new Timeout(300000);
 
   @BeforeAll
   public static void setup() throws IOException {

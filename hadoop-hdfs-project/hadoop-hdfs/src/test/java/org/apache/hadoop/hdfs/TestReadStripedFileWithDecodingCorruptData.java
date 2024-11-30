@@ -17,17 +17,17 @@
  */
 package org.apache.hadoop.hdfs;
 
-import org.junit.Rule;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Timeout;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.MethodSource;
-import org.junit.rules.Timeout;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.util.Collection;
+import java.util.concurrent.TimeUnit;
 
 import static org.apache.hadoop.hdfs.ReadStripedFileWithDecodingHelper.initializeCluster;
 import static org.apache.hadoop.hdfs.ReadStripedFileWithDecodingHelper.tearDownCluster;
@@ -35,15 +35,13 @@ import static org.apache.hadoop.hdfs.ReadStripedFileWithDecodingHelper.tearDownC
 /**
  * Test online recovery with corrupt files. This test is parameterized.
  */
+@Timeout(value=300000, unit=TimeUnit.MILLISECONDS)
 public class TestReadStripedFileWithDecodingCorruptData {
   static final Logger LOG =
       LoggerFactory.getLogger(TestReadStripedFileWithDecodingCorruptData.class);
 
   private static MiniDFSCluster cluster;
   private static DistributedFileSystem dfs;
-
-  @Rule
-  public Timeout globalTimeout = new Timeout(300000);
 
   @BeforeAll
   public static void setup() throws IOException {

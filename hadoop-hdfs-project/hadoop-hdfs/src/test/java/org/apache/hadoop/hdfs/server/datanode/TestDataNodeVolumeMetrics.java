@@ -25,6 +25,7 @@ import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -42,13 +43,13 @@ import org.apache.hadoop.hdfs.protocol.ExtendedBlock;
 import org.apache.hadoop.hdfs.server.datanode.fsdataset.DataNodeVolumeMetrics;
 import org.apache.hadoop.hdfs.server.datanode.fsdataset.FsVolumeSpi;
 import org.apache.hadoop.metrics2.MetricsRecordBuilder;
-import org.junit.Rule;
 import org.junit.jupiter.api.Test;
-import org.junit.rules.Timeout;
+import org.junit.jupiter.api.Timeout;
 
 /**
  * Test class for DataNodeVolumeMetrics.
  */
+@Timeout(value=300000, unit=TimeUnit.MILLISECONDS)
 public class TestDataNodeVolumeMetrics {
   private static final Logger LOG =
       LoggerFactory.getLogger(TestDataNodeVolumeMetrics.class);
@@ -56,9 +57,6 @@ public class TestDataNodeVolumeMetrics {
   private static final int BLOCK_SIZE = 1024;
   private static final short REPL = 1;
   private static final int NUM_DATANODES = 1;
-
-  @Rule
-  public Timeout timeout = new Timeout(300000);
 
   @Test
   public void testVolumeMetrics() throws Exception {

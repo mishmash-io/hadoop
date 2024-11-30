@@ -29,14 +29,14 @@ import org.apache.hadoop.hdfs.server.protocol.DatanodeRegistration;
 import org.apache.hadoop.util.DataChecksum;
 import static org.apache.hadoop.hdfs.DFSConfigKeys.*;
 
-import org.junit.Rule;
 import org.junit.jupiter.api.Test;
-import org.junit.rules.Timeout;
+import org.junit.jupiter.api.Timeout;
 import org.mockito.ArgumentCaptor;
 
 import java.io.DataOutputStream;
 import java.io.IOException;
 import java.util.Arrays;
+import java.util.concurrent.TimeUnit;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.core.Is.is;
@@ -54,10 +54,8 @@ import static org.mockito.Mockito.when;
  * Mock-based unit test to verify that the DataXceiver correctly handles the
  * LazyPersist hint from clients.
  */
+@Timeout(value=300000, unit=TimeUnit.MILLISECONDS)
 public class TestDataXceiverLazyPersistHint {
-  @Rule
-  public Timeout timeout = new Timeout(300000);
-
   private enum PeerLocality {
     LOCAL,
     REMOTE

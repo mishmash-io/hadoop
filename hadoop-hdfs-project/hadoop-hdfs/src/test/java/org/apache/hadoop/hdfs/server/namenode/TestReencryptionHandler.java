@@ -28,10 +28,9 @@ import org.apache.hadoop.test.GenericTestUtils;
 import org.apache.hadoop.util.KMSUtil;
 import org.apache.hadoop.util.StopWatch;
 import org.apache.hadoop.test.Whitebox;
-import org.junit.Rule;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.junit.rules.Timeout;
+import org.junit.jupiter.api.Timeout;
 import org.mockito.Mockito;
 import org.slf4j.LoggerFactory;
 import org.slf4j.event.Level;
@@ -52,13 +51,11 @@ import static org.junit.jupiter.api.Assertions.fail;
 /**
  * Test class for ReencryptionHandler.
  */
+@Timeout(value=180000, unit=TimeUnit.MILLISECONDS)
 public class TestReencryptionHandler {
 
   protected static final org.slf4j.Logger LOG =
       LoggerFactory.getLogger(TestReencryptionHandler.class);
-
-  @Rule
-  public Timeout globalTimeout = new Timeout(180 * 1000);
 
   @BeforeEach
   public void setup() {

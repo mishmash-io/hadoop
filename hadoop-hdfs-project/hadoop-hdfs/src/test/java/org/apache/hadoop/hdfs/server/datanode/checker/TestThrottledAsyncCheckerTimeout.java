@@ -22,17 +22,17 @@ import org.apache.hadoop.thirdparty.com.google.common.util.concurrent.Futures;
 import org.apache.hadoop.thirdparty.com.google.common.util.concurrent.ListenableFuture;
 import org.apache.hadoop.thirdparty.com.google.common.util.concurrent.MoreExecutors;
 import org.apache.hadoop.util.FakeTimer;
-import org.junit.Rule;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInfo;
-import org.junit.rules.Timeout;
+import org.junit.jupiter.api.Timeout;
 import org.slf4j.LoggerFactory;
 
 import java.lang.reflect.Method;
 import java.util.Optional;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicLong;
@@ -46,14 +46,13 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.timeout;
 import static org.mockito.Mockito.verify;
 
+@Timeout(value=300000, unit=TimeUnit.MILLISECONDS)
 public class TestThrottledAsyncCheckerTimeout {
   public static final org.slf4j.Logger LOG =
       LoggerFactory.getLogger(TestThrottledAsyncCheckerTimeout.class);
 
   
   public String testName;
-  @Rule
-  public Timeout testTimeout = new Timeout(300_000);
 
   private static final long DISK_CHECK_TIMEOUT = 10;
   private ReentrantLock lock;

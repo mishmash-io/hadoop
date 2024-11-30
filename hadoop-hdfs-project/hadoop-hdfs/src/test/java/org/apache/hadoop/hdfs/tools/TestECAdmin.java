@@ -21,11 +21,10 @@ import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hdfs.DFSTestUtil;
 import org.apache.hadoop.hdfs.MiniDFSCluster;
 import org.apache.hadoop.hdfs.protocol.SystemErasureCodingPolicies;
-import org.junit.Rule;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.junit.rules.Timeout;
+import org.junit.jupiter.api.Timeout;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -39,6 +38,7 @@ import static org.junit.jupiter.api.Assertions.*;
  * Tests some ECAdmin scenarios that are hard to test from
  * {@link org.apache.hadoop.cli.TestErasureCodingCLI}.
  */
+@Timeout(value=300000, unit=TimeUnit.MILLISECONDS)
 public class TestECAdmin {
   public static final Logger LOG = LoggerFactory.getLogger(TestECAdmin.class);
   private Configuration conf = new Configuration();
@@ -63,10 +63,6 @@ public class TestECAdmin {
   private final static String XOR_2_1 =
       SystemErasureCodingPolicies.getByID(
           SystemErasureCodingPolicies.XOR_2_1_POLICY_ID).getName();
-
-  @Rule
-  public Timeout globalTimeout =
-      new Timeout(300000, TimeUnit.MILLISECONDS);
 
   @BeforeEach
   public void setup() throws Exception {

@@ -41,12 +41,11 @@ import org.apache.hadoop.io.erasurecode.ErasureCodeConstants;
 import org.apache.hadoop.security.AccessControlException;
 import org.apache.hadoop.security.UserGroupInformation;
 import org.apache.hadoop.test.GenericTestUtils;
-import org.junit.Rule;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.junit.rules.Timeout;
+import org.junit.jupiter.api.Timeout;
 
 import java.io.FileNotFoundException;
 import java.io.IOException;
@@ -56,10 +55,12 @@ import java.util.Collection;
 import java.util.EnumSet;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.TimeUnit;
 
 import static org.apache.hadoop.test.GenericTestUtils.assertExceptionContains;
 import static org.junit.jupiter.api.Assertions.*;
 
+@Timeout(value=60000, unit=TimeUnit.MILLISECONDS)
 public class TestErasureCodingPolicies {
   private Configuration conf;
   private MiniDFSCluster cluster;
@@ -71,9 +72,6 @@ public class TestErasureCodingPolicies {
   public ErasureCodingPolicy getEcPolicy() {
     return StripedFileTestUtil.getDefaultECPolicy();
   }
-
-  @Rule
-  public Timeout timeout = new Timeout(60 * 1000);
 
   @BeforeEach
   public void setupCluster() throws IOException {

@@ -27,6 +27,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 
 import java.util.function.Supplier;
@@ -50,16 +51,16 @@ import org.apache.hadoop.hdfs.server.datanode.DataNode;
 import org.apache.hadoop.test.GenericTestUtils;
 import org.apache.hadoop.test.GenericTestUtils.LogCapturer;
 import org.apache.hadoop.hdfs.security.token.block.DataEncryptionKey;
-import org.junit.Rule;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Timeout;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.MethodSource;
-import org.junit.rules.Timeout;
 import org.mockito.Mockito;
 import org.slf4j.event.Level;
 
+@Timeout(value=300000, unit=TimeUnit.MILLISECONDS)
 public class TestEncryptedTransfer {
   {
     GenericTestUtils.setLogLevel(
@@ -68,9 +69,6 @@ public class TestEncryptedTransfer {
         LoggerFactory.getLogger(DataTransferSaslUtil.class), Level.DEBUG);
   }
 
-  @Rule
-  public Timeout timeout = new Timeout(300000);
-  
   public static Collection<Object[]> data() {
     Collection<Object[]> params = new ArrayList<Object[]>();
     params.add(new Object[]{null});

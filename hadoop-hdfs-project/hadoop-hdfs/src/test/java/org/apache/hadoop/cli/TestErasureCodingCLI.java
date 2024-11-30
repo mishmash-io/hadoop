@@ -18,27 +18,26 @@
 
 package org.apache.hadoop.cli;
 
+import java.util.concurrent.TimeUnit;
+
 import org.apache.hadoop.cli.util.CLICommand;
 import org.apache.hadoop.cli.util.CLICommandErasureCodingCli;
 import org.apache.hadoop.cli.util.CommandExecutor.Result;
 import org.apache.hadoop.hdfs.DFSConfigKeys;
 import org.apache.hadoop.hdfs.DistributedFileSystem;
 import org.apache.hadoop.hdfs.MiniDFSCluster;
-import org.junit.Rule;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.junit.rules.Timeout;
+import org.junit.jupiter.api.Timeout;
 import org.xml.sax.SAXException;
 
+@Timeout(value=300000, unit=TimeUnit.MILLISECONDS)
 public class TestErasureCodingCLI extends CLITestHelper {
   private final int NUM_OF_DATANODES = 3;
   private MiniDFSCluster dfsCluster = null;
   private DistributedFileSystem fs = null;
   private String namenode = null;
-
-  @Rule
-  public Timeout globalTimeout = new Timeout(300000);
 
   @BeforeEach
   @Override

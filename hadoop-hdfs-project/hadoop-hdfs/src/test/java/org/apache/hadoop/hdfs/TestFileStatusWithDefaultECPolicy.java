@@ -20,28 +20,26 @@ package org.apache.hadoop.hdfs;
 import static org.junit.jupiter.api.Assertions.*;
 
 import java.io.IOException;
+import java.util.concurrent.TimeUnit;
 
 import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.fs.contract.ContractTestUtils;
 import org.apache.hadoop.fs.permission.FsPermission;
 import org.apache.hadoop.hdfs.protocol.ErasureCodingPolicy;
-import org.junit.Rule;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.junit.rules.Timeout;
+import org.junit.jupiter.api.Timeout;
 
 /**
  * This test ensures the statuses of EC files with the default policy.
  */
+@Timeout(value=300000, unit=TimeUnit.MILLISECONDS)
 public class TestFileStatusWithDefaultECPolicy {
   private MiniDFSCluster cluster;
   private DistributedFileSystem fs;
   private DFSClient client;
-
-  @Rule
-  public Timeout globalTimeout = new Timeout(300000);
 
   @BeforeEach
   public void before() throws IOException {

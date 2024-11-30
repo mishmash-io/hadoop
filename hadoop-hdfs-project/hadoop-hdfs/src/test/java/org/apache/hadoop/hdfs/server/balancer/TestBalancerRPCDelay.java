@@ -17,21 +17,20 @@
  */
 package org.apache.hadoop.hdfs.server.balancer;
 
+import java.util.concurrent.TimeUnit;
+
 import org.apache.hadoop.hdfs.DFSConfigKeys;
-import org.junit.Rule;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.junit.rules.Timeout;
+import org.junit.jupiter.api.Timeout;
 
 /**
  * The Balancer ensures that it disperses RPCs to the NameNode
  * in order to avoid NN's RPC queue saturation.
  */
+@Timeout(value=100, unit=TimeUnit.SECONDS)
 public class TestBalancerRPCDelay {
-  @Rule
-  public Timeout globalTimeout = Timeout.seconds(100);
-
   private TestBalancer testBalancer;
 
   @BeforeEach

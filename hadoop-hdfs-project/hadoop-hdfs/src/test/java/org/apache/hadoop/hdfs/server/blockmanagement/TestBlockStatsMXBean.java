@@ -41,22 +41,19 @@ import org.apache.hadoop.hdfs.MiniDFSCluster;
 import org.apache.hadoop.hdfs.server.datanode.DataNodeTestUtils;
 import org.apache.hadoop.io.IOUtils;
 import org.apache.hadoop.test.GenericTestUtils;
-import org.junit.Rule;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.Timeout;
 import org.eclipse.jetty.util.ajax.JSON;
-import org.junit.rules.Timeout;
 
 /**
  * Class for testing {@link BlockStatsMXBean} implementation
  */
+@Timeout(value=300000, unit=TimeUnit.MILLISECONDS)
 public class TestBlockStatsMXBean {
 
   private MiniDFSCluster cluster;
-
-  @Rule
-  public Timeout globalTimeout = new Timeout(300000);
 
   @BeforeEach
   public void setup() throws IOException {

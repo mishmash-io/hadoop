@@ -26,10 +26,9 @@ import org.apache.hadoop.hdfs.protocol.DatanodeInfo.DatanodeInfoBuilder;
 import org.apache.hadoop.hdfs.server.blockmanagement.DatanodeDescriptor;
 import org.apache.hadoop.hdfs.server.blockmanagement.DatanodeStorageInfo;
 import org.apache.hadoop.net.Node;
-import org.junit.Rule;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.junit.rules.Timeout;
+import org.junit.jupiter.api.Timeout;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -38,6 +37,7 @@ import java.util.EnumMap;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Set;
+import java.util.concurrent.TimeUnit;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -46,15 +46,13 @@ import static org.junit.jupiter.api.Assertions.*;
  * This class tests the correctness of storage type info stored in
  * DFSNetworkTopology.
  */
+@Timeout(value=30000, unit=TimeUnit.MILLISECONDS)
 public class TestDFSNetworkTopology {
   private static final Logger LOG =
       LoggerFactory.getLogger(TestDFSNetworkTopology.class);
   private final static DFSNetworkTopology CLUSTER =
       DFSNetworkTopology.getInstance(new Configuration());
   private DatanodeDescriptor[] dataNodes;
-
-  @Rule
-  public Timeout testTimeout = new Timeout(30000);
 
   @BeforeEach
   public void setupDatanodes() {

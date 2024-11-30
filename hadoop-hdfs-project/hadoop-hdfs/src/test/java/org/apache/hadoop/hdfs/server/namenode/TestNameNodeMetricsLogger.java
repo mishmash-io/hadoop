@@ -29,13 +29,13 @@ import org.apache.hadoop.test.GenericTestUtils;
 import org.apache.log4j.Appender;
 import org.apache.log4j.AsyncAppender;
 
-import org.junit.Rule;
 import org.junit.jupiter.api.Test;
-import org.junit.rules.Timeout;
+import org.junit.jupiter.api.Timeout;
 
 import java.io.IOException;
 import java.util.Collections;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 
 import static org.apache.hadoop.hdfs.DFSConfigKeys.*;
@@ -45,12 +45,10 @@ import static org.mockito.Mockito.mock;
 /**
  * Test periodic logging of NameNode metrics.
  */
+@Timeout(value=300000, unit=TimeUnit.MILLISECONDS)
 public class TestNameNodeMetricsLogger {
   static final Logger LOG =
       LoggerFactory.getLogger(TestNameNodeMetricsLogger.class);
-
-  @Rule
-  public Timeout timeout = new Timeout(300000);
 
   @Test
   public void testMetricsLoggerOnByDefault() throws IOException {

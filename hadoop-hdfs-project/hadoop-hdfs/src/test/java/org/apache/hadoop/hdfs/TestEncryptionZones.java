@@ -42,6 +42,7 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
 
 import org.apache.hadoop.hdfs.protocol.ClientProtocol;
 import org.apache.hadoop.hdfs.protocol.EncryptionZone;
@@ -106,12 +107,11 @@ import org.apache.hadoop.crypto.key.KeyProviderCryptoExtension.CryptoExtension;
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.util.XMLUtils;
 import org.apache.hadoop.util.cli.ToolRunner;
-import org.junit.Rule;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.junit.rules.Timeout;
+import org.junit.jupiter.api.Timeout;
 import org.mockito.Mockito;
 
 import static org.apache.hadoop.fs.CommonConfigurationKeys.DFS_CLIENT_IGNORE_NAMENODE_DEFAULT_KMS_URI;
@@ -149,6 +149,7 @@ import org.xml.sax.helpers.DefaultHandler;
 
 import javax.xml.parsers.SAXParser;
 
+@Timeout(value=120000, unit=TimeUnit.MILLISECONDS)
 public class TestEncryptionZones {
   static final Logger LOG = LoggerFactory.getLogger(TestEncryptionZones.class);
 
@@ -175,9 +176,6 @@ public class TestEncryptionZones {
     return JavaKeyStoreProvider.SCHEME_NAME + "://file" +
       new Path(testRootDir.toString(), "test.jks").toUri();
   }
-
-  @Rule
-  public Timeout globalTimeout = new Timeout(120 * 1000);
 
   @BeforeEach
   public void setup() throws Exception {

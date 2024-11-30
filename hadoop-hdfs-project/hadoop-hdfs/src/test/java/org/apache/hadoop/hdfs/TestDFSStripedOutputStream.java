@@ -26,6 +26,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.EnumSet;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 
 import org.apache.hadoop.fs.CreateFlag;
@@ -45,13 +46,13 @@ import org.apache.hadoop.io.erasurecode.CodecUtil;
 import org.apache.hadoop.io.erasurecode.ErasureCodeNative;
 import org.apache.hadoop.io.erasurecode.rawcoder.NativeRSRawErasureCoderFactory;
 import org.apache.hadoop.test.GenericTestUtils;
-import org.junit.Rule;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.junit.rules.Timeout;
+import org.junit.jupiter.api.Timeout;
 import org.slf4j.event.Level;
 
+@Timeout(value=300000, unit=TimeUnit.MILLISECONDS)
 public class TestDFSStripedOutputStream {
   public static final Logger LOG = LoggerFactory.getLogger(
       TestDFSStripedOutputStream.class);
@@ -71,9 +72,6 @@ public class TestDFSStripedOutputStream {
   private int cellSize;
   private final int stripesPerBlock = 4;
   private int blockSize;
-
-  @Rule
-  public Timeout globalTimeout = new Timeout(300000);
 
   public ErasureCodingPolicy getEcPolicy() {
     return StripedFileTestUtil.getDefaultECPolicy();

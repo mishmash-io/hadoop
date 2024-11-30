@@ -33,17 +33,18 @@ import org.apache.hadoop.hdfs.server.blockmanagement.NumberReplicas;
 import org.apache.hadoop.hdfs.server.datanode.DataNode;
 import org.apache.hadoop.test.GenericTestUtils;
 import org.apache.hadoop.test.Whitebox;
-import org.junit.Rule;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.junit.rules.Timeout;
+import org.junit.jupiter.api.Timeout;
 import org.mockito.Mockito;
 
+import java.util.concurrent.TimeUnit;
 import java.util.function.Supplier;
 
 import java.io.IOException;
 
+@Timeout(value=300000, unit=TimeUnit.MILLISECONDS)
 public class TestAddStripedBlockInFBR {
   private final ErasureCodingPolicy ecPolicy =
       StripedFileTestUtil.getDefaultECPolicy();
@@ -54,9 +55,6 @@ public class TestAddStripedBlockInFBR {
 
   private MiniDFSCluster cluster;
   private DistributedFileSystem dfs;
-
-  @Rule
-  public Timeout globalTimeout = new Timeout(300000);
 
   @BeforeEach
   public void setup() throws IOException {

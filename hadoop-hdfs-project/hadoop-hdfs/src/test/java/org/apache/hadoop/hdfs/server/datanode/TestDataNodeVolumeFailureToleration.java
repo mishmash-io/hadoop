@@ -35,15 +35,15 @@ import org.apache.hadoop.hdfs.HdfsConfiguration;
 import org.apache.hadoop.hdfs.MiniDFSCluster;
 import org.apache.hadoop.hdfs.server.blockmanagement.DatanodeManager;
 import org.apache.hadoop.test.GenericTestUtils;
-import org.junit.Rule;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.junit.rules.Timeout;
+import org.junit.jupiter.api.Timeout;
 
 /**
  * Test the ability of a DN to tolerate volume failures.
  */
+@Timeout(value=120000, unit=TimeUnit.MILLISECONDS)
 public class TestDataNodeVolumeFailureToleration {
   private FileSystem fs;
   private MiniDFSCluster cluster;
@@ -56,10 +56,6 @@ public class TestDataNodeVolumeFailureToleration {
   // Wait at least (2 * re-check + 10 * heartbeat) seconds for
   // a datanode to be considered dead by the namenode.  
   final int WAIT_FOR_DEATH = 15000;
-
-  // specific the timeout for entire test class
-  @Rule
-  public Timeout timeout = new Timeout(120 * 1000);
 
   @BeforeEach
   public void setUp() throws Exception {

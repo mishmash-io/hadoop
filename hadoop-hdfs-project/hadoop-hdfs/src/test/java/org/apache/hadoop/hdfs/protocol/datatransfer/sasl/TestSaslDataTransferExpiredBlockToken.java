@@ -37,12 +37,12 @@ import org.apache.hadoop.hdfs.client.HdfsClientConfigKeys.Retry;
 import org.apache.hadoop.hdfs.protocol.LocatedBlock;
 import org.apache.hadoop.hdfs.security.token.block.SecurityTestUtil;
 
-import org.junit.Rule;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.junit.rules.Timeout;
+import org.junit.jupiter.api.Timeout;
 
+@Timeout(value=60, unit=TimeUnit.SECONDS)
 public class TestSaslDataTransferExpiredBlockToken extends SaslDataTransferTestCase {
   private static final int BLOCK_SIZE = 4096;
   private static final int FILE_SIZE = 2 * BLOCK_SIZE;
@@ -50,9 +50,6 @@ public class TestSaslDataTransferExpiredBlockToken extends SaslDataTransferTestC
 
   private final byte[] rawData = new byte[FILE_SIZE];
   private MiniDFSCluster cluster;
-
-  @Rule
-  public Timeout timeout = new Timeout(60, TimeUnit.SECONDS);
 
   @BeforeEach
   public void before() throws Exception {

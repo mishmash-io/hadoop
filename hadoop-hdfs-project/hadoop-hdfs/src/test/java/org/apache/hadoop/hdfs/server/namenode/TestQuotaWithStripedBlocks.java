@@ -35,14 +35,15 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.junit.Rule;
-import org.junit.rules.Timeout;
+import org.junit.jupiter.api.Timeout;
 
 import java.io.IOException;
+import java.util.concurrent.TimeUnit;
 
 /**
  * Make sure we correctly update the quota usage with the striped blocks.
  */
+@Timeout(value=300000, unit=TimeUnit.MILLISECONDS)
 public class TestQuotaWithStripedBlocks {
   private int blockSize;
   private ErasureCodingPolicy ecPolicy;
@@ -60,9 +61,6 @@ public class TestQuotaWithStripedBlocks {
   public ErasureCodingPolicy getEcPolicy() {
     return StripedFileTestUtil.getDefaultECPolicy();
   }
-
-  @Rule
-  public Timeout globalTimeout = new Timeout(300000);
 
   @BeforeEach
   public void setUp() throws IOException {

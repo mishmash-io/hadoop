@@ -44,6 +44,7 @@ import static org.mockito.Mockito.verify;
 
 import java.util.List;
 import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.TimeUnit;
 
 import org.apache.hadoop.hdfs.HdfsConfiguration;
 import org.apache.hadoop.hdfs.MiniDFSCluster;
@@ -58,12 +59,10 @@ import org.apache.hadoop.hdfs.server.protocol.SlowPeerReports;
 import org.apache.hadoop.hdfs.server.protocol.StorageReport;
 import org.apache.hadoop.test.GenericTestUtils;
 
-import org.junit.Rule;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.junit.rules.Timeout;
-
+import org.junit.jupiter.api.Timeout;
 import org.mockito.invocation.InvocationOnMock;
 import org.mockito.stubbing.Answer;
 
@@ -76,6 +75,7 @@ import java.util.function.Supplier;
 /**
  * Test suite covering lifeline protocol handling in the DataNode.
  */
+@Timeout(value=60000, unit=TimeUnit.MILLISECONDS)
 public class TestDataNodeLifeline {
 
   private static final Logger LOG = LoggerFactory.getLogger(
@@ -84,9 +84,6 @@ public class TestDataNodeLifeline {
   static {
     GenericTestUtils.setLogLevel(DataNode.LOG, Level.TRACE);
   }
-
-  @Rule
-  public Timeout timeout = new Timeout(60000);
 
   private MiniDFSCluster cluster;
   private HdfsConfiguration conf;

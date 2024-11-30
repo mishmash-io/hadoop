@@ -27,17 +27,18 @@ import org.apache.hadoop.hdfs.protocol.LocatedBlocks;
 import org.apache.hadoop.hdfs.server.namenode.NameNode;
 import org.apache.hadoop.hdfs.server.namenode.NameNodeAdapter;
 import org.apache.hadoop.util.Lists;
-import org.junit.Rule;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.junit.rules.Timeout;
+import org.junit.jupiter.api.Timeout;
 
 import java.io.IOException;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 
 import static org.junit.jupiter.api.Assertions.*;
 
+@Timeout(value=300000, unit=TimeUnit.MILLISECONDS)
 public class TestSafeModeWithStripedFile {
 
   private ErasureCodingPolicy ecPolicy;
@@ -49,9 +50,6 @@ public class TestSafeModeWithStripedFile {
 
   private MiniDFSCluster cluster;
   private Configuration conf;
-
-  @Rule
-  public Timeout globalTimeout = new Timeout(300000);
 
   public ErasureCodingPolicy getEcPolicy() {
     return StripedFileTestUtil.getDefaultECPolicy();

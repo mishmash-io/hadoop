@@ -20,6 +20,7 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.Timeout;
 import org.junit.jupiter.api.io.TempDir;
 
 import org.slf4j.Logger;
@@ -45,8 +46,6 @@ import org.apache.hadoop.io.erasurecode.ErasureCoderOptions;
 import org.apache.hadoop.io.erasurecode.rawcoder.NativeRSRawErasureCoderFactory;
 import org.apache.hadoop.io.erasurecode.rawcoder.RawErasureDecoder;
 import org.apache.hadoop.test.GenericTestUtils;
-import org.junit.Rule;
-import org.junit.rules.Timeout;
 
 import java.io.File;
 import java.io.IOException;
@@ -55,6 +54,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 
 import static org.apache.hadoop.fs.CommonConfigurationKeysPublic.IO_FILE_BUFFER_SIZE_DEFAULT;
 import static org.apache.hadoop.fs.CommonConfigurationKeysPublic.IO_FILE_BUFFER_SIZE_KEY;
@@ -63,6 +63,7 @@ import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.spy;
 
+@Timeout(value=300000, unit=TimeUnit.MILLISECONDS)
 public class TestDFSStripedInputStream {
 
   public static final Logger LOG =
@@ -80,9 +81,6 @@ public class TestDFSStripedInputStream {
   private final int stripesPerBlock = 2;
   private int blockSize;
   private int blockGroupSize;
-
-  @Rule
-  public Timeout globalTimeout = new Timeout(300000);
 
   @TempDir
   public File baseDir;

@@ -25,16 +25,16 @@ import org.apache.hadoop.hdfs.protocol.ErasureCodingPolicyState;
 import org.apache.hadoop.hdfs.protocol.SystemErasureCodingPolicies;
 import org.apache.hadoop.hdfs.protocol.ErasureCodingPolicy;
 import org.apache.hadoop.test.GenericTestUtils;
-import org.junit.Rule;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
-import org.junit.rules.Timeout;
+import org.junit.jupiter.api.Timeout;
 
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.concurrent.TimeUnit;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -42,10 +42,8 @@ import static org.junit.jupiter.api.Assertions.*;
  * Test that ErasureCodingPolicyManager correctly parses the set of enabled
  * erasure coding policies from configuration and exposes this information.
  */
+@Timeout(value=60000, unit=TimeUnit.MILLISECONDS)
 public class TestEnabledECPolicies {
-
-  @Rule
-  public Timeout testTimeout = new Timeout(60000);
 
   private void expectInvalidPolicy(String value) throws IOException {
     HdfsConfiguration conf = new HdfsConfiguration();

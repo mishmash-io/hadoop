@@ -22,13 +22,13 @@ import org.apache.hadoop.util.Time;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.apache.hadoop.hdfs.server.datanode.BPServiceActor.Scheduler;
-import org.junit.Rule;
 import org.junit.jupiter.api.Test;
-import org.junit.rules.Timeout;
+import org.junit.jupiter.api.Timeout;
 
 import java.util.Arrays;
 import java.util.List;
 import java.util.Random;
+import java.util.concurrent.TimeUnit;
 
 import static java.lang.Math.abs;
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -42,12 +42,10 @@ import static org.mockito.Mockito.spy;
  * Verify the block report and heartbeat scheduling logic of BPServiceActor
  * using a few different values .
  */
+@Timeout(value=300000, unit=TimeUnit.MILLISECONDS)
 public class TestBpServiceActorScheduler {
   protected static final Logger LOG =
       LoggerFactory.getLogger(TestBpServiceActorScheduler.class);
-
-  @Rule
-  public Timeout timeout = new Timeout(300000);
 
   private static final long HEARTBEAT_INTERVAL_MS = 5000;      // 5 seconds
   private static final long LIFELINE_INTERVAL_MS = 3 * HEARTBEAT_INTERVAL_MS;

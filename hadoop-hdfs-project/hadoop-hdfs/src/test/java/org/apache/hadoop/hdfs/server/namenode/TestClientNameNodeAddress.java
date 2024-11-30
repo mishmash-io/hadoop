@@ -20,9 +20,8 @@ package org.apache.hadoop.hdfs.server.namenode;
 
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hdfs.HdfsConfiguration;
-import org.junit.Rule;
 import org.junit.jupiter.api.Test;
-import org.junit.rules.Timeout;
+import org.junit.jupiter.api.Timeout;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -32,18 +31,18 @@ import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.jupiter.api.Assertions.assertNull;
 
+import java.util.concurrent.TimeUnit;
+
 
 /**
  * Test that {@link NameNodeUtils#getClientNamenodeAddress}  correctly
  * computes the client address for WebHDFS redirects for different
  * combinations of HA, federated and single NN setups.
  */
+@Timeout(value=300000, unit=TimeUnit.MILLISECONDS)
 public class TestClientNameNodeAddress {
   public static final Logger LOG = LoggerFactory.getLogger(
       TestClientNameNodeAddress.class);
-
-  @Rule
-  public Timeout globalTimeout = new Timeout(300000);
 
   @Test
   public void testSimpleConfig() {

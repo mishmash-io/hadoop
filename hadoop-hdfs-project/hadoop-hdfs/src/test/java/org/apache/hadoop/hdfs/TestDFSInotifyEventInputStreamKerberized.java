@@ -33,17 +33,17 @@ import org.apache.hadoop.security.SecurityUtil;
 import org.apache.hadoop.security.UserGroupInformation;
 import org.apache.hadoop.security.http.AuthenticationFilterInitializer;
 import org.apache.hadoop.security.ssl.KeyStoreTestUtil;
-import org.junit.Rule;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.junit.rules.Timeout;
+import org.junit.jupiter.api.Timeout;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.security.PrivilegedExceptionAction;
 import java.util.Properties;
+import java.util.concurrent.TimeUnit;
 
 import static org.apache.hadoop.fs.CommonConfigurationKeys.IPC_CLIENT_CONNECTION_IDLESCANINTERVAL_KEY;
 import static org.apache.hadoop.fs.CommonConfigurationKeys.IPC_CLIENT_CONNECT_MAX_RETRIES_ON_SASL_KEY;
@@ -69,6 +69,7 @@ import static org.junit.jupiter.api.Assertions.*;
 /**
  * Class for Kerberized test cases for {@link DFSInotifyEventInputStream}.
  */
+@Timeout(value=180000, unit=TimeUnit.MILLISECONDS)
 public class TestDFSInotifyEventInputStreamKerberized {
 
   private static final Logger LOG =
@@ -85,9 +86,6 @@ public class TestDFSInotifyEventInputStreamKerberized {
   private MiniQJMHACluster cluster;
   private File generalHDFSKeytabFile;
   private File nnKeytabFile;
-
-  @Rule
-  public Timeout timeout = new Timeout(180000);
 
   @Test
   public void testWithKerberizedCluster() throws Exception {
