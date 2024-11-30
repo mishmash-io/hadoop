@@ -155,6 +155,18 @@ https://maven.apache.org/xsd/maven-4.0.0.xsd">
       <scope>compile</scope>
     </dependency>
     <dependency>
+      <groupId>jakarta.xml.bind</groupId>
+      <artifactId>jakarta.xml.bind-api</artifactId>
+      <version>4.0.0</version>
+      <scope>compile</scope>
+    </dependency>
+    <dependency>
+      <groupId>com.sun.xml.bind</groupId>
+      <artifactId>jaxb-impl</artifactId>
+      <version>4.0.5</version>
+      <scope>runtime</scope>
+    </dependency>    
+    <dependency>
       <groupId>com.google.code.findbugs</groupId>
       <artifactId>findbugs</artifactId>
       <version>3.0.1</version>
