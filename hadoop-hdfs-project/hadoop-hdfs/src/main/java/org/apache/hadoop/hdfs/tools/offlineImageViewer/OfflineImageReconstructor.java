@@ -491,7 +491,7 @@ class OfflineImageReconstructor {
       NameSystemSection s = b.build();
       if (LOG.isDebugEnabled()) {
         LOG.debug(SectionName.NS_INFO.name() + " writing header: {" +
-            TextFormat.printToString(s) + "}");
+            TextFormat.printer().printToString(s) + "}");
       }
       s.writeDelimitedTo(out);
       recordSectionLength(SectionName.NS_INFO.name());
@@ -1725,7 +1725,7 @@ class OfflineImageReconstructor {
         setNumEntry(stringTable.size()).build();
     if (LOG.isDebugEnabled()) {
       LOG.debug(SectionName.STRING_TABLE.name() + " writing header: {" +
-            TextFormat.printToString(sectionHeader) + "}");
+            TextFormat.printer().printToString(sectionHeader) + "}");
     }
     sectionHeader.writeDelimitedTo(out);
 
@@ -1739,7 +1739,7 @@ class OfflineImageReconstructor {
           build();
       if (LOG.isTraceEnabled()) {
         LOG.trace("Writing string table entry: {" +
-            TextFormat.printToString(stEntry) + "}");
+            TextFormat.printer().printToString(stEntry) + "}");
       }
       stEntry.writeDelimitedTo(out);
     }
@@ -1805,7 +1805,7 @@ class OfflineImageReconstructor {
     FileSummary fileSummary = fileSummaryBld.build();
     if (LOG.isDebugEnabled()) {
       LOG.debug("Writing FileSummary: {" +
-          TextFormat.printToString(fileSummary) + "}");
+          TextFormat.printer().printToString(fileSummary) + "}");
     }
     // Even though the last 4 bytes of the file gives the FileSummary length,
     // we still write a varint first that also contains the length.
