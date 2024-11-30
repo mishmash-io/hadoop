@@ -4892,7 +4892,7 @@ public class FSNamesystem implements Namesystem, FSNamesystemMBean,
     Map<String, Object> info = new HashMap<String, Object>();
     info.put("SnapshottableDirectories", this.getNumSnapshottableDirs());
     info.put("Snapshots", this.getNumSnapshots());
-    return JSON.toString(info);
+    return new JSON().toJSON(info);
   }
 
   @Override // FSNamesystemMBean
@@ -6695,7 +6695,7 @@ public class FSNamesystem implements Namesystem, FSNamesystemMBean,
           Util.getBlockPoolUsedPercentStdDev(storageReports));
       info.put(node.getXferAddrWithHostname(), innerinfo.build());
     }
-    return JSON.toString(info);
+    return new JSON().toJSON(info);
   }
 
   /**
@@ -6718,7 +6718,7 @@ public class FSNamesystem implements Namesystem, FSNamesystemMBean,
           .build();
       info.put(node.getXferAddrWithHostname(), innerinfo);
     }
-    return JSON.toString(info);
+    return new JSON().toJSON(info);
   }
 
   /**
@@ -6748,7 +6748,7 @@ public class FSNamesystem implements Namesystem, FSNamesystemMBean,
           .build();
       info.put(node.getXferAddrWithHostname(), innerinfo);
     }
-    return JSON.toString(info);
+    return new JSON().toJSON(info);
   }
 
   /**
@@ -6776,7 +6776,7 @@ public class FSNamesystem implements Namesystem, FSNamesystemMBean,
           .build();
       nodesMap.put(node.getXferAddrWithHostname(), attrMap);
     }
-    return JSON.toString(nodesMap);
+    return new JSON().toJSON(nodesMap);
   }
 
   private long getLastContact(DatanodeDescriptor alivenode) {
@@ -6822,7 +6822,7 @@ public class FSNamesystem implements Namesystem, FSNamesystemMBean,
     }
     statusMap.put("failed", failedDirs);
     
-    return JSON.toString(statusMap);
+    return new JSON().toJSON(statusMap);
   }
 
   @Override // NameNodeMXBean
@@ -6870,7 +6870,7 @@ public class FSNamesystem implements Namesystem, FSNamesystemMBean,
     innerInfo.put("stdDev", StringUtils.format("%.2f%%", dev));
     info.put("nodeUsage", innerInfo);
 
-    return JSON.toString(info);
+    return new JSON().toJSON(info);
   }
 
   @Override  // NameNodeMXBean
@@ -6904,7 +6904,7 @@ public class FSNamesystem implements Namesystem, FSNamesystemMBean,
         jasList.add(jasMap);
       }
     }
-    return JSON.toString(jasList);
+    return new JSON().toJSON(jasList);
   }
 
   @Override // NameNodeMxBean
@@ -6914,7 +6914,7 @@ public class FSNamesystem implements Namesystem, FSNamesystemMBean,
         Long.toString(this.getFSImage().getLastAppliedOrWrittenTxId()));
     txnIdMap.put("MostRecentCheckpointTxId",
         Long.toString(this.getFSImage().getMostRecentCheckpointTxId()));
-    return JSON.toString(txnIdMap);
+    return new JSON().toJSON(txnIdMap);
   }
   
   @Override // NameNodeMXBean
@@ -6968,7 +6968,7 @@ public class FSNamesystem implements Namesystem, FSNamesystemMBean,
 
   @Override  // NameNodeMXBean
   public String getCorruptFiles() {
-    return JSON.toString(getCorruptFilesList());
+    return new JSON().toJSON(getCorruptFilesList());
   }
 
   @Override // NameNodeMXBean
@@ -9025,7 +9025,7 @@ public class FSNamesystem implements Namesystem, FSNamesystemMBean,
     Map<String, String> resultMap = new HashMap<String, String>();
     resultMap.put("isSupported", Boolean.toString(result.isSupported()));
     resultMap.put("resultMessage", result.getResultMessage());
-    return JSON.toString(resultMap);
+    return new JSON().toJSON(resultMap);
   }
 
   private ECTopologyVerifierResult getEcTopologyVerifierResultForEnabledPolicies() {

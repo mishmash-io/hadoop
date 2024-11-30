@@ -3732,7 +3732,7 @@ public class DataNode extends ReconfigurableBase
         }
       }
     }
-    return JSON.toString(info);
+    return new JSON().toJSON(info);
   }
 
  /**
@@ -3750,7 +3750,7 @@ public class DataNode extends ReconfigurableBase
    */
   @Override // DataNodeMXBean
   public String getBPServiceActorInfo() {
-    return JSON.toString(getBPServiceActorInfoMap());
+    return new JSON().toJSON(getBPServiceActorInfoMap());
   }
 
   @VisibleForTesting
@@ -3777,7 +3777,7 @@ public class DataNode extends ReconfigurableBase
       LOG.debug("Storage not yet initialized.");
       return "";
     }
-    return JSON.toString(data.getVolumeInfoMap());
+    return new JSON().toJSON(data.getVolumeInfoMap());
   }
   
   @Override // DataNodeMXBean
@@ -4307,7 +4307,7 @@ public class DataNode extends ReconfigurableBase
       return null;
     }
     Set<String> slowDisks = diskMetrics.getDiskOutliersStats().keySet();
-    return JSON.toString(slowDisks);
+    return new JSON().toJSON(slowDisks);
   }
 
 

@@ -703,7 +703,7 @@ public class ImageServlet extends HttpServlet {
   private void sendError(HttpServletResponse response, int code, String message)
       throws IOException {
     if (response instanceof Response) {
-      ((Response)response).setStatusWithReason(code, message);
+      ((Response)response).setStatus(code);
     }
 
     response.sendError(code, message);
