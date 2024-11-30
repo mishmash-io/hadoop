@@ -56,7 +56,7 @@ import org.apache.hadoop.security.UserGroupInformation;
 import org.apache.hadoop.security.authentication.client.AuthenticationException;
 import org.apache.hadoop.util.Lists;
 import org.apache.hadoop.util.Time;
-import org.apache.http.client.utils.URIBuilder;
+import org.apache.hc.core5.net.URIBuilder;
 
 import org.apache.hadoop.classification.VisibleForTesting;
 import org.eclipse.jetty.io.EofException;
