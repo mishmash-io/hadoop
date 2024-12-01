@@ -21,11 +21,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.fail;
 
-import java.io.ByteArrayOutputStream;
-import java.io.FilterOutputStream;
 import java.io.IOException;
-import java.io.OutputStream;
-import java.io.PrintStream;
 import java.net.URISyntaxException;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
@@ -35,6 +31,7 @@ import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.crypto.key.kms.server.KMS.KMSOp;
 import org.apache.hadoop.security.UserGroupInformation;
 import org.apache.hadoop.test.GenericTestUtils;
+import org.apache.hadoop.test.LogVerificationAppender;
 import org.apache.logging.log4j.core.LoggerContext;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.AfterEach;
@@ -46,41 +43,25 @@ import org.junit.jupiter.api.Timeout;
 @Timeout(value=180000, unit=TimeUnit.MILLISECONDS)
 public class TestKMSAudit {
 
-  private static PrintStream originalOut;
-  private static ByteArrayOutputStream memOut;
-  private static FilterOut filterOut;
-  private static PrintStream capturedOut;
+  private static LogVerificationAppender appender;
   
   private KMSAudit kmsAudit;
   private UserGroupInformation luser =
       UserGroupInformation.createUserForTesting("luser@REALM", new String[0]);
 
-  private static class FilterOut extends FilterOutputStream {
-    public FilterOut(OutputStream out) {
-      super(out);
-    }
-
-    public void setOutputStream(OutputStream out) {
-      this.out = out;
-    }
-  }
-
   @BeforeAll
   public static void setUpAll() throws URISyntaxException {
-    originalOut = System.err;
-    memOut = new ByteArrayOutputStream();
-    filterOut = new FilterOut(memOut);
-    capturedOut = new PrintStream(filterOut);
-    System.setErr(capturedOut);
     LoggerContext ctx = LoggerContext.getContext(false);
     ctx.setConfigLocation(TestKMSAudit.class.getClassLoader()
         .getResource("log4j2-kmsaudit.properties").toURI());
+    appender = LogVerificationAppender.addToLogger(null, "INFO");
   }
 
   @BeforeEach
   public void setUp() throws IOException {
     Configuration conf = new Configuration();
     this.kmsAudit = new KMSAudit(conf);
+    appender.clearLog();
   }
 
   @AfterEach
@@ -90,15 +71,13 @@ public class TestKMSAudit {
 
   @AfterAll
   public static void cleanUpAll() {
-    System.setErr(capturedOut);
+    appender.clearLog();
   }
 
   private String getAndResetLogOutput() {
-    capturedOut.flush();
-    String logOutput = new String(memOut.toByteArray());
-    memOut = new ByteArrayOutputStream();
-    filterOut.setOutputStream(memOut);
-    return logOutput;
+    String log = appender.getAllAsText();
+    appender.clearLog();
+    return log;
   }
 
   @Test
