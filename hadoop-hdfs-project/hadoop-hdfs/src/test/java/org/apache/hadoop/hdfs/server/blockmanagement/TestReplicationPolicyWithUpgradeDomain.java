@@ -38,17 +38,12 @@ import org.apache.hadoop.hdfs.protocol.ExtendedBlock;
 import org.apache.hadoop.hdfs.protocol.LocatedBlock;
 import org.apache.hadoop.hdfs.server.common.HdfsServerConstants;
 import org.apache.hadoop.net.Node;
-
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 
 public class TestReplicationPolicyWithUpgradeDomain
     extends BaseReplicationPolicyTest {
-  public TestReplicationPolicyWithUpgradeDomain() {
-    this.blockPlacementPolicy =
-        BlockPlacementPolicyWithUpgradeDomain.class.getName();
-  }
-
   @Override
   DatanodeDescriptor[] getDatanodeDescriptors(Configuration conf) {
     final String[] racks = {
@@ -70,6 +65,11 @@ public class TestReplicationPolicyWithUpgradeDomain
       dataNodes[i].setUpgradeDomain(upgradeDomain);
     }
     return dataNodes;
+  }
+
+  @BeforeEach
+  public void setup() throws Exception {
+    setupCluster(BlockPlacementPolicyWithUpgradeDomain.class.getName());
   }
 
 

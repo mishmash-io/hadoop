@@ -144,8 +144,8 @@ public class TestStartSecureDataNode {
    */
   @Test
   public void testWebServerAddrBindException() {
+    ServerSocket ss = new ServerSocket();
     Throwable exception = assertThrows(BindException.class, () -> {
-      ServerSocket ss = new ServerSocket();
       try {
         ss.bind(new InetSocketAddress("localhost", 0));
         thrown.expect(BindException.class);

@@ -39,10 +39,6 @@ import static org.mockito.Mockito.spy;
 public class TestBlockPlacementPolicyDebugLoggingBuilder extends
     BaseReplicationPolicyTest {
 
-  public TestBlockPlacementPolicyDebugLoggingBuilder() {
-    this.blockPlacementPolicy = BlockPlacementPolicyDefault.class.getName();
-  }
-
   @Override
   DatanodeDescriptor[] getDatanodeDescriptors(Configuration conf) {
     final String[] racks = {
@@ -56,6 +52,7 @@ public class TestBlockPlacementPolicyDebugLoggingBuilder extends
 
   @Test
   public void testChooseRandomDynamicallyChangeLogger() throws Exception {
+    setupCluster(BlockPlacementPolicyDefault.class.getName());
     BlockPlacementPolicyDefault repl =
         spy((BlockPlacementPolicyDefault) replicator);
 

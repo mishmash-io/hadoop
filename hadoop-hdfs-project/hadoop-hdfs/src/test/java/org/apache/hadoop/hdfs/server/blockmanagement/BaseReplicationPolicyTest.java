@@ -37,8 +37,6 @@ import org.apache.hadoop.test.GenericTestUtils;
 import org.apache.hadoop.test.PathUtils;
 
 import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.BeforeEach;
-
 import org.slf4j.event.Level;
 
 abstract public class BaseReplicationPolicyTest {
@@ -55,7 +53,6 @@ abstract public class BaseReplicationPolicyTest {
   private BlockPlacementPolicy striptedPolicy;
   protected final String filename = "/dummyfile.txt";
   protected DatanodeStorageInfo[] storages;
-  protected String blockPlacementPolicy;
   protected NamenodeProtocols nameNodeRpc = null;
 
   void updateHeartbeatWithUsage(DatanodeDescriptor dn,
@@ -71,8 +68,7 @@ abstract public class BaseReplicationPolicyTest {
 
   abstract DatanodeDescriptor[] getDatanodeDescriptors(Configuration conf);
 
-  @BeforeEach
-  public void setupCluster() throws Exception {
+  public void setupCluster(final String blockPlacementPolicy) throws Exception {
     Configuration conf = new HdfsConfiguration();
     dataNodes = getDatanodeDescriptors(conf);
 

@@ -33,10 +33,6 @@ import org.apache.hadoop.fs.contract.AbstractFSContract;
 public class TestHDFSContractVectoredRead
     extends AbstractContractVectoredReadTest {
 
-  public TestHDFSContractVectoredRead(final String bufferType) {
-    super(bufferType);
-  }
-
   @BeforeAll
   public static void createCluster() throws IOException {
     HDFSContract.createCluster();

@@ -154,6 +154,8 @@ public class TestBlockReaderFactory {
   @Test
   @Timeout(value = 60000, unit = TimeUnit.MILLISECONDS)
   public void testGetPathInfoWithUnresolvedHost() {
+    final InetSocketAddress targetAddr =
+      InetSocketAddress.createUnresolved("random", 32456);
     Throwable exception = assertThrows(IOException.class, () -> {
       TemporarySocketDirectory sockDir = new TemporarySocketDirectory();
 
@@ -167,8 +169,6 @@ public class TestBlockReaderFactory {
           new DfsClientConf.ShortCircuitConf(conf);
       DomainSocketFactory domainSocketFactory =
           new DomainSocketFactory(shortCircuitConf);
-      InetSocketAddress targetAddr =
-          InetSocketAddress.createUnresolved("random", 32456);
       domainSocketFactory.getPathInfo(targetAddr, shortCircuitConf);
       sockDir.close();
     });

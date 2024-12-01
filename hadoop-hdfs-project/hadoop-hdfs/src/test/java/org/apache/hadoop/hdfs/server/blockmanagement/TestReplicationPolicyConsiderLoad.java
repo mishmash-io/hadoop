@@ -20,7 +20,6 @@ package org.apache.hadoop.hdfs.server.blockmanagement;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;
@@ -37,10 +36,6 @@ import org.junit.jupiter.params.provider.MethodSource;
 
 public class TestReplicationPolicyConsiderLoad
     extends BaseReplicationPolicyTest {
-
-  public void initTestReplicationPolicyConsiderLoad(String blockPlacementPolicy) {
-    this.blockPlacementPolicy = blockPlacementPolicy;
-  }
 
   public static Iterable<Object[]> data() {
     return Arrays.asList(new Object[][] {
@@ -71,8 +66,8 @@ public class TestReplicationPolicyConsiderLoad
    */
   @MethodSource("data")
   @ParameterizedTest
-  public void testChooseTargetWithDecomNodes(String blockPlacementPolicy) throws IOException {
-    initTestReplicationPolicyConsiderLoad(blockPlacementPolicy);
+  public void testChooseTargetWithDecomNodes(String blockPlacementPolicy) throws Exception {
+    setupCluster(blockPlacementPolicy);
     namenode.getNamesystem().writeLock();
     try {
       dnManager.getHeartbeatManager().updateHeartbeat(dataNodes[3],
@@ -132,8 +127,8 @@ public class TestReplicationPolicyConsiderLoad
 
   @MethodSource("data")
   @ParameterizedTest
-  public void testConsiderLoadFactor(String blockPlacementPolicy) throws IOException {
-    initTestReplicationPolicyConsiderLoad(blockPlacementPolicy);
+  public void testConsiderLoadFactor(String blockPlacementPolicy) throws Exception {
+    setupCluster(blockPlacementPolicy);
     namenode.getNamesystem().writeLock();
     try {
       dnManager.getHeartbeatManager().updateHeartbeat(dataNodes[0],

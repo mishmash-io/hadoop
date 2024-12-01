@@ -18,7 +18,6 @@
 package org.apache.hadoop.fs.contract.hdfs;
 
 import org.apache.hadoop.conf.Configuration;
-import org.apache.hadoop.fs.Options;
 import org.apache.hadoop.fs.contract.AbstractContractPathHandleTest;
 import org.apache.hadoop.fs.contract.AbstractFSContract;
 
@@ -33,11 +32,6 @@ import java.io.IOException;
  */
 public class TestHDFSContractPathHandle
     extends AbstractContractPathHandleTest {
-
-  public TestHDFSContractPathHandle(String testname, Options.HandleOpt[] opts,
-      boolean serialized) {
-    super(testname, opts, serialized);
-  }
 
   @BeforeAll
   public static void createCluster() throws IOException {

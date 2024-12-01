@@ -39,10 +39,6 @@ import static org.junit.jupiter.api.Assertions.*;
 public class TestReplicationPolicyExcludeSlowNodes
     extends BaseReplicationPolicyTest {
 
-  public void initTestReplicationPolicyExcludeSlowNodes(String blockPlacementPolicy) {
-    this.blockPlacementPolicy = blockPlacementPolicy;
-  }
-
   public static Iterable<Object[]> data() {
     return Arrays.asList(new Object[][] {
         {BlockPlacementPolicyDefault.class.getName()},
@@ -81,7 +77,7 @@ public class TestReplicationPolicyExcludeSlowNodes
   @MethodSource("data")
   @ParameterizedTest
   public void testChooseTargetExcludeSlowNodes(String blockPlacementPolicy) throws Exception {
-    initTestReplicationPolicyExcludeSlowNodes(blockPlacementPolicy);
+    setupCluster(blockPlacementPolicy);
     namenode.getNamesystem().writeLock();
     try {
       // add nodes
@@ -140,7 +136,7 @@ public class TestReplicationPolicyExcludeSlowNodes
   @MethodSource("data")
   @ParameterizedTest
   public void testSlowPeerTrackerEnabledClearSlowNodes(String blockPlacementPolicy) throws Exception {
-    initTestReplicationPolicyExcludeSlowNodes(blockPlacementPolicy);
+    setupCluster(blockPlacementPolicy);
     namenode.getNamesystem().writeLock();
     try {
       // add nodes

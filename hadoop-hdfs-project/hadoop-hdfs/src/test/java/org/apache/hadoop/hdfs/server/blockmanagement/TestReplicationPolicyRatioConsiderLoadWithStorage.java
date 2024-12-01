@@ -39,10 +39,6 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 public class TestReplicationPolicyRatioConsiderLoadWithStorage
     extends BaseReplicationPolicyTest {
 
-  public TestReplicationPolicyRatioConsiderLoadWithStorage() {
-    this.blockPlacementPolicy = BlockPlacementPolicyDefault.class.getName();
-  }
-
   @Override
   DatanodeDescriptor[] getDatanodeDescriptors(Configuration conf) {
     conf.setBoolean(DFSConfigKeys.DFS_NAMENODE_REDUNDANCY_CONSIDERLOAD_KEY,
@@ -89,9 +85,11 @@ public class TestReplicationPolicyRatioConsiderLoadWithStorage
   /**
    * Tests that chooseTarget with considerLoad and consider volume load set to
    * true and correctly calculates load.
+ * @throws Exception 
    */
   @Test
-  public void testChooseTargetWithRatioConsiderLoad() {
+  public void testChooseTargetWithRatioConsiderLoad() throws Exception {
+    setupCluster(BlockPlacementPolicyDefault.class.getName());
     namenode.getNamesystem().writeLock();
     try {
       // After heartbeat has been processed, the total load should be 200.

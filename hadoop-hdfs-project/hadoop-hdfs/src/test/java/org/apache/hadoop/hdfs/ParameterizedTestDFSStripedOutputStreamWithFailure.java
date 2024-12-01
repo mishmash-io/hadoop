@@ -40,8 +40,6 @@ public class ParameterizedTestDFSStripedOutputStreamWithFailure extends
   public static final Logger LOG = LoggerFactory.getLogger(
       ParameterizedTestDFSStripedOutputStreamWithFailure.class);
 
-  private int base;
-
   public static Collection<Object[]> data() {
     List<Object[]> parameters = new ArrayList<>();
     for (int i = 0; i <= 10; i++) {
@@ -50,15 +48,10 @@ public class ParameterizedTestDFSStripedOutputStreamWithFailure extends
     return parameters;
   }
 
-  public void initParameterizedTestDFSStripedOutputStreamWithFailure(int base) {
-    this.base = base;
-  }
-
   @MethodSource("data")
   @ParameterizedTest
   @Timeout(value = 240000, unit = TimeUnit.MILLISECONDS)
   public void runTestWithSingleFailure(int base) {
-    initParameterizedTestDFSStripedOutputStreamWithFailure(base);
     assumeTrue(base >= 0);
     if (base > lengths.size()) {
       base = base % lengths.size();
