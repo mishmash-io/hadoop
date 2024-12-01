@@ -23,8 +23,6 @@ import static org.junit.jupiter.api.Assertions.*;
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Collections;
-import java.util.List;
 import java.util.regex.Pattern;
 
 import org.apache.hadoop.conf.Configuration;
@@ -42,10 +40,8 @@ import org.apache.hadoop.hdfs.web.WebHdfsFileSystem;
 import org.apache.hadoop.security.AccessControlException;
 import org.apache.hadoop.security.UserGroupInformation;
 import org.apache.hadoop.test.GenericTestUtils.LogCapturer;
-import org.apache.log4j.Appender;
-import org.apache.log4j.AsyncAppender;
-import org.apache.log4j.Logger;
-
+import org.apache.logging.log4j.core.LoggerContext;
+import org.apache.logging.log4j.core.async.AsyncLogger;
 import org.junit.jupiter.api.*;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.MethodSource;
@@ -116,11 +112,10 @@ public class TestAuditLogs {
     util.createFiles(fs, fileName);
 
     // make sure the appender is what it's supposed to be
-    Logger logger = org.apache.log4j.Logger.getLogger(
-        "org.apache.hadoop.hdfs.server.namenode.FSNamesystem.audit");
-    @SuppressWarnings("unchecked")
-    List<Appender> appenders = Collections.list(logger.getAllAppenders());
-    assertTrue(appenders.get(0) instanceof AsyncAppender);
+    assertTrue(LoggerContext
+            .getContext(true)
+            .getLogger("org.apache.hadoop.hdfs.server.namenode.FSNamesystem.audit")
+        instanceof AsyncLogger);
     
     fnames = util.getFileNames(fileName);
     util.waitReplication(fs, fileName, (short)3);

@@ -52,7 +52,6 @@ import org.apache.hadoop.hdfs.DFSConfigKeys;
 import org.apache.hadoop.hdfs.DFSTestUtil;
 import org.apache.hadoop.hdfs.DistributedFileSystem;
 import org.apache.hadoop.hdfs.HdfsConfiguration;
-import org.apache.hadoop.hdfs.LogVerificationAppender;
 import org.apache.hadoop.hdfs.protocol.CacheDirectiveEntry;
 import org.apache.hadoop.hdfs.MiniDFSCluster;
 import org.apache.hadoop.hdfs.protocol.Block;
@@ -82,8 +81,8 @@ import org.apache.hadoop.io.nativeio.NativeIO.POSIX.CacheManipulator;
 import org.apache.hadoop.io.nativeio.NativeIO.POSIX.NoMlockCacheManipulator;
 import org.apache.hadoop.metrics2.MetricsRecordBuilder;
 import org.apache.hadoop.test.GenericTestUtils;
+import org.apache.hadoop.test.LogVerificationAppender;
 import org.apache.hadoop.test.MetricsAsserts;
-import org.apache.log4j.Logger;
 import org.junit.jupiter.api.*;
 
 import org.slf4j.event.Level;
@@ -393,9 +392,8 @@ public class TestFsDatasetCache {
     }
 
     // nth file should hit a capacity exception
-    final LogVerificationAppender appender = new LogVerificationAppender();
-    final Logger logger = Logger.getRootLogger();
-    logger.addAppender(appender);
+    final LogVerificationAppender appender = LogVerificationAppender.addToLogger(null, "INFO");
+    appender.clearLog();
     setHeartbeatResponse(cacheBlocks(fileLocs[numFiles-1]));
 
     GenericTestUtils.waitFor(new Supplier<Boolean>() {

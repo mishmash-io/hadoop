@@ -46,8 +46,8 @@ import org.apache.hadoop.hdfs.server.namenode.FSImageFormat;
 import org.apache.hadoop.hdfs.server.namenode.FSImageTestUtil;
 import org.apache.hadoop.hdfs.server.namenode.IllegalReservedPathException;
 import org.apache.hadoop.test.GenericTestUtils;
+import org.apache.hadoop.test.LogVerificationAppender;
 import org.apache.hadoop.util.StringUtils;
-import org.apache.log4j.Logger;
 
 import org.junit.jupiter.api.Test;
 
@@ -318,9 +318,8 @@ public class TestDFSUpgradeFromImage {
         "imageMD5Digest", "22222222222222222222222222222222");
     
     // Attach our own log appender so we can verify output
-    final LogVerificationAppender appender = new LogVerificationAppender();
-    final Logger logger = Logger.getRootLogger();
-    logger.addAppender(appender);
+    final LogVerificationAppender appender = LogVerificationAppender.addToLogger(null, "INFO");
+    appender.clearLog();
 
     // Upgrade should now fail
     try {

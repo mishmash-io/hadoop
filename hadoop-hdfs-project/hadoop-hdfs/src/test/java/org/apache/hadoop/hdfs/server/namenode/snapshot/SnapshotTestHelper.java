@@ -44,12 +44,8 @@ import org.apache.hadoop.ipc.ProtobufRpcEngine2.Server;
 import org.apache.hadoop.metrics2.impl.MetricsSystemImpl;
 import org.apache.hadoop.security.UserGroupInformation;
 import org.apache.hadoop.test.GenericTestUtils;
+import org.apache.hadoop.test.LogVerificationAppender;
 import org.apache.hadoop.util.GSet;
-import org.apache.log4j.Appender;
-import org.apache.log4j.Layout;
-import org.apache.log4j.LogManager;
-import org.apache.log4j.PatternLayout;
-import org.apache.log4j.WriterAppender;
 import org.junit.jupiter.api.Assertions;
 
 import org.slf4j.Logger;
@@ -243,8 +239,9 @@ public class SnapshotTestHelper {
     }
 
     Path moveToTrash(String path, boolean printFs) throws Exception {
-      final Log4jRecorder recorder = Log4jRecorder.record(
-          LoggerFactory.getLogger(TrashPolicyDefault.class));
+      final LogVerificationAppender appender = LogVerificationAppender.addToLogger(
+          TrashPolicyDefault.class.getName(), "INFO");
+      appender.clearLog();
       runShell("-rm", "-r", path);
       final String label = "moveToTrash-" + trashMoveCount.getAndIncrement() + " " + path;
       if (printFs) {
@@ -252,7 +249,7 @@ public class SnapshotTestHelper {
       } else {
         LOG.info(label);
       }
-      final String recorded = recorder.getRecorded();
+      final String recorded = appender.getAllAsText();
       LOG.info("Recorded: {}", recorded);
 
       final String pattern = " to trash at: ";
@@ -262,49 +259,6 @@ public class SnapshotTestHelper {
         return new Path(sub.trim());
       }
       return null;
-    }
-  }
-
-  /** Records log messages from a Log4j logger. */
-  public static final class Log4jRecorder {
-    static Log4jRecorder record(org.slf4j.Logger logger) {
-      return new Log4jRecorder(toLog4j(logger), getLayout());
-    }
-
-    static org.apache.log4j.Logger toLog4j(org.slf4j.Logger logger) {
-      return LogManager.getLogger(logger.getName());
-    }
-
-    static Layout getLayout() {
-      final org.apache.log4j.Logger root
-          = org.apache.log4j.Logger.getRootLogger();
-      Appender a = root.getAppender("stdout");
-      if (a == null) {
-        a = root.getAppender("console");
-      }
-      return a == null? new PatternLayout() : a.getLayout();
-    }
-
-    private final StringWriter stringWriter = new StringWriter();
-    private final WriterAppender appender;
-    private final org.apache.log4j.Logger logger;
-
-    private Log4jRecorder(org.apache.log4j.Logger logger, Layout layout) {
-      this.appender = new WriterAppender(layout, stringWriter);
-      this.logger = logger;
-      this.logger.addAppender(this.appender);
-    }
-
-    public String getRecorded() {
-      return stringWriter.toString();
-    }
-
-    public void stop() {
-      logger.removeAppender(appender);
-    }
-
-    public void clear() {
-      stringWriter.getBuffer().setLength(0);
     }
   }
 

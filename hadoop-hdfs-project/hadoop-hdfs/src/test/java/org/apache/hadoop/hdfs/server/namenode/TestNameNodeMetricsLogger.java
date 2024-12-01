@@ -19,6 +19,8 @@
 package org.apache.hadoop.hdfs.server.namenode;
 
 import java.util.function.Supplier;
+import java.util.regex.Pattern;
+
 import org.apache.hadoop.metrics2.annotation.Metrics;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -26,15 +28,13 @@ import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hdfs.HdfsConfiguration;
 import org.apache.hadoop.metrics2.util.MBeans;
 import org.apache.hadoop.test.GenericTestUtils;
-import org.apache.log4j.Appender;
-import org.apache.log4j.AsyncAppender;
-
+import org.apache.hadoop.test.LogVerificationAppender;
+import org.apache.logging.log4j.core.LoggerContext;
+import org.apache.logging.log4j.core.async.AsyncLogger;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.Timeout;
 
 import java.io.IOException;
-import java.util.Collections;
-import java.util.List;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 
@@ -65,10 +65,8 @@ public class TestNameNodeMetricsLogger {
   @Test
   public void testMetricsLoggerIsAsync() throws IOException {
     makeNameNode(true);
-    org.apache.log4j.Logger logger = org.apache.log4j.Logger.getLogger(NameNode.METRICS_LOG_NAME);
-    @SuppressWarnings("unchecked")
-    List<Appender> appenders = Collections.list(logger.getAllAppenders());
-    assertTrue(appenders.get(0) instanceof AsyncAppender);
+    assertTrue(LoggerContext.getContext(true).getLogger(NameNode.METRICS_LOG_NAME)
+        instanceof AsyncLogger);
   }
 
   /**
@@ -82,15 +80,15 @@ public class TestNameNodeMetricsLogger {
     MBeans.register(this.getClass().getSimpleName(),
         "DummyMetrics", metricsProvider);
     makeNameNode(true);     // Log metrics early and often.
-    final PatternMatchingAppender appender =
-        (PatternMatchingAppender) org.apache.log4j.Logger.getLogger(NameNode.METRICS_LOG_NAME)
-            .getAppender("PATTERNMATCHERAPPENDER");
+    LogVerificationAppender appender = LogVerificationAppender.addToLogger(NameNode.METRICS_LOG_NAME, "INFO");
+    appender.clearLog();
+    Pattern pattern = Pattern.compile("^.*FakeMetric.*$");
 
     // Ensure that the supplied pattern was matched.
     GenericTestUtils.waitFor(new Supplier<Boolean>() {
       @Override
       public Boolean get() {
-        return appender.isMatched();
+        return appender.countLinesWithMessage(pattern) > 0;
       }
     }, 1000, 60000);
   }

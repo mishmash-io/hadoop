@@ -50,7 +50,6 @@ import org.apache.hadoop.hdfs.DFSConfigKeys;
 import org.apache.hadoop.hdfs.DFSTestUtil;
 import org.apache.hadoop.hdfs.DistributedFileSystem;
 import org.apache.hadoop.hdfs.HdfsConfiguration;
-import org.apache.hadoop.hdfs.LogVerificationAppender;
 import org.apache.hadoop.hdfs.MiniDFSCluster;
 import org.apache.hadoop.hdfs.StripedFileTestUtil;
 import org.apache.hadoop.hdfs.protocol.DatanodeInfo;
@@ -68,11 +67,11 @@ import org.apache.hadoop.hdfs.util.HostsFileWriter;
 import org.apache.hadoop.hdfs.util.MD5FileUtils;
 import org.apache.hadoop.io.MD5Hash;
 import org.apache.hadoop.test.GenericTestUtils;
+import org.apache.hadoop.test.LogVerificationAppender;
 import org.apache.hadoop.test.PathUtils;
 import org.apache.hadoop.util.ExitUtil.ExitException;
 import org.apache.hadoop.util.ExitUtil;
 import org.apache.hadoop.util.StringUtils;
-import org.apache.log4j.Logger;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -525,9 +524,8 @@ public class TestStartup {
         corruptFSImageMD5(true);
 
         // Attach our own log appender so we can verify output
-        final LogVerificationAppender appender = new LogVerificationAppender();
-        final Logger logger = Logger.getRootLogger();
-        logger.addAppender(appender);
+        final LogVerificationAppender appender = LogVerificationAppender.addToLogger(null, "INFO");
+        appender.clearLog();
 
         // Try to start a new cluster
         LOG.info("\n===========================================\n" +

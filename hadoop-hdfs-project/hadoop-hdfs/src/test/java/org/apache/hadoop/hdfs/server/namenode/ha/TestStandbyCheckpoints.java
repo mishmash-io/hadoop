@@ -38,7 +38,6 @@ import org.apache.hadoop.fs.FileUtil;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hdfs.DFSConfigKeys;
 import org.apache.hadoop.hdfs.DFSTestUtil;
-import org.apache.hadoop.hdfs.LogVerificationAppender;
 import org.apache.hadoop.hdfs.MiniDFSCluster;
 import org.apache.hadoop.hdfs.MiniDFSNNTopology;
 import org.apache.hadoop.hdfs.server.common.Util;
@@ -50,11 +49,12 @@ import org.apache.hadoop.io.compress.CompressionOutputStream;
 import org.apache.hadoop.io.compress.GzipCodec;
 import org.apache.hadoop.ipc.StandbyException;
 import org.apache.hadoop.test.GenericTestUtils;
+import org.apache.hadoop.test.LogVerificationAppender;
 import org.apache.hadoop.test.GenericTestUtils.DelayAnswer;
 import org.apache.hadoop.test.PathUtils;
 import org.apache.hadoop.util.Lists;
 import org.apache.hadoop.util.ThreadUtil;
-import org.apache.log4j.spi.LoggingEvent;
+import org.apache.logging.log4j.core.LogEvent;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -305,10 +305,8 @@ public class TestStandbyCheckpoints {
   @Timeout(value = 30000, unit = TimeUnit.MILLISECONDS)
   public void testCheckpointBeforeNameNodeInitializationIsComplete()
       throws Exception {
-    final LogVerificationAppender appender = new LogVerificationAppender();
-    final org.apache.log4j.Logger logger = org.apache.log4j.Logger
-        .getRootLogger();
-    logger.addAppender(appender);
+    final LogVerificationAppender appender = LogVerificationAppender.addToLogger(null, "INFO");
+    appender.clearLog();
 
     // Transition 2 to observer
     cluster.transitionToObserver(2);
@@ -327,10 +325,9 @@ public class TestStandbyCheckpoints {
 
     NameNodeAdapter.getAndSetFSImageInHttpServer(nn2, nnFSImage);
     cluster.transitionToStandby(2);
-    logger.removeAppender(appender);
 
-    for (LoggingEvent event : appender.getLog()) {
-      String message = event.getRenderedMessage();
+    for (LogEvent event : appender.getLog()) {
+      String message = event.getMessage().getFormattedMessage();
       if (message.contains("PutImage failed") &&
           message.contains("FSImage has not been set in the NameNode.")) {
         //Logs have the expected exception.

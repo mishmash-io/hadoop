@@ -82,17 +82,11 @@ import org.apache.hadoop.security.alias.CredentialProvider;
 import org.apache.hadoop.security.alias.CredentialProviderFactory;
 import org.apache.hadoop.security.alias.LocalJavaKeyStoreProvider;
 import org.apache.hadoop.test.GenericTestUtils;
+import org.apache.hadoop.test.LogVerificationAppender;
 
 import static org.apache.hadoop.util.PlatformName.IBM_JAVA;
 
-import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.core.LogEvent;
-import org.apache.logging.log4j.core.LoggerContext;
-import org.apache.logging.log4j.core.appender.AbstractAppender;
-import org.apache.logging.log4j.core.config.AppenderRef;
-import org.apache.logging.log4j.core.config.LoggerConfig;
-import org.apache.logging.log4j.core.config.Property;
-import org.apache.logging.log4j.core.layout.PatternLayout;
 import org.mockito.Mockito;
 
 public class TestConfiguration {
@@ -213,27 +207,6 @@ public class TestConfiguration {
     assertEquals("A", conf.get("prop"));
   }
 
-  private TestAppender installTestAppender() {
-    LoggerContext ctx = LoggerContext.getContext(false);
-    org.apache.logging.log4j.core.config.Configuration conf = ctx.getConfiguration();
-    if (conf.getAppender(TestAppender.NAME) != null) {
-      return (TestAppender) conf.getAppender(TestAppender.NAME);
-    }
-    PatternLayout layout = PatternLayout.createDefaultLayout(conf);
-    TestAppender appender = new TestAppender(layout);
-    appender.start();
-    conf.addAppender(appender);
-    AppenderRef[] refs = new AppenderRef[] {
-      AppenderRef.createAppenderRef("testConfigAppender", null, null)
-    };
-    LoggerConfig loggerConf = LoggerConfig.createLogger(false, Level.INFO,
-            Configuration.class.getName(), "true", refs, null, conf, null);
-    loggerConf.addAppender(appender, null, null);
-    conf.addLogger(Configuration.class.getName(), loggerConf);
-    ctx.updateLoggers();
-    return appender;
-  }
-  
   @Test
   public void testFinalWarnings() throws Exception {
     // Make a configuration file with a final property
@@ -255,8 +228,9 @@ public class TestConfiguration {
     InputStream in2 = new ByteArrayInputStream(bytes2);
 
     // Attach our own log appender so we can verify output
-    TestAppender appender = installTestAppender();
-    appender.log.clear();
+    LogVerificationAppender appender = LogVerificationAppender
+      .addToLogger(Configuration.class.getName(), "INFO");
+    appender.clearLog();
 
     // Add the 2 different resources - this should generate a warning
     conf.addResource(in1);
@@ -288,8 +262,9 @@ public class TestConfiguration {
     InputStream in2 = new ByteArrayInputStream(bytes);
 
     // Attach our own log appender so we can verify output
-    TestAppender appender = installTestAppender();
-    appender.log.clear();
+    LogVerificationAppender appender = LogVerificationAppender
+      .addToLogger(Configuration.class.getName(), "INFO");
+    appender.clearLog();
 
     // Add the resource twice from a stream - should not generate warnings
     conf.addResource(in1);
@@ -317,8 +292,9 @@ public class TestConfiguration {
     InputStream in1 = new ByteArrayInputStream(bytes);
 
     // Attach our own log appender so we can verify output
-    TestAppender appender = installTestAppender();
-    appender.log.clear();
+    LogVerificationAppender appender = LogVerificationAppender
+      .addToLogger(Configuration.class.getName(), "INFO");
+    appender.clearLog();
 
     // Add the resource - this should not produce a warning
     conf.addResource(in1);
@@ -345,8 +321,9 @@ public class TestConfiguration {
     InputStream in1 = new ByteArrayInputStream(bytes);
 
     // Attach our own log appender so we can verify output
-    TestAppender appender = installTestAppender();
-    appender.log.clear();
+    LogVerificationAppender appender = LogVerificationAppender
+      .addToLogger(Configuration.class.getName(), "INFO");
+    appender.clearLog();
 
     // Add the resource - this should produce a warning
     conf.addResource(in1);
@@ -361,27 +338,6 @@ public class TestConfiguration {
         renderedMessage.contains("an attempt to override final parameter: "
             + "prop;  Ignoring."),
         "did not see expected string inside message "+ renderedMessage);
-  }
-
-  /**
-   * A simple appender for white box testing.
-   */
-  private static class TestAppender extends AbstractAppender {
-    private static final String NAME = "TestConfigurationAppender";
-
-    protected TestAppender(PatternLayout layout) {
-        super(NAME, null, layout, true, Property.EMPTY_ARRAY);
-    }
-
-    private final List<LogEvent> log = new ArrayList<>();
-
-    @Override public void append(final LogEvent loggingEvent) {
-      log.add(loggingEvent);
-    }
-
-    public List<LogEvent> getLog() {
-      return new ArrayList<>(log);
-    }
   }
 
   /**

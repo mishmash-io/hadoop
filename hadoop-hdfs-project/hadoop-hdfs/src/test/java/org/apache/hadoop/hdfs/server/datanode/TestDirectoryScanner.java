@@ -23,7 +23,6 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.core.Is.is;
 import static org.junit.jupiter.api.Assertions.*;
 
-import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -73,17 +72,15 @@ import org.apache.hadoop.hdfs.server.datanode.fsdataset.impl.LazyPersistTestCase
 import org.apache.hadoop.hdfs.server.namenode.NameNode;
 import org.apache.hadoop.io.IOUtils;
 import org.apache.hadoop.test.GenericTestUtils;
+import org.apache.hadoop.test.LogVerificationAppender;
 import org.apache.hadoop.util.AutoCloseableLock;
 import org.apache.hadoop.util.Time;
-import org.apache.log4j.SimpleLayout;
-import org.apache.log4j.WriterAppender;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.Timeout;
 import org.mockito.Mockito;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.slf4j.event.Level;
 
 /**
  * Tests {@link DirectoryScanner} handling of differences between blocks on the
@@ -414,13 +411,8 @@ public class TestDirectoryScanner {
   public void testScanDirectoryStructureWarn() throws Exception {
 
     //add a logger stream to check what has printed to log
-    ByteArrayOutputStream loggerStream = new ByteArrayOutputStream();
-    org.apache.log4j.Logger rootLogger =
-        org.apache.log4j.Logger.getRootLogger();
-    GenericTestUtils.setRootLogLevel(Level.INFO);
-    WriterAppender writerAppender =
-        new WriterAppender(new SimpleLayout(), loggerStream);
-    rootLogger.addAppender(writerAppender);
+    LogVerificationAppender appender = LogVerificationAppender.addToLogger(null, "INFO");
+    appender.clearLog();
 
     Configuration conf = getConfiguration();
     cluster = new MiniDFSCluster
@@ -451,7 +443,7 @@ public class TestDirectoryScanner {
       scan(1, 1, 0, 1, 0, 0, 0);
 
       //ensure the warn log not appear and missing block log do appear
-      String logContent = new String(loggerStream.toByteArray());
+      String logContent = appender.getAllAsText();
       String missingBlockWarn = "Deleted a metadata file" +
           " for the deleted block";
       String dirStructureWarnLog = " found in invalid directory." +

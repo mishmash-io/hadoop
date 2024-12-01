@@ -80,16 +80,14 @@ import org.apache.hadoop.hdfs.util.XMLUtils.InvalidXmlException;
 import org.apache.hadoop.hdfs.util.XMLUtils.Stanza;
 import org.apache.hadoop.io.IOUtils;
 import org.apache.hadoop.test.GenericTestUtils;
+import org.apache.hadoop.test.LogVerificationAppender;
 import org.apache.hadoop.test.PathUtils;
 import org.apache.hadoop.util.ExitUtil;
 import org.apache.hadoop.util.ExitUtil.ExitException;
 import org.apache.hadoop.util.Lists;
 import org.apache.hadoop.util.StringUtils;
 import org.apache.hadoop.util.Time;
-import org.apache.log4j.AppenderSkeleton;
-import org.apache.log4j.LogManager;
-import org.apache.log4j.spi.LoggingEvent;
-
+import org.apache.logging.log4j.core.LogEvent;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.MethodSource;
 import org.mockito.Mockito;
@@ -1751,28 +1749,6 @@ public class TestEditLog {
     }
   }
 
-  class TestAppender extends AppenderSkeleton {
-    private final List<LoggingEvent> log = new ArrayList<>();
-
-    @Override
-    public boolean requiresLayout() {
-      return false;
-    }
-
-    @Override
-    protected void append(final LoggingEvent loggingEvent) {
-      log.add(loggingEvent);
-    }
-
-    @Override
-    public void close() {
-    }
-
-    public List<LoggingEvent> getLog() {
-      return new ArrayList<>(log);
-    }
-  }
-
   /**
    *
    * @throws Exception
@@ -1781,8 +1757,8 @@ public class TestEditLog {
   @ParameterizedTest
   public void testReadActivelyUpdatedLog(Boolean async) throws Exception {
     initTestEditLog(async);
-    final TestAppender appender = new TestAppender();
-    LogManager.getRootLogger().addAppender(appender);
+    final LogVerificationAppender appender = LogVerificationAppender.addToLogger(null, "INFO");
+    appender.clearLog();
     Configuration conf = new HdfsConfiguration();
     conf.setBoolean(DFSConfigKeys.DFS_NAMENODE_ACLS_ENABLED_KEY, true);
     // Set single handler thread, so all transactions hit same thread-local ops.
@@ -1832,9 +1808,9 @@ public class TestEditLog {
       events.poll();
       String pattern = "Caught exception after reading (.*) ops";
       Pattern r = Pattern.compile(pattern);
-      final List<LoggingEvent> log = appender.getLog();
-      for (LoggingEvent event : log) {
-        Matcher m = r.matcher(event.getRenderedMessage());
+      final List<LogEvent> log = appender.getLog();
+      for (LogEvent event : log) {
+        Matcher m = r.matcher(event.getMessage().getFormattedMessage());
         if (m.find()) {
           fail("Should not try to read past latest syned edit log op");
         }
@@ -1844,7 +1820,6 @@ public class TestEditLog {
       if (cluster != null) {
         cluster.shutdown();
       }
-      LogManager.getRootLogger().removeAppender(appender);
     }
   }
 

@@ -45,7 +45,6 @@ import org.apache.hadoop.hdfs.DFSConfigKeys;
 import org.apache.hadoop.hdfs.DFSTestUtil;
 import org.apache.hadoop.hdfs.DFSUtil;
 import org.apache.hadoop.hdfs.HdfsConfiguration;
-import org.apache.hadoop.hdfs.LogVerificationAppender;
 import org.apache.hadoop.hdfs.MiniDFSCluster;
 import org.apache.hadoop.hdfs.TestBlockStoragePolicy;
 import org.apache.hadoop.hdfs.protocol.Block;
@@ -64,10 +63,10 @@ import org.apache.hadoop.hdfs.server.namenode.Namesystem;
 import org.apache.hadoop.hdfs.server.namenode.TestINodeFile;
 import org.apache.hadoop.hdfs.server.protocol.DatanodeStorage;
 import org.apache.hadoop.net.Node;
+import org.apache.hadoop.test.LogVerificationAppender;
 import org.apache.hadoop.util.ReflectionUtils;
-import org.apache.log4j.Level;
-import org.apache.log4j.Logger;
-import org.apache.log4j.spi.LoggingEvent;
+import org.apache.logging.log4j.Level;
+import org.apache.logging.log4j.core.LogEvent;
 import org.junit.jupiter.api.Timeout;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.MethodSource;
@@ -518,24 +517,23 @@ public class TestReplicationPolicy extends BaseReplicationPolicyTest {
           (HdfsServerConstants.MIN_BLOCKS_FOR_WRITE-1)*BLOCK_SIZE, 0L, 0L, 0L, 0, 0);
     }
     
-    final LogVerificationAppender appender = new LogVerificationAppender();
-    final Logger logger = Logger.getRootLogger();
-    logger.addAppender(appender);
+    final LogVerificationAppender appender = LogVerificationAppender.addToLogger(null, "INFO");
+    appender.clearLog();
     
     // try to choose NUM_OF_DATANODES which is more than actually available
     // nodes.
     DatanodeStorageInfo[] targets = chooseTarget(dataNodes.length);
     assertEquals(targets.length, dataNodes.length - 2);
 
-    final List<LoggingEvent> log = appender.getLog();
+    final List<LogEvent> log = appender.getLog();
     assertNotNull(log);
     assertFalse(log.size() == 0);
-    final LoggingEvent lastLogEntry = log.get(log.size() - 1);
+    final LogEvent lastLogEntry = log.get(log.size() - 1);
     
-    assertTrue(Level.WARN.isGreaterOrEqual(lastLogEntry.getLevel()));
+    assertTrue(Level.WARN.isMoreSpecificThan(lastLogEntry.getLevel()));
     // Suppose to place replicas on each node but two data nodes are not
     // available for placing replica, so here we expect a short of 2
-    assertTrue(((String)lastLogEntry.getMessage()).contains("in need of 2"));
+    assertTrue((lastLogEntry.getMessage().getFormattedMessage()).contains("in need of 2"));
 
     resetHeartbeatForStorages();
   }
@@ -1781,9 +1779,8 @@ public class TestReplicationPolicy extends BaseReplicationPolicyTest {
   @ParameterizedTest
   public void testChosenFailureForStorageType(String blockPlacementPolicyClassName) {
     initTestReplicationPolicy(blockPlacementPolicyClassName);
-    final LogVerificationAppender appender = new LogVerificationAppender();
-    final Logger logger = Logger.getRootLogger();
-    logger.addAppender(appender);
+    final LogVerificationAppender appender = LogVerificationAppender.addToLogger(null, "INFO");
+    appender.clearLog();
 
     DatanodeStorageInfo[] targets = replicator.chooseTarget(filename, 1,
         dataNodes[0], new ArrayList<DatanodeStorageInfo>(), false, null,
@@ -1812,9 +1809,8 @@ public class TestReplicationPolicy extends BaseReplicationPolicyTest {
   @ParameterizedTest
   public void testChosenFailureForNotEnoughStorageSpace(String blockPlacementPolicyClassName) {
     initTestReplicationPolicy(blockPlacementPolicyClassName);
-    final LogVerificationAppender appender = new LogVerificationAppender();
-    final Logger logger = Logger.getRootLogger();
-    logger.addAppender(appender);
+    final LogVerificationAppender appender = LogVerificationAppender.addToLogger(null, "INFO");
+    appender.clearLog();
 
     // Set all datanode storage remaining space is 1 * BLOCK_SIZE.
     for(int i = 0; i < dataNodes.length; i++) {
