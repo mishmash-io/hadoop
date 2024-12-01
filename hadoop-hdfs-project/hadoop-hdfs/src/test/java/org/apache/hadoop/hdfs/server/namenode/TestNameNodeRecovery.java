@@ -70,13 +70,7 @@ public class TestNameNodeRecovery {
     return params;
   }
 
-  private static boolean useAsyncEditLog;
-
-  public void initTestNameNodeRecovery(Boolean async) {
-    useAsyncEditLog = async;
-  }
-
-  private static Configuration getConf() {
+  private static Configuration getConf(boolean useAsyncEditLog) {
     Configuration conf = new HdfsConfiguration();
     conf.setBoolean(DFSConfigKeys.DFS_NAMENODE_EDITS_ASYNC_LOGGING,
         useAsyncEditLog);
@@ -93,14 +87,14 @@ public class TestNameNodeRecovery {
     EditLogFileOutputStream.setShouldSkipFsyncForTesting(true);
   }
 
-  static void runEditLogTest(EditLogTestSetup elts) throws IOException {
+  static void runEditLogTest(EditLogTestSetup elts, boolean useAsyncEditLog) throws IOException {
     final File TEST_LOG_NAME = new File(TEST_DIR, "test_edit_log");
     final OpInstanceCache cache = new OpInstanceCache();
     
     EditLogFileOutputStream elfos = null;
     EditLogFileInputStream elfis = null;
     try {
-      elfos = new EditLogFileOutputStream(getConf(), TEST_LOG_NAME, 0);
+      elfos = new EditLogFileOutputStream(getConf(useAsyncEditLog), TEST_LOG_NAME, 0);
       elfos.create(NameNodeLayoutVersion.CURRENT_LAYOUT_VERSION);
 
       elts.addTransactionsToLog(elfos, cache);
@@ -235,7 +229,7 @@ public class TestNameNodeRecovery {
   private static class EltsTestEmptyLog extends EditLogTestSetup {
     private final int paddingLength;
 
-    public void initTestNameNodeRecovery(int paddingLength) {
+    public EltsTestEmptyLog(int paddingLength) {
       this.paddingLength = paddingLength;
     }
 
@@ -261,8 +255,7 @@ public class TestNameNodeRecovery {
   @ParameterizedTest
   @Timeout(value = 180000, unit = TimeUnit.MILLISECONDS)
   public void testEmptyLog(Boolean async) throws IOException {
-    initTestNameNodeRecovery(async);
-    runEditLogTest(new EltsTestEmptyLog(0));
+    runEditLogTest(new EltsTestEmptyLog(0), async);
   }
 
   /** Test an empty edit log with padding */
@@ -270,9 +263,8 @@ public class TestNameNodeRecovery {
   @ParameterizedTest
   @Timeout(value = 180000, unit = TimeUnit.MILLISECONDS)
   public void testEmptyPaddedLog(Boolean async) throws IOException {
-    initTestNameNodeRecovery(async);
     runEditLogTest(new EltsTestEmptyLog(
-        EditLogFileOutputStream.MIN_PREALLOCATION_LENGTH));
+        EditLogFileOutputStream.MIN_PREALLOCATION_LENGTH), async);
   }
 
   /** Test an empty edit log with extra-long padding */
@@ -280,18 +272,14 @@ public class TestNameNodeRecovery {
   @ParameterizedTest
   @Timeout(value = 180000, unit = TimeUnit.MILLISECONDS)
   public void testEmptyExtraPaddedLog(Boolean async) throws IOException {
-    initTestNameNodeRecovery(async);
     runEditLogTest(new EltsTestEmptyLog(
-        3 * EditLogFileOutputStream.MIN_PREALLOCATION_LENGTH));
+        3 * EditLogFileOutputStream.MIN_PREALLOCATION_LENGTH), async);
   }
 
   /**
    * Test using a non-default maximum opcode length.
    */
   private static class EltsTestNonDefaultMaxOpSize extends EditLogTestSetup {
-    public void initTestNameNodeRecovery() {
-    }
-
     @Override
     public void addTransactionsToLog(EditLogOutputStream elos,
         OpInstanceCache cache) throws IOException {
@@ -320,8 +308,7 @@ public class TestNameNodeRecovery {
   @ParameterizedTest
   @Timeout(value = 180000, unit = TimeUnit.MILLISECONDS)
   public void testNonDefaultMaxOpSize(Boolean async) throws IOException {
-    initTestNameNodeRecovery(async);
-    runEditLogTest(new EltsTestNonDefaultMaxOpSize());
+    runEditLogTest(new EltsTestNonDefaultMaxOpSize(), async);
   }
 
   /**
@@ -334,7 +321,7 @@ public class TestNameNodeRecovery {
   private static class EltsTestOpcodesAfterPadding extends EditLogTestSetup {
     private final int paddingLength;
 
-    public void initTestNameNodeRecovery(int paddingLength) {
+    public EltsTestOpcodesAfterPadding(int paddingLength) {
       this.paddingLength = paddingLength;
     }
 
@@ -360,18 +347,16 @@ public class TestNameNodeRecovery {
   @ParameterizedTest
   @Timeout(value = 180000, unit = TimeUnit.MILLISECONDS)
   public void testOpcodesAfterPadding(Boolean async) throws IOException {
-    initTestNameNodeRecovery(async);
     runEditLogTest(new EltsTestOpcodesAfterPadding(
-        EditLogFileOutputStream.MIN_PREALLOCATION_LENGTH));
+        EditLogFileOutputStream.MIN_PREALLOCATION_LENGTH), async);
   }
 
   @MethodSource("data")
   @ParameterizedTest
   @Timeout(value = 180000, unit = TimeUnit.MILLISECONDS)
   public void testOpcodesAfterExtraPadding(Boolean async) throws IOException {
-    initTestNameNodeRecovery(async);
     runEditLogTest(new EltsTestOpcodesAfterPadding(
-        3 * EditLogFileOutputStream.MIN_PREALLOCATION_LENGTH));
+        3 * EditLogFileOutputStream.MIN_PREALLOCATION_LENGTH), async);
   }
 
   private static class EltsTestGarbageInEditLog extends EditLogTestSetup {
@@ -414,8 +399,7 @@ public class TestNameNodeRecovery {
   @ParameterizedTest
   @Timeout(value = 180000, unit = TimeUnit.MILLISECONDS)
   public void testSkipEdit(Boolean async) throws IOException {
-    initTestNameNodeRecovery(async);
-    runEditLogTest(new EltsTestGarbageInEditLog());
+    runEditLogTest(new EltsTestGarbageInEditLog(), async);
   }
 
   /**
@@ -505,7 +489,7 @@ public class TestNameNodeRecovery {
   static class SafePaddingCorruptor implements Corruptor {
     private final byte padByte;
 
-    public void initTestNameNodeRecovery(byte padByte) {
+    public SafePaddingCorruptor(byte padByte) {
       this.padByte = padByte;
       assert ((this.padByte == 0) || (this.padByte == -1));
     }
@@ -566,14 +550,14 @@ public class TestNameNodeRecovery {
     }
   }
 
-  static void testNameNodeRecoveryImpl(Corruptor corruptor, boolean finalize)
+  static void testNameNodeRecoveryImpl(Corruptor corruptor, boolean finalize, boolean async)
       throws IOException {
     final String TEST_PATH = "/test/path/dir";
     final String TEST_PATH2 = "/second/dir";
     final boolean needRecovery = corruptor.needRecovery(finalize);
 
     // start a cluster
-    Configuration conf = getConf();
+    Configuration conf = getConf(async);
     setupRecoveryTestConf(conf);
     MiniDFSCluster cluster = null;
     FileSystem fileSys = null;
@@ -678,9 +662,8 @@ public class TestNameNodeRecovery {
   @ParameterizedTest
   @Timeout(value = 180000, unit = TimeUnit.MILLISECONDS)
   public void testRecoverTruncatedEditLog(Boolean async) throws IOException {
-    initTestNameNodeRecovery(async);
-    testNameNodeRecoveryImpl(new TruncatingCorruptor(), true);
-    testNameNodeRecoveryImpl(new TruncatingCorruptor(), false);
+    testNameNodeRecoveryImpl(new TruncatingCorruptor(), true, async);
+    testNameNodeRecoveryImpl(new TruncatingCorruptor(), false, async);
   }
 
   /** Test that we can successfully recover from a situation where the last
@@ -689,9 +672,8 @@ public class TestNameNodeRecovery {
   @ParameterizedTest
   @Timeout(value = 180000, unit = TimeUnit.MILLISECONDS)
   public void testRecoverPaddedEditLog(Boolean async) throws IOException {
-    initTestNameNodeRecovery(async);
-    testNameNodeRecoveryImpl(new PaddingCorruptor(), true);
-    testNameNodeRecoveryImpl(new PaddingCorruptor(), false);
+    testNameNodeRecoveryImpl(new PaddingCorruptor(), true, async);
+    testNameNodeRecoveryImpl(new PaddingCorruptor(), false, async);
   }
 
   /** Test that don't need to recover from a situation where the last
@@ -700,9 +682,8 @@ public class TestNameNodeRecovery {
   @ParameterizedTest
   @Timeout(value = 180000, unit = TimeUnit.MILLISECONDS)
   public void testRecoverZeroPaddedEditLog(Boolean async) throws IOException {
-    initTestNameNodeRecovery(async);
-    testNameNodeRecoveryImpl(new SafePaddingCorruptor((byte)0), true);
-    testNameNodeRecoveryImpl(new SafePaddingCorruptor((byte)0), false);
+    testNameNodeRecoveryImpl(new SafePaddingCorruptor((byte)0), true, async);
+    testNameNodeRecoveryImpl(new SafePaddingCorruptor((byte)0), false, async);
   }
 
   /** Test that don't need to recover from a situation where the last
@@ -711,8 +692,7 @@ public class TestNameNodeRecovery {
   @ParameterizedTest
   @Timeout(value = 180000, unit = TimeUnit.MILLISECONDS)
   public void testRecoverNegativeOnePaddedEditLog(Boolean async) throws IOException {
-    initTestNameNodeRecovery(async);
-    testNameNodeRecoveryImpl(new SafePaddingCorruptor((byte)-1), true);
-    testNameNodeRecoveryImpl(new SafePaddingCorruptor((byte)-1), false);
+    testNameNodeRecoveryImpl(new SafePaddingCorruptor((byte)-1), true, async);
+    testNameNodeRecoveryImpl(new SafePaddingCorruptor((byte)-1), false, async);
   }
 }

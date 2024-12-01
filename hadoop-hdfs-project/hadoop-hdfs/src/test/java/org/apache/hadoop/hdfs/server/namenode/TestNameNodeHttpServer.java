@@ -53,13 +53,6 @@ public class TestNameNodeHttpServer {
     return Arrays.asList(params);
   }
 
-  private HttpConfig.Policy policy;
-
-  public void initTestNameNodeHttpServer(Policy policy) {
-    super();
-    this.policy = policy;
-  }
-
   @BeforeAll
   public static void setUp() throws Exception {
     File base = new File(BASEDIR);
@@ -86,7 +79,6 @@ public class TestNameNodeHttpServer {
   @MethodSource("policy")
   @ParameterizedTest
   public void testHttpPolicy(Policy policy) throws Exception {
-    initTestNameNodeHttpServer(policy);
     conf.set(DFSConfigKeys.DFS_HTTP_POLICY_KEY, policy.name());
     conf.set(DFSConfigKeys.DFS_NAMENODE_HTTPS_ADDRESS_KEY, "localhost:0");
 
