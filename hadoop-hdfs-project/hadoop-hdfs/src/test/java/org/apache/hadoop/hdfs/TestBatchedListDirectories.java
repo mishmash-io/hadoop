@@ -32,11 +32,9 @@ import org.apache.hadoop.ipc.RemoteException;
 import org.apache.hadoop.security.AccessControlException;
 import org.apache.hadoop.security.UserGroupInformation;
 import org.apache.hadoop.util.Lists;
-import org.hamcrest.core.StringContains;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
-import org.junit.rules.ExpectedException;
 
 import java.io.FileNotFoundException;
 import java.io.IOException;
@@ -320,12 +318,12 @@ public class TestBatchedListDirectories {
 
   @Test
   public void listTooManyDirectories() throws Exception {
-    thrown.expect(RemoteException.class);
-    thrown.expectMessage(
-        StringContains.containsString("Too many source paths"));
     List<Path> paths = Lists.newArrayList(FILE_PATHS);
     paths.add(SUBDIR_PATHS.get(0));
-    getStatuses(paths);
+    Exception e = assertThrows(RemoteException.class, () -> {
+      getStatuses(paths);
+    });
+    assertTrue(e.getMessage().contains("Too many source paths"));
   }
 
   @Test

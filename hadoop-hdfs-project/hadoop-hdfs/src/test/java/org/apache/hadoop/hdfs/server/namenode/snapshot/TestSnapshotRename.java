@@ -168,16 +168,17 @@ public class TestSnapshotRename {
 
   /**
    * Test rename a non-existing snapshot
+   * @throws Exception 
    */
   @Test
   @Timeout(value = 60000, unit = TimeUnit.MILLISECONDS)
-  public void testRenameNonExistingSnapshot() {
+  public void testRenameNonExistingSnapshot() throws Exception {
+    DFSTestUtil.createFile(hdfs, file1, BLOCKSIZE, REPLICATION, seed);
+    // Create snapshot for sub1
+    SnapshotTestHelper.createSnapshot(hdfs, sub1, "s1");
+    String error = "The snapshot wrongName does not exist for directory "
+        + sub1.toString();
     Throwable exception = assertThrows(SnapshotException.class, () -> {
-      DFSTestUtil.createFile(hdfs, file1, BLOCKSIZE, REPLICATION, seed);
-      // Create snapshot for sub1
-      SnapshotTestHelper.createSnapshot(hdfs, sub1, "s1");
-      String error = "The snapshot wrongName does not exist for directory "
-          + sub1.toString();
       hdfs.renameSnapshot(sub1, "wrongName", "s2");
     });
     assertTrue(exception.getMessage().contains(error));
@@ -185,16 +186,17 @@ public class TestSnapshotRename {
 
   /**
    * Test rename a non-existing snapshot to itself.
+   * @throws Exception 
    */
   @Test
   @Timeout(value = 60000, unit = TimeUnit.MILLISECONDS)
-  public void testRenameNonExistingSnapshotToItself() {
+  public void testRenameNonExistingSnapshotToItself() throws Exception {
+    DFSTestUtil.createFile(hdfs, file1, BLOCKSIZE, REPLICATION, seed);
+    // Create snapshot for sub1
+    SnapshotTestHelper.createSnapshot(hdfs, sub1, "s1");
+    String error = "The snapshot wrongName does not exist for directory "
+        + sub1.toString();
     Throwable exception = assertThrows(SnapshotException.class, () -> {
-      DFSTestUtil.createFile(hdfs, file1, BLOCKSIZE, REPLICATION, seed);
-      // Create snapshot for sub1
-      SnapshotTestHelper.createSnapshot(hdfs, sub1, "s1");
-      String error = "The snapshot wrongName does not exist for directory "
-          + sub1.toString();
       hdfs.renameSnapshot(sub1, "wrongName", "wrongName");
     });
     assertTrue(exception.getMessage().contains(error));
@@ -202,17 +204,18 @@ public class TestSnapshotRename {
 
   /**
    * Test rename a snapshot to another existing snapshot 
+   * @throws Exception 
    */
   @Test
   @Timeout(value = 60000, unit = TimeUnit.MILLISECONDS)
-  public void testRenameToExistingSnapshot() {
+  public void testRenameToExistingSnapshot() throws Exception {
+    DFSTestUtil.createFile(hdfs, file1, BLOCKSIZE, REPLICATION, seed);
+    // Create snapshots for sub1
+    SnapshotTestHelper.createSnapshot(hdfs, sub1, "s1");
+    SnapshotTestHelper.createSnapshot(hdfs, sub1, "s2");
+    String error = "The snapshot s2 already exists for directory "
+        + sub1.toString();
     Throwable exception = assertThrows(SnapshotException.class, () -> {
-      DFSTestUtil.createFile(hdfs, file1, BLOCKSIZE, REPLICATION, seed);
-      // Create snapshots for sub1
-      SnapshotTestHelper.createSnapshot(hdfs, sub1, "s1");
-      SnapshotTestHelper.createSnapshot(hdfs, sub1, "s2");
-      String error = "The snapshot s2 already exists for directory "
-          + sub1.toString();
       hdfs.renameSnapshot(sub1, "s1", "s2");
     });
     assertTrue(exception.getMessage().contains(error));

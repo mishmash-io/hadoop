@@ -35,7 +35,6 @@ import org.apache.hadoop.security.UserGroupInformation;
 import org.apache.hadoop.security.UserGroupInformation.AuthenticationMethod;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
-import org.junit.rules.ExpectedException;
 import javax.management.MBeanServer;
 import javax.management.ObjectName;
 
@@ -74,12 +73,13 @@ public class TestSecureNameNode extends SaslDataTransferTestCase {
           }
         });
         Path p = new Path("/mydir");
-        exception.expect(IOException.class);
-        fs.mkdirs(p);
+        assertThrows(IOException.class, () -> {
+          fs.mkdirs(p);
 
-        Path tmp = new Path("/tmp/alpha");
-        fs.mkdirs(tmp);
-        assertNotNull(fs.listStatus(tmp));
+          Path tmp = new Path("/tmp/alpha");
+          fs.mkdirs(tmp);
+          assertNotNull(fs.listStatus(tmp));
+        });
         assertEquals(AuthenticationMethod.KERBEROS,
             ugi.getAuthenticationMethod());
       } finally {
@@ -99,15 +99,13 @@ public class TestSecureNameNode extends SaslDataTransferTestCase {
    * @throws Exception
    */
   @Test
-  public void testKerberosHdfsBlockTokenInconsistencyNNStartup() {
-    Throwable exception = assertThrows(IOException.class, () -> {
+  public void testKerberosHdfsBlockTokenInconsistencyNNStartup() throws Exception {
+    HdfsConfiguration conf = createSecureConfig(
+        "authentication,privacy");
+    conf.setBoolean(DFSConfigKeys.DFS_BLOCK_ACCESS_TOKEN_ENABLE_KEY, false);
+    Exception e = assertThrows(IOException.class, () -> {
       MiniDFSCluster dfsCluster = null;
-      HdfsConfiguration conf = createSecureConfig(
-          "authentication,privacy");
       try {
-        conf.setBoolean(DFSConfigKeys.DFS_BLOCK_ACCESS_TOKEN_ENABLE_KEY, false);
-        exception.expect(IOException.class);
-        exception.expectMessage("Security is enabled but block access tokens");
         dfsCluster = new MiniDFSCluster.Builder(conf).numDataNodes(1).build();
         dfsCluster.waitActive();
       } finally {
@@ -115,9 +113,8 @@ public class TestSecureNameNode extends SaslDataTransferTestCase {
           dfsCluster.shutdown();
         }
       }
-      return;
     });
-    assertTrue(exception.getMessage().contains("Security is enabled but block access tokens"));
+    assertTrue(e.getMessage().contains("Security is enabled but block access tokens"));
   }
 
   /**

@@ -36,7 +36,6 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Timeout;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.MethodSource;
-import org.junit.rules.ExpectedException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.apache.hadoop.hdfs.client.HdfsClientConfigKeys;
@@ -713,8 +712,9 @@ public class TestFileChecksum {
         FileChecksum checksum2 = getFileChecksum(replicatedFile2, -1, false);
         Assertions.assertEquals(checksum1, checksum2);
       } else {
-        exception.expect(IOException.class);
-        FileChecksum checksum = getFileChecksum(replicatedFile1, -1, false);
+        Assertions.assertThrows(IOException.class, () -> {
+          FileChecksum checksum = getFileChecksum(replicatedFile1, -1, false);
+        });
       }
     });
   }

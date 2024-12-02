@@ -114,22 +114,23 @@ public class TestSnapshotDeletion {
 
   /**
    * Deleting snapshottable directory with snapshots must fail.
+   * @throws IOException 
    */
   @Test
   @Timeout(value = 300000, unit = TimeUnit.MILLISECONDS)
-  public void testDeleteDirectoryWithSnapshot() {
-    Throwable exception = assertThrows(RemoteException.class, () -> {
-      Path file0 = new Path(sub, "file0");
-      Path file1 = new Path(sub, "file1");
-      DFSTestUtil.createFile(hdfs, file0, BLOCKSIZE, REPLICATION, seed);
-      DFSTestUtil.createFile(hdfs, file1, BLOCKSIZE, REPLICATION, seed);
+  public void testDeleteDirectoryWithSnapshot() throws IOException {
+    Path file0 = new Path(sub, "file0");
+    Path file1 = new Path(sub, "file1");
+    DFSTestUtil.createFile(hdfs, file0, BLOCKSIZE, REPLICATION, seed);
+    DFSTestUtil.createFile(hdfs, file1, BLOCKSIZE, REPLICATION, seed);
 
-      // Allow snapshot for sub1, and create snapshot for it
-      hdfs.allowSnapshot(sub);
-      hdfs.createSnapshot(sub, "s1");
-      String error = "The directory " + sub.toString()
-          + " cannot be deleted since " + sub.toString()
-          + " is snapshottable and already has snapshots";
+    // Allow snapshot for sub1, and create snapshot for it
+    hdfs.allowSnapshot(sub);
+    hdfs.createSnapshot(sub, "s1");
+    String error = "The directory " + sub.toString()
+        + " cannot be deleted since " + sub.toString()
+        + " is snapshottable and already has snapshots";
+    Throwable exception = assertThrows(RemoteException.class, () -> {
       hdfs.delete(sub, true);
     });
     assertTrue(exception.getMessage().contains(error));
@@ -173,26 +174,27 @@ public class TestSnapshotDeletion {
 
   /**
    * Deleting directory with snapshottable descendant with snapshots must fail.
+   * @throws IOException 
    */
   @Test
   @Timeout(value = 300000, unit = TimeUnit.MILLISECONDS)
-  public void testDeleteDirectoryWithSnapshot2() {
+  public void testDeleteDirectoryWithSnapshot2() throws IOException {
+    Path file0 = new Path(sub, "file0");
+    Path file1 = new Path(sub, "file1");
+    DFSTestUtil.createFile(hdfs, file0, BLOCKSIZE, REPLICATION, seed);
+    DFSTestUtil.createFile(hdfs, file1, BLOCKSIZE, REPLICATION, seed);
+
+    Path subfile1 = new Path(subsub, "file0");
+    Path subfile2 = new Path(subsub, "file1");
+    DFSTestUtil.createFile(hdfs, subfile1, BLOCKSIZE, REPLICATION, seed);
+    DFSTestUtil.createFile(hdfs, subfile2, BLOCKSIZE, REPLICATION, seed);
+
+    // Allow snapshot for subsub1, and create snapshot for it
+    hdfs.allowSnapshot(subsub);
+    hdfs.createSnapshot(subsub, "s1");
+    String error = subsub.toString()
+        + " is snapshottable and already has snapshots";
     Throwable exception = assertThrows(RemoteException.class, () -> {
-      Path file0 = new Path(sub, "file0");
-      Path file1 = new Path(sub, "file1");
-      DFSTestUtil.createFile(hdfs, file0, BLOCKSIZE, REPLICATION, seed);
-      DFSTestUtil.createFile(hdfs, file1, BLOCKSIZE, REPLICATION, seed);
-
-      Path subfile1 = new Path(subsub, "file0");
-      Path subfile2 = new Path(subsub, "file1");
-      DFSTestUtil.createFile(hdfs, subfile1, BLOCKSIZE, REPLICATION, seed);
-      DFSTestUtil.createFile(hdfs, subfile2, BLOCKSIZE, REPLICATION, seed);
-
-      // Allow snapshot for subsub1, and create snapshot for it
-      hdfs.allowSnapshot(subsub);
-      hdfs.createSnapshot(subsub, "s1");
-      String error = subsub.toString()
-          + " is snapshottable and already has snapshots";
       hdfs.delete(dir, true);
     });
     assertTrue(exception.getMessage().contains(error));
@@ -1258,29 +1260,30 @@ public class TestSnapshotDeletion {
   }
 
   @Test
-  public void testSnapshotWithConcatException() {
+  public void testSnapshotWithConcatException() throws IOException {
+    String error = "Concat: the source file /st/0.txt is in snapshot";
+    final Path st = new Path("/st");
+    hdfs.mkdirs(st);
+    hdfs.allowSnapshot(st);
+
+    Path[] files = new Path[3];
+    for (int i = 0;i < 3;i++) {
+      files[i] = new Path(st, i + ".txt");
+    }
+
+    Path dest = new Path(st, "dest.txt");
+    hdfs.createNewFile(dest);
+    hdfs.createSnapshot(st, "ss");
+
+    for (int j = 0;j < 3;j++) {
+      FileSystem fs = cluster.getFileSystem();
+      DFSTestUtil.createFile(fs, files[j], false, 1024,
+          1024, 512, (short) 1, RandomUtils.nextLong(1, 512), true);
+    }
+
+    hdfs.createSnapshot(st, "s0");
+
     Throwable exception = assertThrows(RemoteException.class, () -> {
-      final Path st = new Path("/st");
-      hdfs.mkdirs(st);
-      hdfs.allowSnapshot(st);
-
-      Path[] files = new Path[3];
-      for (int i = 0;i < 3;i++) {
-        files[i] = new Path(st, i + ".txt");
-      }
-
-      Path dest = new Path(st, "dest.txt");
-      hdfs.createNewFile(dest);
-      hdfs.createSnapshot(st, "ss");
-
-      for (int j = 0;j < 3;j++) {
-        FileSystem fs = cluster.getFileSystem();
-        DFSTestUtil.createFile(fs, files[j], false, 1024,
-            1024, 512, (short) 1, RandomUtils.nextLong(1, 512), true);
-      }
-
-      hdfs.createSnapshot(st, "s0");
-      String error = "Concat: the source file /st/0.txt is in snapshot";
       hdfs.concat(dest, files);
 
       hdfs.setSafeMode(SafeModeAction.ENTER);

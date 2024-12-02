@@ -112,8 +112,8 @@ public class TestFSNamesystemMBean {
           "SnapshotStats"));
 
       @SuppressWarnings("unchecked")
-      Map<String, Object> stat = (Map<String, Object>) JSON
-          .parse(snapshotStats);
+      Map<String, Object> stat = (Map<String, Object>) new JSON()
+          .fromJSON(snapshotStats);
 
       assertTrue(stat.containsKey("SnapshottableDirectories")
           && (Long) stat.get("SnapshottableDirectories") == fsn

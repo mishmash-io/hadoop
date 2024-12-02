@@ -36,6 +36,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileUtil;
+import org.apache.hadoop.hdfs.DFSConfigKeys;
 import org.apache.hadoop.hdfs.server.common.Storage.StorageDirectory;
 import org.apache.hadoop.hdfs.server.namenode.JournalManager.CorruptionException;
 import org.apache.hadoop.hdfs.server.namenode.NNStorage.NameNodeDirType;
@@ -44,7 +45,6 @@ import org.apache.hadoop.io.IOUtils;
 import org.apache.hadoop.util.NativeCodeLoader;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.junit.rules.ExpectedException;
 
 import org.apache.hadoop.thirdparty.com.google.common.base.Joiner;
 import org.apache.hadoop.thirdparty.com.google.common.collect.ImmutableList;
@@ -124,7 +124,8 @@ public class TestFileJournalManager {
     File f3 = new File(TestEditLog.TEST_DIR + "/normtest2");
     
     List<URI> editUris = ImmutableList.of(f1.toURI(), f2.toURI(), f3.toURI());
-    NNStorage storage = setupEdits(editUris, 5);
+    NNStorage storage = setupEdits(editUris, 5,
+          DFSConfigKeys.DFS_NAMENODE_EDITS_ASYNC_LOGGING_DEFAULT);
     
     long numJournals = 0;
     for (StorageDirectory sd : storage.dirIterable(NameNodeDirType.EDITS)) {
@@ -145,7 +146,8 @@ public class TestFileJournalManager {
     File f = new File(TestEditLog.TEST_DIR + "/inprogressrecovery");
     // abort after the 5th roll 
     NNStorage storage = setupEdits(Collections.<URI>singletonList(f.toURI()),
-                                   5, new AbortSpec(5, 0));
+                                   5, DFSConfigKeys.DFS_NAMENODE_EDITS_ASYNC_LOGGING_DEFAULT,
+                                   new AbortSpec(5, 0));
     StorageDirectory sd = storage.dirIterator(NameNodeDirType.EDITS).next();
 
     FileJournalManager jm = new FileJournalManager(conf, sd, storage);
@@ -168,7 +170,8 @@ public class TestFileJournalManager {
 
     // abort after the 5th roll 
     NNStorage storage = setupEdits(editUris,
-                                   5, new AbortSpec(5, 1));
+                                   5, DFSConfigKeys.DFS_NAMENODE_EDITS_ASYNC_LOGGING_DEFAULT,
+                                   new AbortSpec(5, 1));
     Iterator<StorageDirectory> dirs = storage.dirIterator(NameNodeDirType.EDITS);
     StorageDirectory sd = dirs.next();
     FileJournalManager jm = new FileJournalManager(conf, sd, storage);
@@ -198,7 +201,8 @@ public class TestFileJournalManager {
     
     List<URI> editUris = ImmutableList.of(f1.toURI(), f2.toURI(), f3.toURI());
     // abort after the 5th roll 
-    NNStorage storage = setupEdits(editUris, 5, 
+    NNStorage storage = setupEdits(editUris, 5,
+                                   DFSConfigKeys.DFS_NAMENODE_EDITS_ASYNC_LOGGING_DEFAULT,
                                    new AbortSpec(5, 0),
                                    new AbortSpec(5, 1),
                                    new AbortSpec(5, 2));
@@ -237,7 +241,8 @@ public class TestFileJournalManager {
       File f = new File(TestEditLog.TEST_DIR + "/filejournaltestError");
       // abort after 10th roll
       NNStorage storage = setupEdits(Collections.<URI>singletonList(f.toURI()),
-          10, new AbortSpec(10, 0));
+          10, DFSConfigKeys.DFS_NAMENODE_EDITS_ASYNC_LOGGING_DEFAULT,
+          new AbortSpec(10, 0));
       StorageDirectory sd = storage.dirIterator(NameNodeDirType.EDITS).next();
 
       FileJournalManager jm = new FileJournalManager(conf, sd, storage);
@@ -263,7 +268,8 @@ public class TestFileJournalManager {
     File f = new File(TestEditLog.TEST_DIR + "/readfromstream");
     // abort after 10th roll
     NNStorage storage = setupEdits(Collections.<URI>singletonList(f.toURI()),
-                                   10, new AbortSpec(10, 0));
+                                   10, DFSConfigKeys.DFS_NAMENODE_EDITS_ASYNC_LOGGING_DEFAULT,
+                                   new AbortSpec(10, 0));
     StorageDirectory sd = storage.dirIterator(NameNodeDirType.EDITS).next();
 
     FileJournalManager jm = new FileJournalManager(conf, sd, storage);
@@ -289,7 +295,7 @@ public class TestFileJournalManager {
   public void testAskForTransactionsMidfile() throws IOException {
     File f = new File(TestEditLog.TEST_DIR + "/askfortransactionsmidfile");
     NNStorage storage = setupEdits(Collections.<URI>singletonList(f.toURI()), 
-                                   10);
+                                   10, DFSConfigKeys.DFS_NAMENODE_EDITS_ASYNC_LOGGING_DEFAULT);
     StorageDirectory sd = storage.dirIterator(NameNodeDirType.EDITS).next();
     
     FileJournalManager jm = new FileJournalManager(conf, sd, storage);
@@ -313,7 +319,8 @@ public class TestFileJournalManager {
   @Test
   public void testManyLogsWithGaps() throws IOException {
     File f = new File(TestEditLog.TEST_DIR + "/manylogswithgaps");
-    NNStorage storage = setupEdits(Collections.<URI>singletonList(f.toURI()), 10);
+    NNStorage storage = setupEdits(Collections.<URI>singletonList(f.toURI()), 10,
+        DFSConfigKeys.DFS_NAMENODE_EDITS_ASYNC_LOGGING_DEFAULT);
     StorageDirectory sd = storage.dirIterator(NameNodeDirType.EDITS).next();
 
     final long startGapTxId = 3*TXNS_PER_ROLL + 1;
@@ -347,7 +354,9 @@ public class TestFileJournalManager {
   @Test
   public void testManyLogsWithCorruptInprogress() throws IOException {
     File f = new File(TestEditLog.TEST_DIR + "/manylogswithcorruptinprogress");
-    NNStorage storage = setupEdits(Collections.<URI>singletonList(f.toURI()), 10, new AbortSpec(10, 0));
+    NNStorage storage = setupEdits(Collections.<URI>singletonList(f.toURI()), 10,
+        DFSConfigKeys.DFS_NAMENODE_EDITS_ASYNC_LOGGING_DEFAULT,
+        new AbortSpec(10, 0));
     StorageDirectory sd = storage.dirIterator(NameNodeDirType.EDITS).next();
 
     File[] files = new File(f, "current").listFiles(new FilenameFilter() {
@@ -435,7 +444,7 @@ public class TestFileJournalManager {
       IOException {
     File f = new File(TestEditLog.TEST_DIR + "/readfrommiddleofeditlog");
     NNStorage storage = setupEdits(Collections.<URI>singletonList(f.toURI()), 
-                                   10);
+                                   10, DFSConfigKeys.DFS_NAMENODE_EDITS_ASYNC_LOGGING_DEFAULT);
     StorageDirectory sd = storage.dirIterator(NameNodeDirType.EDITS).next();
     
     FileJournalManager jm = new FileJournalManager(conf, sd, storage);
@@ -483,33 +492,31 @@ public class TestFileJournalManager {
    * Tests that internal renames are done using native code on platforms that
    * have it.  The native rename includes more detailed information about the
    * failure, which can be useful for troubleshooting.
+   * @throws IOException 
    */
   @Test
-  public void testDoPreUpgradeIOError() {
-    Throwable exception = assertThrows(IOException.class, () -> {
-      File storageDir = new File(TestEditLog.TEST_DIR, "preupgradeioerror");
-      List<URI> editUris = Collections.singletonList(storageDir.toURI());
-      NNStorage storage = setupEdits(editUris, 5);
-      StorageDirectory sd = storage.dirIterator(NameNodeDirType.EDITS).next();
-      assertNotNull(sd);
-      // Change storage directory so that renaming current to previous.tmp fails.
-      FileUtil.setWritable(storageDir, false);
-      FileJournalManager jm = null;
-      try {
-        jm = new FileJournalManager(conf, sd, storage);
-        exception.expect(IOException.class);
-        if (NativeCodeLoader.isNativeCodeLoaded()) {
-          exception.expectMessage("failure in native rename");
-        }
+  public void testDoPreUpgradeIOError() throws IOException {
+    File storageDir = new File(TestEditLog.TEST_DIR, "preupgradeioerror");
+    List<URI> editUris = Collections.singletonList(storageDir.toURI());
+    NNStorage storage = setupEdits(editUris, 5, DFSConfigKeys.DFS_NAMENODE_EDITS_ASYNC_LOGGING_DEFAULT);
+    StorageDirectory sd = storage.dirIterator(NameNodeDirType.EDITS).next();
+    assertNotNull(sd);
+    // Change storage directory so that renaming current to previous.tmp fails.
+    FileUtil.setWritable(storageDir, false);
+    FileJournalManager jm = new FileJournalManager(conf, sd, storage);
+    try {
+      Exception e = assertThrows(IOException.class, () -> {
         jm.doPreUpgrade();
-      } finally {
-        IOUtils.cleanupWithLogger(LOG, jm);
-        // Restore permissions on storage directory and make sure we can delete.
-        FileUtil.setWritable(storageDir, true);
-        FileUtil.fullyDelete(storageDir);
+      });
+      if (NativeCodeLoader.isNativeCodeLoaded()) {
+        assertTrue(e.getMessage().contains("failure in native rename"));
       }
-    });
-    assertTrue(exception.getMessage().contains("failure in native rename"));
+    } finally {
+      IOUtils.cleanupWithLogger(LOG, jm);
+      // Restore permissions on storage directory and make sure we can delete.
+      FileUtil.setWritable(storageDir, true);
+      FileUtil.fullyDelete(storageDir);
+    }
   }
 
   private static String getLogsAsString(

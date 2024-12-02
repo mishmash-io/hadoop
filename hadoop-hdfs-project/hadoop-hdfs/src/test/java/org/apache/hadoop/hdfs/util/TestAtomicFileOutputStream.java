@@ -32,7 +32,6 @@ import org.apache.hadoop.io.IOUtils;
 import org.apache.hadoop.test.PathUtils;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.junit.rules.ExpectedException;
 
 import org.apache.hadoop.thirdparty.com.google.common.base.Joiner;
 
@@ -119,21 +118,14 @@ public class TestAtomicFileOutputStream {
   }
 
   @Test
-  public void testFailToRename() {
+  public void testFailToRename() throws IOException {
+    assumeWindows();
+    OutputStream fos = new AtomicFileOutputStream(DST_FILE);
+    fos.write(TEST_STRING.getBytes());
+    FileUtil.setWritable(TEST_DIR, false);
     Throwable exception = assertThrows(IOException.class, () -> {
-      assumeWindows();
-      OutputStream fos = null;
       try {
-        fos = new AtomicFileOutputStream(DST_FILE);
-        fos.write(TEST_STRING.getBytes());
-        FileUtil.setWritable(TEST_DIR, false);
-        exception.expect(IOException.class);
-        exception.expectMessage("failure in native rename");
-        try {
-          fos.close();
-        } finally {
-          fos = null;
-        }
+        fos.close();
       } finally {
         IOUtils.cleanupWithLogger(null, fos);
         FileUtil.setWritable(TEST_DIR, true);

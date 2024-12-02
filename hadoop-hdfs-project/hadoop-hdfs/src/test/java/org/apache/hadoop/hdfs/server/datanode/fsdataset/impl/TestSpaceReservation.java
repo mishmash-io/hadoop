@@ -54,7 +54,6 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.Timeout;
-import org.junit.rules.ExpectedException;
 import org.mockito.Mockito;
 import org.slf4j.event.Level;
 
@@ -236,39 +235,37 @@ public class TestSpaceReservation {
 
   @Test
   @Timeout(value = 300000, unit = TimeUnit.MILLISECONDS)
-  public void testWithLimitedSpace() {
-    assertThrows(RemoteException.class, () -> {
-      // Cluster with just enough space for a full block + meta.
-      startCluster(BLOCK_SIZE, 1, 2 * BLOCK_SIZE - 1);
-      final String methodName = GenericTestUtils.getMethodName();
-      Path file1 = new Path("/" + methodName + ".01.dat");
-      Path file2 = new Path("/" + methodName + ".02.dat");
+  public void testWithLimitedSpace() throws IOException {
+    // Cluster with just enough space for a full block + meta.
+    startCluster(BLOCK_SIZE, 1, 2 * BLOCK_SIZE - 1);
+    final String methodName = GenericTestUtils.getMethodName();
+    Path file1 = new Path("/" + methodName + ".01.dat");
+    Path file2 = new Path("/" + methodName + ".02.dat");
 
-      // Create two files.
-      FSDataOutputStream os1 = null, os2 = null;
+    // Create two files.
+    FSDataOutputStream os1 = null;
+    try {
+      os1 = fs.create(file1);
+      FSDataOutputStream os2 = fs.create(file2);
 
-      try {
-        os1 = fs.create(file1);
-        os2 = fs.create(file2);
+      // Write one byte to the first file.
+      byte[] data = new byte[1];
+      os1.write(data);
+      os1.hsync();
 
-        // Write one byte to the first file.
-        byte[] data = new byte[1];
-        os1.write(data);
-        os1.hsync();
-
-        // Try to write one byte to the second file.
-        // The block allocation must fail.
-        thrown.expect(RemoteException.class);
+      // Try to write one byte to the second file.
+      // The block allocation must fail.
+      assertThrows(RemoteException.class, () -> {
         os2.write(data);
         os2.hsync();
-      } finally {
-        if (os1 != null) {
-          os1.close();
-        }
-
-        // os2.close() will fail as no block was allocated.
+      });
+    } finally {
+      if (os1 != null) {
+        os1.close();
       }
-    });
+
+      // os2.close() will fail as no block was allocated.
+    }
   }
 
   /**

@@ -28,7 +28,8 @@ import static org.apache.hadoop.security.SecurityUtilTestHelper.isExternalKdcRun
 import org.apache.hadoop.net.NetUtils;
 import org.junit.jupiter.api.Assumptions;
 import org.junit.jupiter.api.Test;
-import org.junit.rules.ExpectedException;
+
+import java.io.IOException;
 import java.net.BindException;
 import java.net.InetSocketAddress;
 import java.net.ServerSocket;
@@ -113,26 +114,24 @@ public class TestStartSecureDataNode {
    * {@link java.net.BindException}. Testing is done with unprivileged port
    * for {@code dfs.datanode.address}.
    *
-   * @throws Exception
+   * @throws IOException
    */
   @Test
-  public void testStreamingAddrBindException() {
-    Throwable exception = assertThrows(BindException.class, () -> {
-      ServerSocket ss = new ServerSocket();
-      try {
+  public void testStreamingAddrBindException() throws IOException {
+    ServerSocket ss = new ServerSocket();
+    try {
+      Throwable exception = assertThrows(BindException.class, () -> {
         ss.bind(new InetSocketAddress("localhost", 0));
-        thrown.expect(BindException.class);
-        thrown.expectMessage("localhost/127.0.0.1:" + ss.getLocalPort());
 
         Configuration conf = new HdfsConfiguration();
         conf.set(DFSConfigKeys.DFS_DATANODE_ADDRESS_KEY,
             "localhost:" + ss.getLocalPort());
         SecureDataNodeStarter.getSecureResources(conf);
-      } finally {
-        ss.close();
-      }
-    });
-    assertTrue(exception.getMessage().contains("localhost/127.0.0.1:" + ss.getLocalPort()));
+      });
+      assertTrue(exception.getMessage().contains("localhost/127.0.0.1:" + ss.getLocalPort()));
+    } finally {
+      ss.close();
+    }
   }
 
   /**
@@ -140,16 +139,14 @@ public class TestStartSecureDataNode {
    * {@link java.net.BindException}. Testing is done with unprivileged port
    * for {@code dfs.datanode.http.address}.
    *
-   * @throws Exception
+   * @throws IOException
    */
   @Test
-  public void testWebServerAddrBindException() {
+  public void testWebServerAddrBindException() throws IOException {
     ServerSocket ss = new ServerSocket();
-    Throwable exception = assertThrows(BindException.class, () -> {
-      try {
+    try {
+      Throwable exception = assertThrows(BindException.class, () -> {
         ss.bind(new InetSocketAddress("localhost", 0));
-        thrown.expect(BindException.class);
-        thrown.expectMessage("localhost/127.0.0.1:" + ss.getLocalPort());
 
         Configuration conf = new HdfsConfiguration();
         conf.set(DFSConfigKeys.DFS_DATANODE_ADDRESS_KEY,
@@ -158,10 +155,10 @@ public class TestStartSecureDataNode {
             "localhost:" + ss.getLocalPort());
 
         SecureDataNodeStarter.getSecureResources(conf);
-      } finally {
-        ss.close();
-      }
-    });
-    assertTrue(exception.getMessage().contains("localhost/127.0.0.1:" + ss.getLocalPort()));
+      });
+      assertTrue(exception.getMessage().contains("localhost/127.0.0.1:" + ss.getLocalPort()));
+    } finally {
+      ss.close();
+    }
   }
 }

@@ -41,7 +41,6 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.junit.rules.ExpectedException;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -51,6 +50,7 @@ import static org.apache.hadoop.hdfs.server.datanode.DiskBalancerWorkStatus.Resu
 import static org.apache.hadoop.hdfs.server.datanode.DiskBalancerWorkStatus.Result.PLAN_DONE;
 import static org.apache.hadoop.hdfs.server.datanode.DiskBalancerWorkStatus.Result.PLAN_UNDER_PROGRESS;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 /**
  * Test DiskBalancer RPC.
@@ -94,13 +94,14 @@ public class TestDiskBalancerRPC {
     String planHash = rpcTestHelper.getPlanHash();
     char[] hashArray = planHash.toCharArray();
     hashArray[0]++;
-    planHash = String.valueOf(hashArray);
+    String planHashArrStr = String.valueOf(hashArray);
     int planVersion = rpcTestHelper.getPlanVersion();
     NodePlan plan = rpcTestHelper.getPlan();
-    thrown.expect(DiskBalancerException.class);
-    thrown.expect(new DiskBalancerResultVerifier(Result.INVALID_PLAN_HASH));
-    dataNode.submitDiskBalancerPlan(planHash, planVersion, PLAN_FILE,
+    DiskBalancerException e = assertThrows(DiskBalancerException.class, () -> {
+      dataNode.submitDiskBalancerPlan(planHashArrStr, planVersion, PLAN_FILE,
         plan.toJson(), false);
+    });
+    assertEquals(Result.INVALID_PLAN_HASH, e.getResult());
   }
 
   @Test
@@ -108,13 +109,13 @@ public class TestDiskBalancerRPC {
     RpcTestHelper rpcTestHelper = new RpcTestHelper().invoke();
     DataNode dataNode = rpcTestHelper.getDataNode();
     String planHash = rpcTestHelper.getPlanHash();
-    int planVersion = rpcTestHelper.getPlanVersion();
-    planVersion++;
+    int planVersion = rpcTestHelper.getPlanVersion() + 1;
     NodePlan plan = rpcTestHelper.getPlan();
-    thrown.expect(DiskBalancerException.class);
-    thrown.expect(new DiskBalancerResultVerifier(Result.INVALID_PLAN_VERSION));
-    dataNode.submitDiskBalancerPlan(planHash, planVersion, PLAN_FILE,
+    DiskBalancerException e = assertThrows(DiskBalancerException.class, () -> {
+      dataNode.submitDiskBalancerPlan(planHash, planVersion, PLAN_FILE,
         plan.toJson(), false);
+    });
+    assertEquals(Result.INVALID_PLAN_VERSION, e.getResult());
   }
 
   @Test
@@ -124,10 +125,11 @@ public class TestDiskBalancerRPC {
     String planHash = rpcTestHelper.getPlanHash();
     int planVersion = rpcTestHelper.getPlanVersion();
     NodePlan plan = rpcTestHelper.getPlan();
-    thrown.expect(DiskBalancerException.class);
-    thrown.expect(new DiskBalancerResultVerifier(Result.INVALID_PLAN));
-    dataNode.submitDiskBalancerPlan(planHash, planVersion, "", "",
+    DiskBalancerException e = assertThrows(DiskBalancerException.class, () -> {
+      dataNode.submitDiskBalancerPlan(planHash, planVersion, "", "",
         false);
+    });
+    assertEquals(Result.INVALID_PLAN, e.getResult());
   }
 
   @Test
@@ -149,11 +151,12 @@ public class TestDiskBalancerRPC {
     String planHash = rpcTestHelper.getPlanHash();
     char[] hashArray= planHash.toCharArray();
     hashArray[0]++;
-    planHash = String.valueOf(hashArray);
+    String planHashArrStr = String.valueOf(hashArray);
     NodePlan plan = rpcTestHelper.getPlan();
-    thrown.expect(DiskBalancerException.class);
-    thrown.expect(new DiskBalancerResultVerifier(Result.NO_SUCH_PLAN));
-    dataNode.cancelDiskBalancePlan(planHash);
+    DiskBalancerException e = assertThrows(DiskBalancerException.class, () -> {
+      dataNode.cancelDiskBalancePlan(planHashArrStr);
+    });
+    assertEquals(Result.NO_SUCH_PLAN, e.getResult());
   }
 
   @Test
@@ -162,9 +165,10 @@ public class TestDiskBalancerRPC {
     DataNode dataNode = rpcTestHelper.getDataNode();
     String planHash = "";
     NodePlan plan = rpcTestHelper.getPlan();
-    thrown.expect(DiskBalancerException.class);
-    thrown.expect(new DiskBalancerResultVerifier(Result.NO_SUCH_PLAN));
-    dataNode.cancelDiskBalancePlan(planHash);
+    DiskBalancerException e = assertThrows(DiskBalancerException.class, () -> {
+      dataNode.cancelDiskBalancePlan(planHash);
+    });
+    assertEquals(Result.NO_SUCH_PLAN, e.getResult());
   }
 
   @Test
@@ -188,9 +192,10 @@ public class TestDiskBalancerRPC {
     final int dnIndex = 0;
     final String invalidSetting = "invalidSetting";
     DataNode dataNode = cluster.getDataNodes().get(dnIndex);
-    thrown.expect(DiskBalancerException.class);
-    thrown.expect(new DiskBalancerResultVerifier(Result.UNKNOWN_KEY));
-    dataNode.getDiskBalancerSetting(invalidSetting);
+    DiskBalancerException e = assertThrows(DiskBalancerException.class, () -> {
+      dataNode.getDiskBalancerSetting(invalidSetting);
+    });
+    assertEquals(Result.UNKNOWN_KEY, e.getResult());
   }
 
   @Test

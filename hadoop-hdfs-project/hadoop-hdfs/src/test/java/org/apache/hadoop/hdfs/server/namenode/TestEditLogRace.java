@@ -86,12 +86,6 @@ public class TestEditLogRace {
     return params;
   }
 
-  private static boolean useAsyncEditLog;
-
-  public void initTestEditLogRace(boolean useAsyncEditLog) {
-    TestEditLogRace.useAsyncEditLog = useAsyncEditLog;
-  }
-
   private static final String NAME_DIR = MiniDFSCluster.getBaseDirectory() + "name-0-1";
 
   private static final Logger LOG =
@@ -139,7 +133,7 @@ public class TestEditLogRace {
     volatile Thread thr;
     final AtomicReference<Throwable> caught;
 
-    void initTestEditLogRace(MiniDFSCluster cluster, AtomicReference<Throwable> caught) {
+    Transactions(MiniDFSCluster cluster, AtomicReference<Throwable> caught) {
       this.cluster = cluster;
       this.nn = cluster.getNameNodeRpc();
       try {
@@ -224,9 +218,8 @@ public class TestEditLogRace {
   @MethodSource("data")
   @ParameterizedTest
   public void testEditLogRolling(boolean useAsyncEditLog) throws Exception {
-    initTestEditLogRace(useAsyncEditLog);
     // start a cluster 
-    Configuration conf = getConf();
+    Configuration conf = getConf(useAsyncEditLog);
     final MiniDFSCluster cluster =
         new MiniDFSCluster.Builder(conf).numDataNodes(NUM_DATA_NODES).build();
     FileSystem fileSys = null;
@@ -308,9 +301,8 @@ public class TestEditLogRace {
   @MethodSource("data")
   @ParameterizedTest
   public void testSaveNamespace(boolean useAsyncEditLog) throws Exception {
-    initTestEditLogRace(useAsyncEditLog);
     // start a cluster 
-    Configuration conf = getConf();
+    Configuration conf = getConf(useAsyncEditLog);
     MiniDFSCluster cluster = null;
     FileSystem fileSys = null;
 
@@ -372,7 +364,7 @@ public class TestEditLogRace {
     }
   }
  
-  private Configuration getConf() {
+  private Configuration getConf(boolean useAsyncEditLog) {
     Configuration conf = new HdfsConfiguration();
     conf.setBoolean(DFSConfigKeys.DFS_NAMENODE_EDITS_ASYNC_LOGGING,
         useAsyncEditLog);
@@ -406,8 +398,7 @@ public class TestEditLogRace {
   @MethodSource("data")
   @ParameterizedTest
   public void testSaveImageWhileSyncInProgress(boolean useAsyncEditLog) throws Exception {
-    initTestEditLogRace(useAsyncEditLog);
-    Configuration conf = getConf();
+    Configuration conf = getConf(useAsyncEditLog);
     NameNode.initMetrics(conf, NamenodeRole.NAMENODE);
     DFSTestUtil.formatNameNode(conf);
     final FSNamesystem namesystem = FSNamesystem.loadFromDisk(conf);
@@ -508,8 +499,7 @@ public class TestEditLogRace {
   @MethodSource("data")
   @ParameterizedTest
   public void testSaveRightBeforeSync(boolean useAsyncEditLog) throws Exception {
-    initTestEditLogRace(useAsyncEditLog);
-    Configuration conf = getConf();
+    Configuration conf = getConf(useAsyncEditLog);
     NameNode.initMetrics(conf, NamenodeRole.NAMENODE);
     DFSTestUtil.formatNameNode(conf);
     final FSNamesystem namesystem = FSNamesystem.loadFromDisk(conf);
@@ -607,11 +597,10 @@ public class TestEditLogRace {
   @ParameterizedTest
   @Timeout(value = 180000, unit = TimeUnit.MILLISECONDS)
   public void testDeadlock(boolean useAsyncEditLog) throws Throwable {
-    initTestEditLogRace(useAsyncEditLog);
     GenericTestUtils.setLogLevel(FSEditLog.LOG, Level.DEBUG);
     GenericTestUtils.setLogLevel(FSEditLogAsync.LOG, Level.DEBUG);
 
-    Configuration conf = getConf();
+    Configuration conf = getConf(useAsyncEditLog);
     NameNode.initMetrics(conf, NamenodeRole.NAMENODE);
     DFSTestUtil.formatNameNode(conf);
     final FSNamesystem namesystem = FSNamesystem.loadFromDisk(conf);

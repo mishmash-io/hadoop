@@ -32,6 +32,7 @@ import java.text.MessageFormat;
 import java.util.Arrays;
 import java.util.Map;
 import java.util.Random;
+import java.util.concurrent.TimeUnit;
 
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.ws.rs.core.MediaType;
@@ -56,7 +57,9 @@ import org.apache.hadoop.test.GenericTestUtils;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.Timeout;
 
+@Timeout(value=60000, unit=TimeUnit.MILLISECONDS)
 public class TestWebHdfsFileSystemContract extends FileSystemContractBaseTest {
   private static final Configuration conf = new Configuration();
   private static final MiniDFSCluster cluster;
@@ -90,11 +93,6 @@ public class TestWebHdfsFileSystemContract extends FileSystemContractBaseTest {
   @Override
   protected String getDefaultWorkingDirectory() {
     return defaultWorkingDirectory;
-  }
-
-  @Override
-  protected int getGlobalTimeout() {
-    return 60 * 1000;
   }
 
   /** HDFS throws AccessControlException
