@@ -310,6 +310,7 @@ public class TestBlockReportLease {
       doAnswer(delayer).when(spyBlockManager).processReport(
           any(DatanodeStorageInfo.class),
           any(BlockListAsLongs.class));
+      ExecutorService pool = Executors.newFixedThreadPool(1);
 
       // Trigger sendBlockReport.
       BlockReportContext brContext = new BlockReportContext(1, 0,
@@ -320,17 +321,24 @@ public class TestBlockReportLease {
       for (int i = 0; i < storages.length; i++) {
         datanodeStorages[i] = storages[i].getStorage();
         StorageBlockReport[] reports = createReports(datanodeStorages, 100);
-
-        // The first multiple send once, simulating the failure of the first report,
-        // only send successfully once.
-        if(i == 0){
-          rpcServer.blockReport(dnRegistration, poolId, reports, brContext);
+        Future<DatanodeCommand> prFuture;
+        
+        if(i == 0) {
+          prFuture = pool.submit(() -> {
+            // The first multiple send once, simulating the failure of the first report,
+            // only send successfully once.
+            rpcServer.blockReport(dnRegistration, poolId, reports, brContext);
+              
+            // Send blockReport.
+            return rpcServer.blockReport(dnRegistration, poolId, reports, brContext);
+          });
+        } else {
+          prFuture = pool.submit(() -> {
+            // Send blockReport.
+            return rpcServer.blockReport(dnRegistration, poolId, reports, brContext);
+          });
         }
-
-        // Send blockReport.
-        DatanodeCommand datanodeCommand = rpcServer.blockReport(dnRegistration, poolId, reports,
-            brContext);
-
+        
         // Wait until BlockManager calls processReport.
         delayer.waitForCall();
 
@@ -338,6 +346,7 @@ public class TestBlockReportLease {
         delayer.proceed();
 
         // Get result, it will not null if process successfully.
+        DatanodeCommand datanodeCommand = prFuture.get();
         assertTrue(datanodeCommand instanceof FinalizeCommand);
         assertEquals(poolId, ((FinalizeCommand)datanodeCommand)
             .getBlockPoolId());
