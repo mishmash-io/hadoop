@@ -320,11 +320,15 @@ public class TestBlockReportLease {
           = new DatanodeStorage[storages.length];
       for (int i = 0; i < storages.length; i++) {
         datanodeStorages[i] = storages[i].getStorage();
-        StorageBlockReport[] reports = createReports(datanodeStorages, 100);
+      }
+
+      for (int i = 0; i < storages.length; i++) {
         Future<DatanodeCommand> prFuture;
         
         if(i == 0) {
           prFuture = pool.submit(() -> {
+            StorageBlockReport[] reports = createReports(datanodeStorages, 100);
+
             // The first multiple send once, simulating the failure of the first report,
             // only send successfully once.
             rpcServer.blockReport(dnRegistration, poolId, reports, brContext);
@@ -334,6 +338,8 @@ public class TestBlockReportLease {
           });
         } else {
           prFuture = pool.submit(() -> {
+            StorageBlockReport[] reports = createReports(datanodeStorages, 100);
+
             // Send blockReport.
             return rpcServer.blockReport(dnRegistration, poolId, reports, brContext);
           });
