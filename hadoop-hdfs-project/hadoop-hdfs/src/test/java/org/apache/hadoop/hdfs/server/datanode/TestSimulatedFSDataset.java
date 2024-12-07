@@ -49,14 +49,8 @@ public class TestSimulatedFSDataset {
   static final int BLOCK_LENGTH_MULTIPLIER = 79;
   static final long FIRST_BLK_ID = 1;
 
-  private final int storageCount;
-
-  public TestSimulatedFSDataset() {
-    this(1);
-  }
-
-  protected TestSimulatedFSDataset(int storageCount) {
-    this.storageCount = storageCount;
+  protected int getStorageCount() {
+    return 1;
   }
 
   @BeforeEach
@@ -332,7 +326,7 @@ public class TestSimulatedFSDataset {
       int expectedBlockCount) {
     Map<DatanodeStorage, BlockListAsLongs> blockReportMap =
         fsdataset.getBlockReports(bpid);
-    assertEquals(storageCount, blockReportMap.size());
+    assertEquals(getStorageCount(), blockReportMap.size());
     int totalCount = 0;
     for (Map.Entry<DatanodeStorage, BlockListAsLongs> ent :
         blockReportMap.entrySet()) {
