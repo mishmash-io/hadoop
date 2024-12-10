@@ -31,8 +31,9 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 public class TestSimulatedFSDatasetWithMultipleStorages
     extends TestSimulatedFSDataset {
 
-  public TestSimulatedFSDatasetWithMultipleStorages() {
-    super(2);
+  @Override
+  protected int getStorageCount() {
+    return 2;
   }
 
   @BeforeEach
