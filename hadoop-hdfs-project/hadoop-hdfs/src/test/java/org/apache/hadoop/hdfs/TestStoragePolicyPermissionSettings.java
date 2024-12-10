@@ -21,6 +21,9 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
 
 import java.io.IOException;
+import java.lang.invoke.MethodHandles;
+import java.lang.invoke.MethodHandles.Lookup;
+import java.lang.invoke.VarHandle;
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
 
@@ -81,9 +84,9 @@ public class TestStoragePolicyPermissionSettings {
       throws NoSuchFieldException, IllegalAccessException {
     Field f = FSNamesystem.class.getDeclaredField(field);
     f.setAccessible(true);
-    Field modifiersField = Field.class.getDeclaredField("modifiers");
-    modifiersField.setAccessible(true);
-    modifiersField.setInt(f, f.getModifiers() & ~Modifier.FINAL);
+    Lookup lookup = MethodHandles.privateLookupIn(Field.class, MethodHandles.lookup());
+    VarHandle modifiers = lookup.findVarHandle(Field.class, "modifiers", int.class);
+    modifiers.set(f, f.getModifiers() & ~Modifier.FINAL);
     f.set(cluster.getNamesystem(), value);
   }
 
