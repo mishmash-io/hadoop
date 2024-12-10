@@ -43,6 +43,9 @@ import java.io.ByteArrayOutputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.lang.invoke.MethodHandles;
+import java.lang.invoke.VarHandle;
+import java.lang.invoke.MethodHandles.Lookup;
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
 import java.net.InetSocketAddress;
@@ -815,10 +818,10 @@ public class TestFileCreation {
                                                  (stm.getWrappedStream());
 
       Field f = DFSOutputStream.class.getDeclaredField("src");
-      Field modifiersField = Field.class.getDeclaredField("modifiers");
-      modifiersField.setAccessible(true);
-      modifiersField.setInt(f, f.getModifiers() & ~Modifier.FINAL);
       f.setAccessible(true);
+      Lookup lookup = MethodHandles.privateLookupIn(Field.class, MethodHandles.lookup());
+      VarHandle modifiers = lookup.findVarHandle(Field.class, "modifiers", int.class);
+      modifiers.set(f, f.getModifiers() & ~Modifier.FINAL);
 
       f.set(dfstream, file1.toString());
       dfstream = (DFSOutputStream) (stm3.getWrappedStream());
