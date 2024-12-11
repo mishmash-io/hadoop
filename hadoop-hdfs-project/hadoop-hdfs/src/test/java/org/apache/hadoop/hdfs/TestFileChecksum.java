@@ -45,7 +45,6 @@ import java.util.Random;
 import java.util.concurrent.TimeUnit;
 
 import static org.apache.hadoop.hdfs.DFSConfigKeys.DFS_BLOCK_ACCESS_TOKEN_ENABLE_KEY;
-import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
 
@@ -678,41 +677,40 @@ public class TestFileChecksum {
   @MethodSource("getParameters")
   @ParameterizedTest
   @Timeout(value = 90000, unit = TimeUnit.MILLISECONDS)
-  public void testMixedBytesPerChecksum(String checksumCombineMode) {
-    assertThrows(IOException.class, () -> {
-      setup(checksumCombineMode);
-      int fileLength = bytesPerCRC * 3;
-      byte[] fileData = StripedFileTestUtil.generateBytes(fileLength);
-      String replicatedFile1 = "/replicatedFile1";
+  public void testMixedBytesPerChecksum(String checksumCombineMode)
+      throws Exception {
+    setup(checksumCombineMode);
+    int fileLength = bytesPerCRC * 3;
+    byte[] fileData = StripedFileTestUtil.generateBytes(fileLength);
+    String replicatedFile1 = "/replicatedFile1";
 
-      // Split file into two parts.
-      byte[] fileDataPart1 = new byte[bytesPerCRC * 2];
-      System.arraycopy(fileData, 0, fileDataPart1, 0, fileDataPart1.length);
-      byte[] fileDataPart2 = new byte[fileData.length - fileDataPart1.length];
-      System.arraycopy(
-          fileData, fileDataPart1.length, fileDataPart2, 0, fileDataPart2.length);
+    // Split file into two parts.
+    byte[] fileDataPart1 = new byte[bytesPerCRC * 2];
+    System.arraycopy(fileData, 0, fileDataPart1, 0, fileDataPart1.length);
+    byte[] fileDataPart2 = new byte[fileData.length - fileDataPart1.length];
+    System.arraycopy(
+        fileData, fileDataPart1.length, fileDataPart2, 0, fileDataPart2.length);
 
-      DFSTestUtil.writeFile(fs, new Path(replicatedFile1), fileDataPart1);
+    DFSTestUtil.writeFile(fs, new Path(replicatedFile1), fileDataPart1);
 
-      // Modify bytesPerCRC for second part that we append as separate block.
-      conf.setInt(
-          HdfsClientConfigKeys.DFS_BYTES_PER_CHECKSUM_KEY, bytesPerCRC / 2);
-      DFSTestUtil.appendFileNewBlock(
-          ((DistributedFileSystem) FileSystem.newInstance(conf)),
-          new Path(replicatedFile1), fileDataPart2);
+    // Modify bytesPerCRC for second part that we append as separate block.
+    conf.setInt(
+        HdfsClientConfigKeys.DFS_BYTES_PER_CHECKSUM_KEY, bytesPerCRC / 2);
+    DFSTestUtil.appendFileNewBlock(
+        ((DistributedFileSystem) FileSystem.newInstance(conf)),
+        new Path(replicatedFile1), fileDataPart2);
 
-      if (checksumCombineMode.equals(ChecksumCombineMode.COMPOSITE_CRC.name())) {
-        String replicatedFile2 = "/replicatedFile2";
-        DFSTestUtil.writeFile(fs, new Path(replicatedFile2), fileData);
-        FileChecksum checksum1 = getFileChecksum(replicatedFile1, -1, false);
-        FileChecksum checksum2 = getFileChecksum(replicatedFile2, -1, false);
-        Assertions.assertEquals(checksum1, checksum2);
-      } else {
-        Assertions.assertThrows(IOException.class, () -> {
-          FileChecksum checksum = getFileChecksum(replicatedFile1, -1, false);
-        });
-      }
-    });
+    if (checksumCombineMode.equals(ChecksumCombineMode.COMPOSITE_CRC.name())) {
+      String replicatedFile2 = "/replicatedFile2";
+      DFSTestUtil.writeFile(fs, new Path(replicatedFile2), fileData);
+      FileChecksum checksum1 = getFileChecksum(replicatedFile1, -1, false);
+      FileChecksum checksum2 = getFileChecksum(replicatedFile2, -1, false);
+      Assertions.assertEquals(checksum1, checksum2);
+    } else {
+      Assertions.assertThrows(IOException.class, () -> {
+        FileChecksum checksum = getFileChecksum(replicatedFile1, -1, false);
+      });
+    }
   }
 
   private FileChecksum getFileChecksum(String filePath, int range,
