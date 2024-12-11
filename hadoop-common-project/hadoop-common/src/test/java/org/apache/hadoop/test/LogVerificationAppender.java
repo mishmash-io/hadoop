@@ -124,7 +124,7 @@ public class LogVerificationAppender extends AbstractAppender {
    * @return the newly added Appender or the existing one
    */
   public static LogVerificationAppender getOrInstall() {
-    LoggerContext ctx = LoggerContext.getContext(false);
+    LoggerContext ctx = LoggerContext.getContext(true);
     Configuration conf = ctx.getConfiguration();
     if (conf.getAppender(NAME) != null) {
       return (LogVerificationAppender) conf.getAppender(NAME);
