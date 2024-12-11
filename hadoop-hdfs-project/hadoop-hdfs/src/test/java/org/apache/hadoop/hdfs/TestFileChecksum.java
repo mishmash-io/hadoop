@@ -32,7 +32,6 @@ import org.apache.hadoop.hdfs.server.datanode.DataNodeFaultInjector;
 import org.apache.hadoop.test.GenericTestUtils;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Timeout;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.MethodSource;
@@ -85,18 +84,15 @@ public class TestFileChecksum {
 
   private String checksumCombineMode;
 
-  public void initTestFileChecksum(String checksumCombineMode) {
-    this.checksumCombineMode = checksumCombineMode;
-  }
-
   public static Object[] getParameters() {
     return new Object[] {
         ChecksumCombineMode.MD5MD5CRC.name(),
         ChecksumCombineMode.COMPOSITE_CRC.name()};
   }
 
-  @BeforeEach
-  public void setup() throws IOException {
+
+  public void setup(String checksumCM) throws IOException {
+    this.checksumCombineMode = checksumCM;
     int numDNs = dataBlocks + parityBlocks + 2;
     conf = new Configuration();
     conf.setLong(DFSConfigKeys.DFS_BLOCK_SIZE_KEY, blockSize);
@@ -131,7 +127,7 @@ public class TestFileChecksum {
   @ParameterizedTest
   @Timeout(value = 90000, unit = TimeUnit.MILLISECONDS)
   public void testStripedFileChecksum1(String checksumCombineMode) throws Exception {
-    initTestFileChecksum(checksumCombineMode);
+    setup(checksumCombineMode);
     int length = 0;
     prepareTestFiles(fileSize, new String[] {stripedFile1, stripedFile2});
     testStripedFileChecksum(length, length + 10);
@@ -141,7 +137,7 @@ public class TestFileChecksum {
   @ParameterizedTest
   @Timeout(value = 90000, unit = TimeUnit.MILLISECONDS)
   public void testStripedFileChecksum2(String checksumCombineMode) throws Exception {
-    initTestFileChecksum(checksumCombineMode);
+    setup(checksumCombineMode);
     int length = stripSize - 1;
     prepareTestFiles(fileSize, new String[] {stripedFile1, stripedFile2});
     testStripedFileChecksum(length, length - 10);
@@ -151,7 +147,7 @@ public class TestFileChecksum {
   @ParameterizedTest
   @Timeout(value = 90000, unit = TimeUnit.MILLISECONDS)
   public void testStripedFileChecksum3(String checksumCombineMode) throws Exception {
-    initTestFileChecksum(checksumCombineMode);
+    setup(checksumCombineMode);
     int length = stripSize;
     prepareTestFiles(fileSize, new String[] {stripedFile1, stripedFile2});
     testStripedFileChecksum(length, length - 10);
@@ -161,7 +157,7 @@ public class TestFileChecksum {
   @ParameterizedTest
   @Timeout(value = 90000, unit = TimeUnit.MILLISECONDS)
   public void testStripedFileChecksum4(String checksumCombineMode) throws Exception {
-    initTestFileChecksum(checksumCombineMode);
+    setup(checksumCombineMode);
     int length = stripSize + cellSize * 2;
     prepareTestFiles(fileSize, new String[] {stripedFile1, stripedFile2});
     testStripedFileChecksum(length, length - 10);
@@ -171,7 +167,7 @@ public class TestFileChecksum {
   @ParameterizedTest
   @Timeout(value = 90000, unit = TimeUnit.MILLISECONDS)
   public void testStripedFileChecksum5(String checksumCombineMode) throws Exception {
-    initTestFileChecksum(checksumCombineMode);
+    setup(checksumCombineMode);
     int length = blockGroupSize;
     prepareTestFiles(fileSize, new String[] {stripedFile1, stripedFile2});
     testStripedFileChecksum(length, length - 10);
@@ -181,7 +177,7 @@ public class TestFileChecksum {
   @ParameterizedTest
   @Timeout(value = 90000, unit = TimeUnit.MILLISECONDS)
   public void testStripedFileChecksum6(String checksumCombineMode) throws Exception {
-    initTestFileChecksum(checksumCombineMode);
+    setup(checksumCombineMode);
     int length = blockGroupSize + blockSize;
     prepareTestFiles(fileSize, new String[] {stripedFile1, stripedFile2});
     testStripedFileChecksum(length, length - 10);
@@ -191,7 +187,7 @@ public class TestFileChecksum {
   @ParameterizedTest
   @Timeout(value = 90000, unit = TimeUnit.MILLISECONDS)
   public void testStripedFileChecksum7(String checksumCombineMode) throws Exception {
-    initTestFileChecksum(checksumCombineMode);
+    setup(checksumCombineMode);
     int length = -1; // whole file
     prepareTestFiles(fileSize, new String[] {stripedFile1, stripedFile2});
     testStripedFileChecksum(length, fileSize);
@@ -220,7 +216,7 @@ public class TestFileChecksum {
   @ParameterizedTest
   @Timeout(value = 90000, unit = TimeUnit.MILLISECONDS)
   public void testStripedAndReplicatedFileChecksum(String checksumCombineMode) throws Exception {
-    initTestFileChecksum(checksumCombineMode);
+    setup(checksumCombineMode);
     prepareTestFiles(fileSize, new String[] {stripedFile1, replicatedFile});
     FileChecksum stripedFileChecksum1 = getFileChecksum(stripedFile1,
         10, false);
@@ -246,7 +242,7 @@ public class TestFileChecksum {
   @ParameterizedTest
   @Timeout(value = 90000, unit = TimeUnit.MILLISECONDS)
   public void testStripedAndReplicatedFileChecksum2(String checksumCombineMode) throws Exception {
-    initTestFileChecksum(checksumCombineMode);
+    setup(checksumCombineMode);
     final int lastBlockSize = (int) (blockSize * 0.5);
     final int fullStripeLength = dataBlocks * blockSize;
     final int testFileSize = fullStripeLength + lastBlockSize;
@@ -274,7 +270,7 @@ public class TestFileChecksum {
   @ParameterizedTest
   @Timeout(value = 90000, unit = TimeUnit.MILLISECONDS)
   public void testDifferentBlockSizeReplicatedFileChecksum(String checksumCombineMode) throws Exception {
-    initTestFileChecksum(checksumCombineMode);
+    setup(checksumCombineMode);
     byte[] fileData = StripedFileTestUtil.generateBytes(fileSize);
     String replicatedFile1 = "/replicatedFile1";
     String replicatedFile2 = "/replicatedFile2";
@@ -296,7 +292,7 @@ public class TestFileChecksum {
   @ParameterizedTest
   @Timeout(value = 90000, unit = TimeUnit.MILLISECONDS)
   public void testStripedFileChecksumWithMissedDataBlocks1(String checksumCombineMode) throws Exception {
-    initTestFileChecksum(checksumCombineMode);
+    setup(checksumCombineMode);
     prepareTestFiles(fileSize, new String[] {stripedFile1});
     FileChecksum stripedFileChecksum1 = getFileChecksum(stripedFile1, fileSize,
         false);
@@ -314,7 +310,7 @@ public class TestFileChecksum {
   @ParameterizedTest
   @Timeout(value = 90000, unit = TimeUnit.MILLISECONDS)
   public void testStripedFileChecksumWithMissedDataBlocks2(String checksumCombineMode) throws Exception {
-    initTestFileChecksum(checksumCombineMode);
+    setup(checksumCombineMode);
     prepareTestFiles(fileSize, new String[] {stripedFile1, stripedFile2});
     FileChecksum stripedFileChecksum1 = getFileChecksum(stripedFile1, -1,
         false);
@@ -361,7 +357,7 @@ public class TestFileChecksum {
   @Timeout(value = 90000, unit = TimeUnit.MILLISECONDS)
   public void testStripedFileChecksumWithMissedDataBlocksRangeQuery1(String checksumCombineMode)
       throws Exception {
-    initTestFileChecksum(checksumCombineMode);
+    setup(checksumCombineMode);
     testStripedFileChecksumWithMissedDataBlocksRangeQuery(stripedFile1, 1);
   }
 
@@ -374,7 +370,7 @@ public class TestFileChecksum {
   @Timeout(value = 90000, unit = TimeUnit.MILLISECONDS)
   public void testStripedFileChecksumWithMissedDataBlocksRangeQuery2(String checksumCombineMode)
       throws Exception {
-    initTestFileChecksum(checksumCombineMode);
+    setup(checksumCombineMode);
     testStripedFileChecksumWithMissedDataBlocksRangeQuery(stripedFile1, 10);
   }
 
@@ -388,7 +384,7 @@ public class TestFileChecksum {
   @Timeout(value = 90000, unit = TimeUnit.MILLISECONDS)
   public void testStripedFileChecksumWithMissedDataBlocksRangeQuery3(String checksumCombineMode)
       throws Exception {
-    initTestFileChecksum(checksumCombineMode);
+    setup(checksumCombineMode);
     testStripedFileChecksumWithMissedDataBlocksRangeQuery(stripedFile1,
         bytesPerCRC);
   }
@@ -402,7 +398,7 @@ public class TestFileChecksum {
   @Timeout(value = 90000, unit = TimeUnit.MILLISECONDS)
   public void testStripedFileChecksumWithMissedDataBlocksRangeQuery4(String checksumCombineMode)
       throws Exception {
-    initTestFileChecksum(checksumCombineMode);
+    setup(checksumCombineMode);
     testStripedFileChecksumWithMissedDataBlocksRangeQuery(stripedFile1,
         cellSize);
   }
@@ -416,7 +412,7 @@ public class TestFileChecksum {
   @Timeout(value = 90000, unit = TimeUnit.MILLISECONDS)
   public void testStripedFileChecksumWithMissedDataBlocksRangeQuery5(String checksumCombineMode)
       throws Exception {
-    initTestFileChecksum(checksumCombineMode);
+    setup(checksumCombineMode);
     testStripedFileChecksumWithMissedDataBlocksRangeQuery(stripedFile1,
         cellSize - 1);
   }
@@ -430,7 +426,7 @@ public class TestFileChecksum {
   @Timeout(value = 90000, unit = TimeUnit.MILLISECONDS)
   public void testStripedFileChecksumWithMissedDataBlocksRangeQuery6(String checksumCombineMode)
       throws Exception {
-    initTestFileChecksum(checksumCombineMode);
+    setup(checksumCombineMode);
     testStripedFileChecksumWithMissedDataBlocksRangeQuery(stripedFile1,
         cellSize + 1);
   }
@@ -444,7 +440,7 @@ public class TestFileChecksum {
   @Timeout(value = 90000, unit = TimeUnit.MILLISECONDS)
   public void testStripedFileChecksumWithMissedDataBlocksRangeQuery7(String checksumCombineMode)
       throws Exception {
-    initTestFileChecksum(checksumCombineMode);
+    setup(checksumCombineMode);
     testStripedFileChecksumWithMissedDataBlocksRangeQuery(stripedFile1,
         cellSize * 2);
   }
@@ -458,7 +454,7 @@ public class TestFileChecksum {
   @Timeout(value = 90000, unit = TimeUnit.MILLISECONDS)
   public void testStripedFileChecksumWithMissedDataBlocksRangeQuery8(String checksumCombineMode)
       throws Exception {
-    initTestFileChecksum(checksumCombineMode);
+    setup(checksumCombineMode);
     testStripedFileChecksumWithMissedDataBlocksRangeQuery(stripedFile1,
         stripSize);
   }
@@ -472,7 +468,7 @@ public class TestFileChecksum {
   @Timeout(value = 90000, unit = TimeUnit.MILLISECONDS)
   public void testStripedFileChecksumWithMissedDataBlocksRangeQuery9(String checksumCombineMode)
       throws Exception {
-    initTestFileChecksum(checksumCombineMode);
+    setup(checksumCombineMode);
     testStripedFileChecksumWithMissedDataBlocksRangeQuery(stripedFile1,
         stripSize - 1);
   }
@@ -486,7 +482,7 @@ public class TestFileChecksum {
   @Timeout(value = 90000, unit = TimeUnit.MILLISECONDS)
   public void testStripedFileChecksumWithMissedDataBlocksRangeQuery10(String checksumCombineMode)
       throws Exception {
-    initTestFileChecksum(checksumCombineMode);
+    setup(checksumCombineMode);
     testStripedFileChecksumWithMissedDataBlocksRangeQuery(stripedFile1,
         stripSize + 1);
   }
@@ -500,7 +496,7 @@ public class TestFileChecksum {
   @Timeout(value = 90000, unit = TimeUnit.MILLISECONDS)
   public void testStripedFileChecksumWithMissedDataBlocksRangeQuery11(String checksumCombineMode)
       throws Exception {
-    initTestFileChecksum(checksumCombineMode);
+    setup(checksumCombineMode);
     testStripedFileChecksumWithMissedDataBlocksRangeQuery(stripedFile1,
         blockGroupSize - 1);
   }
@@ -514,7 +510,7 @@ public class TestFileChecksum {
   @Timeout(value = 90000, unit = TimeUnit.MILLISECONDS)
   public void testStripedFileChecksumWithMissedDataBlocksRangeQuery12(String checksumCombineMode)
       throws Exception {
-    initTestFileChecksum(checksumCombineMode);
+    setup(checksumCombineMode);
     testStripedFileChecksumWithMissedDataBlocksRangeQuery(stripedFile1,
         blockGroupSize + 1);
   }
@@ -528,7 +524,7 @@ public class TestFileChecksum {
   @Timeout(value = 90000, unit = TimeUnit.MILLISECONDS)
   public void testStripedFileChecksumWithMissedDataBlocksRangeQuery13(String checksumCombineMode)
       throws Exception {
-    initTestFileChecksum(checksumCombineMode);
+    setup(checksumCombineMode);
     testStripedFileChecksumWithMissedDataBlocksRangeQuery(stripedFile1,
         blockGroupSize * numBlockGroups / 2);
   }
@@ -542,7 +538,7 @@ public class TestFileChecksum {
   @Timeout(value = 90000, unit = TimeUnit.MILLISECONDS)
   public void testStripedFileChecksumWithMissedDataBlocksRangeQuery14(String checksumCombineMode)
       throws Exception {
-    initTestFileChecksum(checksumCombineMode);
+    setup(checksumCombineMode);
     testStripedFileChecksumWithMissedDataBlocksRangeQuery(stripedFile1,
         fileSize - 1);
   }
@@ -556,7 +552,7 @@ public class TestFileChecksum {
   @Timeout(value = 90000, unit = TimeUnit.MILLISECONDS)
   public void testStripedFileChecksumWithMissedDataBlocksRangeQuery15(String checksumCombineMode)
       throws Exception {
-    initTestFileChecksum(checksumCombineMode);
+    setup(checksumCombineMode);
     testStripedFileChecksumWithMissedDataBlocksRangeQuery(stripedFile1,
         fileSize * 2);
   }
@@ -570,7 +566,7 @@ public class TestFileChecksum {
   @Timeout(value = 90000, unit = TimeUnit.MILLISECONDS)
   public void testStripedFileChecksumWithMissedDataBlocksRangeQuery16(String checksumCombineMode)
       throws Exception {
-    initTestFileChecksum(checksumCombineMode);
+    setup(checksumCombineMode);
     int fileLength = 100;
     String stripedFile3 = ecDir + "/stripedFileChecksum3";
     prepareTestFiles(fileLength, new String[] {stripedFile3});
@@ -587,7 +583,7 @@ public class TestFileChecksum {
   @Timeout(value = 90000, unit = TimeUnit.MILLISECONDS)
   public void testStripedFileChecksumWithMissedDataBlocksRangeQuery17(String checksumCombineMode)
       throws Exception {
-    initTestFileChecksum(checksumCombineMode);
+    setup(checksumCombineMode);
     int fileLength = 100;
     String stripedFile3 = ecDir + "/stripedFileChecksum3";
     prepareTestFiles(fileLength, new String[] {stripedFile3});
@@ -603,7 +599,7 @@ public class TestFileChecksum {
   @Timeout(value = 90000, unit = TimeUnit.MILLISECONDS)
   public void testStripedFileChecksumWithMissedDataBlocksRangeQuery18(String checksumCombineMode)
       throws Exception {
-    initTestFileChecksum(checksumCombineMode);
+    setup(checksumCombineMode);
     int fileLength = 100;
     String stripedFile3 = ecDir + "/stripedFileChecksum3";
     prepareTestFiles(fileLength, new String[] {stripedFile3});
@@ -619,7 +615,7 @@ public class TestFileChecksum {
   @Timeout(value = 90000, unit = TimeUnit.MILLISECONDS)
   public void testStripedFileChecksumWithMissedDataBlocksRangeQuery19(String checksumCombineMode)
       throws Exception {
-    initTestFileChecksum(checksumCombineMode);
+    setup(checksumCombineMode);
     int fileLength = 100;
     String stripedFile3 = ecDir + "/stripedFileChecksum3";
     prepareTestFiles(fileLength, new String[] {stripedFile3});
@@ -636,7 +632,7 @@ public class TestFileChecksum {
   @Timeout(value = 90000, unit = TimeUnit.MILLISECONDS)
   public void testStripedFileChecksumWithMissedDataBlocksRangeQuery20(String checksumCombineMode)
       throws Exception {
-    initTestFileChecksum(checksumCombineMode);
+    setup(checksumCombineMode);
     int fileLength = bytesPerCRC;
     String stripedFile3 = ecDir + "/stripedFileChecksum3";
     prepareTestFiles(fileLength, new String[] {stripedFile3});
@@ -649,7 +645,7 @@ public class TestFileChecksum {
   @Timeout(value = 90000, unit = TimeUnit.MILLISECONDS)
   public void testStripedFileChecksumWithReconstructFail(String checksumCombineMode)
       throws Exception {
-    initTestFileChecksum(checksumCombineMode);
+    setup(checksumCombineMode);
     String stripedFile4 = ecDir + "/stripedFileChecksum4";
     prepareTestFiles(fileSize, new String[] {stripedFile4});
 
@@ -684,7 +680,7 @@ public class TestFileChecksum {
   @Timeout(value = 90000, unit = TimeUnit.MILLISECONDS)
   public void testMixedBytesPerChecksum(String checksumCombineMode) {
     assertThrows(IOException.class, () -> {
-      initTestFileChecksum(checksumCombineMode);
+      setup(checksumCombineMode);
       int fileLength = bytesPerCRC * 3;
       byte[] fileData = StripedFileTestUtil.generateBytes(fileLength);
       String replicatedFile1 = "/replicatedFile1";
