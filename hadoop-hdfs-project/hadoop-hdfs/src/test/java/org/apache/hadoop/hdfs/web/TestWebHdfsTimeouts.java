@@ -156,7 +156,7 @@ public class TestWebHdfsTimeouts {
       fail("expected timeout");
     } catch (SocketTimeoutException e) {
       GenericTestUtils.assertExceptionContains(fs.getUri().getAuthority()
-          + ": connect timed out",e);
+          + ": Connect timed out",e);
     }
   }
 
@@ -192,7 +192,7 @@ public class TestWebHdfsTimeouts {
       fail("expected timeout");
     } catch (SocketTimeoutException e) {
       GenericTestUtils.assertExceptionContains(fs.getUri().getAuthority() +
-          ": connect timed out", e);
+          ": Connect timed out", e);
     }
   }
 
@@ -230,7 +230,7 @@ public class TestWebHdfsTimeouts {
     } catch (SocketTimeoutException e) {
       assumeBacklogConsumed();
       GenericTestUtils.assertExceptionContains(
-          fs.getUri().getAuthority() + ": connect timed out", e);
+          fs.getUri().getAuthority() + ": Connect timed out", e);
     }
   }
 
@@ -270,7 +270,7 @@ public class TestWebHdfsTimeouts {
     } catch (SocketTimeoutException e) {
       assumeBacklogConsumed();
       GenericTestUtils.assertExceptionContains(
-          fs.getUri().getAuthority() + ": connect timed out", e);
+          fs.getUri().getAuthority() + ": Connect timed out", e);
     } finally {
       IOUtils.cleanupWithLogger(LOG, os);
     }
