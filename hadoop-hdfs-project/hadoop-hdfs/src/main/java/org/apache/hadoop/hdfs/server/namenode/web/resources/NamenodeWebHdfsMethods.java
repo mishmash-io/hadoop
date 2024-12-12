@@ -128,7 +128,6 @@ import org.apache.hadoop.classification.VisibleForTesting;
 
 /** Web-hdfs NameNode implementation. */
 @Path("")
-@ParamFilter.LowerCaseParams
 public class NamenodeWebHdfsMethods {
   public static final Logger LOG =
       LoggerFactory.getLogger(NamenodeWebHdfsMethods.class);
@@ -472,6 +471,7 @@ public class NamenodeWebHdfsMethods {
   @Consumes({"*/*"})
   @Produces({MediaType.APPLICATION_OCTET_STREAM + "; " + JettyUtils.UTF_8,
       MediaType.APPLICATION_JSON + "; " + JettyUtils.UTF_8})
+  @ParamFilter.LowerCaseParams
   public Response putRoot(
       @Context final UserGroupInformation ugi,
       @QueryParam(DelegationParam.NAME) @DefaultValue(DelegationParam.DEFAULT)
@@ -570,6 +570,7 @@ public class NamenodeWebHdfsMethods {
   @Consumes({"*/*"})
   @Produces({MediaType.APPLICATION_OCTET_STREAM + "; " + JettyUtils.UTF_8,
       MediaType.APPLICATION_JSON + "; " + JettyUtils.UTF_8})
+  @ParamFilter.LowerCaseParams
   public Response put(
       @Context final UserGroupInformation ugi,
       @QueryParam(DelegationParam.NAME) @DefaultValue(DelegationParam.DEFAULT)
@@ -898,6 +899,7 @@ public class NamenodeWebHdfsMethods {
   @Consumes({"*/*"})
   @Produces({MediaType.APPLICATION_OCTET_STREAM + "; " + JettyUtils.UTF_8,
       MediaType.APPLICATION_JSON + "; " + JettyUtils.UTF_8})
+  @ParamFilter.LowerCaseParams
   public Response postRoot(
       @Context final UserGroupInformation ugi,
       @QueryParam(DelegationParam.NAME) @DefaultValue(DelegationParam.DEFAULT)
@@ -929,6 +931,7 @@ public class NamenodeWebHdfsMethods {
   @Consumes({"*/*"})
   @Produces({MediaType.APPLICATION_OCTET_STREAM + "; " + JettyUtils.UTF_8,
       MediaType.APPLICATION_JSON + "; " + JettyUtils.UTF_8})
+  @ParamFilter.LowerCaseParams
   public Response post(
       @Context final UserGroupInformation ugi,
       @QueryParam(DelegationParam.NAME) @DefaultValue(DelegationParam.DEFAULT)
@@ -1027,6 +1030,7 @@ public class NamenodeWebHdfsMethods {
   @Path("/")
   @Produces({MediaType.APPLICATION_OCTET_STREAM + "; " + JettyUtils.UTF_8,
       MediaType.APPLICATION_JSON + "; " + JettyUtils.UTF_8})
+  @ParamFilter.LowerCaseParams
   public Response getRoot(
       @Context final UserGroupInformation ugi,
       @QueryParam(DelegationParam.NAME) @DefaultValue(DelegationParam.DEFAULT)
@@ -1085,6 +1089,7 @@ public class NamenodeWebHdfsMethods {
   @Path("{" + UriFsPathParam.NAME + ":.*}")
   @Produces({MediaType.APPLICATION_OCTET_STREAM + "; " + JettyUtils.UTF_8,
       MediaType.APPLICATION_JSON + "; " + JettyUtils.UTF_8})
+  @ParamFilter.LowerCaseParams
   public Response get(
       @Context final UserGroupInformation ugi,
       @QueryParam(DelegationParam.NAME) @DefaultValue(DelegationParam.DEFAULT)
@@ -1581,6 +1586,7 @@ public class NamenodeWebHdfsMethods {
   @DELETE
   @Path("/")
   @Produces(MediaType.APPLICATION_JSON + "; " + JettyUtils.UTF_8)
+  @ParamFilter.LowerCaseParams
   public Response deleteRoot(
       @Context final UserGroupInformation ugi,
       @QueryParam(DelegationParam.NAME) @DefaultValue(DelegationParam.DEFAULT)
@@ -1604,6 +1610,7 @@ public class NamenodeWebHdfsMethods {
   @DELETE
   @Path("{" + UriFsPathParam.NAME + ":.*}")
   @Produces(MediaType.APPLICATION_JSON + "; " + JettyUtils.UTF_8)
+  @ParamFilter.LowerCaseParams
   public Response delete(
       @Context final UserGroupInformation ugi,
       @QueryParam(DelegationParam.NAME) @DefaultValue(DelegationParam.DEFAULT)
