@@ -43,51 +43,49 @@ public class TestSecureNameNode extends SaslDataTransferTestCase {
 
 
   @Test
-  public void testName() {
-    assertThrows(IOException.class, () -> {
-      MiniDFSCluster cluster = null;
-      HdfsConfiguration conf = createSecureConfig(
-          "authentication,privacy");
-      try {
-        cluster = new MiniDFSCluster.Builder(conf).numDataNodes(NUM_OF_DATANODES)
-            .build();
-        final MiniDFSCluster clusterRef = cluster;
-        cluster.waitActive();
-        FileSystem fsForSuperUser = UserGroupInformation
-            .loginUserFromKeytabAndReturnUGI(getHdfsPrincipal(), getHdfsKeytab()).doAs(new PrivilegedExceptionAction<FileSystem>() {
-          @Override
-          public FileSystem run() throws Exception {
-            return clusterRef.getFileSystem();
-          }
-        });
-        fsForSuperUser.mkdirs(new Path("/tmp"));
-        fsForSuperUser.setPermission(new Path("/tmp"), new FsPermission(
-            (short) 511));
-
-        UserGroupInformation ugi = UserGroupInformation
-            .loginUserFromKeytabAndReturnUGI(getUserPrincipal(), getUserKeyTab());
-        FileSystem fs = ugi.doAs(new PrivilegedExceptionAction<FileSystem>() {
-          @Override
-          public FileSystem run() throws Exception {
-            return clusterRef.getFileSystem();
-          }
-        });
-        Path p = new Path("/mydir");
-        assertThrows(IOException.class, () -> {
-          fs.mkdirs(p);
-
-          Path tmp = new Path("/tmp/alpha");
-          fs.mkdirs(tmp);
-          assertNotNull(fs.listStatus(tmp));
-        });
-        assertEquals(AuthenticationMethod.KERBEROS,
-            ugi.getAuthenticationMethod());
-      } finally {
-        if (cluster != null) {
-          cluster.shutdown();
+  public void testName() throws Exception {
+    MiniDFSCluster cluster = null;
+    HdfsConfiguration conf = createSecureConfig(
+        "authentication,privacy");
+    try {
+      cluster = new MiniDFSCluster.Builder(conf).numDataNodes(NUM_OF_DATANODES)
+          .build();
+      final MiniDFSCluster clusterRef = cluster;
+      cluster.waitActive();
+      FileSystem fsForSuperUser = UserGroupInformation
+          .loginUserFromKeytabAndReturnUGI(getHdfsPrincipal(), getHdfsKeytab()).doAs(new PrivilegedExceptionAction<FileSystem>() {
+        @Override
+        public FileSystem run() throws Exception {
+          return clusterRef.getFileSystem();
         }
+      });
+      fsForSuperUser.mkdirs(new Path("/tmp"));
+      fsForSuperUser.setPermission(new Path("/tmp"), new FsPermission(
+          (short) 511));
+
+      UserGroupInformation ugi = UserGroupInformation
+          .loginUserFromKeytabAndReturnUGI(getUserPrincipal(), getUserKeyTab());
+      FileSystem fs = ugi.doAs(new PrivilegedExceptionAction<FileSystem>() {
+        @Override
+        public FileSystem run() throws Exception {
+          return clusterRef.getFileSystem();
+        }
+      });
+      Path p = new Path("/mydir");
+      assertThrows(IOException.class, () -> {
+        fs.mkdirs(p);
+
+        Path tmp = new Path("/tmp/alpha");
+        fs.mkdirs(tmp);
+        assertNotNull(fs.listStatus(tmp));
+      });
+      assertEquals(AuthenticationMethod.KERBEROS,
+          ugi.getAuthenticationMethod());
+    } finally {
+      if (cluster != null) {
+        cluster.shutdown();
       }
-    });
+    }
   }
 
   /**
