@@ -31,6 +31,7 @@ import org.apache.hadoop.test.GenericTestUtils;
 import org.apache.hadoop.test.LogVerificationAppender;
 import org.apache.logging.log4j.core.LoggerContext;
 import org.apache.logging.log4j.core.async.AsyncLogger;
+import org.apache.logging.log4j.core.async.AsyncLoggerConfig;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.Timeout;
 
@@ -65,8 +66,11 @@ public class TestNameNodeMetricsLogger {
   @Test
   public void testMetricsLoggerIsAsync() throws IOException {
     makeNameNode(true);
-    assertTrue(LoggerContext.getContext(true).getLogger(NameNode.METRICS_LOG_NAME)
-        instanceof AsyncLogger);
+    LoggerContext logCtx = LoggerContext.getContext(true);
+    assertTrue(
+      logCtx.getLogger(NameNode.METRICS_LOG_NAME) instanceof AsyncLogger
+      || logCtx.getConfiguration()
+           .getLoggerConfig(NameNode.METRICS_LOG_NAME) instanceof AsyncLoggerConfig);
   }
 
   /**
