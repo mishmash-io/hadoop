@@ -42,6 +42,7 @@ import org.apache.hadoop.security.UserGroupInformation;
 import org.apache.hadoop.test.GenericTestUtils.LogCapturer;
 import org.apache.logging.log4j.core.LoggerContext;
 import org.apache.logging.log4j.core.async.AsyncLogger;
+import org.apache.logging.log4j.core.async.AsyncLoggerConfig;
 import org.junit.jupiter.api.*;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.MethodSource;
@@ -112,10 +113,19 @@ public class TestAuditLogs {
     util.createFiles(fs, fileName);
 
     // make sure the appender is what it's supposed to be
-    assertTrue(LoggerContext
-            .getContext(true)
-            .getLogger("org.apache.hadoop.hdfs.server.namenode.FSNamesystem.audit")
-        instanceof AsyncLogger);
+    LoggerContext logCtx = LoggerContext.getContext(true);
+    /*
+     * log4j2 allows setting all loggers as async (without changes to
+     * its configuration), or using a mixture of sync and async loggers.
+     *
+     * The following allows the test to pass in both cases.
+     */
+    assertTrue(logCtx
+          .getLogger("org.apache.hadoop.hdfs.server.namenode.FSNamesystem.audit")
+            instanceof AsyncLogger
+          || logCtx.getConfiguration()
+              .getLoggerConfig("org.apache.hadoop.hdfs.server.namenode.FSNamesystem.audit")
+                instanceof AsyncLoggerConfig);
     
     fnames = util.getFileNames(fileName);
     util.waitReplication(fs, fileName, (short)3);

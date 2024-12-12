@@ -41,6 +41,7 @@ import org.apache.hadoop.test.GenericTestUtils;
 import org.apache.hadoop.test.LogVerificationAppender;
 import org.apache.logging.log4j.core.LoggerContext;
 import org.apache.logging.log4j.core.async.AsyncLogger;
+import org.apache.logging.log4j.core.async.AsyncLoggerConfig;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
@@ -126,8 +127,17 @@ public class TestDataNodeMetricsLogger {
   public void testMetricsLoggerIsAsync() throws IOException {
     startDNForTest(true);
     assertNotNull(dn);
-    assertTrue(LoggerContext.getContext(true).getLogger(DataNode.METRICS_LOG_NAME)
-        instanceof AsyncLogger);
+    LoggerContext logCtx = LoggerContext.getContext(true);
+    /*
+     * log4j2 allows setting all loggers as async (without changes to
+     * its configuration), or using a mixture of sync and async loggers.
+     *
+     * The following allows the test to pass in both cases.
+     */
+    assertTrue(
+      logCtx.getLogger(DataNode.METRICS_LOG_NAME) instanceof AsyncLogger
+      || logCtx.getConfiguration()
+           .getLoggerConfig(DataNode.METRICS_LOG_NAME) instanceof AsyncLoggerConfig);
   }
 
   /**

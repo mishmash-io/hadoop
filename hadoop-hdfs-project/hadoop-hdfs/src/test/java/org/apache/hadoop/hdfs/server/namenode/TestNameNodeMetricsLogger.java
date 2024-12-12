@@ -67,6 +67,12 @@ public class TestNameNodeMetricsLogger {
   public void testMetricsLoggerIsAsync() throws IOException {
     makeNameNode(true);
     LoggerContext logCtx = LoggerContext.getContext(true);
+    /*
+     * log4j2 allows setting all loggers as async (without changes to
+     * its configuration), or using a mixture of sync and async loggers.
+     *
+     * The following allows the test to pass in both cases.
+     */
     assertTrue(
       logCtx.getLogger(NameNode.METRICS_LOG_NAME) instanceof AsyncLogger
       || logCtx.getConfiguration()
