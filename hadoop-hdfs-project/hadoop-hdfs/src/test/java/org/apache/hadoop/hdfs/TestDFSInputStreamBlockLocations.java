@@ -40,7 +40,6 @@ import org.apache.hadoop.hdfs.server.datanode.DataNode;
 import org.apache.hadoop.util.Time;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.MethodSource;
 
@@ -74,12 +73,8 @@ public class TestDFSInputStreamBlockLocations {
     });
   }
 
-  public void initTestDFSInputStreamBlockLocations(Boolean enableExpiration) {
-    enableBlkExpiration = enableExpiration;
-  }
-
-  @BeforeEach
-  public void setup() throws IOException {
+  public void setup(Boolean enable) throws IOException {
+    enableBlkExpiration = enable;
     conf = new HdfsConfiguration();
     conf.setBoolean(
         DFSConfigKeys.DFS_NAMENODE_AVOID_STALE_DATANODE_FOR_READ_KEY, true);
@@ -133,7 +128,7 @@ public class TestDFSInputStreamBlockLocations {
   @MethodSource("getTestParameters")
   @ParameterizedTest(name = "{index}: CacheExpirationConfig(Enable {0})")
   public void testRefreshBlockLocations(Boolean enableExpiration) throws IOException {
-    initTestDFSInputStreamBlockLocations(enableExpiration);
+    setup(enableExpiration);
     final String fileName = "/test_cache_locations";
     filePath = createFile(fileName);
 
@@ -184,21 +179,21 @@ public class TestDFSInputStreamBlockLocations {
   @MethodSource("getTestParameters")
   @ParameterizedTest(name = "{index}: CacheExpirationConfig(Enable {0})")
   public void testDeferredRegistrationStatefulRead(Boolean enableExpiration) throws IOException {
-    initTestDFSInputStreamBlockLocations(enableExpiration);
+    setup(enableExpiration);
     testWithRegistrationMethod(DFSInputStream::read);
   }
 
   @MethodSource("getTestParameters")
   @ParameterizedTest(name = "{index}: CacheExpirationConfig(Enable {0})")
   public void testDeferredRegistrationPositionalRead(Boolean enableExpiration) throws IOException {
-    initTestDFSInputStreamBlockLocations(enableExpiration);
+    setup(enableExpiration);
     testWithRegistrationMethod(fin -> fin.readFully(0, new byte[1]));
   }
 
   @MethodSource("getTestParameters")
   @ParameterizedTest(name = "{index}: CacheExpirationConfig(Enable {0})")
   public void testDeferredRegistrationGetAllBlocks(Boolean enableExpiration) throws IOException {
-    initTestDFSInputStreamBlockLocations(enableExpiration);
+    setup(enableExpiration);
     testWithRegistrationMethod(DFSInputStream::getAllBlocks);
   }
 
@@ -210,7 +205,7 @@ public class TestDFSInputStreamBlockLocations {
   @MethodSource("getTestParameters")
   @ParameterizedTest(name = "{index}: CacheExpirationConfig(Enable {0})")
   public void testClearIgnoreListChooseDataNode(Boolean enableExpiration) throws IOException {
-    initTestDFSInputStreamBlockLocations(enableExpiration);
+    setup(enableExpiration);
     final String fileName = "/test_cache_locations";
     filePath = createFile(fileName);
 
