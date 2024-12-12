@@ -27,11 +27,10 @@ import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hdfs.DFSConfigKeys;
 import org.apache.hadoop.hdfs.DistributedFileSystem;
 import org.apache.hadoop.hdfs.MiniDFSCluster;
-import org.apache.hadoop.hdfs.server.namenode.NameNode;
-import org.apache.hadoop.hdfs.server.namenode.NameNodeAdapter;
 import org.apache.hadoop.io.IOUtils;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.function.Executable;
 
 /**
  * Tests that the configuration flag that controls support for XAttrs is off
@@ -57,24 +56,21 @@ public class TestXAttrConfigFlag {
   public void testSetXAttr() throws Exception {
     initCluster(true, false);
     fs.mkdirs(PATH);
-    expectException();
-    fs.setXAttr(PATH, "user.foo", null);
+    expectException(() -> fs.setXAttr(PATH, "user.foo", null));
   }
   
   @Test
   public void testGetXAttrs() throws Exception {
     initCluster(true, false);
     fs.mkdirs(PATH);
-    expectException();
-    fs.getXAttrs(PATH);
+    expectException(() -> fs.getXAttrs(PATH));
   }
   
   @Test
   public void testRemoveXAttr() throws Exception {
     initCluster(true, false);
     fs.mkdirs(PATH);
-    expectException();
-    fs.removeXAttr(PATH, "user.foo");
+    expectException(() -> fs.removeXAttr(PATH, "user.foo"));
   }
 
   @Test
@@ -106,9 +102,8 @@ public class TestXAttrConfigFlag {
    * We expect an IOException, and we want the exception text to state the
    * configuration key that controls XAttr support.
    */
-  private void expectException() {
-    Throwable exception = assertThrows(IOException.class, () -> {
-    });
+  private void expectException(Executable exe) {
+    Throwable exception = assertThrows(IOException.class, exe);
     assertTrue(exception.getMessage().contains(DFSConfigKeys.DFS_NAMENODE_XATTRS_ENABLED_KEY));
   }
 
