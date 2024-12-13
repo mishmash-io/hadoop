@@ -40,6 +40,7 @@ import org.apache.logging.log4j.core.layout.PatternLayout;
 @Plugin(name="CapturingAppender", category="Core", elementType="appender", printObject=true)
 public class LogCapturingAppender extends AbstractAppender {
 
+  private static final Consumer<LogEvent> NOOP = e -> {};
   protected static final Map<String, Consumer<LogEvent>> eventConsumers =
     new ConcurrentHashMap<>();
   protected static final AtomicReference<Consumer<LogEvent>> rootConsumer =
@@ -52,14 +53,12 @@ public class LogCapturingAppender extends AbstractAppender {
 
   @Override
   public void append(LogEvent event) {
-    if (event.getLoggerName() == null) {
-      rootConsumer.get().accept(event);
-    } else {
+    if (event.getLoggerName() != null) {
       eventConsumers.getOrDefault(
-          event.getLoggerName(),
-          e -> {})
+          event.getLoggerName(), NOOP)
         .accept(event);
     }
+    rootConsumer.get().accept(event);
   }
 
   public static void consumeEvents(String loggerName, Consumer<LogEvent> consumer) {
@@ -93,7 +92,7 @@ public class LogCapturingAppender extends AbstractAppender {
 
   public static void stop(String loggerName) {
     if (loggerName == null) {
-      rootConsumer.set(e -> {});
+      rootConsumer.set(NOOP);
     } else {
       eventConsumers.remove(loggerName);
     }
