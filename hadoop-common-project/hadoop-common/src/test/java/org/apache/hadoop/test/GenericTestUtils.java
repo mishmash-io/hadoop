@@ -25,7 +25,6 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.io.PrintStream;
-import java.io.StringWriter;
 import java.lang.management.ManagementFactory;
 import java.lang.management.ThreadInfo;
 import java.lang.management.ThreadMXBean;
@@ -60,11 +59,7 @@ import org.apache.logging.log4j.core.LoggerContext;
 import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.apache.logging.log4j.core.layout.PatternLayout;
-import org.apache.logging.log4j.core.appender.WriterAppender;
-import org.apache.logging.log4j.core.config.AppenderRef;
 import org.apache.logging.log4j.core.config.Configurator;
-import org.apache.logging.log4j.core.config.LoggerConfig;
 import org.mockito.invocation.InvocationOnMock;
 import org.mockito.stubbing.Answer;
 import org.slf4j.LoggerFactory;
@@ -476,9 +471,8 @@ public abstract class GenericTestUtils {
   }
 
   public static class LogCapturer {
-    private StringWriter sw = new StringWriter();
-    private WriterAppender appender;
-    //private org.apache.logging.log4j.core.Logger logger;
+    private String loggerName;
+    private StringBuffer buf = new StringBuffer();
 
     public static LogCapturer captureLogs(org.slf4j.Logger logger) {
       if (logger.getName().equals("root")) {
@@ -492,32 +486,20 @@ public abstract class GenericTestUtils {
     }
 
     private LogCapturer(String logger) {
-      LoggerContext ctx = LoggerContext.getContext(false);
-      org.apache.logging.log4j.core.config.Configuration conf = ctx.getConfiguration();
-      this.appender = WriterAppender.createAppender(PatternLayout.createDefaultLayout(conf),
-        null, sw, "LogCapturerAppender for " + logger, true, true);
-      this.appender.start();
-      conf.addAppender(this.appender);
-      AppenderRef[] refs = new AppenderRef[] {
-        AppenderRef.createAppenderRef("logCapturerAppender:" + logger, null, null)
-      };
-      LoggerConfig loggerConf = LoggerConfig.createLogger(false, Level.INFO, logger,
-        "true", refs, null, conf, null);
-      loggerConf.addAppender(this.appender, null, null);
-      conf.addLogger(logger, loggerConf);
-      ctx.updateLoggers();
+      this.loggerName = logger;
+      LogCapturingAppender.concatMessages(logger, buf);
     }
 
     public String getOutput() {
-      return sw.toString();
+      return buf.toString();
     }
 
     public void stopCapturing() {
-      //logger.removeAppender(appender);
+      LogCapturingAppender.stop(loggerName);
     }
 
     public void clearOutput() {
-      sw.getBuffer().setLength(0);
+      buf.setLength(0);
     }
   }
 
