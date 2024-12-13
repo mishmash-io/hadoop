@@ -44,8 +44,10 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
+import java.util.Queue;
 import java.util.Random;
 import java.util.Set;
+import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.regex.Pattern;
 import static java.util.concurrent.TimeUnit.*;
@@ -82,7 +84,7 @@ import org.apache.hadoop.security.alias.CredentialProvider;
 import org.apache.hadoop.security.alias.CredentialProviderFactory;
 import org.apache.hadoop.security.alias.LocalJavaKeyStoreProvider;
 import org.apache.hadoop.test.GenericTestUtils;
-import org.apache.hadoop.test.LogVerificationAppender;
+import org.apache.hadoop.test.LogCapturingAppender;
 
 import static org.apache.hadoop.util.PlatformName.IBM_JAVA;
 
@@ -228,24 +230,27 @@ public class TestConfiguration {
     InputStream in2 = new ByteArrayInputStream(bytes2);
 
     // Attach our own log appender so we can verify output
-    LogVerificationAppender appender = LogVerificationAppender
-      .addToLogger(Configuration.class.getName(), "INFO");
-    appender.clearLog();
+    Queue<LogEvent> events = new ConcurrentLinkedQueue<>();
+    LogCapturingAppender.collectEvents(
+       Configuration.class.getName(), events);
 
-    // Add the 2 different resources - this should generate a warning
-    conf.addResource(in1);
-    conf.addResource(in2);
-    assertEquals("A", conf.get("prop"), "should see the first value");
+    try {
+      // Add the 2 different resources - this should generate a warning
+      conf.addResource(in1);
+      conf.addResource(in2);
+      assertEquals("A", conf.get("prop"), "should see the first value");
 
-    List<LogEvent> events = appender.getLog();
-    assertEquals(1, events.size(),
-      "overriding a final parameter should cause logging");
-    LogEvent loggingEvent = events.get(0);
-    String renderedMessage = loggingEvent.getMessage().getFormattedMessage();
-    assertTrue(
-      renderedMessage.contains("an attempt to override final parameter: "
-          + "prop;  Ignoring."),
-      "did not see expected string inside message "+ renderedMessage);
+      assertEquals(1, events.size(),
+        "overriding a final parameter should cause logging");
+      LogEvent loggingEvent = events.peek();
+      String renderedMessage = loggingEvent.getMessage().getFormattedMessage();
+      assertTrue(
+        renderedMessage.contains("an attempt to override final parameter: "
+            + "prop;  Ignoring."),
+          "did not see expected string inside message "+ renderedMessage);
+    } finally {
+      LogCapturingAppender.stop(Configuration.class.getName());
+    }
   }
 
   @Test
@@ -262,21 +267,24 @@ public class TestConfiguration {
     InputStream in2 = new ByteArrayInputStream(bytes);
 
     // Attach our own log appender so we can verify output
-    LogVerificationAppender appender = LogVerificationAppender
-      .addToLogger(Configuration.class.getName(), "INFO");
-    appender.clearLog();
+    Queue<LogEvent> events = new ConcurrentLinkedQueue<>();
+    LogCapturingAppender.collectEvents(
+      Configuration.class.getName(), events);
 
-    // Add the resource twice from a stream - should not generate warnings
-    conf.addResource(in1);
-    conf.addResource(in2);
-    assertEquals("A", conf.get("prop"));
+    try {
+      // Add the resource twice from a stream - should not generate warnings
+      conf.addResource(in1);
+      conf.addResource(in2);
+      assertEquals("A", conf.get("prop"));
 
-    List<LogEvent> events = appender.getLog();
-    for (LogEvent loggingEvent : events) {
-      System.out.println("Event = " + loggingEvent.getMessage().getFormattedMessage());
-    }
-    assertTrue(events.isEmpty(),
+      for (LogEvent loggingEvent : events) {
+        System.out.println("Event = " + loggingEvent.getMessage().getFormattedMessage());
+      }
+      assertTrue(events.isEmpty(),
         "adding same resource twice should not cause logging");
+    } finally {
+      LogCapturingAppender.stop(Configuration.class.getName());
+    }
   }
 
   @Test
@@ -292,20 +300,23 @@ public class TestConfiguration {
     InputStream in1 = new ByteArrayInputStream(bytes);
 
     // Attach our own log appender so we can verify output
-    LogVerificationAppender appender = LogVerificationAppender
-      .addToLogger(Configuration.class.getName(), "INFO");
-    appender.clearLog();
+    Queue<LogEvent> events = new ConcurrentLinkedQueue<>();
+    LogCapturingAppender.collectEvents(
+      Configuration.class.getName(), events);
 
-    // Add the resource - this should not produce a warning
-    conf.addResource(in1);
-    assertEquals("A", conf.get("prop"), "should see the value");
+    try {
+      // Add the resource - this should not produce a warning
+      conf.addResource(in1);
+      assertEquals("A", conf.get("prop"), "should see the value");
 
-    List<LogEvent> events = appender.getLog();
-    for (LogEvent loggingEvent : events) {
-      System.out.println("Event = " + loggingEvent.getMessage().getFormattedMessage());
-    }
-    assertTrue(events.isEmpty(),
+      for (LogEvent loggingEvent : events) {
+        System.out.println("Event = " + loggingEvent.getMessage().getFormattedMessage());
+      }
+      assertTrue(events.isEmpty(),
         "adding same resource twice should not cause logging");
+    } finally {
+      LogCapturingAppender.stop(Configuration.class.getName());
+    }
   }
 
   @Test
@@ -321,23 +332,26 @@ public class TestConfiguration {
     InputStream in1 = new ByteArrayInputStream(bytes);
 
     // Attach our own log appender so we can verify output
-    LogVerificationAppender appender = LogVerificationAppender
-      .addToLogger(Configuration.class.getName(), "INFO");
-    appender.clearLog();
+    Queue<LogEvent> events = new ConcurrentLinkedQueue<>();
+    LogCapturingAppender.collectEvents(
+      Configuration.class.getName(), events);
 
-    // Add the resource - this should produce a warning
-    conf.addResource(in1);
-    assertEquals("A", conf.get("prop"), "should see the value");
+    try {
+      // Add the resource - this should produce a warning
+      conf.addResource(in1);
+      assertEquals("A", conf.get("prop"), "should see the value");
 
-    List<LogEvent> events = appender.getLog();
-    assertEquals(1, events.size(),
+      assertEquals(1, events.size(),
         "overriding a final parameter should cause logging");
-    LogEvent loggingEvent = events.get(0);
-    String renderedMessage = loggingEvent.getMessage().getFormattedMessage();
-    assertTrue(
+      LogEvent loggingEvent = events.peek();
+      String renderedMessage = loggingEvent.getMessage().getFormattedMessage();
+      assertTrue(
         renderedMessage.contains("an attempt to override final parameter: "
             + "prop;  Ignoring."),
         "did not see expected string inside message "+ renderedMessage);
+    } finally {
+      LogCapturingAppender.stop(Configuration.class.getName());
+    }
   }
 
   /**

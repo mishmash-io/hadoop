@@ -31,9 +31,8 @@ import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.crypto.key.kms.server.KMS.KMSOp;
 import org.apache.hadoop.security.UserGroupInformation;
 import org.apache.hadoop.test.GenericTestUtils;
-import org.apache.hadoop.test.LogVerificationAppender;
+import org.apache.hadoop.test.LogCapturingAppender;
 import org.apache.logging.log4j.core.LoggerContext;
-import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
@@ -43,8 +42,9 @@ import org.junit.jupiter.api.Timeout;
 @Timeout(value=180000, unit=TimeUnit.MILLISECONDS)
 public class TestKMSAudit {
 
-  private static LogVerificationAppender appender;
-  
+  //private static LogCapturingAppender appender;
+  private StringBuffer logOutput;
+
   private KMSAudit kmsAudit;
   private UserGroupInformation luser =
       UserGroupInformation.createUserForTesting("luser@REALM", new String[0]);
@@ -54,30 +54,24 @@ public class TestKMSAudit {
     LoggerContext ctx = LoggerContext.getContext(false);
     ctx.setConfigLocation(TestKMSAudit.class.getClassLoader()
         .getResource("log4j2-kmsaudit.properties").toURI());
-    appender = LogVerificationAppender.addToLogger(null, "INFO");
   }
 
   @BeforeEach
   public void setUp() throws IOException {
     Configuration conf = new Configuration();
     this.kmsAudit = new KMSAudit(conf);
-    appender.clearLog();
+    logOutput = new StringBuffer();
+    LogCapturingAppender.concatMessages(null, logOutput);
   }
 
   @AfterEach
   public void cleanUp() {
     kmsAudit.shutdown();
+    LogCapturingAppender.stop(null);
   }
 
-  @AfterAll
-  public static void cleanUpAll() {
-    appender.clearLog();
-  }
-
-  private String getAndResetLogOutput() {
-    String log = appender.getAllAsText();
-    appender.clearLog();
-    return log;
+  private String getLogOutput() {
+    return logOutput.toString();
   }
 
   @Test
@@ -101,7 +95,7 @@ public class TestKMSAudit {
     kmsAudit.ok(luser, KMSOp.REENCRYPT_EEK_BATCH, "k1", "testmsg");
     kmsAudit.ok(luser, KMSOp.REENCRYPT_EEK_BATCH, "k1", "testmsg");
     kmsAudit.evictCacheForTesting();
-    String out = getAndResetLogOutput();
+    String out = getLogOutput();
     System.out.println(out);
     boolean doesMatch = out.matches(
         "OK\\[op=DECRYPT_EEK, key=k1, user=luser@REALM, accessCount=1, "
@@ -139,7 +133,7 @@ public class TestKMSAudit {
     Thread.sleep(1000);
     kmsAudit.ok(luser, KMSOp.GENERATE_EEK, "k3", "testmsg");
     kmsAudit.evictCacheForTesting();
-    String out = getAndResetLogOutput();
+    String out = getLogOutput();
     System.out.println(out);
 
     // The UNAUTHORIZED will trigger cache invalidation, which then triggers
@@ -174,7 +168,7 @@ public class TestKMSAudit {
     kmsAudit.unauthorized(luser, KMSOp.DECRYPT_EEK, "k4");
     kmsAudit.error(luser, "method", "url", "testmsg");
     kmsAudit.unauthenticated("remotehost", "method", "url", "testmsg");
-    String out = getAndResetLogOutput();
+    String out = getLogOutput();
     System.out.println(out);
     assertTrue(out.matches(
         "OK\\[op=GENERATE_EEK, key=k4, user=luser@REALM, accessCount=1, "

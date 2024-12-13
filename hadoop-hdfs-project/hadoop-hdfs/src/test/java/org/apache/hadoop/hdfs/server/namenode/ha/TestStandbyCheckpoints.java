@@ -26,8 +26,10 @@ import java.lang.management.ThreadMXBean;
 import java.net.BindException;
 import java.net.URI;
 import java.net.URL;
+import java.util.Collection;
 import java.util.List;
 import java.util.Random;
+import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Supplier;
 
@@ -49,7 +51,7 @@ import org.apache.hadoop.io.compress.CompressionOutputStream;
 import org.apache.hadoop.io.compress.GzipCodec;
 import org.apache.hadoop.ipc.StandbyException;
 import org.apache.hadoop.test.GenericTestUtils;
-import org.apache.hadoop.test.LogVerificationAppender;
+import org.apache.hadoop.test.LogCapturingAppender;
 import org.apache.hadoop.test.GenericTestUtils.DelayAnswer;
 import org.apache.hadoop.test.PathUtils;
 import org.apache.hadoop.util.Lists;
@@ -305,36 +307,40 @@ public class TestStandbyCheckpoints {
   @Timeout(value = 30000, unit = TimeUnit.MILLISECONDS)
   public void testCheckpointBeforeNameNodeInitializationIsComplete()
       throws Exception {
-    final LogVerificationAppender appender = LogVerificationAppender.addToLogger(null, "INFO");
-    appender.clearLog();
+    Collection<LogEvent> log = new ConcurrentLinkedQueue<>();
+    LogCapturingAppender.collectEvents(null, log);
 
-    // Transition 2 to observer
-    cluster.transitionToObserver(2);
-    doEdits(0, 10);
-    // After a rollEditLog, Standby(nn1)'s next checkpoint would be
-    // ahead of observer(nn2).
-    nns[0].getRpcServer().rollEditLog();
+    try {
+      // Transition 2 to observer
+      cluster.transitionToObserver(2);
+      doEdits(0, 10);
+      // After a rollEditLog, Standby(nn1)'s next checkpoint would be
+      // ahead of observer(nn2).
+      nns[0].getRpcServer().rollEditLog();
 
-    NameNode nn2 = nns[2];
-    FSImage nnFSImage = NameNodeAdapter.getAndSetFSImageInHttpServer(nn2, null);
+      NameNode nn2 = nns[2];
+      FSImage nnFSImage = NameNodeAdapter.getAndSetFSImageInHttpServer(nn2, null);
 
-    // After standby creating a checkpoint, it will try to push the image to
-    // active and all observer, updating it's own txid to the most recent.
-    HATestUtil.waitForCheckpoint(cluster, 1, ImmutableList.of(12));
-    HATestUtil.waitForCheckpoint(cluster, 0, ImmutableList.of(12));
+      // After standby creating a checkpoint, it will try to push the image to
+      // active and all observer, updating it's own txid to the most recent.
+      HATestUtil.waitForCheckpoint(cluster, 1, ImmutableList.of(12));
+      HATestUtil.waitForCheckpoint(cluster, 0, ImmutableList.of(12));
 
-    NameNodeAdapter.getAndSetFSImageInHttpServer(nn2, nnFSImage);
-    cluster.transitionToStandby(2);
+      NameNodeAdapter.getAndSetFSImageInHttpServer(nn2, nnFSImage);
+      cluster.transitionToStandby(2);
 
-    for (LogEvent event : appender.getLog()) {
-      String message = event.getMessage().getFormattedMessage();
-      if (message.contains("PutImage failed") &&
-          message.contains("FSImage has not been set in the NameNode.")) {
-        //Logs have the expected exception.
-        return;
+      for (LogEvent event : log) {
+        String message = event.getMessage().getFormattedMessage();
+        if (message.contains("PutImage failed") &&
+            message.contains("FSImage has not been set in the NameNode.")) {
+          //Logs have the expected exception.
+          return;
+        }
       }
+      fail("Expected exception not present in logs.");
+    } finally {
+      LogCapturingAppender.stop(null);
     }
-    fail("Expected exception not present in logs.");
   }
 
   /**

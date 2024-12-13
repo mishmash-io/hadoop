@@ -33,7 +33,9 @@ import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.channels.FileChannel;
 import java.util.HashSet;
+import java.util.Queue;
 import java.util.Set;
+import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.ThreadLocalRandom;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.ReadWriteLock;
@@ -81,7 +83,7 @@ import org.apache.hadoop.io.nativeio.NativeIO.POSIX.CacheManipulator;
 import org.apache.hadoop.io.nativeio.NativeIO.POSIX.NoMlockCacheManipulator;
 import org.apache.hadoop.metrics2.MetricsRecordBuilder;
 import org.apache.hadoop.test.GenericTestUtils;
-import org.apache.hadoop.test.LogVerificationAppender;
+import org.apache.hadoop.test.LogCapturingAppender;
 import org.apache.hadoop.test.MetricsAsserts;
 import org.junit.jupiter.api.*;
 
@@ -392,34 +394,40 @@ public class TestFsDatasetCache {
     }
 
     // nth file should hit a capacity exception
-    final LogVerificationAppender appender = LogVerificationAppender.addToLogger(null, "INFO");
-    appender.clearLog();
-    setHeartbeatResponse(cacheBlocks(fileLocs[numFiles-1]));
+    Queue<String> log = new ConcurrentLinkedQueue<>();
+    LogCapturingAppender.collectMessages(null, log);
 
-    GenericTestUtils.waitFor(new Supplier<Boolean>() {
-      @Override
-      public Boolean get() {
-        // check the log reported by FsDataSetCache
-        // in the case that cache capacity is exceeded.
-        int lines = appender.countLinesWithMessage(
-            "could not reserve more bytes in the cache: ");
-        return lines > 0;
+    try {
+      setHeartbeatResponse(cacheBlocks(fileLocs[numFiles-1]));
+
+      GenericTestUtils.waitFor(new Supplier<Boolean>() {
+        @Override
+        public Boolean get() {
+          // check the log reported by FsDataSetCache
+          // in the case that cache capacity is exceeded.
+          return log.stream()
+              .filter(m -> m != null && m.contains("could not reserve more bytes in the cache: "))
+              .findAny()
+              .isPresent();
+        }
+      }, 500, 30000);
+      // Also check the metrics for the failure
+      assertTrue(fsd.getNumBlocksFailedToCache() > 0,
+          "Expected more than 0 failed cache attempts");
+
+      // Uncache the n-1 files
+      int curCachedBlocks = 16;
+      for (int i=0; i<numFiles-1; i++) {
+        setHeartbeatResponse(uncacheBlocks(fileLocs[i]));
+        long uncachedBytes = rounder.roundUp(fileSizes[i]);
+        total -= uncachedBytes;
+        curCachedBlocks -= uncachedBytes / BLOCK_SIZE;
+        DFSTestUtil.verifyExpectedCacheUsage(total, curCachedBlocks, fsd);
       }
-    }, 500, 30000);
-    // Also check the metrics for the failure
-    assertTrue(fsd.getNumBlocksFailedToCache() > 0,
-        "Expected more than 0 failed cache attempts");
-
-    // Uncache the n-1 files
-    int curCachedBlocks = 16;
-    for (int i=0; i<numFiles-1; i++) {
-      setHeartbeatResponse(uncacheBlocks(fileLocs[i]));
-      long uncachedBytes = rounder.roundUp(fileSizes[i]);
-      total -= uncachedBytes;
-      curCachedBlocks -= uncachedBytes / BLOCK_SIZE;
-      DFSTestUtil.verifyExpectedCacheUsage(total, curCachedBlocks, fsd);
+      LOG.info("finishing testFilesExceedMaxLockedMemory");
+    } finally {
+      LogCapturingAppender.stop(null);
     }
-    LOG.info("finishing testFilesExceedMaxLockedMemory");
   }
 
   @Test

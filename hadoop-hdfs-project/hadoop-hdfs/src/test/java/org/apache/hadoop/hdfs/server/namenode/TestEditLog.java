@@ -44,6 +44,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Random;
 import java.util.concurrent.Callable;
+import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.regex.Matcher;
@@ -80,7 +81,7 @@ import org.apache.hadoop.hdfs.util.XMLUtils.InvalidXmlException;
 import org.apache.hadoop.hdfs.util.XMLUtils.Stanza;
 import org.apache.hadoop.io.IOUtils;
 import org.apache.hadoop.test.GenericTestUtils;
-import org.apache.hadoop.test.LogVerificationAppender;
+import org.apache.hadoop.test.LogCapturingAppender;
 import org.apache.hadoop.test.PathUtils;
 import org.apache.hadoop.util.ExitUtil;
 import org.apache.hadoop.util.ExitUtil.ExitException;
@@ -1727,8 +1728,8 @@ public class TestEditLog {
    */
   @Test
   public void testReadActivelyUpdatedLog() throws Exception {
-    final LogVerificationAppender appender = LogVerificationAppender.addToLogger(null, "INFO");
-    appender.clearLog();
+    final Collection<LogEvent> log = new ConcurrentLinkedQueue<>();
+    LogCapturingAppender.collectEvents(null, log);
     Configuration conf = new HdfsConfiguration();
     conf.setBoolean(DFSConfigKeys.DFS_NAMENODE_ACLS_ENABLED_KEY, true);
     // Set single handler thread, so all transactions hit same thread-local ops.
@@ -1778,7 +1779,6 @@ public class TestEditLog {
       events.poll();
       String pattern = "Caught exception after reading (.*) ops";
       Pattern r = Pattern.compile(pattern);
-      final List<LogEvent> log = appender.getLog();
       for (LogEvent event : log) {
         Matcher m = r.matcher(event.getMessage().getFormattedMessage());
         if (m.find()) {
@@ -1787,6 +1787,7 @@ public class TestEditLog {
       }
 
     } finally {
+      LogCapturingAppender.stop(null);
       if (cluster != null) {
         cluster.shutdown();
       }

@@ -24,7 +24,9 @@ import static org.junit.jupiter.api.Assertions.*;
 import java.io.File;
 import java.io.IOException;
 import java.net.InetSocketAddress;
+import java.util.Queue;
 import java.util.Random;
+import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 
@@ -38,7 +40,7 @@ import org.apache.hadoop.hdfs.HdfsConfiguration;
 import org.apache.hadoop.hdfs.MiniDFSCluster;
 import org.apache.hadoop.metrics2.util.MBeans;
 import org.apache.hadoop.test.GenericTestUtils;
-import org.apache.hadoop.test.LogVerificationAppender;
+import org.apache.hadoop.test.LogCapturingAppender;
 import org.apache.logging.log4j.core.LoggerContext;
 import org.apache.logging.log4j.core.async.AsyncLogger;
 import org.apache.logging.log4j.core.async.AsyncLoggerConfig;
@@ -47,6 +49,7 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.Timeout;
 
+import java.util.function.Predicate;
 import java.util.function.Supplier;
 import java.util.regex.Pattern;
 
@@ -152,19 +155,27 @@ public class TestDataNodeMetricsLogger {
         metricsProvider);
     startDNForTest(true);
     assertNotNull(dn);
-    LogVerificationAppender appender = LogVerificationAppender.addToLogger(DataNode.METRICS_LOG_NAME, "INFO");
-    appender.clearLog();
+    Queue<String> log = new ConcurrentLinkedQueue<>();
+    LogCapturingAppender.collectMessages(DataNode.METRICS_LOG_NAME, log);
     Pattern pattern = Pattern.compile("^.*FakeMetric.*$");
+    Predicate<String> matches = pattern.asMatchPredicate();
 
-    // Ensure that the supplied pattern was matched.
-    GenericTestUtils.waitFor(new Supplier<Boolean>() {
-      @Override
-      public Boolean get() {
-        return appender.countLinesWithMessage(pattern) > 0;
-      }
-    }, 1000, 60000);
+    try {
+      // Ensure that the supplied pattern was matched.
+      GenericTestUtils.waitFor(new Supplier<Boolean>() {
+        @Override
+        public Boolean get() {
+          return log.stream()
+              .filter(matches)
+              .findAny()
+              .isPresent();
+        }
+      }, 1000, 60000);
 
-    dn.shutdown();
+      dn.shutdown();
+    } finally {
+      LogCapturingAppender.stop(DataNode.METRICS_LOG_NAME);
+    }
   }
 
   public interface TestFakeMetricMXBean {

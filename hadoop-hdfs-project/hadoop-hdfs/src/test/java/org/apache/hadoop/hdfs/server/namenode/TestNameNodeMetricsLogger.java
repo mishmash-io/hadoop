@@ -18,6 +18,7 @@
 
 package org.apache.hadoop.hdfs.server.namenode;
 
+import java.util.function.Predicate;
 import java.util.function.Supplier;
 import java.util.regex.Pattern;
 
@@ -28,7 +29,7 @@ import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hdfs.HdfsConfiguration;
 import org.apache.hadoop.metrics2.util.MBeans;
 import org.apache.hadoop.test.GenericTestUtils;
-import org.apache.hadoop.test.LogVerificationAppender;
+import org.apache.hadoop.test.LogCapturingAppender;
 import org.apache.logging.log4j.core.LoggerContext;
 import org.apache.logging.log4j.core.async.AsyncLogger;
 import org.apache.logging.log4j.core.async.AsyncLoggerConfig;
@@ -36,6 +37,8 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.Timeout;
 
 import java.io.IOException;
+import java.util.Collection;
+import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 
@@ -90,17 +93,25 @@ public class TestNameNodeMetricsLogger {
     MBeans.register(this.getClass().getSimpleName(),
         "DummyMetrics", metricsProvider);
     makeNameNode(true);     // Log metrics early and often.
-    LogVerificationAppender appender = LogVerificationAppender.addToLogger(NameNode.METRICS_LOG_NAME, "INFO");
-    appender.clearLog();
+    Collection<String> log = new ConcurrentLinkedQueue<>();
+    LogCapturingAppender.collectMessages(NameNode.METRICS_LOG_NAME, log);
     Pattern pattern = Pattern.compile("^.*FakeMetric.*$");
+    Predicate<String> matcher = pattern.asMatchPredicate();
 
-    // Ensure that the supplied pattern was matched.
-    GenericTestUtils.waitFor(new Supplier<Boolean>() {
-      @Override
-      public Boolean get() {
-        return appender.countLinesWithMessage(pattern) > 0;
-      }
-    }, 1000, 60000);
+    try {
+      // Ensure that the supplied pattern was matched.
+      GenericTestUtils.waitFor(new Supplier<Boolean>() {
+        @Override
+        public Boolean get() {
+          return log.stream()
+              .filter(matcher)
+              .findAny()
+              .isPresent();
+        }
+      }, 1000, 60000);
+    } finally {
+      LogCapturingAppender.stop(NameNode.METRICS_LOG_NAME);
+    }
   }
 
   /**

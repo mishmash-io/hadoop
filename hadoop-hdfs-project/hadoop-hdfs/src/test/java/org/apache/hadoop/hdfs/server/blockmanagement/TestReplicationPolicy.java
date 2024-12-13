@@ -26,12 +26,15 @@ import static org.mockito.Mockito.when;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Deque;
 import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.ConcurrentLinkedDeque;
+import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.ThreadLocalRandom;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicLong;
@@ -62,7 +65,7 @@ import org.apache.hadoop.hdfs.server.namenode.Namesystem;
 import org.apache.hadoop.hdfs.server.namenode.TestINodeFile;
 import org.apache.hadoop.hdfs.server.protocol.DatanodeStorage;
 import org.apache.hadoop.net.Node;
-import org.apache.hadoop.test.LogVerificationAppender;
+import org.apache.hadoop.test.LogCapturingAppender;
 import org.apache.hadoop.util.ReflectionUtils;
 import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.core.LogEvent;
@@ -512,25 +515,27 @@ public class TestReplicationPolicy extends BaseReplicationPolicyTest {
           (HdfsServerConstants.MIN_BLOCKS_FOR_WRITE-1)*BLOCK_SIZE, 0L, 0L, 0L, 0, 0);
     }
     
-    final LogVerificationAppender appender = LogVerificationAppender.addToLogger(null, "INFO");
-    appender.clearLog();
-    
-    // try to choose NUM_OF_DATANODES which is more than actually available
-    // nodes.
-    DatanodeStorageInfo[] targets = chooseTarget(dataNodes.length);
-    assertEquals(targets.length, dataNodes.length - 2);
+    final Deque<LogEvent> log = new ConcurrentLinkedDeque<>();
+    LogCapturingAppender.collectEvents(null, log);
 
-    final List<LogEvent> log = appender.getLog();
-    assertNotNull(log);
-    assertFalse(log.size() == 0);
-    final LogEvent lastLogEntry = log.get(log.size() - 1);
-    
-    assertTrue(Level.WARN.isMoreSpecificThan(lastLogEntry.getLevel()));
-    // Suppose to place replicas on each node but two data nodes are not
-    // available for placing replica, so here we expect a short of 2
-    assertTrue((lastLogEntry.getMessage().getFormattedMessage()).contains("in need of 2"));
+    try {
+      // try to choose NUM_OF_DATANODES which is more than actually available
+      // nodes.
+      DatanodeStorageInfo[] targets = chooseTarget(dataNodes.length);
+      assertEquals(targets.length, dataNodes.length - 2);
 
-    resetHeartbeatForStorages();
+      assertFalse(log.size() == 0);
+      final LogEvent lastLogEntry = log.peekLast();
+
+      assertTrue(Level.WARN.isMoreSpecificThan(lastLogEntry.getLevel()));
+      // Suppose to place replicas on each node but two data nodes are not
+      // available for placing replica, so here we expect a short of 2
+      assertTrue((lastLogEntry.getMessage().getFormattedMessage()).contains("in need of 2"));
+
+      resetHeartbeatForStorages();
+    } finally {
+      LogCapturingAppender.stop(null);
+    }
   }
 
   private boolean containsWithinRange(DatanodeStorageInfo target,
@@ -1778,16 +1783,22 @@ public class TestReplicationPolicy extends BaseReplicationPolicyTest {
   @ParameterizedTest
   public void testChosenFailureForStorageType(String blockPlacementPolicyClassName) throws Exception {
     setupCluster(blockPlacementPolicyClassName);
-    final LogVerificationAppender appender = LogVerificationAppender.addToLogger(null, "INFO");
-    appender.clearLog();
+    final Collection<String> log = new ConcurrentLinkedQueue<>();
+    LogCapturingAppender.collectMessages(null, log);
 
-    DatanodeStorageInfo[] targets = replicator.chooseTarget(filename, 1,
-        dataNodes[0], new ArrayList<DatanodeStorageInfo>(), false, null,
-        BLOCK_SIZE, TestBlockStoragePolicy.POLICY_SUITE.getPolicy(
-            HdfsConstants.StoragePolicy.COLD.value()), null);
-    assertEquals(0, targets.length);
-    assertNotEquals(0,
-        appender.countLinesWithMessage("NO_REQUIRED_STORAGE_TYPE"));
+    try {
+      DatanodeStorageInfo[] targets = replicator.chooseTarget(filename, 1,
+          dataNodes[0], new ArrayList<DatanodeStorageInfo>(), false, null,
+          BLOCK_SIZE, TestBlockStoragePolicy.POLICY_SUITE.getPolicy(
+              HdfsConstants.StoragePolicy.COLD.value()), null);
+      assertEquals(0, targets.length);
+      long numLines = log.stream()
+          .filter(m -> m != null && m.contains("NO_REQUIRED_STORAGE_TYPE"))
+          .count();
+      assertNotEquals(0, numLines);
+    } finally {
+      LogCapturingAppender.stop(null);
+    }
   }
 
   @MethodSource("data")
@@ -1808,23 +1819,29 @@ public class TestReplicationPolicy extends BaseReplicationPolicyTest {
   @ParameterizedTest
   public void testChosenFailureForNotEnoughStorageSpace(String blockPlacementPolicyClassName) throws Exception {
     setupCluster(blockPlacementPolicyClassName);
-    final LogVerificationAppender appender = LogVerificationAppender.addToLogger(null, "INFO");
-    appender.clearLog();
+    final Collection<String> log = new ConcurrentLinkedQueue<>();
+    LogCapturingAppender.collectMessages(null, log);
 
-    // Set all datanode storage remaining space is 1 * BLOCK_SIZE.
-    for(int i = 0; i < dataNodes.length; i++) {
-      updateHeartbeatWithUsage(dataNodes[i], BLOCK_SIZE, 0L, BLOCK_SIZE,
+    try {
+      // Set all datanode storage remaining space is 1 * BLOCK_SIZE.
+      for(int i = 0; i < dataNodes.length; i++) {
+        updateHeartbeatWithUsage(dataNodes[i], BLOCK_SIZE, 0L, BLOCK_SIZE,
           0L, 0L, 0L, 0, 0);
-    }
+      }
 
-    // Set chooseStorage4Block required the minimum number of blocks is 2.
-    replicator.setMinBlocksForWrite(2);
-    DatanodeStorageInfo[] targets = chooseTarget(1, dataNodes[1],
+      // Set chooseStorage4Block required the minimum number of blocks is 2.
+      replicator.setMinBlocksForWrite(2);
+      DatanodeStorageInfo[] targets = chooseTarget(1, dataNodes[1],
         new ArrayList<DatanodeStorageInfo>(), null);
-    assertEquals(0, targets.length);
-    assertNotEquals(0,
-        appender.countLinesWithMessage("NOT_ENOUGH_STORAGE_SPACE"));
+      assertEquals(0, targets.length);
+      long numLines = log.stream()
+          .filter(m -> m != null && m.contains("NOT_ENOUGH_STORAGE_SPACE"))
+          .count();
+      assertNotEquals(0, numLines);
 
-    resetHeartbeatForStorages();
+      resetHeartbeatForStorages();
+    } finally {
+      LogCapturingAppender.stop(null);
+    }
   }
 }

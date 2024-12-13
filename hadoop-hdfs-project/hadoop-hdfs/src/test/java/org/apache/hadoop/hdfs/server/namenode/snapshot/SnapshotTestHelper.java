@@ -44,7 +44,7 @@ import org.apache.hadoop.ipc.ProtobufRpcEngine2.Server;
 import org.apache.hadoop.metrics2.impl.MetricsSystemImpl;
 import org.apache.hadoop.security.UserGroupInformation;
 import org.apache.hadoop.test.GenericTestUtils;
-import org.apache.hadoop.test.LogVerificationAppender;
+import org.apache.hadoop.test.LogCapturingAppender;
 import org.apache.hadoop.util.GSet;
 import org.junit.jupiter.api.Assertions;
 
@@ -239,26 +239,31 @@ public class SnapshotTestHelper {
     }
 
     Path moveToTrash(String path, boolean printFs) throws Exception {
-      final LogVerificationAppender appender = LogVerificationAppender.addToLogger(
-          TrashPolicyDefault.class.getName(), "INFO");
-      appender.clearLog();
-      runShell("-rm", "-r", path);
-      final String label = "moveToTrash-" + trashMoveCount.getAndIncrement() + " " + path;
-      if (printFs) {
-        printFs(label);
-      } else {
-        LOG.info(label);
-      }
-      final String recorded = appender.getAllAsText();
-      LOG.info("Recorded: {}", recorded);
+      final StringBuffer log = new StringBuffer();
+      LogCapturingAppender.concatMessages(
+          TrashPolicyDefault.class.getName(), log);
 
-      final String pattern = " to trash at: ";
-      final int i = recorded.indexOf(pattern);
-      if (i > 0) {
-        final String sub = recorded.substring(i + pattern.length());
-        return new Path(sub.trim());
+      try {
+        runShell("-rm", "-r", path);
+        final String label = "moveToTrash-" + trashMoveCount.getAndIncrement() + " " + path;
+        if (printFs) {
+          printFs(label);
+        } else {
+          LOG.info(label);
+        }
+        final String recorded = log.toString();
+        LOG.info("Recorded: {}", recorded);
+
+        final String pattern = " to trash at: ";
+        final int i = recorded.indexOf(pattern);
+        if (i > 0) {
+          final String sub = recorded.substring(i + pattern.length());
+          return new Path(sub.trim());
+        }
+        return null;
+      } finally {
+        LogCapturingAppender.stop(TrashPolicyDefault.class.getName());
       }
-      return null;
     }
   }
 

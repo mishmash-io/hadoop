@@ -34,6 +34,8 @@ import java.nio.file.Paths;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Queue;
+import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
@@ -67,7 +69,7 @@ import org.apache.hadoop.hdfs.util.HostsFileWriter;
 import org.apache.hadoop.hdfs.util.MD5FileUtils;
 import org.apache.hadoop.io.MD5Hash;
 import org.apache.hadoop.test.GenericTestUtils;
-import org.apache.hadoop.test.LogVerificationAppender;
+import org.apache.hadoop.test.LogCapturingAppender;
 import org.apache.hadoop.test.PathUtils;
 import org.apache.hadoop.util.ExitUtil.ExitException;
 import org.apache.hadoop.util.ExitUtil;
@@ -524,8 +526,12 @@ public class TestStartup {
         corruptFSImageMD5(true);
 
         // Attach our own log appender so we can verify output
-        final LogVerificationAppender appender = LogVerificationAppender.addToLogger(null, "INFO");
-        appender.clearLog();
+        final Queue<Throwable> thrown = new ConcurrentLinkedQueue<>();
+        LogCapturingAppender.consumeEvents(null, e -> {
+          if (e.getThrown() != null) {
+            thrown.offer(e.getThrown());
+          }
+        });
 
         // Try to start a new cluster
         LOG.info("\n===========================================\n" +
@@ -539,10 +545,15 @@ public class TestStartup {
         } catch (IOException ioe) {
           GenericTestUtils.assertExceptionContains(
               "Failed to load FSImage file", ioe);
-          int md5failures = appender.countExceptionsWithMessage(
-              " is corrupt with MD5 checksum of ");
+          long md5failures = thrown.stream()
+              .filter(t ->
+                  t.getMessage() != null
+                  && t.getMessage().contains(" is corrupt with MD5 checksum of "))
+              .count();
           // Two namedirs, so should have seen two failures
           assertEquals(2, md5failures);
+        } finally {
+          LogCapturingAppender.stop(null);
         }
     } finally {
       if (cluster != null) {
