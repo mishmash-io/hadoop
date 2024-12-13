@@ -21,6 +21,7 @@ import java.io.Serializable;
 import java.util.Collection;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Consumer;
 import org.apache.logging.log4j.core.Filter;
 import org.apache.logging.log4j.core.Layout;
@@ -41,6 +42,8 @@ public class LogCapturingAppender extends AbstractAppender {
 
   protected static final Map<String, Consumer<LogEvent>> eventConsumers =
     new ConcurrentHashMap<>();
+  protected static final AtomicReference<Consumer<LogEvent>> rootConsumer =
+    new AtomicReference<>(e -> {});
 
   protected LogCapturingAppender(String name, Filter filter, Layout<? extends Serializable> layout,
             boolean ignoreExceptions, Property[] properties) {
@@ -49,14 +52,22 @@ public class LogCapturingAppender extends AbstractAppender {
 
   @Override
   public void append(LogEvent event) {
-    eventConsumers.getOrDefault(
-        event.getLoggerName(),
-        e -> {})
-      .accept(event);
+    if (event.getLoggerName() == null) {
+      rootConsumer.get().accept(event);
+    } else {
+      eventConsumers.getOrDefault(
+          event.getLoggerName(),
+          e -> {})
+        .accept(event);
+    }
   }
 
   public static void consumeEvents(String loggerName, Consumer<LogEvent> consumer) {
-    eventConsumers.put(loggerName, consumer);
+    if (loggerName == null) {
+      rootConsumer.set(consumer);
+    } else {
+      eventConsumers.put(loggerName, consumer);
+    }
   }
 
   public static void collectEvents(String loggerName, Collection<LogEvent> collection) {
@@ -64,8 +75,12 @@ public class LogCapturingAppender extends AbstractAppender {
   }
 
   public static void consumeMessages(String loggerName, Consumer<String> consumer) {
-    eventConsumers.put(loggerName,
-      e -> consumer.accept(e.getMessage().getFormattedMessage()));
+    Consumer<LogEvent> c = e -> consumer.accept(e.getMessage().getFormattedMessage());
+    if (loggerName == null) {
+      rootConsumer.set(c);
+    } else {
+      eventConsumers.put(loggerName, c);
+    }
   }
 
   public static void collectMessages(String loggerName, Collection<String> collection) {
@@ -77,7 +92,11 @@ public class LogCapturingAppender extends AbstractAppender {
   }
 
   public static void stop(String loggerName) {
-    eventConsumers.remove(loggerName);
+    if (loggerName == null) {
+      rootConsumer.set(e -> {});
+    } else {
+      eventConsumers.remove(loggerName);
+    }
   }
 
   @PluginFactory
