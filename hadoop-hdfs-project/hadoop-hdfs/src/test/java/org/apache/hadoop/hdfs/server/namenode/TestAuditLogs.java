@@ -69,7 +69,6 @@ public class TestAuditLogs {
 
   public void initTestAuditLogs(boolean useAsyncEdits) {
     this.useAsyncEdits = useAsyncEdits;
-    auditLogCapture.clearOutput();
   }
 
   // Pattern for: 
