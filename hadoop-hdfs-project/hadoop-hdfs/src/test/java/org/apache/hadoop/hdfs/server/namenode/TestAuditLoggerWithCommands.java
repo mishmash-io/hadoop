@@ -113,7 +113,7 @@ public class TestAuditLoggerWithCommands {
   }
 
   @Test
-  public void testGetContentSummary() throws IOException {
+  public void testGetContentSummary() throws Exception {
     Path dir1 = new Path("/dir1");
     Path dir2 = new Path("/dir2");
     String acePattern =
@@ -154,7 +154,7 @@ public class TestAuditLoggerWithCommands {
   }
 
   private void verifySetQuota(Path path, long nsQuota, long ssQuota)
-      throws IOException {
+      throws Exception {
     String operationName = cluster.getNamesystem().getQuotaCommand(
         nsQuota, ssQuota);
     String acePattern =
@@ -690,7 +690,7 @@ public class TestAuditLoggerWithCommands {
     verifyAuditLogs(true, ".*cmd=cancelDelegationToken" + getDT);
   }
 
-  private int verifyAuditLogs(final boolean allowed, final String pattern) {
+  private int verifyAuditLogs(final boolean allowed, final String pattern) throws Exception {
     return verifyAuditLogs(".*allowed=" + allowed + pattern);
   }
 
@@ -1222,7 +1222,7 @@ public class TestAuditLoggerWithCommands {
   }
 
   private void verifyAuditRestoreFailedStorageACE(
-      FSNamesystem fsNamesystem, String arg) throws IOException {
+      FSNamesystem fsNamesystem, String arg) throws Exception {
     String operationName = fsNamesystem.getFailedStorageCommand(arg);
     try {
       fsNamesystem.restoreFailedStorage(arg);
@@ -1265,7 +1265,7 @@ public class TestAuditLoggerWithCommands {
 
   private void verifySafeModeAction(
       FSNamesystem fsNamesystem, HdfsConstants.SafeModeAction safeModeAction)
-      throws IOException {
+      throws Exception {
     String operationName = safeModeAction.toString().toLowerCase();
     String auditLogString;
     try {
@@ -1278,7 +1278,9 @@ public class TestAuditLoggerWithCommands {
     }
   }
 
-  private int verifyAuditLogs(String pattern) {
+  private int verifyAuditLogs(String pattern) throws Exception {
+    // As the audit logger is configured as an async logger, give it a bit of time:
+    Thread.sleep(100);
     int length = auditlog.getOutput().split(System.lineSeparator()).length;
     String lastAudit = auditlog.getOutput()
         .split(System.lineSeparator())[length - 1];
