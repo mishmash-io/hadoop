@@ -925,6 +925,7 @@ public class TestBlockReaderLocal {
 
   @Test
   public void testBlockReaderShortCircutCachesOutOfRangeBelow() {
+    MatcherAssume.assumeThat(DomainSocket.getLoadingFailureReason(), equalTo(null));
     assertThrows(IllegalArgumentException.class, () ->
       runBlockReaderLocalTest(new TestBlockReaderFiveShortCircutCachesReads(),
           true, HdfsClientConfigKeys.DFS_DATANODE_READAHEAD_BYTES_DEFAULT,
@@ -933,6 +934,7 @@ public class TestBlockReaderLocal {
 
   @Test
   public void testBlockReaderShortCircutCachesOutOfRangeAbove() {
+    MatcherAssume.assumeThat(DomainSocket.getLoadingFailureReason(), equalTo(null));
     assertThrows(IllegalArgumentException.class, () ->
       runBlockReaderLocalTest(new TestBlockReaderFiveShortCircutCachesReads(),
           true, HdfsClientConfigKeys.DFS_DATANODE_READAHEAD_BYTES_DEFAULT,
