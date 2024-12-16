@@ -104,6 +104,7 @@ public class TestAuditLoggerWithCommands {
 
   @AfterEach
   public void tearDown() throws Exception {
+    auditlog.stopCapturing();
     Server.getCurCall().set(null);
     fs.close();
     fs2.close();
