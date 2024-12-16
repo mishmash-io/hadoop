@@ -69,6 +69,7 @@ public class TestAuditLogs {
 
   public void initTestAuditLogs(boolean useAsyncEdits) {
     this.useAsyncEdits = useAsyncEdits;
+    auditLogCapture.clearOutput();
   }
 
   // Pattern for: 
@@ -287,7 +288,9 @@ public class TestAuditLogs {
     verifySuccessCommandsAuditLogs(1, "foo", "cmd=create");
   }
 
-  private void verifySuccessCommandsAuditLogs(int leastExpected, String file, String cmd) {
+  private void verifySuccessCommandsAuditLogs(int leastExpected, String file, String cmd) throws Exception {
+    // Allow the async logger to flush messages
+    Thread.sleep(100);
     String[] auditLogOutputLines = auditLogCapture.getOutput().split("\\n");
     int success = 0;
     for (String auditLogLine : auditLogOutputLines) {
@@ -309,7 +312,9 @@ public class TestAuditLogs {
     }
   }
 
-  private void verifyFailedCommandsAuditLogs(int expected, String file, String cmd) {
+  private void verifyFailedCommandsAuditLogs(int expected, String file, String cmd) throws Exception {
+    // Allow the async logger to flush messages
+    Thread.sleep(100);
     String[] auditLogOutputLines = auditLogCapture.getOutput().split("\\n");
     int success = 0;
     for (String auditLogLine : auditLogOutputLines) {
