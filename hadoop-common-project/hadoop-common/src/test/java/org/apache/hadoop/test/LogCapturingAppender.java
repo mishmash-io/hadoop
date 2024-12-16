@@ -74,6 +74,12 @@ public class LogCapturingAppender extends AbstractAppender {
   }
 
   public static void consumeMessages(String loggerName, Consumer<String> consumer) {
+    /*
+     * Technically this consumer should pass a LogEvent through the configured Layout
+     * to get the actual string that should be logged.
+     *
+     * For simplicity - we just get the message string and pass it to the consumer.
+     */
     Consumer<LogEvent> c = e -> consumer.accept(e.getMessage().getFormattedMessage());
     if (loggerName == null) {
       rootConsumer.set(c);
@@ -87,7 +93,7 @@ public class LogCapturingAppender extends AbstractAppender {
   }
 
   public static void concatMessages(String loggerName, StringBuffer buf) {
-    consumeMessages(loggerName, buf::append);
+    consumeMessages(loggerName, m -> buf.append(m + System.lineSeparator()));
   }
 
   public static void stop(String loggerName) {
