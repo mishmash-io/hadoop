@@ -40,6 +40,7 @@ import org.apache.hadoop.net.NetUtils;
 
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.function.Executable;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.MethodSource;
 
@@ -122,9 +123,10 @@ public class TestWebHdfsWithRestCsrfPreventionFilter {
     // create is a HTTP PUT that redirects from NameNode to DataNode, so we
     // expect CSRF prevention on either server to block an unconfigured client.
     if ((nnRestCsrf || dnRestCsrf) && !clientRestCsrf) {
-      expectException();
+      expectException(() -> assertTrue(webhdfs.createNewFile(FILE)));
+    } else {
+      assertTrue(webhdfs.createNewFile(FILE));
     }
-    assertTrue(webhdfs.createNewFile(FILE));
   }
 
   @MethodSource("data")
@@ -136,9 +138,10 @@ public class TestWebHdfsWithRestCsrfPreventionFilter {
     // metadata operation, so we expect CSRF prevention configured on the
     // NameNode to block an unconfigured client.
     if (nnRestCsrf && !clientRestCsrf) {
-      expectException();
+      expectException(() -> assertTrue(webhdfs.delete(FILE, false)));
+    } else {
+      assertTrue(webhdfs.delete(FILE, false));
     }
-    assertTrue(webhdfs.delete(FILE, false));
   }
 
   @MethodSource("data")
@@ -159,16 +162,20 @@ public class TestWebHdfsWithRestCsrfPreventionFilter {
     // metadata operation, so we expect CSRF prevention configured on the
     // NameNode to block an unconfigured client.
     if (nnRestCsrf && !clientRestCsrf) {
-      expectException();
+      expectException(() -> {
+        assertTrue(webhdfs.hasPathCapability(FILE, CommonPathCapabilities.FS_TRUNCATE),
+            "WebHdfs supports truncate");
+        assertTrue(webhdfs.truncate(FILE, 0L));
+      });
+    } else {
+      assertTrue(webhdfs.hasPathCapability(FILE, CommonPathCapabilities.FS_TRUNCATE),
+          "WebHdfs supports truncate");
+      assertTrue(webhdfs.truncate(FILE, 0L));
     }
-    assertTrue(webhdfs.hasPathCapability(FILE, CommonPathCapabilities.FS_TRUNCATE),
-        "WebHdfs supports truncate");
-    assertTrue(webhdfs.truncate(FILE, 0L));
   }
 
-  private void expectException() {
-    Throwable exception = assertThrows(IOException.class, () -> {
-    });
+  private void expectException(Executable exe) {
+    Throwable exception = assertThrows(IOException.class, exe);
     assertTrue(exception.getMessage().contains("Missing Required Header"));
   }
 }
