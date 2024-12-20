@@ -17,8 +17,8 @@
  */
 package org.apache.hadoop.hdfs.client.impl;
 
-import static org.hamcrest.CoreMatchers.equalTo;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assumptions.assumeTrue;
 
 import java.io.EOFException;
 import java.io.File;
@@ -61,7 +61,6 @@ import org.apache.hadoop.net.unix.DomainSocket;
 import org.apache.hadoop.net.unix.TemporarySocketDirectory;
 import org.apache.hadoop.util.Time;
 
-import org.hamcrest.junit.MatcherAssume;
 import org.junit.jupiter.api.*;
 
 public class TestBlockReaderLocal {
@@ -138,7 +137,7 @@ public class TestBlockReaderLocal {
   public void runBlockReaderLocalTest(BlockReaderLocalTest test,
       boolean checksum, long readahead, int shortCircuitCachesNum)
           throws IOException {
-    MatcherAssume.assumeThat(DomainSocket.getLoadingFailureReason(), equalTo(null));
+    assumeTrue(DomainSocket.getLoadingFailureReason() == null);
     MiniDFSCluster cluster = null;
     HdfsConfiguration conf = new HdfsConfiguration();
     conf.setBoolean(HdfsClientConfigKeys.Read.ShortCircuit.SKIP_CHECKSUM_KEY,
@@ -925,7 +924,7 @@ public class TestBlockReaderLocal {
 
   @Test
   public void testBlockReaderShortCircutCachesOutOfRangeBelow() {
-    MatcherAssume.assumeThat(DomainSocket.getLoadingFailureReason(), equalTo(null));
+    assumeTrue(DomainSocket.getLoadingFailureReason() == null);
     assertThrows(IllegalArgumentException.class, () ->
       runBlockReaderLocalTest(new TestBlockReaderFiveShortCircutCachesReads(),
           true, HdfsClientConfigKeys.DFS_DATANODE_READAHEAD_BYTES_DEFAULT,
@@ -934,7 +933,7 @@ public class TestBlockReaderLocal {
 
   @Test
   public void testBlockReaderShortCircutCachesOutOfRangeAbove() {
-    MatcherAssume.assumeThat(DomainSocket.getLoadingFailureReason(), equalTo(null));
+    assumeTrue(DomainSocket.getLoadingFailureReason() == null);
     assertThrows(IllegalArgumentException.class, () ->
       runBlockReaderLocalTest(new TestBlockReaderFiveShortCircutCachesReads(),
           true, HdfsClientConfigKeys.DFS_DATANODE_READAHEAD_BYTES_DEFAULT,

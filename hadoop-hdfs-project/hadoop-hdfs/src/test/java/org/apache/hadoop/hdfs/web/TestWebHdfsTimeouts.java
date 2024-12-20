@@ -19,6 +19,7 @@
 package org.apache.hadoop.hdfs.web;
 
 import static org.junit.jupiter.api.Assertions.fail;
+import static org.junit.jupiter.api.Assumptions.assumeFalse;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -49,7 +50,6 @@ import org.apache.hadoop.io.IOUtils;
 import org.apache.hadoop.net.NetUtils;
 import org.apache.hadoop.security.authentication.client.ConnectionConfigurator;
 import org.apache.hadoop.test.GenericTestUtils;
-import org.junit.AssumptionViolatedException;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Timeout;
@@ -403,10 +403,7 @@ public class TestWebHdfsTimeouts {
   }
 
   private void assumeBacklogConsumed() {
-    if (failedToConsumeBacklog) {
-      throw new AssumptionViolatedException(
-          "failed to fill up connection backlog.");
-    }
+    assumeFalse(failedToConsumeBacklog, "failed to fill up connection backlog.");
   }
 
   /**

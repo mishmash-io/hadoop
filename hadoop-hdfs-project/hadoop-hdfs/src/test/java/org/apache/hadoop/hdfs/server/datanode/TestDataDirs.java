@@ -28,7 +28,6 @@ import org.apache.hadoop.fs.DF;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.fs.StorageType;
 import org.apache.hadoop.util.Shell;
-import org.junit.AssumptionViolatedException;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.Timeout;
 
@@ -36,6 +35,7 @@ import static org.apache.hadoop.hdfs.DFSConfigKeys.DFS_DATANODE_DATA_DIR_KEY;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assumptions.assumeFalse;
 
 public class TestDataDirs {
 
@@ -107,9 +107,7 @@ public class TestDataDirs {
 
   @Test
   public void testDataDirFileSystem() throws Exception {
-    if (Shell.MAC) {
-      throw new AssumptionViolatedException("Not supported on MAC OS");
-    }
+    assumeFalse(Shell.MAC, "Not supported on MAC OS");
     Configuration conf = new Configuration();
     String archiveDir = "/home";
     String location = "[DISK]/dir1,[ARCHIVE]" + archiveDir;

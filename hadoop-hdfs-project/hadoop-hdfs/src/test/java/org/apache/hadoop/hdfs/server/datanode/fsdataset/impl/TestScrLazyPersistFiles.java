@@ -29,7 +29,6 @@ import org.apache.hadoop.net.unix.DomainSocket;
 import org.apache.hadoop.test.GenericTestUtils;
 import org.apache.hadoop.util.NativeCodeLoader;
 
-import org.hamcrest.junit.MatcherAssume;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Assumptions;
 import org.junit.jupiter.api.BeforeAll;
@@ -43,11 +42,11 @@ import java.util.concurrent.TimeoutException;
 import static org.apache.hadoop.fs.StorageType.DEFAULT;
 import static org.apache.hadoop.fs.StorageType.RAM_DISK;
 import static org.apache.hadoop.test.PlatformAssumptions.assumeNotWindows;
-import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.core.Is.is;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assumptions.assumeTrue;
 
 /**
  * Test Lazy persist behavior with short-circuit reads. These tests
@@ -65,7 +64,7 @@ public class TestScrLazyPersistFiles extends LazyPersistTestCase {
   public void before() {
     Assumptions.assumeTrue(NativeCodeLoader.isNativeCodeLoaded());
     assumeNotWindows();
-    MatcherAssume.assumeThat(DomainSocket.getLoadingFailureReason(), equalTo(null));
+    assumeTrue(DomainSocket.getLoadingFailureReason() == null);
 
     final long osPageSize = NativeIO.POSIX.getCacheManipulator().getOperatingSystemPageSize();
     Preconditions.checkState(BLOCK_SIZE >= osPageSize);

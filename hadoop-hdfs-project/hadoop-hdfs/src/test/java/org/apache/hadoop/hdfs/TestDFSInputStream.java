@@ -19,7 +19,7 @@ package org.apache.hadoop.hdfs;
 
 import static org.apache.hadoop.hdfs.client.HdfsClientConfigKeys.DFS_CLIENT_READ_USE_CACHE_PRIORITY;
 import static org.junit.jupiter.api.Assertions.*;
-import static org.hamcrest.CoreMatchers.equalTo;
+import static org.junit.jupiter.api.Assumptions.assumeTrue;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
@@ -45,7 +45,6 @@ import org.apache.hadoop.net.unix.TemporarySocketDirectory;
 import org.apache.hadoop.hdfs.client.impl.DfsClientConf;
 import org.apache.hadoop.hdfs.client.HdfsClientConfigKeys.Retry;
 
-import org.hamcrest.junit.MatcherAssume;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.Timeout;
 
@@ -110,7 +109,7 @@ public class TestDFSInputStream {
   @Test
   @Timeout(value = 60000, unit = TimeUnit.MILLISECONDS)
   public void testSkipWithLocalBlockReader() throws IOException {
-    MatcherAssume.assumeThat(DomainSocket.getLoadingFailureReason(), equalTo(null));
+    assumeTrue(DomainSocket.getLoadingFailureReason() == null);
     TemporarySocketDirectory sockDir = new TemporarySocketDirectory();
     DomainSocket.disableBindPathValidation();
     Configuration conf = new Configuration();
