@@ -90,7 +90,9 @@ public class TestDFSUtil {
 
   static final String NS1_NN_ADDR    = "ns1-nn.example.com:8020";
   static final String NS1_NN1_ADDR   = "ns1-nn1.example.com:8020";
+  static final String NS1_NN1_ADDR_UNRESOLVED = "ns1-nn1.example.com/<unresolved>:8020";
   static final String NS1_NN2_ADDR   = "ns1-nn2.example.com:8020";
+  static final String NS1_NN2_ADDR_UNRESOLVED = "ns1-nn2.example.com/<unresolved>:8020";
   static final String NS1_NN1_HTTPS_ADDR   = "ns1-nn1.example.com:50740";
   static final String NS1_NN1_HTTP_ADDR    = "ns1-nn1.example.com:50070";
 
@@ -526,6 +528,10 @@ public class TestDFSUtil {
     final String NS1_NN2_HOST = "ns1-nn2.example.com:8020";
     final String NS2_NN1_HOST = "ns2-nn1.example.com:8020";
     final String NS2_NN2_HOST = "ns2-nn2.example.com:8020";
+    final String NS1_NN1_HOST_UNRESOLVED = "ns1-nn1.example.com/<unresolved>:8020";
+    final String NS1_NN2_HOST_UNRESOLVED = "ns1-nn2.example.com/<unresolved>:8020";
+    final String NS2_NN1_HOST_UNRESOLVED = "ns2-nn1.example.com/<unresolved>:8020";
+    final String NS2_NN2_HOST_UNRESOLVED = "ns2-nn2.example.com/<unresolved>:8020";
     conf.set(CommonConfigurationKeys.FS_DEFAULT_NAME_KEY, "hdfs://ns1");
     
     // Two nameservices, each with two NNs.
@@ -554,10 +560,15 @@ public class TestDFSUtil {
     assertTrue(HAUtil.isHAEnabled(conf, "ns2"));
     assertFalse(HAUtil.isHAEnabled(conf, "ns3"));
     
-    assertEquals(NS1_NN1_HOST, map.get("ns1").get("ns1-nn1").toString());
-    assertEquals(NS1_NN2_HOST, map.get("ns1").get("ns1-nn2").toString());
-    assertEquals(NS2_NN1_HOST, map.get("ns2").get("ns2-nn1").toString());
-    assertEquals(NS2_NN2_HOST, map.get("ns2").get("ns2-nn2").toString());
+    // newer javas add an '/<unresolved>' string to hosts that did not resolve
+    InetSocketAddress addr = map.get("ns1").get("ns1-nn1");
+    assertEquals(addr.isUnresolved() ? NS1_NN1_HOST_UNRESOLVED : NS1_NN1_HOST, addr.toString());
+    addr = map.get("ns1").get("ns1-nn2");
+    assertEquals(addr.isUnresolved() ? NS1_NN2_HOST_UNRESOLVED : NS1_NN2_HOST, addr.toString());
+    addr = map.get("ns2").get("ns2-nn1");
+    assertEquals(addr.isUnresolved() ? NS2_NN1_HOST_UNRESOLVED : NS2_NN1_HOST, addr.toString());
+    addr = map.get("ns2").get("ns2-nn2");
+    assertEquals(addr.isUnresolved() ? NS2_NN2_HOST_UNRESOLVED : NS2_NN2_HOST, addr.toString());
     
     assertEquals(NS1_NN1_HOST, 
         DFSUtil.getNamenodeServiceAddr(conf, "ns1", "ns1-nn1"));
@@ -633,8 +644,11 @@ public class TestDFSUtil {
     Map<String, Map<String, InetSocketAddress>> map =
         DFSUtilClient.getHaNnWebHdfsAddresses(conf, "webhdfs");
 
-    assertEquals(NS1_NN1_ADDR, map.get("ns1").get("nn1").toString());
-    assertEquals(NS1_NN2_ADDR, map.get("ns1").get("nn2").toString());
+    // newer java versions add an '/<unresolved>' string to hostnames that did not resolve 
+    InetSocketAddress addr = map.get("ns1").get("nn1");
+    assertEquals(addr.isUnresolved() ? NS1_NN1_ADDR_UNRESOLVED : NS1_NN1_ADDR, addr.toString());
+    addr = map.get("ns1").get("nn2");
+    assertEquals(addr.isUnresolved() ? NS1_NN2_ADDR_UNRESOLVED : NS1_NN2_ADDR, addr.toString());
   }
 
   private static Configuration createWebHDFSHAConfiguration(String logicalHostName, String nnaddr1, String nnaddr2) {
