@@ -17,7 +17,7 @@
  */
 package org.apache.hadoop.hdfs.server.datanode.fsdataset.impl;
 
-import org.apache.commons.lang.math.RandomUtils;
+import org.apache.commons.lang3.RandomUtils;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.CachingGetSpaceUsed;
 import org.apache.hadoop.fs.FSDataOutputStream;
@@ -183,7 +183,7 @@ public class TestReplicaCachingGetSpaceUsed {
       FSDataOutputStream os = null;
       while (shouldRun) {
         try {
-          int id = RandomUtils.nextInt();
+          int id = RandomUtils.secure().randomInt();
           os = fs.create(new Path("/testFsDatasetImplDeepCopyReplica/" + id));
           byte[] bytes = new byte[2048];
           InputStream is = new ByteArrayInputStream(bytes);
