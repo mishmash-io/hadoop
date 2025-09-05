@@ -387,6 +387,28 @@ Happens if a multipart upload is being completed, but one of the parts is missin
 * A magic committer job's list of in-progress uploads somehow got corrupted
 * Bug in the S3A codebase (rare, but not impossible...)
 
+### <a name="object_lock_parameters"></a> Status Code 400 "Content-MD5 OR x-amz-checksum- HTTP header is required for Put Object requests with Object Lock parameters"
+```
+software.amazon.awssdk.services.s3.model.S3Exception: Content-MD5 OR x-amz-checksum- HTTP header is required for Put Object requests with Object Lock parameters (Service: S3, Status Code: 400, Request ID: 1122334455, Extended Request ID: ...):
+InvalidRequest: Content-MD5 OR x-amz-checksum- HTTP header is required for Put Object requests with Object Lock parameters (Service: S3, Status Code: 400, Request ID: 1122334455, Extended Request ID: ...)
+```
+
+This error happens if the S3 bucket has [Object Lock](https://docs.aws.amazon.com/AmazonS3/latest/userguide/object-lock.html) enabled.
+
+The Content-MD5 or x-amz-sdk-checksum-algorithm header is required for any request to upload an object
+with a retention period configured using Object Lock.
+
+If Object Lock can't be disabled in the S3 bucket, set a checksum algorithm to be used in the
+uploads via the `fs.s3a.create.checksum.algorithm` property. Note that enabling checksum on uploads can
+affect the performance.
+
+```xml
+<property>
+  <name>fs.s3a.create.checksum.algorithm</name>
+  <value>SHA256</value>
+</property>
+```
+
 ## <a name="access_denied"></a> Access Denied
 
 HTTP error codes 401 and 403 are mapped to `AccessDeniedException` in the S3A connector.
@@ -1007,195 +1029,6 @@ of the destination of a rename is a directory -only that it is _not_ a file.
 You can rename a directory or file deep under a file if you try -after which
 there is no guarantee of the files being found in listings. Try not to do that.
 
-## <a name="encryption"></a> S3 Server Side Encryption
-
-### `AWSS3IOException` `KMS.NotFoundException` "Invalid arn" when using SSE-KMS
-
-When performing file operations, the user may run into an issue where the KMS
-key arn is invalid.
-
-```
-org.apache.hadoop.fs.s3a.AWSS3IOException: innerMkdirs on /test:
- S3Exception:
-  Invalid arn (Service: Amazon S3; Status Code: 400; Error Code: KMS.NotFoundException;
-   Request ID: CA89F276B3394565),
-   S3 Extended Request ID: ncz0LWn8zor1cUO2fQ7gc5eyqOk3YfyQLDn2OQNoe5Zj/GqDLggUYz9QY7JhdZHdBaDTh+TL5ZQ=:
-   Invalid arn (Service: Amazon S3; Status Code: 400; Error Code: KMS.NotFoundException; Request ID: CA89F276B3394565)
-```
-
-Possible causes:
-
-* the KMS key ARN is entered incorrectly, or
-* the KMS key referenced by the ARN is in a different region than the S3 bucket
-being used.
-
-### Using SSE-C "Bad Request"
-
-When performing file operations the user may run into an unexpected 400/403
-error such as
-```
-org.apache.hadoop.fs.s3a.AWSS3IOException: getFileStatus on fork-4/:
- S3Exception:
-Bad Request (Service: Amazon S3; Status Code: 400;
-Error Code: 400 Bad Request; Request ID: 42F9A1987CB49A99),
-S3 Extended Request ID: jU2kcwaXnWj5APB14Cgb1IKkc449gu2+dhIsW/+7x9J4D+VUkKvu78mBo03oh9jnOT2eoTLdECU=:
-Bad Request (Service: Amazon S3; Status Code: 400; Error Code: 400 Bad Request; Request ID: 42F9A1987CB49A99)
-```
-
-This can happen in the cases of not specifying the correct SSE-C encryption key.
-Such cases can be as follows:
-1. An object is encrypted using SSE-C on S3 and either the wrong encryption type
-is used, no encryption is specified, or the SSE-C specified is incorrect.
-2. A directory is encrypted with a SSE-C keyA and the user is trying to move a
-file using configured SSE-C keyB into that structure.
-
-## <a name="client-side-encryption"></a> S3 Client Side Encryption
-
-### Instruction file not found for S3 object
-
-Reading an unencrypted file would fail when read through CSE enabled client.
-```
-java.lang.SecurityException: Instruction file not found for S3 object with bucket name: ap-south-cse, key: unencryptedData.txt
-
-```
-CSE enabled client should read encrypted data only.
-
-### CSE-KMS method requires KMS key ID
-
-KMS key ID is required for CSE-KMS to encrypt data, not providing one leads
- to failure.
-
-```
-2021-07-07 11:33:04,550 WARN fs.FileSystem: Failed to initialize filesystem
-s3a://ap-south-cse/: java.lang.IllegalArgumentException: CSE-KMS
-method requires KMS key ID. Use fs.s3a.encryption.key property to set it.
--ls: CSE-KMS method requires KMS key ID. Use fs.s3a.encryption.key property to
- set it.
-```
-
-set `fs.s3a.encryption.key=<KMS_KEY_ID>` generated through AWS console.
-
-### `software.amazon.awssdk.services.kms.model.IncorrectKeyException` The key ID in the request does not identify a CMK that can perform this operation.
-
-KMS key ID used to PUT(encrypt) the data, must be the one used to GET the
-data.
- ```
-cat: open s3a://ap-south-cse/encryptedData.txt at 0 on
-s3a://ap-south-cse/encryptedData.txt:
-software.amazon.awssdk.services.kms.model.IncorrectKeyException: The key ID in the
-request does not identify a CMK that can perform this operation. (Service: AWSKMS;
-Status Code: 400; ErrorCode: IncorrectKeyException;
-Request ID: da21aa8a-f00d-467c-94a0-32b627d32bc0; Proxy: null):IncorrectKeyException:
-The key ID in the request does not identify a CMK that can perform this
-operation. (Service: AWSKMS ; Status Code: 400; Error Code: IncorrectKeyException;
-Request ID: da21aa8a-f00d-467c-94a0-32b627d32bc0; Proxy: null)
-```
-Use the same KMS key ID used to upload data to download and read it as well.
-
-### `software.amazon.awssdk.services.kms.model.NotFoundException` key/<KMS_KEY_ID> does not exist
-
-Using a KMS key ID from a different region than the bucket used to store data
- would lead to failure while uploading.
-
-```
-mkdir: PUT 0-byte object  on testmkdir:
-software.amazon.awssdk.services.kms.model.NotFoundException: Key
-'arn:aws:kms:ap-south-1:152813717728:key/<KMS_KEY_ID>'
-does not exist (Service: AWSKMS; Status Code: 400; Error Code: NotFoundException;
-Request ID: 279db85d-864d-4a38-9acd-d892adb504c0; Proxy: null):NotFoundException:
-Key 'arn:aws:kms:ap-south-1:152813717728:key/<KMS_KEY_ID>'
-does not exist(Service: AWSKMS; Status Code: 400; Error Code: NotFoundException;
-Request ID: 279db85d-864d-4a38-9acd-d892adb504c0; Proxy: null)
-```
-While generating the KMS Key ID make sure to generate it in the same region
- as your bucket.
-
-### Unable to perform range get request: Range get support has been disabled
-
-If Range get is not supported for a CSE algorithm or is disabled:
-```
-java.lang.SecurityException: Unable to perform range get request: Range get support has been disabled. See https://docs.aws.amazon.com/general/latest/gr/aws_sdk_cryptography.html
-
-```
-Range gets must be enabled for CSE to work.
-
-### WARNING: Range gets do not provide authenticated encryption properties even when used with an authenticated mode (AES-GCM).
-
-The S3 Encryption Client is configured to support range get requests. This
- warning would be shown everytime S3-CSE is used.
-```
-2021-07-14 12:54:09,525 [main] WARN  s3.AmazonS3EncryptionClientV2
-(AmazonS3EncryptionClientV2.java:warnOnRangeGetsEnabled(401)) - The S3
-Encryption Client is configured to support range get requests. Range gets do
-not provide authenticated encryption properties even when used with an
-authenticated mode (AES-GCM). See https://docs.aws.amazon.com/general/latest
-/gr/aws_sdk_cryptography.html
-```
-We can Ignore this warning since, range gets must be enabled for S3-CSE to
-get data.
-
-### WARNING: If you don't have objects encrypted with these legacy modes, you should disable support for them to enhance security.
-
-The S3 Encryption Client is configured to read encrypted data with legacy
-encryption modes through the CryptoMode setting, and we would see this
-warning for all S3-CSE request.
-
-```
-2021-07-14 12:54:09,519 [main] WARN  s3.AmazonS3EncryptionClientV2
-(AmazonS3EncryptionClientV2.java:warnOnLegacyCryptoMode(409)) - The S3
-Encryption Client is configured to read encrypted data with legacy
-encryption modes through the CryptoMode setting. If you don't have objects
-encrypted with these legacy modes, you should disable support for them to
-enhance security. See https://docs.aws.amazon.com/general/latest/gr/aws_sdk_cryptography.html
-```
-We can ignore this, since this CryptoMode setting(CryptoMode.AuthenticatedEncryption)
-is required for range gets to work.
-
-### `software.amazon.awssdk.services.kms.mode.InvalidKeyUsageException: You cannot generate a data key with an asymmetric CMK`
-
-If you generated an Asymmetric CMK from AWS console then CSE-KMS won't be
-able to generate unique data key for encryption.
-
-```
-Caused by: software.amazon.awssdk.services.kms.mode.InvalidKeyUsageException:
-You cannot generate a data key with an asymmetric CMK
-(Service: AWSKMS; Status Code: 400; Error Code: InvalidKeyUsageException; Request ID: 93609c15-e490-4035-8390-f4396f0d90bf; Proxy: null)
-```
-
-Generate a Symmetric Key in the same region as your S3 storage for CSE-KMS to
-work.
-
-### software.amazon.awssdk.services.kms.mode.NotFoundException: Invalid keyId
-
-If the value in `fs.s3a.encryption.key` property, does not exist
-/valid in AWS KMS CMK(Customer managed keys), then this error would be seen.
-
-```
-Caused by: software.amazon.awssdk.services.kms.model.NotFoundException: Invalid keyId abc
-(Service: AWSKMS; Status Code: 400; Error Code: NotFoundException; Request ID:
- 9d53552a-3d1b-47c8-984c-9a599d5c2391; Proxy: null)
-```
-
-Check if `fs.s3a.encryption.key` is set correctly and matches the
-same on AWS console.
-
-### software.amazon.awssdk.services.kms.model.KmsException: User: <User_ARN> is not authorized to perform : kms :GenerateDataKey on resource: <KEY_ID>
-
-User doesn't have authorization to the specific AWS KMS Key ID.
-```
-Caused by: software.amazon.awssdk.services.kms.model.KmsException:
-User: arn:aws:iam::152813717728:user/<user> is not authorized to perform:
- kms:GenerateDataKey on resource: <key_ID>
-(Service: AWSKMS; Status Code: 400; Error Code: AccessDeniedException;
-  Request ID: 4ded9f1f-b245-4213-87fc-16cba7a1c4b9; Proxy: null)
-```
-
-The user trying to use the KMS Key ID should have the right permissions to access
-(encrypt/decrypt) using the AWS KMS Key used via `fs.s3a.encryption.key`.
-If not, then add permission(or IAM role) in "Key users" section by selecting the
-AWS-KMS CMK Key on AWS console.
-
-
 ### <a name="not_all_bytes_were_read"></a> Message appears in logs "Not all bytes were read from the S3ObjectInputStream"
 
 
@@ -1385,10 +1218,29 @@ java.io.FileNotFoundException: Completing multi-part upload on fork-5/test/multi
 This can happen when all outstanding uploads have been aborted, including the
 active ones.
 
-If the bucket has a lifecycle policy of deleting multipart uploads, make sure
-that the expiry time of the deletion is greater than that required for all open
-writes to complete the write,
-*and for all jobs using the S3A committers to commit their work.*
+When working with S3A committers and multipart uploads (MPUs), consider these important guidelines:
+
+1. **Bucket Lifecycle Policies:**
+   - If your bucket has a lifecycle policy for deleting multipart uploads
+   - Set the deletion expiry time long enough to:
+     - Complete all open write operations
+     - Allow S3A committers to finish their commit process
+
+2. **Directory Operations and MPUs:**
+   - Setting `fs.s3a.directory.operations.purge.uploads=true` will abort all pending MPUs before directory cleanup
+   - For jobs using S3A committers:
+     - Set `fs.s3a.directory.operations.purge.uploads=false` when directories need to be overwritten before job completion
+     - This prevents accidental abortion of active uploads during the commit phase
+
+
+### S3 Express Store directory object not getting deleted
+
+When working with S3 Express store buckets (unlike standard S3 buckets), follow these steps to purge a directory object:
+
+1. Set `fs.s3a.directory.operations.purge.uploads=true` if you need to delete a directory object that has pending multipart uploads (MPUs).
+
+2. This setting ensures that all pending MPUs are aborted before the directory object is deleted, which is a requirement specific to S3 Express store buckets.
+
 
 ### Application hangs after reading a number of files
 
@@ -1546,6 +1398,47 @@ http.headers (LoggingManagedHttpClientConnection.java:onResponseReceived(127)) -
 http.headers (LoggingManagedHttpClientConnection.java:onResponseReceived(127)) - http-outgoing-0 << Server: AmazonS3
 execchain.MainClientExec (MainClientExec.java:execute(284)) - Connection can be kept alive for 60000 MILLISECONDS
 
+```
+
+To log the output of the AWS SDK metrics, set the log
+`org.apache.hadoop.fs.s3a.DefaultS3ClientFactory` to `TRACE`.
+This will then turn on logging of the internal SDK metrics.
+
+These will actually be logged at INFO in the log
+```
+software.amazon.awssdk.metrics.LoggingMetricPublisher
+```
+
+```text
+INFO  metrics.LoggingMetricPublisher (LoggerAdapter.java:info(165)) - Metrics published:
+MetricCollection(name=ApiCall, metrics=[
+MetricRecord(metric=MarshallingDuration, value=PT0.000092041S),
+MetricRecord(metric=RetryCount, value=0),
+MetricRecord(metric=ApiCallSuccessful, value=true),
+MetricRecord(metric=OperationName, value=DeleteObject),
+MetricRecord(metric=EndpointResolveDuration, value=PT0.000132792S),
+MetricRecord(metric=ApiCallDuration, value=PT0.064890875S),
+MetricRecord(metric=CredentialsFetchDuration, value=PT0.000017458S),
+MetricRecord(metric=ServiceEndpoint, value=https://buckets3.eu-west-2.amazonaws.com),
+MetricRecord(metric=ServiceId, value=S3)], children=[
+MetricCollection(name=ApiCallAttempt, metrics=[
+    MetricRecord(metric=TimeToFirstByte, value=PT0.06260225S),
+    MetricRecord(metric=SigningDuration, value=PT0.000293083S),
+    MetricRecord(metric=ReadThroughput, value=0.0),
+    MetricRecord(metric=ServiceCallDuration, value=PT0.06260225S),
+    MetricRecord(metric=HttpStatusCode, value=204),
+    MetricRecord(metric=BackoffDelayDuration, value=PT0S),
+    MetricRecord(metric=TimeToLastByte, value=PT0.064313667S),
+    MetricRecord(metric=AwsRequestId, value=RKZD44SE5DW91K1G)], children=[
+        MetricCollection(name=HttpClient, metrics=[
+        MetricRecord(metric=AvailableConcurrency, value=1),
+        MetricRecord(metric=LeasedConcurrency, value=0),
+        MetricRecord(metric=ConcurrencyAcquireDuration, value=PT0S),
+        MetricRecord(metric=PendingConcurrencyAcquires, value=0),
+        MetricRecord(metric=MaxConcurrency, value=512),
+        MetricRecord(metric=HttpClientName, value=Apache)], children=[])
+    ])
+  ])
 ```
 
 ### <a name="audit-logging"></a> Enable S3 Server-side Logging

@@ -45,6 +45,7 @@ import org.apache.hadoop.fs.s3a.impl.S3ExpressStorage;
 import org.apache.hadoop.fs.s3a.impl.StatusProbeEnum;
 import org.apache.hadoop.fs.s3a.impl.StoreContext;
 import org.apache.hadoop.fs.s3a.impl.StoreContextBuilder;
+import org.apache.hadoop.fs.s3a.impl.streams.InputStreamType;
 import org.apache.hadoop.fs.s3a.prefetch.S3APrefetchingInputStream;
 import org.apache.hadoop.fs.s3a.statistics.BlockOutputStreamStatistics;
 import org.apache.hadoop.fs.s3a.statistics.S3AInputStreamStatistics;
@@ -68,6 +69,7 @@ import org.apache.hadoop.util.functional.CallableRaisingIOE;
 import org.apache.hadoop.util.functional.FutureIO;
 
 import org.assertj.core.api.Assertions;
+import org.assertj.core.api.Assumptions;
 import org.junit.Assert;
 import org.junit.Assume;
 import org.junit.AssumptionViolatedException;
@@ -104,6 +106,10 @@ import java.util.stream.Collectors;
 
 import static org.apache.hadoop.fs.contract.ContractTestUtils.createFile;
 import static org.apache.hadoop.fs.impl.FlagSet.createFlagSet;
+import static org.apache.hadoop.fs.s3a.S3AEncryptionMethods.SSE_S3;
+import static org.apache.hadoop.fs.s3a.impl.streams.InputStreamType.Analytics;
+import static org.apache.hadoop.fs.s3a.impl.streams.InputStreamType.Classic;
+import static org.apache.hadoop.fs.s3a.impl.streams.InputStreamType.Prefetch;
 import static org.apache.hadoop.fs.s3a.impl.CallableSupplier.submit;
 import static org.apache.hadoop.fs.s3a.impl.CallableSupplier.waitForCompletion;
 import static org.apache.hadoop.fs.s3a.impl.S3ExpressStorage.STORE_CAPABILITY_S3_EXPRESS_STORAGE;
@@ -118,6 +124,7 @@ import static org.apache.hadoop.fs.s3a.S3ATestConstants.*;
 import static org.apache.hadoop.fs.s3a.Constants.*;
 import static org.apache.hadoop.fs.s3a.S3AUtils.buildEncryptionSecrets;
 import static org.apache.hadoop.test.LambdaTestUtils.intercept;
+import static org.apache.hadoop.util.functional.FunctionalIO.uncheckIOExceptions;
 import static org.apache.hadoop.util.functional.RemoteIterators.mappingRemoteIterator;
 import static org.apache.hadoop.util.functional.RemoteIterators.toList;
 import static org.junit.Assert.*;
@@ -575,6 +582,21 @@ public final class S3ATestUtils {
   }
 
   /**
+   * Skip a test if the Analytics Accelerator Library for Amazon S3 is enabled.
+   * @param configuration configuration to probe
+   */
+  public static void skipIfAnalyticsAcceleratorEnabled(
+          Configuration configuration, String message) {
+    assume(message,
+            !isAnalyticsAcceleratorEnabled(configuration));
+  }
+
+  public static boolean isAnalyticsAcceleratorEnabled(final Configuration conf) {
+    return conf.get(INPUT_STREAM_TYPE,
+        INPUT_STREAM_TYPE_CLASSIC).equals(INPUT_STREAM_TYPE_ANALYTICS);
+  }
+
+  /**
    * Skip a test if the filesystem lacks a required capability.
    * @param fs filesystem
    * @param capability capability
@@ -633,6 +655,36 @@ public final class S3ATestUtils {
     for (S3ATestUtils.MetricDiff metric : metrics) {
       log.info(metric.toString());
     }
+  }
+
+  /**
+   * Unset encryption options.
+   * @param conf configuration
+   */
+  public static void unsetEncryption(Configuration conf) {
+    removeBaseAndBucketOverrides(conf, S3_ENCRYPTION_ALGORITHM);
+  }
+
+  /**
+   * Removes all encryption-related properties.
+   *
+   * <p>This method unsets various encryption settings specific to the test bucket. It removes
+   * bucket-specific overrides for multiple encryption-related properties, including both
+   * client-side and server-side encryption settings.
+   *
+   * @param conf The Configuration object from which to remove the encryption properties.
+   *             This object will be modified by this method.
+   */
+  public static void unsetAllEncryptionPropertiesForBaseAndBucket(Configuration conf) {
+    removeBaseAndBucketOverrides(getTestBucketName(conf),
+        conf,
+        S3_ENCRYPTION_ALGORITHM,
+        S3_ENCRYPTION_KEY,
+        SERVER_SIDE_ENCRYPTION_ALGORITHM,
+        SERVER_SIDE_ENCRYPTION_KEY,
+        S3_ENCRYPTION_CSE_CUSTOM_KEYRING_CLASS_NAME,
+        S3_ENCRYPTION_CSE_V1_COMPATIBILITY_ENABLED,
+        S3_ENCRYPTION_CSE_KMS_REGION);
   }
 
   /**
@@ -699,10 +751,8 @@ public final class S3ATestUtils {
         DEFAULT_DIRECTORY_MARKER_POLICY);
     conf.set(DIRECTORY_MARKER_POLICY, directoryRetention);
 
-    boolean prefetchEnabled =
-        getTestPropertyBool(conf, PREFETCH_ENABLED_KEY, PREFETCH_ENABLED_DEFAULT);
-    conf.setBoolean(PREFETCH_ENABLED_KEY, prefetchEnabled);
-
+    conf.set(INPUT_STREAM_TYPE,
+        getTestProperty(conf, INPUT_STREAM_TYPE, INPUT_STREAM_TYPE_DEFAULT));
     return conf;
   }
 
@@ -1123,8 +1173,16 @@ public final class S3ATestUtils {
    */
   public static void assumeStoreAwsHosted(final FileSystem fs) {
     assume("store is not AWS S3",
-        !NetworkBinding.isAwsEndpoint(fs.getConf()
+        NetworkBinding.isAwsEndpoint(fs.getConf()
             .getTrimmed(ENDPOINT, DEFAULT_ENDPOINT)));
+  }
+
+  /**
+   * Skip if conditional creation is not enabled.
+   */
+  public static void assumeConditionalCreateEnabled(Configuration conf) {
+    skipIfNotEnabled(conf, FS_S3A_CONDITIONAL_CREATE_ENABLED,
+        "conditional create is disabled");
   }
 
   /**
@@ -1427,7 +1485,9 @@ public final class S3ATestUtils {
     if (!condition) {
       LOG.warn(message);
     }
-    Assume.assumeTrue(message, condition);
+    Assumptions.assumeThat(condition).
+        describedAs(message)
+        .isTrue();
   }
 
   /**
@@ -1671,6 +1731,30 @@ public final class S3ATestUtils {
   }
 
   /**
+   * Skip a test if encryption algorithm is not empty, or if it is set to
+   * anything other than AES256.
+   *
+   * @param configuration configuration
+   */
+  public static void skipForAnyEncryptionExceptSSES3(Configuration configuration) {
+    String bucket = getTestBucketName(configuration);
+    try {
+      final EncryptionSecrets secrets = buildEncryptionSecrets(bucket, configuration);
+      S3AEncryptionMethods s3AEncryptionMethods = secrets.getEncryptionMethod();
+
+      if (s3AEncryptionMethods.getMethod().equals(SSE_S3.getMethod())
+              || s3AEncryptionMethods.getMethod().isEmpty()) {
+        return;
+      }
+
+      skip("Encryption method is set to " + s3AEncryptionMethods.getMethod());
+    } catch (IOException e) {
+      throw new UncheckedIOException(e);
+    }
+
+  }
+
+  /**
    * Get the input stream statistics of an input stream.
    * Raises an exception if the inner stream is not an S3A input stream
    * or prefetching input stream
@@ -1758,11 +1842,74 @@ public final class S3ATestUtils {
   /**
    * Disable Prefetching streams from S3AFileSystem in tests.
    * @param conf Configuration to remove the prefetch property from.
+   * @return patched config
    */
-  public static void disablePrefetching(Configuration conf) {
-    removeBaseAndBucketOverrides(conf, PREFETCH_ENABLED_KEY);
+  public static Configuration disablePrefetching(Configuration conf) {
+    removeBaseAndBucketOverrides(conf,
+        PREFETCH_ENABLED_KEY,
+        INPUT_STREAM_TYPE);
+    return conf;
   }
 
+
+  /**
+   *Enable Prefetching streams from S3AFileSystem in tests.
+   * @param conf Configuration to update
+   * @return patched config
+   */
+  public static Configuration enablePrefetching(Configuration conf) {
+    removeBaseAndBucketOverrides(conf,
+        PREFETCH_ENABLED_KEY,
+        INPUT_STREAM_TYPE);
+    conf.setEnum(INPUT_STREAM_TYPE, Prefetch);
+    return conf;
+  }
+
+  /**
+   * Enable analytics stream for S3A S3AFileSystem in tests.
+   * @param conf Configuration to update
+   * @return patched config
+   */
+  public static Configuration enableAnalyticsAccelerator(Configuration conf) {
+    removeBaseAndBucketOverrides(conf,
+        INPUT_STREAM_TYPE);
+    conf.setEnum(INPUT_STREAM_TYPE, Analytics);
+    return conf;
+  }
+
+  /**
+   * Disable analytics stream for S3A S3AFileSystem in tests.
+   * @param conf Configuration to update
+   * @return patched config
+   */
+  public static Configuration disableAnalyticsAccelerator(Configuration conf) {
+    removeBaseAndBucketOverrides(conf,
+        INPUT_STREAM_TYPE);
+    conf.setEnum(INPUT_STREAM_TYPE, Classic);
+    return conf;
+  }
+
+  /**
+   * Probe for a filesystem having a specific stream type;
+   * this is done through filesystem capabilities.
+   * @param fs filesystem
+   * @param type stream type
+   * @return true if the fs has the specific type.
+   */
+  public static boolean hasInputStreamType(FileSystem fs, InputStreamType type) {
+    return uncheckIOExceptions(() ->
+        fs.hasPathCapability(new Path("/"),
+            type.capability()));
+  }
+
+  /**
+   * What is the stream type of this filesystem?
+   * @param fs filesystem to probe
+   * @return the stream type
+   */
+  public static InputStreamType streamType(S3AFileSystem fs) {
+    return fs.getS3AInternals().getStore().streamType();
+  }
   /**
    * Skip root tests if the system properties/config says so.
    * @param conf configuration to check

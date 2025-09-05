@@ -107,11 +107,11 @@ public class TestS3ABlockOutputStream extends AbstractS3AMockTest {
     // first one works
     String key = "destKey";
     woh.newUploadPartRequestBuilder(key,
-        "uploadId", 1, 1024);
+        "uploadId", 1, false, 1024);
     // but ask past the limit and a PathIOE is raised
     intercept(PathIOException.class, key,
         () -> woh.newUploadPartRequestBuilder(key,
-            "uploadId", 50000, 1024));
+            "uploadId", 50000, true, 1024));
   }
 
   static class StreamClosedException extends ClosedIOException {
@@ -148,7 +148,7 @@ public class TestS3ABlockOutputStream extends AbstractS3AMockTest {
 
   /**
    * Unless configured to downgrade, the stream will raise exceptions on
-   * Syncable API calls.
+   * Syncable.hsync() API calls.
    */
   @Test
   public void testSyncableUnsupported() throws Exception {
@@ -156,13 +156,13 @@ public class TestS3ABlockOutputStream extends AbstractS3AMockTest {
         builder = mockS3ABuilder();
     builder.withDowngradeSyncableExceptions(false);
     stream = spy(new S3ABlockOutputStream(builder));
-    intercept(UnsupportedOperationException.class, () -> stream.hflush());
+    stream.hflush();
     intercept(UnsupportedOperationException.class, () -> stream.hsync());
   }
 
   /**
    * When configured to downgrade, the stream downgrades on
-   * Syncable API calls.
+   * Syncable.hsync() API calls.
    */
   @Test
   public void testSyncableDowngrade() throws Exception {

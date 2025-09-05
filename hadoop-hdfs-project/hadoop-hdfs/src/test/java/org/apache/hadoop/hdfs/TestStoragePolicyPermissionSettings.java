@@ -37,6 +37,7 @@ import org.apache.hadoop.hdfs.server.namenode.FSNamesystem;
 import org.apache.hadoop.security.AccessControlException;
 import org.apache.hadoop.security.UserGroupInformation;
 import org.apache.hadoop.test.LambdaTestUtils;
+import org.apache.hadoop.test.ReflectionUtils;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
@@ -92,10 +93,13 @@ public class TestStoragePolicyPermissionSettings {
 
   private void setStoragePolicyPermissions(boolean isStoragePolicyEnabled,
                                            boolean isStoragePolicySuperuserOnly)
-      throws NoSuchFieldException, IllegalAccessException {
-    setFSNameSystemFinalField("isStoragePolicyEnabled", isStoragePolicyEnabled);
-    setFSNameSystemFinalField("isStoragePolicySuperuserOnly",
-        isStoragePolicySuperuserOnly);
+      throws ReflectiveOperationException {
+    ReflectionUtils.setFinalField(
+        FSNamesystem.class, cluster.getNamesystem(),
+        "isStoragePolicyEnabled", isStoragePolicyEnabled);
+    ReflectionUtils.setFinalField(
+        FSNamesystem.class, cluster.getNamesystem(),
+        "isStoragePolicySuperuserOnly", isStoragePolicySuperuserOnly);
   }
 
   @Test

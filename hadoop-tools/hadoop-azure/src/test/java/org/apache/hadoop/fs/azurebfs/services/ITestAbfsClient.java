@@ -19,9 +19,11 @@
 package org.apache.hadoop.fs.azurebfs.services;
 
 import java.io.IOException;
-import java.lang.reflect.Field;
 import java.net.ProtocolException;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.net.URL;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Random;
@@ -34,26 +36,31 @@ import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 import org.mockito.Mockito;
 
+import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.fs.azurebfs.AbfsConfiguration;
+import org.apache.hadoop.fs.azurebfs.AbfsCountersImpl;
 import org.apache.hadoop.fs.azurebfs.AbstractAbfsIntegrationTest;
 import org.apache.hadoop.fs.azurebfs.AzureBlobFileSystem;
+import org.apache.hadoop.fs.azurebfs.AzureBlobFileSystemStore;
 import org.apache.hadoop.fs.azurebfs.TestAbfsConfigurationFieldsValidation;
+import org.apache.hadoop.fs.azurebfs.constants.AbfsServiceType;
 import org.apache.hadoop.fs.azurebfs.constants.FSOperationType;
 import org.apache.hadoop.fs.azurebfs.constants.HttpOperationType;
 import org.apache.hadoop.fs.azurebfs.contracts.exceptions.AbfsApacheHttpExpect100Exception;
 import org.apache.hadoop.fs.azurebfs.contracts.exceptions.AzureBlobFileSystemException;
 import org.apache.hadoop.fs.azurebfs.contracts.services.AppendRequestParameters;
 import org.apache.hadoop.fs.azurebfs.oauth2.AccessTokenProvider;
-import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.azurebfs.constants.ConfigurationKeys;
 import org.apache.hadoop.fs.azurebfs.utils.TracingContext;
 import org.apache.hadoop.fs.azurebfs.utils.TracingHeaderFormat;
 import org.apache.hadoop.security.ssl.DelegatingSSLSocketFactory;
+import org.apache.hadoop.test.ReflectionUtils;
 import org.apache.http.HttpResponse;
 
 import static java.net.HttpURLConnection.HTTP_NOT_FOUND;
+import static org.apache.hadoop.fs.azurebfs.ITestAzureBlobFileSystemListStatus.TEST_CONTINUATION_TOKEN;
 import static org.apache.hadoop.fs.azurebfs.constants.AbfsHttpConstants.APPEND_ACTION;
 import static org.apache.hadoop.fs.azurebfs.constants.AbfsHttpConstants.EXPECT_100_JDK_ERROR;
 import static org.apache.hadoop.fs.azurebfs.constants.AbfsHttpConstants.HTTP_METHOD_PATCH;
@@ -71,6 +78,7 @@ import static org.apache.hadoop.test.LambdaTestUtils.intercept;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.when;
 
 import static org.apache.hadoop.fs.azurebfs.constants.AbfsHttpConstants.APN_VERSION;
@@ -154,10 +162,17 @@ public final class ITestAbfsClient extends AbstractAbfsIntegrationTest {
   }
 
   private String getUserAgentString(AbfsConfiguration config,
-      boolean includeSSLProvider) throws IOException {
-    AbfsClientContext abfsClientContext = new AbfsClientContextBuilder().build();
-    AbfsClient client = new AbfsClient(new URL("https://azure.com"), null,
-        config, (AccessTokenProvider) null, null, abfsClientContext);
+      boolean includeSSLProvider) throws IOException, URISyntaxException {
+    AbfsCounters abfsCounters = Mockito.spy(new AbfsCountersImpl(new URI("abcd")));
+    AbfsClientContext abfsClientContext = new AbfsClientContextBuilder().withAbfsCounters(abfsCounters).build();
+    AbfsClient client;
+    if (AbfsServiceType.DFS.equals(config.getFsConfiguredServiceType())) {
+      client = new AbfsDfsClient(new URL("https://azure.com"), null,
+          config, (AccessTokenProvider) null, null, abfsClientContext);
+    } else {
+      client = new AbfsBlobClient(new URL("https://azure.com"), null,
+          config, (AccessTokenProvider) null, null, abfsClientContext);
+    }
     String sslProviderName = null;
     if (includeSSLProvider) {
       sslProviderName = DelegatingSSLSocketFactory.getDefaultFactory()
@@ -197,7 +212,7 @@ public final class ITestAbfsClient extends AbstractAbfsIntegrationTest {
 
   @Test
   public void verifyUserAgentPrefix()
-      throws IOException, IllegalAccessException {
+      throws IOException, IllegalAccessException, URISyntaxException {
     Assume.assumeTrue(JDK_HTTP_URL_CONNECTION == httpOperationType);
     final Configuration configuration = new Configuration();
     configuration.addResource(TEST_CONFIGURATION_FILE_NAME);
@@ -232,7 +247,7 @@ public final class ITestAbfsClient extends AbstractAbfsIntegrationTest {
    */
   @Test
   public void verifyUserAgentExpectHeader()
-          throws IOException, IllegalAccessException {
+          throws IOException, IllegalAccessException, URISyntaxException {
     Assume.assumeTrue(JDK_HTTP_URL_CONNECTION == httpOperationType);
     final Configuration configuration = new Configuration();
     configuration.addResource(TEST_CONFIGURATION_FILE_NAME);
@@ -342,22 +357,78 @@ public final class ITestAbfsClient extends AbstractAbfsIntegrationTest {
 
   public static AbfsClient createTestClientFromCurrentContext(
       AbfsClient baseAbfsClientInstance,
-      AbfsConfiguration abfsConfig) throws IOException {
+      AbfsConfiguration abfsConfig) throws IOException, URISyntaxException {
     AuthType currentAuthType = abfsConfig.getAuthType(
         abfsConfig.getAccountName());
 
     AbfsPerfTracker tracker = new AbfsPerfTracker("test",
         abfsConfig.getAccountName(),
         abfsConfig);
+    AbfsCounters abfsCounters = Mockito.spy(new AbfsCountersImpl(new URI("abcd")));
 
     AbfsClientContext abfsClientContext =
         new AbfsClientContextBuilder().withAbfsPerfTracker(tracker)
                                 .withExponentialRetryPolicy(
                                     new ExponentialRetryPolicy(abfsConfig.getMaxIoRetries()))
+                                .withAbfsCounters(abfsCounters)
                                 .build();
 
     // Create test AbfsClient
-    AbfsClient testClient = new AbfsClient(
+    AbfsClient testClient;
+    if (AbfsServiceType.DFS.equals(abfsConfig.getFsConfiguredServiceType())) {
+      testClient = new AbfsDfsClient(
+          baseAbfsClientInstance.getBaseUrl(),
+          (currentAuthType == AuthType.SharedKey
+              ? new SharedKeyCredentials(
+              abfsConfig.getAccountName().substring(0,
+                  abfsConfig.getAccountName().indexOf(DOT)),
+              abfsConfig.getStorageAccountKey())
+              : null),
+          abfsConfig,
+          (currentAuthType == AuthType.OAuth
+              ? abfsConfig.getTokenProvider()
+              : null),
+          null,
+          abfsClientContext);
+    } else {
+      testClient = new AbfsBlobClient(
+          baseAbfsClientInstance.getBaseUrl(),
+          (currentAuthType == AuthType.SharedKey
+              ? new SharedKeyCredentials(
+              abfsConfig.getAccountName().substring(0,
+                  abfsConfig.getAccountName().indexOf(DOT)),
+              abfsConfig.getStorageAccountKey())
+              : null),
+          abfsConfig,
+          (currentAuthType == AuthType.OAuth
+              ? abfsConfig.getTokenProvider()
+              : null),
+          null,
+          abfsClientContext);
+    }
+
+    return testClient;
+  }
+
+  public static AbfsClient createBlobClientFromCurrentContext(
+      AbfsClient baseAbfsClientInstance,
+      AbfsConfiguration abfsConfig) throws IOException, URISyntaxException {
+    AuthType currentAuthType = abfsConfig.getAuthType(
+        abfsConfig.getAccountName());
+
+    AbfsPerfTracker tracker = new AbfsPerfTracker("test",
+        abfsConfig.getAccountName(),
+        abfsConfig);
+    AbfsCounters abfsCounters = Mockito.spy(new AbfsCountersImpl(new URI("abcd")));
+
+    AbfsClientContext abfsClientContext =
+        new AbfsClientContextBuilder().withAbfsPerfTracker(tracker)
+            .withExponentialRetryPolicy(
+                new ExponentialRetryPolicy(abfsConfig.getMaxIoRetries()))
+            .withAbfsCounters(abfsCounters)
+            .build();
+
+    AbfsClient testClient = new AbfsBlobClient(
         baseAbfsClientInstance.getBaseUrl(),
         (currentAuthType == AuthType.SharedKey
             ? new SharedKeyCredentials(
@@ -369,7 +440,7 @@ public final class ITestAbfsClient extends AbstractAbfsIntegrationTest {
         (currentAuthType == AuthType.OAuth
             ? abfsConfig.getTokenProvider()
             : null),
-            null,
+        null,
         abfsClientContext);
 
     return testClient;
@@ -379,12 +450,18 @@ public final class ITestAbfsClient extends AbstractAbfsIntegrationTest {
       AbfsConfiguration abfsConfig) throws Exception {
     AuthType currentAuthType = abfsConfig.getAuthType(
         abfsConfig.getAccountName());
+    AbfsCounters abfsCounters = Mockito.spy(new AbfsCountersImpl(new URI("abcd")));
 
     org.junit.Assume.assumeTrue(
         (currentAuthType == AuthType.SharedKey)
         || (currentAuthType == AuthType.OAuth));
 
-    AbfsClient client = mock(AbfsClient.class);
+    AbfsClient client;
+    if (AbfsServiceType.DFS.equals(abfsConfig.getFsConfiguredServiceType())) {
+      client = mock(AbfsDfsClient.class);
+    } else {
+      client = mock(AbfsBlobClient.class);
+    }
     AbfsPerfTracker tracker = new AbfsPerfTracker(
         "test",
         abfsConfig.getAccountName(),
@@ -399,61 +476,44 @@ public final class ITestAbfsClient extends AbstractAbfsIntegrationTest {
 
     when(client.createDefaultUriQueryBuilder()).thenCallRealMethod();
     when(client.createRequestUrl(any(), any())).thenCallRealMethod();
+    when(client.createRequestUrl(any(), any(), any())).thenCallRealMethod();
     when(client.getAccessToken()).thenCallRealMethod();
     when(client.getSharedKeyCredentials()).thenCallRealMethod();
     when(client.createDefaultHeaders()).thenCallRealMethod();
     when(client.getAbfsConfiguration()).thenReturn(abfsConfig);
+
     when(client.getIntercept()).thenReturn(
         AbfsThrottlingInterceptFactory.getInstance(
             abfsConfig.getAccountName().substring(0,
                 abfsConfig.getAccountName().indexOf(DOT)), abfsConfig));
+    when(client.getAbfsCounters()).thenReturn(abfsCounters);
     Mockito.doReturn(baseAbfsClientInstance.getAbfsApacheHttpClient()).when(client).getAbfsApacheHttpClient();
 
     // override baseurl
-    client = ITestAbfsClient.setAbfsClientField(client, "abfsConfiguration",
-        abfsConfig);
+    ReflectionUtils.setFinalField(AbfsClient.class, client, "abfsConfiguration", abfsConfig);
 
     // override baseurl
-    client = ITestAbfsClient.setAbfsClientField(client, "baseUrl",
-        baseAbfsClientInstance.getBaseUrl());
+    ReflectionUtils.setFinalField(AbfsClient.class, client, "baseUrl", baseAbfsClientInstance.getBaseUrl());
 
     // override xMsVersion
-    client = ITestAbfsClient.setAbfsClientField(client, "xMsVersion",
-        baseAbfsClientInstance.getxMsVersion());
+    ReflectionUtils.setFinalField(AbfsClient.class, client, "xMsVersion", baseAbfsClientInstance.getxMsVersion());
 
     // override auth provider
     if (currentAuthType == AuthType.SharedKey) {
-      client = ITestAbfsClient.setAbfsClientField(client, "sharedKeyCredentials",
-          new SharedKeyCredentials(
+      ReflectionUtils.setFinalField(AbfsClient.class, client, "sharedKeyCredentials", new SharedKeyCredentials(
               abfsConfig.getAccountName().substring(0,
                   abfsConfig.getAccountName().indexOf(DOT)),
               abfsConfig.getStorageAccountKey()));
     } else {
-      client = ITestAbfsClient.setAbfsClientField(client, "tokenProvider",
-          abfsConfig.getTokenProvider());
+      ReflectionUtils.setFinalField(AbfsClient.class, client, "tokenProvider", abfsConfig.getTokenProvider());
     }
 
     // override user agent
-    String userAgent = "APN/1.0 Azure Blob FS/3.4.1-SNAPSHOT (PrivateBuild "
+    String userAgent = "APN/1.0 Azure Blob FS/3.5.0-SNAPSHOT (PrivateBuild "
         + "JavaJRE 1.8.0_252; Linux 5.3.0-59-generic/amd64; openssl-1.0; "
         + "UNKNOWN/UNKNOWN) MSFT";
-    client = ITestAbfsClient.setAbfsClientField(client, "userAgent", userAgent);
+    ReflectionUtils.setFinalField(AbfsClient.class, client, "userAgent", userAgent);
 
-    return client;
-  }
-
-  static AbfsClient setAbfsClientField(
-      final AbfsClient client,
-      final String fieldName,
-      Object fieldObject) throws Exception {
-
-    Field field = AbfsClient.class.getDeclaredField(fieldName);
-    field.setAccessible(true);
-    Field modifiersField = Field.class.getDeclaredField("modifiers");
-    modifiersField.setAccessible(true);
-    modifiersField.setInt(field,
-        field.getModifiers() & ~java.lang.reflect.Modifier.FINAL);
-    field.set(client, fieldObject);
     return client;
   }
 
@@ -614,6 +674,7 @@ public final class ITestAbfsClient extends AbstractAbfsIntegrationTest {
       // Give user error code 404 when processResponse is called.
       Mockito.doReturn(HTTP_METHOD_PUT).when(httpOperation).getMethod();
       Mockito.doReturn(HTTP_NOT_FOUND).when(httpOperation).getStatusCode();
+      Mockito.doReturn(HTTP_NOT_FOUND).when(httpOperation).getConnResponseCode();
       Mockito.doReturn("Resource Not Found")
           .when(httpOperation)
           .getConnResponseMessage();
@@ -671,5 +732,116 @@ public final class ITestAbfsClient extends AbstractAbfsIntegrationTest {
     Assertions.assertThat(appendRequestParameters.isExpectHeaderEnabled())
             .describedAs("The expect header is not false")
             .isFalse();
+  }
+
+  @Test
+  public void testIsNonEmptyDirectory() throws IOException {
+    testIsNonEmptyDirectoryInternal(EMPTY_STRING, true, EMPTY_STRING,
+        true, 1, false);
+    testIsNonEmptyDirectoryInternal(EMPTY_STRING, false, EMPTY_STRING,
+        false, 1, true);
+
+    testIsNonEmptyDirectoryInternal(TEST_CONTINUATION_TOKEN, true, EMPTY_STRING,
+        true, 2, false);
+    testIsNonEmptyDirectoryInternal(TEST_CONTINUATION_TOKEN, true, EMPTY_STRING,
+        false, 2, true);
+    testIsNonEmptyDirectoryInternal(TEST_CONTINUATION_TOKEN + 1, true, TEST_CONTINUATION_TOKEN + 2,
+        true, 3, false);
+    testIsNonEmptyDirectoryInternal(TEST_CONTINUATION_TOKEN + 1, true, TEST_CONTINUATION_TOKEN + 2,
+        false, 2, true);
+
+    testIsNonEmptyDirectoryInternal(TEST_CONTINUATION_TOKEN, false, EMPTY_STRING,
+        true, 1, true);
+    testIsNonEmptyDirectoryInternal(TEST_CONTINUATION_TOKEN, false, EMPTY_STRING,
+        false, 1, true);
+    testIsNonEmptyDirectoryInternal(TEST_CONTINUATION_TOKEN + 1, false, TEST_CONTINUATION_TOKEN + 2,
+        true, 1, true);
+    testIsNonEmptyDirectoryInternal(TEST_CONTINUATION_TOKEN + 1, false, TEST_CONTINUATION_TOKEN + 2,
+        false, 1, true);
+  }
+
+  private void testIsNonEmptyDirectoryInternal(String firstCT,
+      boolean isfirstEmpty, String secondCT, boolean isSecondEmpty,
+      int expectedInvocations, boolean isNonEmpty) throws IOException {
+
+    assumeBlobServiceType();
+    AzureBlobFileSystem spiedFs = Mockito.spy(getFileSystem());
+    AzureBlobFileSystemStore spiedStore = Mockito.spy(spiedFs.getAbfsStore());
+    AbfsBlobClient spiedClient = Mockito.spy(spiedStore.getClientHandler().getBlobClient());
+    Mockito.doReturn(spiedStore).when(spiedFs).getAbfsStore();
+    Mockito.doReturn(spiedClient).when(spiedStore).getClient();
+    VersionedFileStatus status1 = new VersionedFileStatus(
+        "owner", "group", null, false, 0, false, 0, 0, 0,
+        new Path("/testPath/file1"), "version", "encryptionContext");
+    VersionedFileStatus status2 = new VersionedFileStatus(
+        "owner", "group", null, false, 0, false, 0, 0, 0,
+        new Path("/testPath/file2"), "version", "encryptionContext");
+
+    List<VersionedFileStatus> mockedList1 = new ArrayList<>();
+    mockedList1.add(status1);
+    List<VersionedFileStatus> mockedList2 = new ArrayList<>();
+    mockedList2.add(status2);
+
+    ListResponseData listResponseData1 = new ListResponseData();
+    listResponseData1.setContinuationToken(firstCT);
+    listResponseData1.setFileStatusList(isfirstEmpty ? new ArrayList<>() : mockedList1);
+    listResponseData1.setOp(Mockito.mock(AbfsRestOperation.class));
+
+    ListResponseData listResponseData2 = new ListResponseData();
+    listResponseData2.setContinuationToken(secondCT);
+    listResponseData2.setFileStatusList(isSecondEmpty ? new ArrayList<>() : mockedList2);
+    listResponseData2.setOp(Mockito.mock(AbfsRestOperation.class));
+
+    ListResponseData listResponseData3 = new ListResponseData();
+    listResponseData3.setContinuationToken(EMPTY_STRING);
+    listResponseData3.setFileStatusList(new ArrayList<>());
+    listResponseData3.setOp(Mockito.mock(AbfsRestOperation.class));
+
+    Mockito.doReturn(listResponseData1).doReturn(listResponseData2).doReturn(listResponseData3)
+        .when(spiedClient).listPath(eq("/testPath"), eq(false), eq(1),
+            any(), any(), any());
+
+    final int[] itr = new int[1];
+    final String[] continuationTokenUsed = new String[3];
+
+    Mockito.doAnswer(invocationOnMock -> {
+      if (itr[0] == 0) {
+        itr[0]++;
+        continuationTokenUsed[0] = invocationOnMock.getArgument(3);
+        return listResponseData1;
+      } else if (itr[0] == 1) {
+        itr[0]++;
+        continuationTokenUsed[1] = invocationOnMock.getArgument(3);
+        return listResponseData2;
+      }
+      continuationTokenUsed[2] = invocationOnMock.getArgument(3);
+      return listResponseData3;
+    }).when(spiedClient).listPath(eq("/testPath"), eq(false), eq(1),
+        any(), any(TracingContext.class), any());
+
+    Assertions.assertThat(spiedClient.isNonEmptyDirectory("/testPath",
+        Mockito.mock(TracingContext.class)))
+        .describedAs("isNonEmptyDirectory in client giving unexpected results")
+        .isEqualTo(isNonEmpty);
+
+    Assertions.assertThat(continuationTokenUsed[0])
+        .describedAs("First continuation token used is not as expected")
+        .isNull();
+
+    if (expectedInvocations > 1) {
+      Assertions.assertThat(continuationTokenUsed[1])
+          .describedAs("Second continuation token used is not as expected")
+          .isEqualTo(firstCT);
+    }
+
+    if (expectedInvocations > 2) {
+      Assertions.assertThat(continuationTokenUsed[2])
+          .describedAs("Third continuation token used is not as expected")
+          .isEqualTo(secondCT);
+    }
+
+    Mockito.verify(spiedClient, times(expectedInvocations))
+        .listPath(eq("/testPath"), eq(false), eq(1),
+            any(), any(TracingContext.class), any());
   }
 }

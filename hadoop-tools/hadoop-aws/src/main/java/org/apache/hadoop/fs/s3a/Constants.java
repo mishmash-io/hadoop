@@ -21,10 +21,14 @@ package org.apache.hadoop.fs.s3a;
 import org.apache.hadoop.classification.InterfaceAudience;
 import org.apache.hadoop.classification.InterfaceStability;
 import org.apache.hadoop.fs.Options;
+import org.apache.hadoop.fs.s3a.impl.streams.StreamIntegration;
 import org.apache.hadoop.security.ssl.DelegatingSSLSocketFactory;
 
 import java.time.Duration;
 import java.util.concurrent.TimeUnit;
+
+import static org.apache.hadoop.io.Sizes.S_128K;
+import static org.apache.hadoop.io.Sizes.S_2M;
 
 /**
  * Constants used with the {@link S3AFileSystem}.
@@ -444,6 +448,20 @@ public final class Constants {
   public static final Duration DEFAULT_CONNECTION_IDLE_TIME_DURATION =
       Duration.ofSeconds(60);
 
+  /**
+   * Should PUT requests await a 100 CONTINUE responses before uploading
+   * data?
+   * <p>
+   * Value: {@value}.
+   */
+  public static final String CONNECTION_EXPECT_CONTINUE =
+      "fs.s3a.connection.expect.continue";
+
+  /**
+   * Default value for {@link #CONNECTION_EXPECT_CONTINUE}.
+   */
+  public static final boolean CONNECTION_EXPECT_CONTINUE_DEFAULT = true;
+
   // socket send buffer to be used in Amazon client
   public static final String SOCKET_SEND_BUFFER = "fs.s3a.socket.send.buffer";
   public static final int DEFAULT_SOCKET_SEND_BUFFER = 8 * 1024;
@@ -755,6 +773,35 @@ public final class Constants {
    */
   public static final String S3_ENCRYPTION_KEY =
       "fs.s3a.encryption.key";
+
+  /**
+   * Client side encryption (CSE-CUSTOM) with custom cryptographic material manager class name.
+   * Custom keyring class name for CSE-KMS.
+   * value:{@value}
+   */
+  public static final String S3_ENCRYPTION_CSE_CUSTOM_KEYRING_CLASS_NAME =
+          "fs.s3a.encryption.cse.custom.keyring.class.name";
+
+  /**
+   * Config to provide backward compatibility with V1 encryption client.
+   * Enabling this configuration will invoke the followings
+   * 1. Unencrypted s3 objects will be read using unencrypted/base s3 client when CSE is enabled.
+   * 2. Size of encrypted object will be fetched from object header if present or
+   * calculated using ranged S3 GET calls.
+   * value:{@value}
+   */
+  public static final String S3_ENCRYPTION_CSE_V1_COMPATIBILITY_ENABLED =
+          "fs.s3a.encryption.cse.v1.compatibility.enabled";
+
+  /**
+   * Default value : {@value}.
+   */
+  public static final boolean S3_ENCRYPTION_CSE_V1_COMPATIBILITY_ENABLED_DEFAULT = false;
+
+  /**
+   * S3 CSE-KMS KMS region config.
+   */
+  public static final String S3_ENCRYPTION_CSE_KMS_REGION = "fs.s3a.encryption.cse.kms.region";
 
   /**
    * List of custom Signers. The signer class will be loaded, and the signer
@@ -1378,6 +1425,19 @@ public final class Constants {
   public static final String XA_HEADER_PREFIX = "header.";
 
   /**
+   * S3 cross region access enabled ?
+   * Value: {@value}.
+   */
+
+  public static final String AWS_S3_CROSS_REGION_ACCESS_ENABLED =
+      "fs.s3a.cross.region.access.enabled";
+  /**
+   * Default value for S3 cross region access enabled: {@value}.
+   */
+  public static final boolean AWS_S3_CROSS_REGION_ACCESS_ENABLED_DEFAULT = true;
+
+
+  /**
    * AWS S3 region for the bucket. When set bypasses the construction of
    * region through endpoint url.
    */
@@ -1435,6 +1495,29 @@ public final class Constants {
    */
   public static final String FS_S3A_PERFORMANCE_FLAGS =
       "fs.s3a.performance.flags";
+
+  /**
+   * Is the create overwrite feature enabled or not?
+   * A configuration option and a path status probe.
+   * Value {@value}.
+   */
+  public static final String FS_S3A_CONDITIONAL_CREATE_ENABLED =
+      "fs.s3a.create.conditional.enabled";
+
+  /**
+   * Default value for {@link #FS_S3A_CONDITIONAL_CREATE_ENABLED}.
+   * Value {@value}.
+   */
+  public static final boolean DEFAULT_FS_S3A_CONDITIONAL_CREATE_ENABLED = true;
+
+  /**
+   * createFile() boolean option toreate a multipart file, always: {@value}.
+   * <p>
+   * This is inefficient and will not work on a store which doesn't support that feature,
+   * so is primarily for testing.
+   */
+  public static final String FS_S3A_CREATE_MULTIPART = "fs.s3a.create.multipart";
+
   /**
    * Prefix for adding a header to the object when created.
    * The actual value must have a "." suffix and then the actual header.
@@ -1462,14 +1545,14 @@ public final class Constants {
           "fs.s3a.vectored.read.max.merged.size";
 
   /**
-   * Default minimum seek in bytes during vectored reads : {@value}.
+   * Default minimum seek in bytes during vectored reads: {@value}.
    */
-  public static final int DEFAULT_AWS_S3_VECTOR_READS_MIN_SEEK_SIZE = 4096; // 4K
+  public static final int DEFAULT_AWS_S3_VECTOR_READS_MIN_SEEK_SIZE =  S_128K;
 
   /**
    * Default maximum read size in bytes during vectored reads : {@value}.
    */
-  public static final int DEFAULT_AWS_S3_VECTOR_READS_MAX_MERGED_READ_SIZE = 1048576; //1M
+  public static final int DEFAULT_AWS_S3_VECTOR_READS_MAX_MERGED_READ_SIZE = S_2M;
 
   /**
    * Maximum number of range reads a single input stream can have
@@ -1495,13 +1578,59 @@ public final class Constants {
   public static final String AWS_AUTH_CLASS_PREFIX = "com.amazonaws.auth";
 
   /**
+   * Input stream type: {@value}.
+   */
+  public static final String INPUT_STREAM_TYPE = "fs.s3a.input.stream.type";
+
+  /**
+   * The classic input stream: {@value}.
+   */
+  public static final String INPUT_STREAM_TYPE_CLASSIC =
+      StreamIntegration.CLASSIC;
+
+  /**
+   * The prefetching input stream: {@value}.
+   */
+  public static final String INPUT_STREAM_TYPE_PREFETCH = StreamIntegration.PREFETCH;
+
+  /**
+   * The analytics input stream: {@value}.
+   */
+  public static final String INPUT_STREAM_TYPE_ANALYTICS =
+      StreamIntegration.ANALYTICS;
+
+  /**
+   * Request the default input stream,
+   * whatever it is for this release: {@value}.
+   */
+  public static final String INPUT_STREAM_TYPE_DEFAULT = StreamIntegration.DEFAULT;
+
+  /**
+   * The custom input stream type: {@value}".
+   * If set, the classname is loaded from
+   * {@link #INPUT_STREAM_CUSTOM_FACTORY}.
+   * <p>
+   * This option is primarily for testing as it can
+   * be used to generated failures.
+   */
+  public static final String INPUT_STREAM_TYPE_CUSTOM =
+      StreamIntegration.CUSTOM;
+
+  /**
+   * Classname of the factory to instantiate for custom streams: {@value}.
+   */
+  public static final String INPUT_STREAM_CUSTOM_FACTORY = "fs.s3a.input.stream.custom.factory";
+
+  /**
    * Controls whether the prefetching input stream is enabled.
    */
+  @Deprecated
   public static final String PREFETCH_ENABLED_KEY = "fs.s3a.prefetch.enabled";
 
   /**
    * Default option as to whether the prefetching input stream is enabled.
    */
+  @Deprecated
   public static final boolean  PREFETCH_ENABLED_DEFAULT = false;
 
   // If the default values are used, each file opened for reading will consume
@@ -1649,6 +1778,15 @@ public final class Constants {
   public static final boolean CHECKSUM_VALIDATION_DEFAULT = false;
 
   /**
+   * Indicates the algorithm used to create the checksum for the object
+   * to be uploaded to S3. Unset by default. It supports the following values:
+   * 'CRC32', 'CRC32C', 'SHA1', and 'SHA256'
+   * value:{@value}
+   */
+  public static final String CHECKSUM_ALGORITHM =
+      "fs.s3a.create.checksum.algorithm";
+
+  /**
    * Are extensions classes, such as {@code fs.s3a.aws.credentials.provider},
    * going to be loaded from the same classloader that loaded
    * the {@link S3AFileSystem}?
@@ -1677,4 +1815,20 @@ public final class Constants {
    * Value: {@value}.
    */
   public static final String S3A_IO_RATE_LIMIT = "fs.s3a.io.rate.limit";
+
+
+  /**
+   * Prefix to configure Analytics Accelerator Library.
+   * Value: {@value}.
+   */
+  public static final String ANALYTICS_ACCELERATOR_CONFIGURATION_PREFIX =
+          "fs.s3a.analytics.accelerator";
+
+  /**
+   * Value for the {@code If-None-Match} HTTP header in S3 requests.
+   * Value: {@value}.
+   * More information: <a href="https://docs.aws.amazon.com/AmazonS3/latest/API/API_PutObject.html">
+   *      AWS S3 PutObject API Documentation</a>
+   */
+  public static final String IF_NONE_MATCH_STAR = "*";
 }

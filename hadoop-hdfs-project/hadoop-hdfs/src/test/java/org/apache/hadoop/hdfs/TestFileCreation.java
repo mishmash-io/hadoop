@@ -84,11 +84,13 @@ import org.apache.hadoop.hdfs.server.namenode.FSNamesystem;
 import org.apache.hadoop.hdfs.server.namenode.LeaseManager;
 import org.apache.hadoop.hdfs.server.namenode.NameNode;
 import org.apache.hadoop.hdfs.server.namenode.NameNodeAdapter;
+import org.apache.hadoop.hdfs.server.namenode.NameNodeAdapterMockitoUtil;
 import org.apache.hadoop.hdfs.server.protocol.NamenodeProtocols;
 import org.apache.hadoop.io.EnumSetWritable;
 import org.apache.hadoop.io.IOUtils;
 import org.apache.hadoop.security.UserGroupInformation;
 import org.apache.hadoop.test.GenericTestUtils;
+import org.apache.hadoop.test.ReflectionUtils;
 import org.apache.hadoop.util.Time;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
@@ -202,7 +204,7 @@ public class TestFileCreation {
     cluster.waitActive();
     // Set a spy namesystem inside the namenode and return it
     FSNamesystem spyNamesystem =
-        NameNodeAdapter.spyOnNamesystem(cluster.getNameNode());
+        NameNodeAdapterMockitoUtil.spyOnNamesystem(cluster.getNameNode());
     InetSocketAddress nameNodeAddr = cluster.getNameNode().getNameNodeAddress();
     try {
       // Create a dfs client and set a long enough validity interval
@@ -253,7 +255,7 @@ public class TestFileCreation {
     cluster.waitActive();
     // Set a spy namesystem inside the namenode and return it
     FSNamesystem spyNamesystem =
-        NameNodeAdapter.spyOnNamesystem(cluster.getNameNode());
+        NameNodeAdapterMockitoUtil.spyOnNamesystem(cluster.getNameNode());
     InetSocketAddress nameNodeAddr = cluster.getNameNode().getNameNodeAddress();
     try {
       // Create a dfs client and set a minimal validity interval
@@ -715,7 +717,7 @@ public class TestFileCreation {
    */
   @Test
   public void testFileCreationNamenodeRestart()
-      throws IOException, NoSuchFieldException, IllegalAccessException {
+      throws IOException, ReflectiveOperationException {
     Configuration conf = new HdfsConfiguration();
     final int MAX_IDLE_TIME = 2000; // 2s
     conf.setInt("ipc.client.connection.maxidletime", MAX_IDLE_TIME);
@@ -814,8 +816,7 @@ public class TestFileCreation {
 
       // instruct the dfsclient to use a new filename when it requests
       // new blocks for files that were renamed.
-      DFSOutputStream dfstream = (DFSOutputStream)
-                                                 (stm.getWrappedStream());
+      DFSOutputStream dfstream = (DFSOutputStream) (stm.getWrappedStream());
 
       Field f = DFSOutputStream.class.getDeclaredField("src");
       f.setAccessible(true);
@@ -825,9 +826,9 @@ public class TestFileCreation {
 
       f.set(dfstream, file1.toString());
       dfstream = (DFSOutputStream) (stm3.getWrappedStream());
-      f.set(dfstream, file3new.toString());
+      ReflectionUtils.setFinalField(DFSOutputStream.class, dfstream, "src", file3new.toString());
       dfstream = (DFSOutputStream) (stm4.getWrappedStream());
-      f.set(dfstream, file4new.toString());
+      ReflectionUtils.setFinalField(DFSOutputStream.class, dfstream, "src", file4new.toString());
 
       // write 1 byte to file.  This should succeed because the 
       // namenode should have persisted leases.

@@ -255,7 +255,7 @@ public abstract class AbstractContractMultipartUploaderTest extends
     // was interpreted as an inconsistent write.
     MultipartUploader completer = uploader0;
     // and upload with uploader 1 to validate cross-uploader uploads
-    PartHandle partHandle = putPart(file, uploadHandle, 1, payload);
+    PartHandle partHandle = putPart(file, uploadHandle, 1, true, payload);
     partHandles.put(1, partHandle);
     PathHandle fd = complete(completer, uploadHandle, file,
         partHandles);
@@ -325,12 +325,13 @@ public abstract class AbstractContractMultipartUploaderTest extends
       final Path file,
       final UploadHandle uploadHandle,
       final int index,
+      final boolean isLastPart,
       final MessageDigest origDigest) throws IOException {
     byte[] payload = generatePayload(index);
     if (origDigest != null) {
       origDigest.update(payload);
     }
-    return putPart(file, uploadHandle, index, payload);
+    return putPart(file, uploadHandle, index, isLastPart, payload);
   }
 
   /**
@@ -339,6 +340,7 @@ public abstract class AbstractContractMultipartUploaderTest extends
    * @param file destination
    * @param uploadHandle handle
    * @param index index of part
+   * @param isLastPart is last part of the upload ?
    * @param payload byte array of payload
    * @return the part handle
    * @throws IOException IO failure.
@@ -346,6 +348,7 @@ public abstract class AbstractContractMultipartUploaderTest extends
   protected PartHandle putPart(final Path file,
       final UploadHandle uploadHandle,
       final int index,
+      final boolean isLastPart,
       final byte[] payload) throws IOException {
     ContractTestUtils.NanoTimer timer = new ContractTestUtils.NanoTimer();
     PartHandle partHandle;
@@ -355,7 +358,7 @@ public abstract class AbstractContractMultipartUploaderTest extends
                  payload.length,
                  file)) {
       partHandle = awaitFuture(getUploader(index)
-          .putPart(uploadHandle, index, file,
+          .putPart(uploadHandle, index, isLastPart, file,
               new ByteArrayInputStream(payload),
               payload.length));
     }
@@ -496,7 +499,7 @@ public abstract class AbstractContractMultipartUploaderTest extends
     MessageDigest origDigest = DigestUtils.getMd5Digest();
     int payloadCount = getTestPayloadCount();
     for (int i = 1; i <= payloadCount; ++i) {
-      PartHandle partHandle = buildAndPutPart(file, uploadHandle, i,
+      PartHandle partHandle = buildAndPutPart(file, uploadHandle, i, i == payloadCount,
           origDigest);
       partHandles.put(i, partHandle);
     }
@@ -512,7 +515,7 @@ public abstract class AbstractContractMultipartUploaderTest extends
   @Test
   public void testMultipartUploadEmptyPart() throws Exception {
     FileSystem fs = getFileSystem();
-    Path file = path("testMultipartUpload");
+    Path file = path("testMultipartUploadEmptyPart");
     try (MultipartUploader uploader =
         fs.createMultipartUploader(file).build()) {
       UploadHandle uploadHandle = uploader.startUpload(file).get();
@@ -523,7 +526,7 @@ public abstract class AbstractContractMultipartUploaderTest extends
       origDigest.update(payload);
       InputStream is = new ByteArrayInputStream(payload);
       PartHandle partHandle = awaitFuture(
-          uploader.putPart(uploadHandle, 1, file, is, payload.length));
+          uploader.putPart(uploadHandle, 1, true, file, is, payload.length));
       partHandles.put(1, partHandle);
       completeUpload(file, uploadHandle, partHandles, origDigest, 0);
     }
@@ -538,7 +541,7 @@ public abstract class AbstractContractMultipartUploaderTest extends
     Path file = methodPath();
     UploadHandle uploadHandle = startUpload(file);
     Map<Integer, PartHandle> partHandles = new HashMap<>();
-    partHandles.put(1, putPart(file, uploadHandle, 1, new byte[0]));
+    partHandles.put(1, putPart(file, uploadHandle, 1, true, new byte[0]));
     completeUpload(file, uploadHandle, partHandles, null, 0);
   }
 
@@ -558,7 +561,8 @@ public abstract class AbstractContractMultipartUploaderTest extends
       origDigest.update(payload);
     }
     for (int i = payloadCount; i > 0; --i) {
-      partHandles.put(i, buildAndPutPart(file, uploadHandle, i, null));
+      partHandles.put(i, buildAndPutPart(file, uploadHandle, i, i == payloadCount,
+          null));
     }
     completeUpload(file, uploadHandle, partHandles, origDigest,
         payloadCount * partSizeInBytes());
@@ -582,7 +586,8 @@ public abstract class AbstractContractMultipartUploaderTest extends
     }
     Map<Integer, PartHandle> partHandles = new HashMap<>();
     for (int i = payloadCount; i > 0; i -= 2) {
-      partHandles.put(i, buildAndPutPart(file, uploadHandle, i, null));
+      partHandles.put(i, buildAndPutPart(file, uploadHandle, i, i == payloadCount,
+          null));
     }
     completeUpload(file, uploadHandle, partHandles, origDigest,
         getTestPayloadCount() * partSizeInBytes());
@@ -599,7 +604,7 @@ public abstract class AbstractContractMultipartUploaderTest extends
     UploadHandle uploadHandle = startUpload(file);
     Map<Integer, PartHandle> partHandles = new HashMap<>();
     for (int i = 12; i > 10; i--) {
-      partHandles.put(i, buildAndPutPart(file, uploadHandle, i, null));
+      partHandles.put(i, buildAndPutPart(file, uploadHandle, i, i == 12, null));
     }
     abortUpload(uploadHandle, file);
 
@@ -609,7 +614,7 @@ public abstract class AbstractContractMultipartUploaderTest extends
 
     intercept(IOException.class,
         () -> awaitFuture(
-            uploader0.putPart(uploadHandle, 49, file, is, len)));
+            uploader0.putPart(uploadHandle, 49, true, file, is, len)));
     intercept(IOException.class,
         () -> complete(uploader0, uploadHandle, file, partHandles));
 
@@ -709,7 +714,8 @@ public abstract class AbstractContractMultipartUploaderTest extends
     byte[] payload = generatePayload(1);
     InputStream is = new ByteArrayInputStream(payload);
     intercept(IllegalArgumentException.class,
-        () -> uploader0.putPart(emptyHandle, 1, dest, is, payload.length));
+        () -> uploader0.putPart(emptyHandle, 1, true, dest, is,
+            payload.length));
   }
 
   /**
@@ -723,7 +729,7 @@ public abstract class AbstractContractMultipartUploaderTest extends
     UploadHandle emptyHandle =
         BBUploadHandle.from(ByteBuffer.wrap(new byte[0]));
     Map<Integer, PartHandle> partHandles = new HashMap<>();
-    PartHandle partHandle = putPart(dest, realHandle, 1,
+    PartHandle partHandle = putPart(dest, realHandle, 1, true,
         generatePayload(1, SMALL_FILE));
     partHandles.put(1, partHandle);
 
@@ -751,7 +757,7 @@ public abstract class AbstractContractMultipartUploaderTest extends
     UploadHandle uploadHandle = startUpload(file);
     Map<Integer, PartHandle> partHandles = new HashMap<>();
     int size = SMALL_FILE;
-    PartHandle partHandle = putPart(file, uploadHandle, 1,
+    PartHandle partHandle = putPart(file, uploadHandle, 1, true,
         generatePayload(1, size));
     partHandles.put(1, partHandle);
 
@@ -809,10 +815,10 @@ public abstract class AbstractContractMultipartUploaderTest extends
     assertNotEquals(upload1, upload2, "Upload handles match");
 
     // put part 1
-    partHandles1.put(partId1, putPart(file, upload1, partId1, payload1));
+    partHandles1.put(partId1, putPart(file, upload1, partId1, false, payload1));
 
     // put part2
-    partHandles2.put(partId2, putPart(file, upload2, partId2, payload2));
+    partHandles2.put(partId2, putPart(file, upload2, partId2, true, payload2));
 
     // complete part u1. expect its size and digest to
     // be as expected.
