@@ -65,7 +65,7 @@ public class TestHttpFileSystem {
       assertSameData(fs, new Path("/foo"), data);
       assertSameData(fs, new Path("foo"), data);
       RecordedRequest req = server.takeRequest();
-      assertEquals("/foo", req.getPath());
+      assertEquals("/foo", req.getTarget());
     }
   }
 
