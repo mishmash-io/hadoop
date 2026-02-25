@@ -20,10 +20,10 @@
   <parent>
     <groupId>org.apache.hadoop</groupId>
     <artifactId>hadoop-main</artifactId>
-    <version>3.4.2</version>
+    <version>3.4.3</version>
   </parent>
   <artifactId>hadoop-project</artifactId>
-  <version>3.4.2</version>
+  <version>3.4.3</version>
   <description>Apache Hadoop Project POM</description>
   <name>Apache Hadoop Project POM</name>
   <packaging>pom</packaging>
@@ -31,7 +31,7 @@
 
   <properties>
     <!-- Set the Release year during release -->
-    <release-year>2025</release-year>
+    <release-year>2026</release-year>
 
     <failIfNoTests>false</failIfNoTests>
     <!--Whether to proceed to next module if any test failures exist-->
@@ -75,6 +75,8 @@
     <!-- httpcomponents versions -->
     <httpclient.version>4.5.13</httpclient.version>
     <httpcore.version>4.4.13</httpcore.version>
+    <httpclient5.version>5.5</httpclient5.version>
+    <httpcore5.version>5.3.6</httpcore5.version>
 
     <!-- SLF4J/LOG4J version -->
     <slf4j.version>1.7.36</slf4j.version>
@@ -96,7 +98,7 @@
     <hadoop.protobuf.version>3.23.4</hadoop.protobuf.version>
     <protoc.path>${env.HADOOP_PROTOC_PATH}</protoc.path>
 
-    <hadoop-thirdparty.version>1.4.0</hadoop-thirdparty.version>
+    <hadoop-thirdparty.version>1.5.0</hadoop-thirdparty.version>
     <hadoop-thirdparty-protobuf.version>${hadoop-thirdparty.version}</hadoop-thirdparty-protobuf.version>
     <hadoop-thirdparty-guava.version>${hadoop-thirdparty.version}</hadoop-thirdparty-guava.version>
     <hadoop-thirdparty-shaded-prefix>org.apache.hadoop.thirdparty</hadoop-thirdparty-shaded-prefix>
@@ -108,10 +110,10 @@
     <findbugs.version>3.0.5</findbugs.version>
     <dnsjava.version>3.6.1</dnsjava.version>
 
-    <guava.version>27.0-jre</guava.version>
+    <guava.version>32.0.1-jre</guava.version>
     <guice.version>4.2.3</guice.version>
 
-    <bouncycastle.version>1.78.1</bouncycastle.version>
+    <bouncycastle.version>1.82</bouncycastle.version>
 
     <!-- Required for testing LDAP integration -->
     <apacheds.version>2.0.0.AM26</apacheds.version>
@@ -124,11 +126,11 @@
     <commons-compress.version>1.26.1</commons-compress.version>
     <commons-csv.version>1.9.0</commons-csv.version>
     <commons-io.version>2.16.1</commons-io.version>
-    <commons-lang3.version>3.17.0</commons-lang3.version>
+    <commons-lang3.version>3.18.0</commons-lang3.version>
     <commons-logging.version>1.3.0</commons-logging.version>
     <commons-math3.version>3.6.1</commons-math3.version>
     <commons-net.version>3.9.0</commons-net.version>
-    <commons-text.version>1.10.0</commons-text.version>
+    <commons-text.version>1.14.0</commons-text.version>
 
     <kerby.version>2.0.3</kerby.version>
     <ehcache.version>3.8.2</ehcache.version>
@@ -142,9 +144,9 @@
     <jna.version>5.2.0</jna.version>
     <gson.version>2.9.0</gson.version>
     <metrics.version>3.2.4</metrics.version>
-    <netty4.version>4.1.118.Final</netty4.version>
+    <netty4.version>4.1.127.Final</netty4.version>
     <snappy-java.version>1.1.10.4</snappy-java.version>
-    <lz4-java.version>1.7.1</lz4-java.version>
+    <lz4-java.version>1.9.0</lz4-java.version>
 
     <!-- Maven protoc compiler -->
     <protobuf-maven-plugin.version>0.5.1</protobuf-maven-plugin.version>
@@ -156,7 +158,6 @@
 
     <!-- define the Java language version used by the compiler -->
     <javac.version>1.8</javac.version>
-    <javadoc.skip.jdk11>false</javadoc.skip.jdk11>
 
     <!-- The java version enforced by the maven enforcer -->
     <!-- more complex patterns can be used here, such as
@@ -203,9 +204,9 @@
     <make-maven-plugin.version>1.0-beta-1</make-maven-plugin.version>
     <surefire.fork.timeout>900</surefire.fork.timeout>
     <aws-java-sdk.version>1.12.720</aws-java-sdk.version>
-    <aws-java-sdk-v2.version>2.29.52</aws-java-sdk-v2.version>
-    <amazon-s3-encryption-client-java.version>3.1.1</amazon-s3-encryption-client-java.version>
-    <amazon-s3-analyticsaccelerator-s3.version>1.2.1</amazon-s3-analyticsaccelerator-s3.version>
+    <aws-java-sdk-v2.version>2.35.4</aws-java-sdk-v2.version>
+    <amazon-s3-encryption-client-java.version>4.0.0</amazon-s3-encryption-client-java.version>
+    <amazon-s3-analyticsaccelerator-s3.version>1.3.1</amazon-s3-analyticsaccelerator-s3.version>
     <aws.eventstream.version>1.0.1</aws.eventstream.version>
     <hsqldb.version>2.7.1</hsqldb.version>
     <frontend-maven-plugin.version>1.11.2</frontend-maven-plugin.version>
@@ -230,10 +231,11 @@
     <jline.version>3.9.0</jline.version>
     <powermock.version>1.5.6</powermock.version>
     <solr.version>8.11.2</solr.version>
-    <openssl-wildfly.version>2.1.4.Final</openssl-wildfly.version>
+    <openssl-wildfly.version>2.2.5.Final</openssl-wildfly.version>
     <jsonschema2pojo.version>1.0.2</jsonschema2pojo.version>
     <woodstox.version>5.4.0</woodstox.version>
-    <nimbus-jose-jwt.version>9.37.2</nimbus-jose-jwt.version>
+    <nimbus-jose-jwt.version>10.4</nimbus-jose-jwt.version>
+    <jcip-annotations.version>1.0-1</jcip-annotations.version>
     <nodejs.version>v12.22.1</nodejs.version>
     <yarnpkg.version>v1.22.5</yarnpkg.version>
     <apache-ant.version>1.10.13</apache-ant.version>
@@ -839,6 +841,28 @@
         <groupId>org.apache.httpcomponents</groupId>
         <artifactId>httpcore</artifactId>
         <version>${httpcore.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.apache.httpcomponents.client5</groupId>
+        <artifactId>httpclient5</artifactId>
+        <version>${httpclient5.version}</version>
+        <exclusions>
+          <exclusion>
+            <groupId>org.slf4j</groupId>
+            <artifactId>*</artifactId>
+          </exclusion>
+        </exclusions>
+      </dependency>
+      <dependency>
+        <groupId>org.apache.httpcomponents.core5</groupId>
+        <artifactId>httpcore5</artifactId>
+        <version>${httpcore5.version}</version>
+        <exclusions>
+          <exclusion>
+            <groupId>org.apache.logging.log4j</groupId>
+            <artifactId>*</artifactId>
+          </exclusion>
+        </exclusions>
       </dependency>
       <dependency>
         <groupId>commons-codec</groupId>
@@ -1603,6 +1627,11 @@
         <version>2.2.11</version>
       </dependency>
       <dependency>
+        <groupId>com.github.stephenc.jcip</groupId>
+        <artifactId>jcip-annotations</artifactId>
+        <version>${jcip-annotations.version}</version>
+      </dependency>
+      <dependency>
         <groupId>org.codehaus.jettison</groupId>
         <artifactId>jettison</artifactId>
         <version>1.5.4</version>
@@ -1850,6 +1879,10 @@
             <groupId>org.osgi</groupId>
             <artifactId>org.osgi.core</artifactId>
           </exclusion>
+          <exclusion>
+            <groupId>com.google.protobuf</groupId>
+            <artifactId>protobuf-java</artifactId>
+          </exclusion>
         </exclusions>
       </dependency>
       <dependency>
@@ -1882,6 +1915,10 @@
           <exclusion>
             <groupId>org.apache.yetus</groupId>
             <artifactId>audience-annotations</artifactId>
+          </exclusion>
+          <exclusion>
+            <groupId>com.google.protobuf</groupId>
+            <artifactId>protobuf-java</artifactId>
           </exclusion>
         </exclusions>
       </dependency>
@@ -2096,7 +2133,7 @@
         </exclusions>
       </dependency>
       <dependency>
-        <groupId>org.lz4</groupId>
+        <groupId>at.yawk.lz4</groupId>
         <artifactId>lz4-java</artifactId>
         <version>${lz4-java.version}</version>
       </dependency>
@@ -2750,26 +2787,14 @@
       </dependencyManagement>
     </profile>
     <profile>
-      <id>jdk11</id>
+      <id>jdk17+</id>
       <activation>
-        <jdk>[11,)</jdk>
+        <jdk>[17,)</jdk>
       </activation>
-      <build>
-        <plugins>
-          <plugin>
-            <groupId>org.apache.maven.plugins</groupId>
-            <artifactId>maven-javadoc-plugin</artifactId>
-            <configuration>
-              <skip>${javadoc.skip.jdk11}</skip>
-              <detectJavaApiLink>false</detectJavaApiLink>
-              <additionalOptions>
-                <!-- TODO: remove -html4 option to generate html5 docs when we stop supporting JDK8 -->
-                <additionalOption>-html4</additionalOption>
-              </additionalOptions>
-            </configuration>
-          </plugin>
-        </plugins>
-      </build>
+      <properties>
+        <javac.version>17</javac.version>
+        <maven.compiler.release>${javac.version}</maven.compiler.release>
+      </properties>
     </profile>
   </profiles>
 

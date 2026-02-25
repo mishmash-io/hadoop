@@ -19,7 +19,10 @@
 package org.apache.hadoop.security.ssl;
 
 import java.io.IOException;
+import java.security.NoSuchAlgorithmException;
 import java.util.Arrays;
+
+import org.assertj.core.api.Assertions;
 
 import org.apache.hadoop.util.NativeCodeLoader;
 import org.junit.jupiter.api.Test;
@@ -38,10 +41,19 @@ public class TestDelegatingSSLSocketFactory {
             "Unable to load native libraries");
     assumeTrue(NativeCodeLoader.buildSupportsOpenssl(),
             "Build was not compiled with support for OpenSSL");
-    DelegatingSSLSocketFactory.initializeDefaultFactory(
-            DelegatingSSLSocketFactory.SSLChannelMode.OpenSSL);
-    assertThat(DelegatingSSLSocketFactory.getDefaultFactory()
-            .getProviderName()).contains("openssl");
+    try {
+      DelegatingSSLSocketFactory.initializeDefaultFactory(
+              DelegatingSSLSocketFactory.SSLChannelMode.OpenSSL);
+      assertThat(DelegatingSSLSocketFactory.getDefaultFactory()
+              .getProviderName()).contains("openssl");
+    } catch (IOException e) {
+      // if this is caused by a wildfly version error, downgrade to an assume
+      final Throwable cause = e.getCause();
+      Assertions.assertThat(cause)
+              .describedAs("Cause of %s: %s", e, cause)
+              .isInstanceOf(NoSuchAlgorithmException.class);
+      assumeTrue(false, "wildfly library not compatible with this OS version");
+    }
   }
 
   @Test

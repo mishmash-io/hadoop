@@ -66,9 +66,11 @@ import org.apache.hadoop.fs.azurebfs.contracts.exceptions.AbfsInvalidChecksumExc
 import org.apache.hadoop.fs.azurebfs.contracts.exceptions.AbfsRestOperationException;
 import org.apache.hadoop.fs.azurebfs.contracts.exceptions.AzureBlobFileSystemException;
 import org.apache.hadoop.fs.azurebfs.contracts.exceptions.InvalidAbfsRestOperationException;
+import org.apache.hadoop.fs.azurebfs.contracts.exceptions.InvalidConfigurationValueException;
 import org.apache.hadoop.fs.azurebfs.contracts.exceptions.InvalidFileSystemPropertyException;
 import org.apache.hadoop.fs.azurebfs.contracts.exceptions.InvalidUriException;
 import org.apache.hadoop.fs.azurebfs.contracts.exceptions.SASTokenProviderException;
+import org.apache.hadoop.fs.azurebfs.contracts.exceptions.TrileanConversionException;
 import org.apache.hadoop.fs.azurebfs.contracts.services.AppendRequestParameters;
 import org.apache.hadoop.fs.azurebfs.contracts.services.AzureServiceErrorCode;
 import org.apache.hadoop.fs.azurebfs.contracts.services.ListResultEntrySchema;
@@ -127,6 +129,7 @@ import static org.apache.hadoop.fs.azurebfs.constants.AbfsHttpConstants.PLUS_ENC
 import static org.apache.hadoop.fs.azurebfs.constants.AbfsHttpConstants.SEMICOLON;
 import static org.apache.hadoop.fs.azurebfs.constants.AbfsHttpConstants.SINGLE_WHITE_SPACE;
 import static org.apache.hadoop.fs.azurebfs.constants.AbfsHttpConstants.UTF_8;
+import static org.apache.hadoop.fs.azurebfs.constants.AbfsServiceType.BLOB;
 import static org.apache.hadoop.fs.azurebfs.constants.ConfigurationKeys.FS_AZURE_IDENTITY_TRANSFORM_CLASS;
 import static org.apache.hadoop.fs.azurebfs.constants.FileSystemConfigurations.DEFAULT_DELETE_CONSIDERED_IDEMPOTENT;
 import static org.apache.hadoop.fs.azurebfs.constants.FileSystemConfigurations.ONE_MB;
@@ -152,6 +155,7 @@ public abstract class AbfsClient implements Closeable {
   public static final Logger LOG = LoggerFactory.getLogger(AbfsClient.class);
   public static final String HUNDRED_CONTINUE_USER_AGENT = SINGLE_WHITE_SPACE + HUNDRED_CONTINUE + SEMICOLON;
   public static final String ABFS_CLIENT_TIMER_THREAD_NAME = "abfs-timer-client";
+  public static final String FNS_BLOB_USER_AGENT_IDENTIFIER = "FNS";
 
   private final URL baseUrl;
   private final SharedKeyCredentials sharedKeyCredentials;
@@ -194,7 +198,6 @@ public abstract class AbfsClient implements Closeable {
   private KeepAliveCache keepAliveCache;
 
   private AbfsApacheHttpClient abfsApacheHttpClient;
-  private static boolean isNamespaceEnabled = false;
 
   /**
    * logging the rename failure if metadata is in an incomplete state.
@@ -444,7 +447,7 @@ public abstract class AbfsClient implements Closeable {
     requestHeaders.add(new AbfsHttpHeader(X_MS_VERSION, xMsVersion.toString()));
     requestHeaders.add(new AbfsHttpHeader(ACCEPT_CHARSET, UTF_8));
     requestHeaders.add(new AbfsHttpHeader(CONTENT_TYPE, EMPTY_STRING));
-    requestHeaders.add(new AbfsHttpHeader(USER_AGENT, userAgent));
+    requestHeaders.add(new AbfsHttpHeader(USER_AGENT, getUserAgent()));
     return requestHeaders;
   }
 
@@ -880,27 +883,31 @@ public abstract class AbfsClient implements Closeable {
    * @param leaseId if there is an active lease on the path.
    * @param contextEncryptionAdapter to provide encryption context.
    * @param tracingContext for tracing the server calls.
+   * @param blobMd5  The Base64-encoded MD5 hash of the blob for data integrity validation.
    * @return executed rest operation containing response from server.
    * @throws AzureBlobFileSystemException if rest operation fails.
    */
   public abstract AbfsRestOperation flush(String path, long position,
       boolean retainUncommittedData, boolean isClose,
       String cachedSasToken, String leaseId,
-      ContextEncryptionAdapter contextEncryptionAdapter, TracingContext tracingContext)
+      ContextEncryptionAdapter contextEncryptionAdapter, TracingContext tracingContext, String blobMd5)
       throws AzureBlobFileSystemException;
 
   /**
-   * Flush previously uploaded data to a file.
-   * @param buffer containing blockIds to be flushed.
-   * @param path on which data has to be flushed.
-   * @param isClose specify if this is the last flush to the file.
-   * @param cachedSasToken to be used for the authenticating operation.
-   * @param leaseId if there is an active lease on the path.
-   * @param eTag to specify conditional headers.
-   * @param contextEncryptionAdapter to provide encryption context.
-   * @param tracingContext for tracing the server calls.
-   * @return executed rest operation containing response from server.
-   * @throws AzureBlobFileSystemException if rest operation fails.
+   * Flushes previously uploaded data to the specified path.
+   *
+   * @param buffer The buffer containing block IDs to be flushed.
+   * @param path The file path to which data should be flushed.
+   * @param isClose True if this is the final flush (i.e., the file is being closed).
+   * @param cachedSasToken SAS token used for authentication (if applicable).
+   * @param leaseId Lease ID, if a lease is active on the file.
+   * @param eTag ETag used for conditional request headers (e.g., If-Match).
+   * @param contextEncryptionAdapter Adapter to provide encryption context, if encryption is enabled.
+   * @param tracingContext Context for tracing the server calls.
+   * @param blobMd5 The Base64-encoded MD5 hash of the blob for data integrity validation.
+   * @return The executed {@link AbfsRestOperation} containing the server response.
+   *
+   * @throws AzureBlobFileSystemException if the flush operation fails.
    */
   public abstract AbfsRestOperation flush(byte[] buffer,
       String path,
@@ -909,7 +916,7 @@ public abstract class AbfsClient implements Closeable {
       String leaseId,
       String eTag,
       ContextEncryptionAdapter contextEncryptionAdapter,
-      TracingContext tracingContext) throws AzureBlobFileSystemException;
+      TracingContext tracingContext, String blobMd5) throws AzureBlobFileSystemException;
 
   /**
    * Set the properties of a file or directory.
@@ -1323,6 +1330,15 @@ public abstract class AbfsClient implements Closeable {
     sb.append(FORWARD_SLASH);
     sb.append(abfsConfiguration.getClusterType());
 
+    // Add a unique identifier in FNS-Blob user agent string
+    // Current filesystem init restricts HNS-Blob combination
+    // so namespace check not required.
+    if (abfsConfiguration.getFsConfiguredServiceType() == BLOB) {
+      sb.append(SEMICOLON)
+          .append(SINGLE_WHITE_SPACE)
+          .append(FNS_BLOB_USER_AGENT_IDENTIFIER);
+    }
+
     sb.append(")");
 
     appendIfNotEmpty(sb, abfsConfiguration.getCustomUserAgentPrefix(), false);
@@ -1344,17 +1360,15 @@ public abstract class AbfsClient implements Closeable {
 
   /**
    * Add MD5 hash as request header to the append request.
+   *
    * @param requestHeaders to be updated with checksum header
    * @param reqParams for getting offset and length
-   * @param buffer for getting input data for MD5 computation
-   * @throws AbfsRestOperationException if Md5 computation fails
    */
   protected void addCheckSumHeaderForWrite(List<AbfsHttpHeader> requestHeaders,
-      final AppendRequestParameters reqParams, final byte[] buffer)
-      throws AbfsRestOperationException {
-    String md5Hash = computeMD5Hash(buffer, reqParams.getoffset(),
-        reqParams.getLength());
-    requestHeaders.add(new AbfsHttpHeader(CONTENT_MD5, md5Hash));
+      final AppendRequestParameters reqParams) {
+    if (reqParams.getMd5() != null) {
+      requestHeaders.add(new AbfsHttpHeader(CONTENT_MD5, reqParams.getMd5()));
+    }
   }
 
   /**
@@ -1405,12 +1419,23 @@ public abstract class AbfsClient implements Closeable {
   /**
    * Conditions check for allowing checksum support for write operation.
    * Server will support this if client sends the MD5 Hash as a request header.
-   * For azure stoage service documentation and more details refer to
+   * For azure storage service documentation and more details refer to
    * <a href="https://learn.microsoft.com/en-us/rest/api/storageservices/datalakestoragegen2/path/update">Path - Update Azure Rest API</a>.
    * @return true if checksum validation enabled.
    */
   protected boolean isChecksumValidationEnabled() {
     return getAbfsConfiguration().getIsChecksumValidationEnabled();
+  }
+
+  /**
+   * Conditions check for allowing checksum support for write operation.
+   * Server will support this if client sends the MD5 Hash as a request header.
+   * For azure storage service documentation and more details refer to
+   * <a href="https://learn.microsoft.com/en-us/rest/api/storageservices/datalakestoragegen2/path/update">Path - Update Azure Rest API</a>.
+   * @return true if full blob checksum validation enabled.
+   */
+  protected boolean isFullBlobChecksumValidationEnabled() {
+    return getAbfsConfiguration().isFullBlobChecksumValidationEnabled();
   }
 
   /**
@@ -1718,20 +1743,20 @@ public abstract class AbfsClient implements Closeable {
 
   /**
    * Checks if the namespace is enabled.
+   * Filesystem init will fail if namespace is not correctly configured,
+   * so instead of swallowing the exception, we should throw the exception
+   * in case namespace is not configured correctly.
    *
    * @return True if the namespace is enabled, false otherwise.
+   * @throws AzureBlobFileSystemException if the conversion fails.
    */
-  public static boolean getIsNamespaceEnabled() {
-    return isNamespaceEnabled;
-  }
-
-  /**
-   * Sets the namespace enabled status.
-   *
-   * @param namespaceEnabled True to enable the namespace, false to disable it.
-   */
-  public static void setIsNamespaceEnabled(final boolean namespaceEnabled) {
-    isNamespaceEnabled = namespaceEnabled;
+  public boolean getIsNamespaceEnabled() throws AzureBlobFileSystemException {
+    try {
+      return getAbfsConfiguration().getIsNamespaceEnabledAccount().toBoolean();
+    } catch (TrileanConversionException ex) {
+      LOG.error("Failed to convert namespace enabled account property to boolean", ex);
+      throw new InvalidConfigurationValueException("Failed to determine account type", ex);
+    }
   }
 
   protected boolean isRenameResilience() {

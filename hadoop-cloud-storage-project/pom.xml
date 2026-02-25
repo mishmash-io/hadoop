@@ -20,11 +20,11 @@
   <parent>
     <groupId>org.apache.hadoop</groupId>
     <artifactId>hadoop-project</artifactId>
-    <version>3.4.2</version>
+    <version>3.4.3</version>
     <relativePath>../hadoop-project</relativePath>
   </parent>
   <artifactId>hadoop-cloud-storage-project</artifactId>
-  <version>3.4.2</version>
+  <version>3.4.3</version>
   <description>Apache Hadoop Cloud Storage Project</description>
   <name>Apache Hadoop Cloud Storage Project</name>
   <packaging>pom</packaging>
@@ -34,7 +34,6 @@
     <module>hadoop-cos</module>
     <module>hadoop-huaweicloud</module>
   </modules>
-
   <build>
     <plugins>
       <plugin>
@@ -51,5 +50,18 @@
       </plugin>
     </plugins>
   </build>
-
+  <profiles>
+     <profile>
+       <id>dist</id>
+       <activation>
+         <activeByDefault>false</activeByDefault>
+         <property>
+           <name>tar</name>
+         </property>
+       </activation>
+       <modules>
+         <module>hadoop-cloud-storage-dist</module>
+       </modules>
+     </profile>
+  </profiles>
 </project>

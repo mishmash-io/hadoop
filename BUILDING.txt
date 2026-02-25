@@ -29,7 +29,11 @@ This requires a recent version of docker (1.4.1 and higher are known to work).
 On Linux / Mac:
     Install Docker and run this command:
 
-    $ ./start-build-env.sh
+    $ ./start-build-env.sh [OS platform]
+
+   - [OS Platform] One of [rockylinux_8, debian_11, ubuntu_20, ubuntu_24, windows_10].
+        Default is 'ubuntu_20'.
+        Note: Currently only default ('ubuntu_20') is supported on arm machine
 
 The prompt which is then presented is located at a mounted version of the source tree
 and all required tools for testing and building have been installed and configured.
@@ -386,6 +390,50 @@ Create a local staging version of the website (in /tmp/hadoop-site)
 Note that the site needs to be built in a second pass after other artifacts.
 
 ----------------------------------------------------------------------------------
+Including Cloud Connector Dependencies in Distributions:
+
+Hadoop distributions include the hadoop modules needed to work with data and services
+on cloud infrastructure
+
+However, dependencies are omitted for all cloud connectors except hadoop-azure
+(abfs:// and wasb://) and possibly hadoop-gcp (gs://) and hadoop-tos (tos://).
+For the latter two modules, it depends on shading options.
+
+For hadoop-aws the AWS SDK bundle.jar is omitted, but everything else is included.
+
+Excluding the extra binaries:
+* Keeps release artifact size below the limit of the ASF distribution network.
+* Reduces download and size overhead in docker usage.
+* Reduces the CVE attack surface and audit-related complaints about those same CVEs.
+* Reduces the risk of classpath conflict.
+
+To produce a build with the specific desired dependencies, the build must be executed
+with the relevant profile of ${module}-package alongside the -Pdist profile.
+
+For example, a build with the hadoop-aws and hadoop-azure-datalake dependencies,
+run with
+
+ mvn package -Pdist -DskipTests -Dhadoop-aws-package -Dhadoop-azure-datalake-package
+
+Available package profiles:
+  hadoop-aliyun-package
+  hadoop-aws-package
+  hadoop-azure-datalake-package
+  hadoop-cos-package
+  hadoop-huaweicloud-package
+
+To build a complete distribution then with all cloud dependencies included:
+
+mvn package -Pdist -DskipTests -Dtar -Dmaven.javadoc.skip=true \
+ -Dhadoop-aliyun-package \
+ -Dhadoop-aws-package \
+ -Dhadoop-azure-datalake-package \
+ -Dhadoop-cos-package \
+ -Dhadoop-huaweicloud-package
+
+The resulting tar file will be too large to be distributable through ASF infrastructure.
+
+----------------------------------------------------------------------------------
 Installing Hadoop
 
 Look for these HTML files after you build the document by the above commands.
@@ -457,7 +505,7 @@ path. This is necessary at least for Homebrewed OpenSSL.
 
 ----------------------------------------------------------------------------------
 
-Building on CentOS 8
+Building on Rocky Linux 8
 
 ----------------------------------------------------------------------------------
 
@@ -478,7 +526,7 @@ Building on CentOS 8
   $ sudo make install
   $ cd ..
 
-* Install libraries provided by CentOS 8.
+* Install libraries provided by Rocky Linux 8.
   $ sudo dnf install libtirpc-devel zlib-devel lz4-devel bzip2-devel openssl-devel cyrus-sasl-devel libpmem-devel
 
 * Install GCC 9.3.0

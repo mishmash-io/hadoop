@@ -72,6 +72,7 @@ import org.apache.hadoop.mapreduce.lib.output.FileOutputFormat;
 import org.apache.hadoop.security.UserGroupInformation;
 import org.apache.hadoop.util.DurationInfo;
 
+import static org.apache.hadoop.fs.s3a.S3ATestUtils.assumeMultipartUploads;
 import static org.apache.hadoop.fs.s3a.S3ATestUtils.disableFilesystemCaching;
 import static org.apache.hadoop.fs.s3a.S3ATestUtils.lsR;
 import static org.apache.hadoop.fs.s3a.S3AUtils.applyLocatedFiles;
@@ -173,6 +174,7 @@ public class ITestS3ACommitterMRJob extends AbstractYarnClusterITest {
   @Override
   public void setup() throws Exception {
     super.setup();
+    assumeMultipartUploads(getFileSystem().getConf());
     // configure the test binding for this specific test case.
     committerTestBinding.setup(getClusterBinding(), getFileSystem());
   }
@@ -262,7 +264,7 @@ public class ITestS3ACommitterMRJob extends AbstractYarnClusterITest {
       Path log4jPath = new Path(log4j.toURI());
       LOG.debug("Using log4j path {}", log4jPath);
       mrJob.addFileToClassPath(log4jPath);
-      String sysprops = String.format("-Xmx128m -Dlog4j.configuration=%s",
+      String sysprops = String.format("-Xmx256m -Dlog4j.configuration=%s",
           log4j);
       jobConf.set(JobConf.MAPRED_MAP_TASK_JAVA_OPTS, sysprops);
       jobConf.set(JobConf.MAPRED_REDUCE_TASK_JAVA_OPTS, sysprops);

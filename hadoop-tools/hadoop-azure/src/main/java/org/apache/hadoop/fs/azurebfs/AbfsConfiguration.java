@@ -95,6 +95,7 @@ public class AbfsConfiguration{
   private final AbfsServiceType fsConfiguredServiceType;
   private final boolean isSecure;
   private static final Logger LOG = LoggerFactory.getLogger(AbfsConfiguration.class);
+  private Trilean isNamespaceEnabled = null;
 
   @StringConfigurationValidatorAnnotation(ConfigurationKey = FS_AZURE_ACCOUNT_IS_HNS_ENABLED,
       DefaultValue = DEFAULT_FS_AZURE_ACCOUNT_IS_HNS_ENABLED)
@@ -136,6 +137,11 @@ public class AbfsConfiguration{
           ConfigurationKey = AZURE_FOOTER_READ_BUFFER_SIZE,
           DefaultValue = DEFAULT_FOOTER_READ_BUFFER_SIZE)
   private int footerReadBufferSize;
+
+  @BooleanConfigurationValidatorAnnotation(
+      ConfigurationKey = FS_AZURE_BUFFERED_PREAD_DISABLE,
+      DefaultValue = DEFAULT_BUFFERED_PREAD_DISABLE)
+  private boolean isBufferedPReadDisabled;
 
   @BooleanConfigurationValidatorAnnotation(
       ConfigurationKey = FS_AZURE_ACCOUNT_IS_EXPECT_HEADER_ENABLED,
@@ -398,6 +404,10 @@ public class AbfsConfiguration{
   private boolean isChecksumValidationEnabled;
 
   @BooleanConfigurationValidatorAnnotation(ConfigurationKey =
+      FS_AZURE_ENABLE_FULL_BLOB_CHECKSUM_VALIDATION, DefaultValue = DEFAULT_ENABLE_FULL_BLOB_ABFS_CHECKSUM_VALIDATION)
+  private boolean isFullBlobChecksumValidationEnabled;
+
+  @BooleanConfigurationValidatorAnnotation(ConfigurationKey =
       FS_AZURE_ENABLE_PAGINATED_DELETE, DefaultValue = DEFAULT_ENABLE_PAGINATED_DELETE)
   private boolean isPaginatedDeleteEnabled;
 
@@ -446,6 +456,10 @@ public class AbfsConfiguration{
   @BooleanConfigurationValidatorAnnotation(ConfigurationKey = FS_AZURE_ENABLE_CLIENT_TRANSACTION_ID,
       DefaultValue = DEFAULT_FS_AZURE_ENABLE_CLIENT_TRANSACTION_ID)
   private boolean enableClientTransactionId;
+
+  @BooleanConfigurationValidatorAnnotation(ConfigurationKey = FS_AZURE_ENABLE_CREATE_BLOB_IDEMPOTENCY,
+      DefaultValue = DEFAULT_FS_AZURE_ENABLE_CREATE_BLOB_IDEMPOTENCY)
+  private boolean enableCreateIdempotency;
 
   private String clientProvidedEncryptionKey;
   private String clientProvidedEncryptionKeySHA;
@@ -518,8 +532,11 @@ public class AbfsConfiguration{
   }
 
   public Trilean getIsNamespaceEnabledAccount() {
-    return Trilean.getTrilean(
-        getString(FS_AZURE_ACCOUNT_IS_HNS_ENABLED, isNamespaceEnabledAccount));
+    if (isNamespaceEnabled == null) {
+      isNamespaceEnabled = Trilean.getTrilean(
+          getString(FS_AZURE_ACCOUNT_IS_HNS_ENABLED, isNamespaceEnabledAccount));
+    }
+    return isNamespaceEnabled;
   }
 
   /**
@@ -907,6 +924,14 @@ public class AbfsConfiguration{
     return this.footerReadBufferSize;
   }
 
+  /**
+   * Returns whether the buffered pread is disabled.
+   * @return true if buffered pread is disabled, false otherwise.
+   */
+  public boolean isBufferedPReadDisabled() {
+    return this.isBufferedPReadDisabled;
+  }
+
   public int getReadBufferSize() {
     return this.readBufferSize;
   }
@@ -984,6 +1009,12 @@ public class AbfsConfiguration{
   }
 
   public boolean isConditionalCreateOverwriteEnabled() {
+    // If either the configured FS service type or the ingress service type is BLOB,
+    // conditional create-overwrite is not used.
+    if (getIsCreateIdempotencyEnabled() && (getFsConfiguredServiceType() == AbfsServiceType.BLOB
+        || getIngressServiceType() == AbfsServiceType.BLOB)) {
+      return false;
+    }
     return this.enableConditionalCreateOverwrite;
   }
 
@@ -1113,6 +1144,10 @@ public class AbfsConfiguration{
 
   public boolean getIsClientTransactionIdEnabled() {
     return enableClientTransactionId;
+  }
+
+  public boolean getIsCreateIdempotencyEnabled() {
+    return enableCreateIdempotency;
   }
 
   /**
@@ -1517,9 +1552,24 @@ public class AbfsConfiguration{
     this.maxBackoffInterval = maxBackoffInterval;
   }
 
+  /**
+   * Sets the namespace enabled account flag.
+   *
+   * @param isNamespaceEnabledAccount boolean value indicating if the account is namespace enabled.
+   */
+  void setIsNamespaceEnabledAccount(boolean isNamespaceEnabledAccount) {
+    this.isNamespaceEnabled = Trilean.getTrilean(isNamespaceEnabledAccount);
+  }
+
+  /**
+   * Sets the namespace enabled account flag for testing purposes.
+   * Use this method only for testing scenarios.
+   *
+   * @param isNamespaceEnabledAccount Trilean value indicating if the account is namespace enabled.
+   */
   @VisibleForTesting
-  void setIsNamespaceEnabledAccount(String isNamespaceEnabledAccount) {
-    this.isNamespaceEnabledAccount = isNamespaceEnabledAccount;
+  void setIsNamespaceEnabledAccountForTesting(Trilean isNamespaceEnabledAccount) {
+    this.isNamespaceEnabled = isNamespaceEnabledAccount;
   }
 
   /**
@@ -1581,6 +1631,10 @@ public class AbfsConfiguration{
   @VisibleForTesting
   public void setIsChecksumValidationEnabled(boolean isChecksumValidationEnabled) {
     this.isChecksumValidationEnabled = isChecksumValidationEnabled;
+  }
+
+  public boolean isFullBlobChecksumValidationEnabled() {
+    return isFullBlobChecksumValidationEnabled;
   }
 
   public long getBlobCopyProgressPollWaitMillis() {

@@ -62,7 +62,7 @@ public final class FileSystemConfigurations {
   public static final int DEFAULT_AZURE_OAUTH_TOKEN_FETCH_RETRY_MAX_ATTEMPTS = 5;
   public static final int DEFAULT_AZURE_OAUTH_TOKEN_FETCH_RETRY_MIN_BACKOFF_INTERVAL = 0;
   public static final int DEFAULT_AZURE_OAUTH_TOKEN_FETCH_RETRY_MAX_BACKOFF_INTERVAL = SIXTY_SECONDS;
-  public static final int DEFAULT_AZURE_OAUTH_TOKEN_FETCH_RETRY_DELTA_BACKOFF = 2;
+  public static final int DEFAULT_AZURE_OAUTH_TOKEN_FETCH_RETRY_DELTA_BACKOFF = 2_000;
 
   public static final int ONE_KB = 1024;
   public static final int ONE_MB = ONE_KB * ONE_KB;
@@ -75,6 +75,7 @@ public final class FileSystemConfigurations {
   public static final boolean DEFAULT_READ_SMALL_FILES_COMPLETELY = false;
   public static final boolean DEFAULT_OPTIMIZE_FOOTER_READ = true;
   public static final int DEFAULT_FOOTER_READ_BUFFER_SIZE = 512 * ONE_KB;
+  public static final boolean DEFAULT_BUFFERED_PREAD_DISABLE = false;
   public static final boolean DEFAULT_ALWAYS_READ_BUFFER_SIZE = false;
   public static final int DEFAULT_READ_AHEAD_BLOCK_SIZE = 4 * ONE_MB;
   public static final int DEFAULT_READ_AHEAD_RANGE = 64 * ONE_KB; // 64 KB
@@ -138,6 +139,7 @@ public final class FileSystemConfigurations {
   public static final boolean DEFAULT_ENABLE_ABFS_RENAME_RESILIENCE = true;
   public static final boolean DEFAULT_ENABLE_PAGINATED_DELETE = false;
   public static final boolean DEFAULT_ENABLE_ABFS_CHECKSUM_VALIDATION = false;
+  public static final boolean DEFAULT_ENABLE_FULL_BLOB_ABFS_CHECKSUM_VALIDATION = false;
 
   /**
    * Limit of queued block upload operations before writes
@@ -149,6 +151,36 @@ public final class FileSystemConfigurations {
    * Length of the block ID used for appends.
    */
   public static final int BLOCK_ID_LENGTH = 60;
+
+  /**
+   * Format string for generating block IDs.
+   * Example: "%s-%06d" where %s is the stream ID and %06d is the block index.
+   */
+  public static final String BLOCK_ID_FORMAT = "%s-%06d";
+
+  /**
+   * Format string for padding block IDs.
+   * Example: "%-" specifies left alignment in the format string.
+   */
+  public static final String PADDING_FORMAT = "%-";
+
+  /**
+   * Suffix for string formatting.
+   * Example: "s" specifies the type as a string in the format string.
+   */
+  public static final String STRING_SUFFIX = "s";
+
+  /**
+   * Character used for padding spaces in block IDs.
+   * Example: ' ' represents a space character.
+   */
+  public static final char SPACE_CHARACTER = ' ';
+
+  /**
+   * Character used for padding block IDs.
+   * Example: '_' is used to replace spaces in padded block IDs.
+   */
+  public static final char PADDING_CHARACTER = '_';
 
   /**
    * Buffer blocks to disk.
@@ -199,6 +231,8 @@ public final class FileSystemConfigurations {
   public static final int DEFAULT_FS_AZURE_BLOB_DELETE_THREAD = DEFAULT_FS_AZURE_LISTING_ACTION_THREADS;
 
   public static final boolean DEFAULT_FS_AZURE_ENABLE_CLIENT_TRANSACTION_ID = true;
+
+  public static final boolean DEFAULT_FS_AZURE_ENABLE_CREATE_BLOB_IDEMPOTENCY = true;
 
   private FileSystemConfigurations() {}
 }

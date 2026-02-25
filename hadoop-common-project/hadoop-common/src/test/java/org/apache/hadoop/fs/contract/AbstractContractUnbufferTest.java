@@ -17,6 +17,7 @@
  */
 
 package org.apache.hadoop.fs.contract;
+import org.assertj.core.api.Assertions;
 
 import java.io.IOException;
 import java.util.Arrays;
@@ -29,6 +30,7 @@ import org.junit.jupiter.api.TestInfo;
 
 import static org.apache.hadoop.fs.contract.ContractTestUtils.createFile;
 import static org.apache.hadoop.fs.contract.ContractTestUtils.dataset;
+import static org.apache.hadoop.fs.contract.ContractTestUtils.readNBytes;
 
 /**
  * Contract tests for {@link org.apache.hadoop.fs.CanUnbuffer#unbuffer}.
@@ -140,10 +142,12 @@ public abstract class AbstractContractUnbufferTest extends AbstractFSContractTes
                                       int startIndex)
           throws IOException {
     byte[] streamData = new byte[length];
-    assertEquals(length, stream.read(streamData),
-            "failed to read expected number of bytes from "
-            + "stream. This may be transient");
+    final int read = readNBytes(stream, streamData, 0, length);
+    Assertions.assertThat(read)
+        .describedAs("failed to read expected number of bytes from stream. %s", stream)
+        .isEqualTo(length);
     byte[] validateFileBytes;
+
     if (startIndex == 0 && length == fileBytes.length) {
       validateFileBytes = fileBytes;
     } else {

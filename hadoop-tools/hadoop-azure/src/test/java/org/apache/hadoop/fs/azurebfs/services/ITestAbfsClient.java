@@ -26,7 +26,6 @@ import java.net.URL;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import java.util.Random;
 import java.util.regex.Pattern;
 
 import org.assertj.core.api.Assertions;
@@ -106,6 +105,7 @@ public final class ITestAbfsClient extends AbstractAbfsIntegrationTest {
 
   private static final String ACCOUNT_NAME = "bogusAccountName.dfs.core.windows.net";
   private static final String FS_AZURE_USER_AGENT_PREFIX = "Partner Service";
+  private static final String FNS_BLOB_USER_AGENT_IDENTIFIER = "FNS";
   private static final String HUNDRED_CONTINUE_USER_AGENT = SINGLE_WHITE_SPACE + HUNDRED_CONTINUE + SEMICOLON;
   private static final String TEST_PATH = "/testfile";
   public static final int REDUCED_RETRY_COUNT = 2;
@@ -355,6 +355,42 @@ public final class ITestAbfsClient extends AbstractAbfsIntegrationTest {
       .contains(DEFAULT_VALUE_UNKNOWN);
   }
 
+  @Test
+  // Test to verify the unique identifier in user agent string for FNS-Blob accounts
+  public void verifyUserAgentForFNSBlob() throws Exception {
+    assumeHnsDisabled();
+    assumeBlobServiceType();
+    final AzureBlobFileSystem fs = getFileSystem();
+    final AbfsConfiguration configuration = fs.getAbfsStore()
+        .getAbfsConfiguration();
+
+    String userAgentStr = getUserAgentString(configuration, false);
+    verifyBasicInfo(userAgentStr);
+    Assertions.assertThat(userAgentStr)
+        .describedAs(
+            "User-Agent string for FNS accounts on Blob endpoint should contain "
+                + FNS_BLOB_USER_AGENT_IDENTIFIER)
+        .contains(FNS_BLOB_USER_AGENT_IDENTIFIER);
+  }
+
+  @Test
+  // Test to verify that the user agent string for non-FNS-Blob accounts
+  // does not contain the FNS identifier.
+  public void verifyUserAgentForDFS() throws Exception {
+    assumeDfsServiceType();
+    final AzureBlobFileSystem fs = getFileSystem();
+    final AbfsConfiguration configuration = fs.getAbfsStore()
+        .getAbfsConfiguration();
+
+    String userAgentStr = getUserAgentString(configuration, false);
+    verifyBasicInfo(userAgentStr);
+    Assertions.assertThat(userAgentStr)
+        .describedAs(
+            "User-Agent string for non-FNS-Blob accounts should not contain"
+                + FNS_BLOB_USER_AGENT_IDENTIFIER)
+        .doesNotContain(FNS_BLOB_USER_AGENT_IDENTIFIER);
+  }
+
   public static AbfsClient createTestClientFromCurrentContext(
       AbfsClient baseAbfsClientInstance,
       AbfsConfiguration abfsConfig) throws IOException, URISyntaxException {
@@ -567,17 +603,6 @@ public final class ITestAbfsClient extends AbstractAbfsIntegrationTest {
     return client.getTokenProvider();
   }
 
-  /**
-   * Test helper method to get random bytes array.
-   * @param length The length of byte buffer.
-   * @return byte buffer.
-   */
-  private byte[] getRandomBytesArray(int length) {
-    final byte[] b = new byte[length];
-    new Random().nextBytes(b);
-    return b;
-  }
-
   @Override
   public AzureBlobFileSystem getFileSystem(final Configuration configuration)
       throws Exception {
@@ -621,7 +646,7 @@ public final class ITestAbfsClient extends AbstractAbfsIntegrationTest {
     AppendRequestParameters appendRequestParameters
         = new AppendRequestParameters(
         BUFFER_OFFSET, BUFFER_OFFSET, BUFFER_LENGTH,
-        AppendRequestParameters.Mode.APPEND_MODE, false, null, true);
+        AppendRequestParameters.Mode.APPEND_MODE, false, null, true, null);
 
     byte[] buffer = getRandomBytesArray(BUFFER_LENGTH);
 

@@ -24,12 +24,12 @@ import java.io.UncheckedIOException;
 import org.apache.hadoop.fs.s3a.Statistic;
 import org.assertj.core.api.Assertions;
 import org.junit.Test;
-import software.amazon.awssdk.services.s3.S3AsyncClient;
 
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.s3a.VectoredIOContext;
 import org.apache.hadoop.fs.s3a.prefetch.PrefetchingInputStreamFactory;
 import org.apache.hadoop.test.AbstractHadoopTestBase;
+import software.amazon.awssdk.services.s3.S3Client;
 
 import static org.apache.hadoop.fs.s3a.Constants.INPUT_STREAM_CUSTOM_FACTORY;
 import static org.apache.hadoop.fs.s3a.Constants.INPUT_STREAM_TYPE;
@@ -55,14 +55,14 @@ import static org.assertj.core.api.Assertions.assertThat;
 public class TestStreamFactories extends AbstractHadoopTestBase {
 
   /**
-   * The empty string and "default" both map to the classic stream.
+   * The empty string and "default" both map to the analytics stream.
    */
   @Test
   public void testDefaultFactoryCreation() throws Throwable {
     load("", DEFAULT_STREAM_TYPE,
-        ClassicObjectInputStreamFactory.class);
+        AnalyticsStreamFactory.class);
     load(INPUT_STREAM_TYPE_DEFAULT, DEFAULT_STREAM_TYPE,
-        ClassicObjectInputStreamFactory.class);
+        AnalyticsStreamFactory.class);
   }
 
   /**
@@ -71,7 +71,7 @@ public class TestStreamFactories extends AbstractHadoopTestBase {
   @Test
   public void testClassicFactoryCreation() throws Throwable {
     final ClassicObjectInputStreamFactory f =
-        load(INPUT_STREAM_TYPE_CLASSIC, DEFAULT_STREAM_TYPE,
+        load(INPUT_STREAM_TYPE_CLASSIC, InputStreamType.Classic,
             ClassicObjectInputStreamFactory.class);
     final StreamFactoryRequirements requirements = f.factoryRequirements();
     Assertions.assertThat(requirements.requiresFuturePool())
@@ -330,9 +330,8 @@ public class TestStreamFactories extends AbstractHadoopTestBase {
    * Callbacks from {@link ObjectInputStreamFactory} instances.
    */
   private static final class Callbacks implements ObjectInputStreamFactory.StreamFactoryCallbacks {
-
     @Override
-    public S3AsyncClient getOrCreateAsyncClient(final boolean requireCRT) throws IOException {
+    public S3Client getOrCreateSyncClient() throws IOException {
       throw new UnsupportedOperationException("not implemented");
     }
 

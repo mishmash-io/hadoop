@@ -1936,7 +1936,7 @@ public class UserGroupInformation {
     tracePrivilegedAction(action);
     return SubjectUtil.doAs(subject, action);
   }
-
+  
   /**
    * Run the given action as the user, potentially throwing an exception.
    * @param <T> the return type of the run method

@@ -17,10 +17,10 @@
   <parent>
     <artifactId>hadoop-yarn</artifactId>
     <groupId>org.apache.hadoop</groupId>
-    <version>3.4.2</version>
+    <version>3.4.3</version>
   </parent>
   <artifactId>hadoop-yarn-client</artifactId>
-  <version>3.4.2</version>
+  <version>3.4.3</version>
   <name>Apache Hadoop YARN Client</name>
 
   <properties>
@@ -163,6 +163,12 @@
       <scope>test</scope>
       <type>test-jar</type>
   	</dependency>
+    <dependency>
+      <groupId>org.apache.hadoop</groupId>
+      <artifactId>hadoop-yarn-server-timelineservice</artifactId>
+      <scope>test</scope>
+      <type>test-jar</type>
+    </dependency>
     <!-- 'mvn dependency:analyze' fails to detect use of this dependency -->
     <dependency>
     <groupId>org.apache.hadoop</groupId>
