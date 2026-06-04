@@ -29,6 +29,8 @@ import org.apache.hadoop.hdfs.server.namenode.NameNode;
 import org.apache.hadoop.metrics2.lib.DefaultMetricsSystem;
 import org.apache.hadoop.net.DNS;
 import org.apache.hadoop.test.PathUtils;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.Timeout;
 
 import java.io.File;
 
@@ -252,7 +254,7 @@ public class TestHDFSServerPorts {
   }
 
   @Test
-  @Timeout(value = 300000, unit = TimeUnit.MILLISECONDS)
+  @Timeout(value = 300)
   public void testNameNodePorts() throws Exception {
     runTestNameNodePorts(false);
     runTestNameNodePorts(true);
@@ -304,7 +306,7 @@ public class TestHDFSServerPorts {
    * Verify datanode port usage.
    */
   @Test
-  @Timeout(value = 300000, unit = TimeUnit.MILLISECONDS)
+  @Timeout(value = 300)
   public void testDataNodePorts() throws Exception {
     NameNode nn = null;
     try {
@@ -341,7 +343,7 @@ public class TestHDFSServerPorts {
    * Verify secondary namenode port usage.
    */
   @Test
-  @Timeout(value = 300000, unit = TimeUnit.MILLISECONDS)
+  @Timeout(value = 300)
   public void testSecondaryNodePorts() throws Exception {
     NameNode nn = null;
     try {
@@ -370,41 +372,42 @@ public class TestHDFSServerPorts {
   /**
    * Verify BackupNode port usage.
    */
+  @SuppressWarnings("checkstyle:localvariablename")
   @Test
-  @Timeout(value = 300000, unit = TimeUnit.MILLISECONDS)
+  @Timeout(value = 300)
   public void testBackupNodePorts() throws Exception {
-      NameNode nn = null;
-      try {
-        nn = startNameNode();
+    NameNode nn = null;
+    try {
+      nn = startNameNode();
 
-        Configuration backup_config = new HdfsConfiguration(config);
-        backup_config.set(
-            DFSConfigKeys.DFS_NAMENODE_BACKUP_ADDRESS_KEY, THIS_HOST);
-        // bind http server to the same port as name-node
-        backup_config.set(DFSConfigKeys.DFS_NAMENODE_BACKUP_HTTP_ADDRESS_KEY, 
-            backup_config.get(DFSConfigKeys.DFS_NAMENODE_HTTP_ADDRESS_KEY));
+      Configuration backup_config = new HdfsConfiguration(config);
+      backup_config.set(
+          DFSConfigKeys.DFS_NAMENODE_BACKUP_ADDRESS_KEY, THIS_HOST);
+      // bind http server to the same port as name-node
+      backup_config.set(DFSConfigKeys.DFS_NAMENODE_BACKUP_HTTP_ADDRESS_KEY,
+          backup_config.get(DFSConfigKeys.DFS_NAMENODE_HTTP_ADDRESS_KEY));
 
-        LOG.info("= Starting 1 on: " + backup_config.get(
-            DFSConfigKeys.DFS_NAMENODE_BACKUP_HTTP_ADDRESS_KEY));
+      LOG.info("= Starting 1 on: " + backup_config.get(
+          DFSConfigKeys.DFS_NAMENODE_BACKUP_HTTP_ADDRESS_KEY));
 
-        assertFalse(canStartBackupNode(backup_config), 
-                           "Backup started on same port as Namenode"); // should fail
+      assertFalse(canStartBackupNode(backup_config),
+          "Backup started on same port as Namenode"); // should fail
 
-        // reset namenode backup address because Windows does not release
-        // port used previously properly.
-        backup_config.set(
-            DFSConfigKeys.DFS_NAMENODE_BACKUP_ADDRESS_KEY, THIS_HOST);
+      // reset namenode backup address because Windows does not release
+      // port used previously properly.
+      backup_config.set(
+          DFSConfigKeys.DFS_NAMENODE_BACKUP_ADDRESS_KEY, THIS_HOST);
 
-        // bind http server to a different port
-        backup_config.set(
-            DFSConfigKeys.DFS_NAMENODE_BACKUP_HTTP_ADDRESS_KEY, THIS_HOST);
-        LOG.info("= Starting 2 on: " + backup_config.get(
-            DFSConfigKeys.DFS_NAMENODE_BACKUP_HTTP_ADDRESS_KEY));
+      // bind http server to a different port
+      backup_config.set(
+          DFSConfigKeys.DFS_NAMENODE_BACKUP_HTTP_ADDRESS_KEY, THIS_HOST);
+      LOG.info("= Starting 2 on: " + backup_config.get(
+          DFSConfigKeys.DFS_NAMENODE_BACKUP_HTTP_ADDRESS_KEY));
 
-        boolean started = canStartBackupNode(backup_config);
-        assertTrue(started, "Backup Namenode should've started"); // should start now
-      } finally {
-        stopNameNode(nn);
-      }
+      boolean started = canStartBackupNode(backup_config);
+      assertTrue(started, "Backup Namenode should've started"); // should start now
+    } finally {
+      stopNameNode(nn);
+    }
   }
 }

@@ -39,6 +39,8 @@ import java.security.GeneralSecurityException;
 import java.net.HttpCookie;
 import java.util.List;
 
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
 public class TestHttpCookieFlag {
   private static final String BASEDIR =
       GenericTestUtils.getTempPath(TestHttpCookieFlag.class.getSimpleName());

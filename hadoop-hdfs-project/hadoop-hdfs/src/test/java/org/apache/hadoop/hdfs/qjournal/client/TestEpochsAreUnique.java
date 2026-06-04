@@ -17,8 +17,6 @@
  */
 package org.apache.hadoop.hdfs.qjournal.client;
 
-import static org.junit.jupiter.api.Assertions.*;
-
 import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.net.URI;
@@ -31,7 +29,6 @@ import org.apache.hadoop.hdfs.qjournal.MiniJournalCluster;
 import org.apache.hadoop.hdfs.qjournal.client.AsyncLogger;
 import org.apache.hadoop.hdfs.qjournal.client.QuorumJournalManager;
 import org.apache.hadoop.hdfs.server.protocol.NamespaceInfo;
-
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 import org.mockito.invocation.InvocationOnMock;
@@ -39,6 +36,9 @@ import org.mockito.stubbing.Answer;
 
 import org.apache.hadoop.thirdparty.com.google.common.util.concurrent.Futures;
 import org.apache.hadoop.thirdparty.com.google.common.util.concurrent.ListenableFuture;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 
 public class TestEpochsAreUnique {
@@ -97,8 +97,8 @@ public class TestEpochsAreUnique {
           }
         }
         LOG.info("Created epoch " + newEpoch);
-        assertTrue(newEpoch > prevEpoch, "New epoch " + newEpoch + " should be greater than previous " +
-            prevEpoch);
+        assertTrue(newEpoch > prevEpoch, "New epoch " + newEpoch
+            + " should be greater than previous " + prevEpoch);
         prevEpoch = newEpoch;
       }
     } finally {

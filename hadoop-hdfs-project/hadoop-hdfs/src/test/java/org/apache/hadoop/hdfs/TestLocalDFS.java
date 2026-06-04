@@ -29,7 +29,6 @@ import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hdfs.client.HdfsClientConfigKeys;
-
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.Timeout;
 
@@ -70,7 +69,7 @@ public class TestLocalDFS {
    * Tests get/set working directory in DFS.
    */
   @Test
-  @Timeout(value = 20000, unit = TimeUnit.MILLISECONDS)
+  @Timeout(value = 20)
   public void testWorkingDirectory() throws IOException {
     Configuration conf = new HdfsConfiguration();
     MiniDFSCluster cluster = new MiniDFSCluster.Builder(conf).build();
@@ -111,7 +110,7 @@ public class TestLocalDFS {
    * Tests get/set working directory in DFS.
    */
   @Test
-  @Timeout(value = 30000, unit = TimeUnit.MILLISECONDS)
+  @Timeout(value = 30)
   public void testHomeDirectory() throws IOException {
     final String[] homeBases = new String[] {"/home", "/home/user"};
     Configuration conf = new HdfsConfiguration();

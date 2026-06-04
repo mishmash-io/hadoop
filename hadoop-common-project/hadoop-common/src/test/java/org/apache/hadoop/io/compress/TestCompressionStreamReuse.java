@@ -39,6 +39,9 @@ import org.junit.jupiter.api.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assumptions.assumeTrue;
+
 public class TestCompressionStreamReuse {
   private static final Logger LOG = LoggerFactory
       .getLogger(TestCompressionStreamReuse.class);
@@ -164,8 +167,7 @@ public class TestCompressionStreamReuse {
       RandomDatum v2 = new RandomDatum();
       k2.readFields(inflateIn);
       v2.readFields(inflateIn);
-      assertTrue(
-          k1.equals(k2) && v1.equals(v2),
+      assertTrue(k1.equals(k2) && v1.equals(v2),
           "original and compressed-then-decompressed-output not equal");
     }
     LOG.info("SUCCESS! Completed checking " + count + " records");

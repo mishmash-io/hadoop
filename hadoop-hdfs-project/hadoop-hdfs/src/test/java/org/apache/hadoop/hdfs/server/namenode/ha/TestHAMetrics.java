@@ -33,6 +33,8 @@ import org.apache.hadoop.hdfs.MiniDFSNNTopology;
 import org.apache.hadoop.hdfs.server.namenode.FSNamesystem;
 import org.apache.hadoop.hdfs.server.namenode.NameNode;
 import org.apache.hadoop.io.IOUtils;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.Timeout;
 
 import javax.management.MBeanServer;
 
@@ -55,7 +57,7 @@ public class TestHAMetrics {
       LoggerFactory.getLogger(TestHAMetrics.class);
 
   @Test
-  @Timeout(value = 300000, unit = TimeUnit.MILLISECONDS)
+  @Timeout(value = 300)
   public void testHAMetrics() throws Exception {
     Configuration conf = new Configuration();
     conf.setInt(DFSConfigKeys.DFS_HA_TAILEDITS_PERIOD_KEY, 1);
@@ -123,8 +125,7 @@ public class TestHAMetrics {
       // Since we just waited for the standby to catch up, the time since we
       // last loaded edits should be very low.
       assertTrue(millisSinceLastLoadedEdits > newMillisSinceLastLoadedEdits,
-          "expected " + millisSinceLastLoadedEdits + " > " +
-          newMillisSinceLastLoadedEdits);
+          "expected " + millisSinceLastLoadedEdits + " > " + newMillisSinceLastLoadedEdits);
     } finally {
       IOUtils.cleanupWithLogger(LOG, fs);
       cluster.shutdown();
@@ -206,34 +207,26 @@ public class TestHAMetrics {
     NameNode nn2 = cluster.getNameNode(2);
 
     // All namenodes are in standby by default
-    assertEquals(HAServiceProtocol.HAServiceState.STANDBY.ordinal(),
-        nn0.getNameNodeState());
-    assertEquals(HAServiceProtocol.HAServiceState.STANDBY.ordinal(),
-        nn1.getNameNodeState());
-    assertEquals(HAServiceProtocol.HAServiceState.STANDBY.ordinal(),
-        nn2.getNameNodeState());
+    assertEquals(HAServiceProtocol.HAServiceState.STANDBY.ordinal(), nn0.getNameNodeState());
+    assertEquals(HAServiceProtocol.HAServiceState.STANDBY.ordinal(), nn1.getNameNodeState());
+    assertEquals(HAServiceProtocol.HAServiceState.STANDBY.ordinal(), nn2.getNameNodeState());
 
     // Transition nn0 to be active
     cluster.transitionToActive(0);
-    assertEquals(HAServiceProtocol.HAServiceState.ACTIVE.ordinal(),
-        nn0.getNameNodeState());
+    assertEquals(HAServiceProtocol.HAServiceState.ACTIVE.ordinal(), nn0.getNameNodeState());
 
     // Transition nn1 to be active
     cluster.transitionToStandby(0);
     cluster.transitionToActive(1);
-    assertEquals(HAServiceProtocol.HAServiceState.STANDBY.ordinal(),
-        nn0.getNameNodeState());
-    assertEquals(HAServiceProtocol.HAServiceState.ACTIVE.ordinal(),
-        nn1.getNameNodeState());
+    assertEquals(HAServiceProtocol.HAServiceState.STANDBY.ordinal(), nn0.getNameNodeState());
+    assertEquals(HAServiceProtocol.HAServiceState.ACTIVE.ordinal(), nn1.getNameNodeState());
 
     // Transition nn2 to observer
     cluster.transitionToObserver(2);
-    assertEquals(HAServiceProtocol.HAServiceState.OBSERVER.ordinal(),
-        nn2.getNameNodeState());
+    assertEquals(HAServiceProtocol.HAServiceState.OBSERVER.ordinal(), nn2.getNameNodeState());
 
     // Shutdown nn2. Now getNameNodeState should return the INITIALIZING state.
     cluster.shutdownNameNode(2);
-    assertEquals(HAServiceProtocol.HAServiceState.INITIALIZING.ordinal(),
-        nn2.getNameNodeState());
+    assertEquals(HAServiceProtocol.HAServiceState.INITIALIZING.ordinal(), nn2.getNameNodeState());
   }
 }

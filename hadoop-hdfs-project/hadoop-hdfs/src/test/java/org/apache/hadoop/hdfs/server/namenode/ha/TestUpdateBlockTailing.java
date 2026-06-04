@@ -47,10 +47,9 @@ import org.apache.hadoop.hdfs.server.namenode.NameNodeAdapter;
 import org.apache.hadoop.hdfs.server.protocol.ReceivedDeletedBlockInfo;
 import org.apache.hadoop.hdfs.server.protocol.StorageReceivedDeletedBlocks;
 import org.junit.jupiter.api.AfterAll;
-import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
-
 
 /**
  * Tests the race condition that IBR and update block may result
@@ -103,8 +102,7 @@ public class TestUpdateBlockTailing {
     String testFile = TEST_DIR +"/testStandbyAddBlockIBRRace";
 
     // initial global generation stamp check
-    assertEquals(NameNodeAdapter.getGenerationStamp(fsn0),
-        NameNodeAdapter.getGenerationStamp(fsn1),
+    assertEquals(NameNodeAdapter.getGenerationStamp(fsn0), NameNodeAdapter.getGenerationStamp(fsn1),
         "Global Generation stamps on NNs should be the same");
 
     // create a file, add a block on NN0
@@ -125,8 +123,7 @@ public class TestUpdateBlockTailing {
 
     assertEquals(NameNodeAdapter.getGenerationStamp(fsn0),
         NameNodeAdapter.getImpendingGenerationStamp(fsn1),
-        "Global Generation stamps on NN0 and "
-            + "impending on NN1 should be equal");
+        "Global Generation stamps on NN0 and " + "impending on NN1 should be equal");
 
     // NN1 processes IBR with the replica
     StorageReceivedDeletedBlocks[] report = DFSTestUtil
@@ -145,16 +142,15 @@ public class TestUpdateBlockTailing {
 
     assertEquals(NameNodeAdapter.getGenerationStamp(fsn0),
         NameNodeAdapter.getImpendingGenerationStamp(fsn1),
-        "Global Generation stamps on NN0 and "
-            + "impending on NN1 should be equal");
+        "Global Generation stamps on NN0 and " + "impending on NN1 should be equal");
 
     // The new block on NN1 should have the replica
     BlockInfo newBlock1 = NameNodeAdapter.getStoredBlock(fsn1, newBlock);
     assertTrue(newBlock1.getStorageInfos().hasNext(),
         "New block on NN1 should contain the replica");
-    assertEquals(newBlock.getGenerationStamp(), newBlock1.getGenerationStamp(), "Generation stamps of the block on NNs should be the same");
-    assertEquals(NameNodeAdapter.getGenerationStamp(fsn0),
-        NameNodeAdapter.getGenerationStamp(fsn1),
+    assertEquals(newBlock.getGenerationStamp(), newBlock1.getGenerationStamp(),
+        "Generation stamps of the block on NNs should be the same");
+    assertEquals(NameNodeAdapter.getGenerationStamp(fsn0), NameNodeAdapter.getGenerationStamp(fsn1),
         "Global Generation stamps on NNs should be the same");
 
     // Check that the generation stamp restores on Standby after failover
@@ -165,10 +161,8 @@ public class TestUpdateBlockTailing {
     long gs0 = NameNodeAdapter.getGenerationStamp(fsn0);
     dfsCluster.transitionToStandby(0);
     dfsCluster.transitionToActive(1);
-    assertEquals(gs0,
-        NameNodeAdapter.getGenerationStamp(fsn1),
-        "Global Generation stamps on new active should be "
-            + "the same as on the old one");
+    assertEquals(gs0, NameNodeAdapter.getGenerationStamp(fsn1),
+        "Global Generation stamps on new active should be " + "the same as on the old one");
 
     rpc1.delete(testFile, false);
   }
@@ -182,10 +176,8 @@ public class TestUpdateBlockTailing {
     // NN1 tails OP_SET_GENSTAMP_V2 and OP_ADD_BLOCK
     fsn0.getEditLog().logSync();
     fsn1.getEditLogTailer().doTailEdits();
-    assertEquals(NameNodeAdapter.getGenerationStamp(fsn0),
-        NameNodeAdapter.getGenerationStamp(fsn1),
-        "Global Generation stamps on NN0 and "
-            + "NN1 should be equal");
+    assertEquals(NameNodeAdapter.getGenerationStamp(fsn0), NameNodeAdapter.getGenerationStamp(fsn1),
+        "Global Generation stamps on NN0 and " + "NN1 should be equal");
 
     // Append block without newBlock flag
     try (FSDataOutputStream out = dfs.append(new Path(testFile))) {
@@ -197,10 +189,8 @@ public class TestUpdateBlockTailing {
     // NN1 tails OP_APPEND, OP_SET_GENSTAMP_V2, and OP_UPDATE_BLOCKS
     fsn0.getEditLog().logSync();
     fsn1.getEditLogTailer().doTailEdits();
-    assertEquals(NameNodeAdapter.getGenerationStamp(fsn0),
-        NameNodeAdapter.getGenerationStamp(fsn1),
-        "Global Generation stamps on NN0 and "
-            + "NN1 should be equal");
+    assertEquals(NameNodeAdapter.getGenerationStamp(fsn0), NameNodeAdapter.getGenerationStamp(fsn1),
+        "Global Generation stamps on NN0 and " + "NN1 should be equal");
 
     // Remove the testFile
     final ClientProtocol rpc0 = dfsCluster.getNameNode(0).getRpcServer();
@@ -216,10 +206,8 @@ public class TestUpdateBlockTailing {
     // NN1 tails OP_SET_GENSTAMP_V2 and OP_ADD_BLOCK
     fsn0.getEditLog().logSync();
     fsn1.getEditLogTailer().doTailEdits();
-    assertEquals(NameNodeAdapter.getGenerationStamp(fsn0),
-        NameNodeAdapter.getGenerationStamp(fsn1),
-        "Global Generation stamps on NN0 and "
-            + "NN1 should be equal");
+    assertEquals(NameNodeAdapter.getGenerationStamp(fsn0), NameNodeAdapter.getGenerationStamp(fsn1),
+        "Global Generation stamps on NN0 and " + "NN1 should be equal");
 
     // Append block with newBlock flag
     try (FSDataOutputStream out = dfs.append(new Path(testFile),
@@ -232,10 +220,8 @@ public class TestUpdateBlockTailing {
     // NN1 tails OP_APPEND, OP_SET_GENSTAMP_V2, and OP_ADD_BLOCK
     fsn0.getEditLog().logSync();
     fsn1.getEditLogTailer().doTailEdits();
-    assertEquals(NameNodeAdapter.getGenerationStamp(fsn0),
-        NameNodeAdapter.getGenerationStamp(fsn1),
-        "Global Generation stamps on NN0 and "
-            + "NN1 should be equal");
+    assertEquals(NameNodeAdapter.getGenerationStamp(fsn0), NameNodeAdapter.getGenerationStamp(fsn1),
+        "Global Generation stamps on NN0 and " + "NN1 should be equal");
 
     // Remove the testFile
     final ClientProtocol rpc0 = dfsCluster.getNameNode(0).getRpcServer();
@@ -251,10 +237,8 @@ public class TestUpdateBlockTailing {
     // NN1 tails OP_SET_GENSTAMP_V2 and OP_ADD_BLOCK
     fsn0.getEditLog().logSync();
     fsn1.getEditLogTailer().doTailEdits();
-    assertEquals(NameNodeAdapter.getGenerationStamp(fsn0),
-        NameNodeAdapter.getGenerationStamp(fsn1),
-        "Global Generation stamps on NN0 and "
-            + "NN1 should be equal");
+    assertEquals(NameNodeAdapter.getGenerationStamp(fsn0), NameNodeAdapter.getGenerationStamp(fsn1),
+        "Global Generation stamps on NN0 and " + "NN1 should be equal");
 
     // Truncate block
     dfs.truncate(new Path(testFile), fileLen/2);
@@ -262,10 +246,8 @@ public class TestUpdateBlockTailing {
     // NN1 tails OP_SET_GENSTAMP_V2 and OP_TRUNCATE
     fsn0.getEditLog().logSync();
     fsn1.getEditLogTailer().doTailEdits();
-    assertEquals(NameNodeAdapter.getGenerationStamp(fsn0),
-        NameNodeAdapter.getGenerationStamp(fsn1),
-        "Global Generation stamps on NN0 and "
-            + "NN1 should be equal");
+    assertEquals(NameNodeAdapter.getGenerationStamp(fsn0), NameNodeAdapter.getGenerationStamp(fsn1),
+        "Global Generation stamps on NN0 and " + "NN1 should be equal");
 
     // Remove the testFile
     final ClientProtocol rpc0 = dfsCluster.getNameNode(0).getRpcServer();

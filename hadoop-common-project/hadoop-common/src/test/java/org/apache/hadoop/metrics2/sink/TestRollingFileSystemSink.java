@@ -28,7 +28,12 @@ import org.apache.commons.configuration2.SubsetConfiguration;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.metrics2.MetricsException;
 import org.apache.hadoop.metrics2.impl.ConfigBuilder;
+
 import org.junit.jupiter.api.Test;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.fail;
 
 /**
  * Test that the init() method picks up all the configuration settings
@@ -57,12 +62,9 @@ public class TestRollingFileSystemSink {
         "The roll offset interval was not set correctly");
     assertEquals(sink.basePath, new Path("path"),
         "The base path was not set correctly");
-    assertTrue(sink.ignoreError,
-        "ignore-error was not set correctly");
-    assertTrue(sink.allowAppend,
-        "allow-append was not set correctly");
-    assertEquals(sink.source, "src",
-        "The source was not set correctly");
+    assertEquals(sink.ignoreError, true, "ignore-error was not set correctly");
+    assertEquals(sink.allowAppend, true, "allow-append was not set correctly");
+    assertEquals(sink.source, "src", "The source was not set correctly");
   }
 
   /**
@@ -80,8 +82,8 @@ public class TestRollingFileSystemSink {
     calendar.set(Calendar.DAY_OF_YEAR, 1);
     calendar.set(Calendar.YEAR, 2016);
 
-    assertNull(rfsSink.nextFlush,
-        "Last flush time should have been null prior to calling init()");
+    assertNull(
+        rfsSink.nextFlush, "Last flush time should have been null prior to calling init()");
 
     rfsSink.setInitialFlushTime(calendar.getTime());
 
@@ -94,22 +96,22 @@ public class TestRollingFileSystemSink {
     rfsSink.setInitialFlushTime(calendar.getTime());
     diff = rfsSink.nextFlush.getTimeInMillis() - calendar.getTimeInMillis();
 
-    assertEquals(-10L, diff,
-        "The initial flush time was calculated incorrectly");
+    assertEquals(
+        -10L, diff, "The initial flush time was calculated incorrectly");
 
     calendar.set(Calendar.SECOND, 1);
     calendar.set(Calendar.MILLISECOND, 10);
     rfsSink.setInitialFlushTime(calendar.getTime());
     diff = rfsSink.nextFlush.getTimeInMillis() - calendar.getTimeInMillis();
 
-    assertEquals(-10L, diff,
-        "The initial flush time was calculated incorrectly");
+    assertEquals(
+        -10L, diff, "The initial flush time was calculated incorrectly");
 
     // Try again with a random offset
     rfsSink = new RollingFileSystemSink(1000, 100);
 
-    assertNull(rfsSink.nextFlush,
-        "Last flush time should have been null prior to calling init()");
+    assertNull(
+        rfsSink.nextFlush, "Last flush time should have been null prior to calling init()");
 
     calendar.set(Calendar.MILLISECOND, 0);
     calendar.set(Calendar.SECOND, 0);
@@ -170,8 +172,7 @@ public class TestRollingFileSystemSink {
     rfsSink.nextFlush.setTime(calendar.getTime());
     rfsSink.updateFlushTime(calendar.getTime());
 
-    assertEquals(
-        calendar.getTimeInMillis() + 1000,
+    assertEquals(calendar.getTimeInMillis() + 1000,
         rfsSink.nextFlush.getTimeInMillis(),
         "The next roll time should have been 1 second in the future");
 
@@ -179,8 +180,7 @@ public class TestRollingFileSystemSink {
     calendar.add(Calendar.MILLISECOND, 10);
     rfsSink.updateFlushTime(calendar.getTime());
 
-    assertEquals(
-        calendar.getTimeInMillis() + 990,
+    assertEquals(calendar.getTimeInMillis() + 990,
         rfsSink.nextFlush.getTimeInMillis(),
         "The next roll time should have been 990 ms in the future");
 
@@ -189,8 +189,7 @@ public class TestRollingFileSystemSink {
     calendar.add(Calendar.MILLISECOND, 10);
     rfsSink.updateFlushTime(calendar.getTime());
 
-    assertEquals(
-        calendar.getTimeInMillis() + 990,
+    assertEquals(calendar.getTimeInMillis() + 990,
         rfsSink.nextFlush.getTimeInMillis(),
         "The next roll time should have been 990 ms in the future");
   }

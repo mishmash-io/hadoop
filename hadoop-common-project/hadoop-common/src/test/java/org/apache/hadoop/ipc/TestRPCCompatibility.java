@@ -32,6 +32,9 @@ import java.io.IOException;
 import java.lang.reflect.Method;
 import java.net.InetSocketAddress;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+
 /** Unit test for supporting method-name based compatible RPCs. */
 public class TestRPCCompatibility {
   private static final String ADDRESS = "0.0.0.0";

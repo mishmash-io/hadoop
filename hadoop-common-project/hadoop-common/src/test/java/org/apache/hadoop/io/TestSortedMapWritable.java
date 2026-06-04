@@ -23,8 +23,6 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.util.Map;
-import java.util.concurrent.TimeUnit;
-
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.Timeout;
 
@@ -170,7 +168,7 @@ public class TestSortedMapWritable {
   }
 
   @Test
-  @Timeout(value=10000, unit=TimeUnit.MILLISECONDS)
+  @Timeout(value = 10)
   public void testPutAll() {
     SortedMapWritable<Text> map1 = new SortedMapWritable<Text>();
     SortedMapWritable<Text> map2 = new SortedMapWritable<Text>();
@@ -178,9 +176,8 @@ public class TestSortedMapWritable {
     map2.putAll(map1);
 
     assertEquals(map1, map2, "map1 entries don't match map2 entries");
-    assertTrue(
-        map2.classToIdMap.containsKey(Text.class)
-            && map2.idToClassMap.containsValue(Text.class),
+    assertTrue(map2.classToIdMap.containsKey(Text.class)
+        && map2.idToClassMap.containsValue(Text.class),
         "map2 doesn't have class information from map1");
   }
 }

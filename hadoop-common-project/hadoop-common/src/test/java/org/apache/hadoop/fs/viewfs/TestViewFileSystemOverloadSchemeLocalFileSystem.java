@@ -39,6 +39,12 @@ import org.junit.jupiter.api.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.fail;
+
 /**
  *
  * Test the TestViewFileSystemOverloadSchemeLF using a file with authority:
@@ -144,14 +150,15 @@ public class TestViewFileSystemOverloadSchemeLocalFileSystem {
    */
   @Test
   public void testLocalFsLinkSlashMergeWithOtherMountLinks() throws Exception {
-    LOG.info("Starting testLocalFsLinkSlashMergeWithOtherMountLinks");
-    addMountLinks("mt",
-        new String[] {"/lfsroot", Constants.CONFIG_VIEWFS_LINK_MERGE_SLASH },
-        new String[] {targetTestRoot + "/wd2", targetTestRoot + "/wd2" }, conf);
-    final URI mountURI = URI.create("file://mt/");
-    assertThrows(IOException.class, () -> {
+    assertThrows(IOException.class, ()->{
+      LOG.info("Starting testLocalFsLinkSlashMergeWithOtherMountLinks");
+      addMountLinks("mt",
+          new String[] {"/lfsroot", Constants.CONFIG_VIEWFS_LINK_MERGE_SLASH },
+          new String[] {targetTestRoot + "/wd2", targetTestRoot + "/wd2" }, conf);
+      final URI mountURI = URI.create("file://mt/");
       FileSystem.get(mountURI, conf);
-    }, "A merge slash cannot be configured with other mount links.");
+      fail("A merge slash cannot be configured with other mount links.");
+    });
   }
 
   @AfterEach

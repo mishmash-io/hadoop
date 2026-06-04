@@ -19,7 +19,14 @@ package org.apache.hadoop.hdfs;
 
 import static org.apache.hadoop.hdfs.client.HdfsClientConfigKeys.DFS_BLOCK_SIZE_KEY;
 import static org.apache.hadoop.hdfs.client.HdfsClientConfigKeys.DFS_CLIENT_REFRESH_READ_BLOCK_LOCATIONS_MS_KEY;
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNotSame;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertSame;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.fail;
 
 import java.io.IOException;
 import java.util.List;
@@ -38,7 +45,6 @@ import org.apache.hadoop.util.Time;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -116,8 +122,7 @@ public class TestLocatedBlocksRefresher {
 
     try (DFSInputStream fin = client.open(fileName)) {
       LocatedBlocks locatedBlocks = fin.locatedBlocks;
-      assertEquals(dfsClientPrefetchSize / BLOCK_SIZE,
-          locatedBlocks.locatedBlockCount());
+      assertEquals(dfsClientPrefetchSize / BLOCK_SIZE, locatedBlocks.locatedBlockCount());
 
       // should not be tracked yet
       assertFalse(refresher.isInputStreamTracked(fin));

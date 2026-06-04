@@ -35,12 +35,12 @@ import org.apache.hadoop.security.token.delegation.AbstractDelegationTokenSecret
 import org.apache.hadoop.test.GenericTestUtils;
 import org.eclipse.jetty.server.Server;
 import org.eclipse.jetty.server.ServerConnector;
+import org.eclipse.jetty.servlet.ServletContextHandler;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.eclipse.jetty.ee10.servlet.ServletContextHandler;
-import org.eclipse.jetty.ee10.servlet.FilterHolder;
-import org.eclipse.jetty.ee10.servlet.ServletHolder;
+import org.eclipse.jetty.servlet.FilterHolder;
+import org.eclipse.jetty.servlet.ServletHolder;
 import org.slf4j.event.Level;
 
 import javax.security.auth.Subject;
@@ -82,6 +82,12 @@ import java.util.Properties;
 import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.Callable;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.fail;
 
 public class TestWebDelegationToken {
   private static final String OK_USER = "ok-user";
@@ -418,20 +424,21 @@ public class TestWebDelegationToken {
       UserGroupInformation ugi = UserGroupInformation.getCurrentUser();
       ugi.addToken(token.getDelegationToken());
       ugi.doAs(new PrivilegedExceptionAction<Void>() {
-                 @Override
-                 public Void run() throws Exception {
-                   HttpURLConnection conn = aUrl.openConnection(nonAuthURL, new DelegationTokenAuthenticatedURL.Token());
-                   assertEquals(HttpServletResponse.SC_OK, conn.getResponseCode());
-                   if (useQS) {
-                     assertNull(conn.getHeaderField("UsingHeader"));
-                     assertNotNull(conn.getHeaderField("UsingQueryString"));
-                   } else {
-                     assertNotNull(conn.getHeaderField("UsingHeader"));
-                     assertNull(conn.getHeaderField("UsingQueryString"));
-                   }
-                   return null;
-                 }
-               });
+        @Override
+        public Void run() throws Exception {
+          HttpURLConnection conn =
+              aUrl.openConnection(nonAuthURL, new DelegationTokenAuthenticatedURL.Token());
+          assertEquals(HttpServletResponse.SC_OK, conn.getResponseCode());
+          if (useQS) {
+            assertNull(conn.getHeaderField("UsingHeader"));
+            assertNotNull(conn.getHeaderField("UsingQueryString"));
+          } else {
+            assertNotNull(conn.getHeaderField("UsingHeader"));
+            assertNull(conn.getHeaderField("UsingQueryString"));
+          }
+          return null;
+        }
+      });
 
 
     } finally {
@@ -801,8 +808,7 @@ public class TestWebDelegationToken {
                   new DelegationTokenIdentifier(new Text("token-kind"));
               id.readFields(dis);
               dis.close();
-              assertEquals(
-                  doAs ? new Text(OK_USER) : new Text("client"), id.getOwner());
+              assertEquals(doAs ? new Text(OK_USER) : new Text("client"), id.getOwner());
               if (doAs) {
                 assertEquals(new Text("client"), id.getRealUser());
               }
@@ -964,7 +970,7 @@ public class TestWebDelegationToken {
           List<String> ret = IOUtils
               .readLines(conn.getInputStream(), StandardCharsets.UTF_8);
           assertEquals(1, ret.size());
-          assertEquals("remoteuser=" + FOO_USER+ ":ugi=" + FOO_USER, 
+          assertEquals("remoteuser=" + FOO_USER+ ":ugi=" + FOO_USER,
               ret.get(0));
 
           // user ok-user via proxyuser foo
@@ -973,8 +979,8 @@ public class TestWebDelegationToken {
               conn.getResponseCode());
           ret = IOUtils.readLines(conn.getInputStream(), StandardCharsets.UTF_8);
           assertEquals(1, ret.size());
-          assertEquals("realugi=" + FOO_USER +":remoteuser=" + OK_USER + 
-                  ":ugi=" + OK_USER, ret.get(0));
+          assertEquals("realugi=" + FOO_USER + ":remoteuser=" + OK_USER +
+              ":ugi=" + OK_USER, ret.get(0));
 
           return null;
         }

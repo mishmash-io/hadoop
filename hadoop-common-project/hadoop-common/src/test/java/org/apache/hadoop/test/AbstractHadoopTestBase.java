@@ -17,12 +17,14 @@
  */
 package org.apache.hadoop.test;
 
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Timeout;
+import org.junit.jupiter.api.extension.RegisterExtension;
+
 import java.util.concurrent.TimeUnit;
 
-import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.TestInfo;
-import org.junit.jupiter.api.Timeout;
+import static org.apache.hadoop.test.AbstractHadoopTestBase.TEST_DEFAULT_TIMEOUT_VALUE;
 
 /**
  * A base class for JUnit5+ tests that sets a default timeout for all tests
@@ -34,7 +36,7 @@ import org.junit.jupiter.api.Timeout;
  * Unlike {@link HadoopTestBase} this class does not extend JUnit Assert
  * so is easier to use with AssertJ.
  */
-@Timeout(value=AbstractHadoopTestBase.TEST_DEFAULT_TIMEOUT_VALUE, unit=TimeUnit.MILLISECONDS)
+@Timeout(value = TEST_DEFAULT_TIMEOUT_VALUE, unit = TimeUnit.MILLISECONDS)
 public abstract class AbstractHadoopTestBase {
 
   /**
@@ -55,12 +57,8 @@ public abstract class AbstractHadoopTestBase {
    * {@link #PROPERTY_TEST_DEFAULT_TIMEOUT}, falling back to
    * the value in {@link #TEST_DEFAULT_TIMEOUT_VALUE} if the
    * property is not defined.
-   *
-   * Method is deprecated, use the {@link Timeout} annotation instead.
-   *
-   * @return the recommended timeout for tests, in millisec
+   * @return the recommended timeout for tests
    */
-  @Deprecated
   public static int retrieveTestTimeout() {
     String propval = System.getProperty(PROPERTY_TEST_DEFAULT_TIMEOUT,
                                          Integer.toString(
@@ -70,7 +68,7 @@ public abstract class AbstractHadoopTestBase {
       millis = Integer.parseInt(propval);
     } catch (NumberFormatException e) {
       //fall back to the default value, as the property cannot be parsed
-      millis = TEST_DEFAULT_TIMEOUT_VALUE;
+      millis = 100000;
     }
     return millis;
   }
@@ -78,7 +76,8 @@ public abstract class AbstractHadoopTestBase {
   /**
    * The method name.
    */
-  private String methodName;
+  @RegisterExtension
+  private TestName methodName = new TestName();
 
   /**
    * Get the method name; defaults to the value of {@link #methodName}.
@@ -86,7 +85,7 @@ public abstract class AbstractHadoopTestBase {
    * @return the name of the method.
    */
   protected String getMethodName() {
-    return methodName;
+    return methodName.getMethodName();
   }
 
   /**
@@ -101,8 +100,7 @@ public abstract class AbstractHadoopTestBase {
    * Before each method, the thread is renamed to match the method name.
    */
   @BeforeEach
-  public void nameThreadToMethod(TestInfo info) {
-    methodName = info.getDisplayName();
+  public void nameThreadToMethod() {
     Thread.currentThread().setName("JUnit-" + getMethodName());
   }
 }

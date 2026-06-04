@@ -208,8 +208,8 @@ public class TestDiskError {
         for (FsVolumeSpi vol : volumes) {
           Path dataDir = new Path(vol.getStorageLocation().getNormalizedUri());
           FsPermission actual = localFS.getFileStatus(dataDir).getPermission();
-          assertEquals(expected, actual, "Permission for dir: " + dataDir + ", is " + actual +
-              ", while expected is " + expected);
+          assertEquals(expected, actual, "Permission for dir: " + dataDir + ", is " + actual
+              + ", while expected is " + expected);
         }
       }
     }
@@ -221,7 +221,7 @@ public class TestDiskError {
    * @throws IOException, InterruptedException
    */
   @Test
-  @Timeout(value = 60000, unit = TimeUnit.MILLISECONDS)
+  @Timeout(value = 60)
   public void testcheckDiskError() throws Exception {
     if(cluster.getDataNodes().size() <= 0) {
       cluster.startDataNodes(conf, 1, true, null, null);

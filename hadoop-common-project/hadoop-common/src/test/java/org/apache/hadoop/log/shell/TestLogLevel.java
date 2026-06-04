@@ -17,12 +17,6 @@
 */
 package org.apache.hadoop.log.shell;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertNotEquals;
-import static org.junit.jupiter.api.Assertions.assertTrue;
-import static org.junit.jupiter.api.Assertions.fail;
-
 import java.io.File;
 import java.net.SocketException;
 import java.net.URI;
@@ -58,6 +52,12 @@ import org.junit.jupiter.api.Timeout;
 import org.slf4j.LoggerFactory;
 
 import javax.net.ssl.SSLException;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.fail;
 
 /**
  * Test LogLevel.
@@ -121,7 +121,7 @@ public class TestLogLevel extends KerberosSecurityTestcase {
    * @throws Exception
    */
   @Test
-  @Timeout(value=120000, unit=TimeUnit.MILLISECONDS)
+  @Timeout(value = 120)
   public void testCommandOptions() throws Exception {
     final String className = this.getClass().getName();
 
@@ -326,8 +326,7 @@ public class TestLogLevel extends KerberosSecurityTestcase {
     CLI cli = new CLI(sslConf);
     cli.run(setLevelArgs);
 
-    assertEquals(newLevel.toUpperCase(),
-        log.getLevel().toString(),
+    assertEquals(newLevel.toUpperCase(), log.getLevel().toString(),
         "new level not equal to expected: ");
   }
 
@@ -337,7 +336,7 @@ public class TestLogLevel extends KerberosSecurityTestcase {
    * @throws Exception
    */
   @Test
-  @Timeout(value=60000, unit=TimeUnit.MILLISECONDS)
+  @Timeout(value = 60)
   public void testInfoLogLevel() throws Exception {
     testDynamicLogLevel(LogLevel.PROTOCOL_HTTP, LogLevel.PROTOCOL_HTTP, false,
         "Info");
@@ -349,7 +348,7 @@ public class TestLogLevel extends KerberosSecurityTestcase {
    * @throws Exception
    */
   @Test
-  @Timeout(value=60000, unit=TimeUnit.MILLISECONDS)
+  @Timeout(value = 60)
   public void testErrorLogLevel() throws Exception {
     testDynamicLogLevel(LogLevel.PROTOCOL_HTTP, LogLevel.PROTOCOL_HTTP, false,
         "Error");
@@ -361,7 +360,7 @@ public class TestLogLevel extends KerberosSecurityTestcase {
    * @throws Exception
    */
   @Test
-  @Timeout(value=60000, unit=TimeUnit.MILLISECONDS)
+  @Timeout(value = 60)
   public void testLogLevelByHttp() throws Exception {
     testDynamicLogLevel(LogLevel.PROTOCOL_HTTP, LogLevel.PROTOCOL_HTTP, false);
     try {
@@ -383,7 +382,7 @@ public class TestLogLevel extends KerberosSecurityTestcase {
    * @throws Exception
    */
   @Test
-  @Timeout(value=60000, unit=TimeUnit.MILLISECONDS)
+  @Timeout(value = 60)
   public void testLogLevelByHttpWithSpnego() throws Exception {
     testDynamicLogLevel(LogLevel.PROTOCOL_HTTP, LogLevel.PROTOCOL_HTTP, true);
     try {
@@ -405,7 +404,7 @@ public class TestLogLevel extends KerberosSecurityTestcase {
    * @throws Exception
    */
   @Test
-  @Timeout(value=60000, unit=TimeUnit.MILLISECONDS)
+  @Timeout(value = 60)
   public void testLogLevelByHttps() throws Exception {
     testDynamicLogLevel(LogLevel.PROTOCOL_HTTPS, LogLevel.PROTOCOL_HTTPS,
         false);
@@ -428,7 +427,7 @@ public class TestLogLevel extends KerberosSecurityTestcase {
    * @throws Exception
    */
   @Test
-  @Timeout(value=60000, unit=TimeUnit.MILLISECONDS)
+  @Timeout(value = 60)
   public void testLogLevelByHttpsWithSpnego() throws Exception {
     testDynamicLogLevel(LogLevel.PROTOCOL_HTTPS, LogLevel.PROTOCOL_HTTPS,
         true);

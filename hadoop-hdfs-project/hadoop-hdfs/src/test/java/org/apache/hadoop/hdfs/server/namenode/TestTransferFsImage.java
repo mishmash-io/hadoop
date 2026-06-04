@@ -17,7 +17,9 @@
  */
 package org.apache.hadoop.hdfs.server.namenode;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.fail;
 
 import java.io.File;
 import java.io.FileOutputStream;
@@ -43,7 +45,6 @@ import org.apache.hadoop.http.HttpServer2;
 import org.apache.hadoop.http.HttpServerFunctionalTest;
 import org.apache.hadoop.test.PathUtils;
 import org.apache.hadoop.util.StringUtils;
-
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.Timeout;
 import org.mockito.Mockito;
@@ -111,8 +112,7 @@ public class TestTransferFsImage {
 
       TransferFsImage.getFileClient(fsName, id, localPaths, mockStorage, false);      
       Mockito.verify(mockStorage).reportErrorOnFile(localPaths.get(0));
-      assertTrue(localPaths.get(1).length() > 0,
-          "The valid local file should get saved properly");
+      assertTrue(localPaths.get(1).length() > 0, "The valid local file should get saved properly");
     } finally {
       cluster.shutdown();      
     }
@@ -122,7 +122,7 @@ public class TestTransferFsImage {
    * Test to verify the read timeout
    */
   @Test
-  @Timeout(value = 10000, unit = TimeUnit.MILLISECONDS)
+  @Timeout(value = 10)
   public void testGetImageTimeout() throws Exception {
     HttpServer2 testServer = HttpServerFunctionalTest.createServer("hdfs");
     try {
@@ -149,7 +149,7 @@ public class TestTransferFsImage {
    * Test to verify the timeout of Image upload
    */
   @Test
-  @Timeout(value = 10000, unit = TimeUnit.MILLISECONDS)
+  @Timeout(value = 10)
   public void testImageUploadTimeout() throws Exception {
     Configuration conf = new HdfsConfiguration();
     NNStorage mockStorage = Mockito.mock(NNStorage.class);

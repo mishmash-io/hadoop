@@ -52,7 +52,6 @@ import org.apache.hadoop.util.XMLUtils;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
-
 import org.xml.sax.InputSource;
 import org.xml.sax.helpers.DefaultHandler;
 

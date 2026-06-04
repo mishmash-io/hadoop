@@ -35,6 +35,8 @@ import org.apache.hadoop.util.Shell;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.Timeout;
 import org.apache.hadoop.security.UserGroupInformation;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.Timeout;
 
 /**
  * Test symbolic links using LocalFs.
@@ -108,7 +110,7 @@ abstract public class TestSymlinkLocalFS extends SymlinkBaseTest {
   }
 
   @Test
-  @Timeout(value=10000, unit=TimeUnit.MILLISECONDS)
+  @Timeout(value = 10)
   /** lstat a non-existant file using a partially qualified path */
   public void testDanglingLinkFilePartQual() throws IOException {
     Path filePartQual = new Path(getScheme()+":///doesNotExist");
@@ -127,7 +129,7 @@ abstract public class TestSymlinkLocalFS extends SymlinkBaseTest {
   }
   
   @Test
-  @Timeout(value=10000, unit=TimeUnit.MILLISECONDS)
+  @Timeout(value = 10)
   /** Stat and lstat a dangling link */
   public void testDanglingLink() throws IOException {
     assumeNotWindows();
@@ -174,7 +176,7 @@ abstract public class TestSymlinkLocalFS extends SymlinkBaseTest {
   }
 
   @Test
-  @Timeout(value=10000, unit=TimeUnit.MILLISECONDS)
+  @Timeout(value = 10)
   /** 
    * Test getLinkTarget with a partially qualified target. 
    * NB: Hadoop does not support fully qualified URIs for the 

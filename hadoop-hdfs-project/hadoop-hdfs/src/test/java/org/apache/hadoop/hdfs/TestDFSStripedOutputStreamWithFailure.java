@@ -25,6 +25,8 @@ import org.apache.hadoop.hdfs.protocol.DatanodeInfo;
 import org.apache.hadoop.hdfs.protocol.HdfsConstants.DatanodeReportType;
 import org.apache.hadoop.hdfs.server.datanode.DataNode;
 import org.apache.hadoop.test.LambdaTestUtils;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.Timeout;
 import org.slf4j.Logger;
 
 import org.junit.jupiter.api.Test;
@@ -50,7 +52,7 @@ public class TestDFSStripedOutputStreamWithFailure extends
       TestDFSStripedOutputStreamWithFailure.class);
 
   @Test
-  @Timeout(value = 300000, unit = TimeUnit.MILLISECONDS)
+  @Timeout(value = 300)
   public void testMultipleDatanodeFailure56() throws Exception {
     runTestWithMultipleFailure(getLength(56));
   }
@@ -68,7 +70,7 @@ public class TestDFSStripedOutputStreamWithFailure extends
   }
 
   @Test
-  @Timeout(value = 240000, unit = TimeUnit.MILLISECONDS)
+  @Timeout(value = 240)
   public void testBlockTokenExpired() throws Exception {
     // Make sure killPos is greater than the length of one stripe
     final int length = dataBlocks * cellSize * 3;
@@ -93,7 +95,7 @@ public class TestDFSStripedOutputStreamWithFailure extends
   }
 
   @Test
-  @Timeout(value = 90000, unit = TimeUnit.MILLISECONDS)
+  @Timeout(value = 90)
   public void testAddBlockWhenNoSufficientDataBlockNumOfNodes()
       throws Exception {
     HdfsConfiguration conf = new HdfsConfiguration();
@@ -208,7 +210,7 @@ public class TestDFSStripedOutputStreamWithFailure extends
   }
 
   @Test
-  @Timeout(value = 90000, unit = TimeUnit.MILLISECONDS)
+  @Timeout(value = 90)
   public void testAddBlockWhenNoSufficientParityNumOfNodes()
       throws IOException {
     HdfsConfiguration conf = new HdfsConfiguration();

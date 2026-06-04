@@ -27,9 +27,11 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
 
 import org.assertj.core.api.Assertions;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.junit.runners.Parameterized;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedClass;
+import org.junit.jupiter.params.provider.MethodSource;
 
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.Abortable;
@@ -87,7 +89,8 @@ import static org.apache.hadoop.test.LambdaTestUtils.intercept;
  * Assumes multipart uploads are enabled; single part upload interruptions aren't the complicated
  * ones.
  */
-@RunWith(Parameterized.class)
+@ParameterizedClass(name = "{0}-{1}")
+@MethodSource("params")
 public class ITestS3ABlockOutputStreamInterruption extends S3AScaleTestBase {
 
   public static final int MAX_RETRIES_IN_SDK = 2;
@@ -96,7 +99,6 @@ public class ITestS3ABlockOutputStreamInterruption extends S3AScaleTestBase {
    * Parameterized on (buffer type, active blocks).
    * @return parameters
    */
-  @Parameterized.Parameters(name = "{0}-{1}")
   public static Collection<Object[]> params() {
     return Arrays.asList(new Object[][]{
         {FAST_UPLOAD_BUFFER_DISK, 2},
@@ -169,12 +171,14 @@ public class ITestS3ABlockOutputStreamInterruption extends S3AScaleTestBase {
    * Setup MUST set up the evaluator before the FS is created.
    */
   @Override
+  @BeforeEach
   public void setup() throws Exception {
     SdkFaultInjector.resetFaultInjector();
     super.setup();
     assumeMultipartUploads(getFileSystem().getConf());
   }
 
+  @AfterEach
   @Override
   public void teardown() throws Exception {
     // safety check in case the evaluation is failing any
@@ -490,7 +494,7 @@ public class ITestS3ABlockOutputStreamInterruption extends S3AScaleTestBase {
      * Assert that the trigger took place.
      */
     private void assertTriggered() {
-      assertTrue("Not triggered", triggered.get());
+      assertTrue(triggered.get(), "Not triggered");
     }
   }
 

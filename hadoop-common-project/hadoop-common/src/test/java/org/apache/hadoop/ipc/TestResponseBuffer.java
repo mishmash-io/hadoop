@@ -19,7 +19,6 @@
 package org.apache.hadoop.ipc;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-
 import java.io.ByteArrayInputStream;
 import java.io.DataInputStream;
 import java.io.IOException;

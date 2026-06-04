@@ -30,8 +30,13 @@ import org.apache.hadoop.test.GenericTestUtils;
 import org.apache.hadoop.test.StatUtils;
 import org.apache.hadoop.util.NativeCodeLoader;
 import org.apache.hadoop.util.Shell;
+
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assumptions.assumeTrue;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -128,8 +133,7 @@ public class TestRawLocalFileSystemContract extends FileSystemContractBaseTest {
   @Test
   @SuppressWarnings("deprecation")
   public void testPermission() throws Exception {
-    assumeTrue(
-        NativeCodeLoader.isNativeCodeLoaded(),
+    assumeTrue(NativeCodeLoader.isNativeCodeLoaded(),
         "No native library");
     Path testDir = getTestBaseDir();
     String testFilename = "teststat2File";

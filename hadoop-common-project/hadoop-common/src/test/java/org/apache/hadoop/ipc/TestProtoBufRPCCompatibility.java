@@ -36,6 +36,7 @@ import org.apache.hadoop.ipc.protobuf.TestRpcServiceProtos.OldProtobufRpcProto;
 import org.apache.hadoop.ipc.protobuf.TestRpcServiceProtos.NewProtobufRpcProto;
 import org.apache.hadoop.ipc.protobuf.TestRpcServiceProtos.NewerProtobufRpcProto;
 import org.apache.hadoop.net.NetUtils;
+import org.junit.jupiter.api.Test;
 
 import org.apache.hadoop.thirdparty.protobuf.BlockingService;
 import org.apache.hadoop.thirdparty.protobuf.RpcController;

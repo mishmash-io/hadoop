@@ -23,14 +23,14 @@ import java.io.StringReader;
 import java.util.HashMap;
 import java.util.Map;
 
-import jakarta.servlet.http.HttpServletRequest;
-import jakarta.servlet.http.HttpServletResponse;
-import jakarta.servlet.ServletConfig;
-import jakarta.servlet.ServletContext;
-import jakarta.ws.rs.core.HttpHeaders;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import javax.servlet.ServletConfig;
+import javax.servlet.ServletContext;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 
+import org.apache.hadoop.thirdparty.com.google.common.net.HttpHeaders;
 import org.eclipse.jetty.util.ajax.JSON;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
@@ -44,14 +44,17 @@ import org.apache.hadoop.thirdparty.com.google.common.base.Strings;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.util.XMLUtils;
 
-import org.mockito.Mockito;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
 
+import static org.mockito.Mockito.eq;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.fail;
-import static org.mockito.Mockito.mock;
 
 /**
  * Basic test case that the ConfServlet can write configuration
@@ -103,10 +106,10 @@ public class TestConfServlet {
     verifyMap.put("application/xml", ConfServlet.FORMAT_XML);
     verifyMap.put("application/json", ConfServlet.FORMAT_JSON);
 
-    HttpServletRequest request = Mockito.mock(HttpServletRequest.class);
+    HttpServletRequest request = mock(HttpServletRequest.class);
     for(String contentTypeExpected : verifyMap.keySet()) {
       String contenTypeActual = verifyMap.get(contentTypeExpected);
-      Mockito.when(request.getHeader(HttpHeaders.ACCEPT))
+      when(request.getHeader(HttpHeaders.ACCEPT))
           .thenReturn(contentTypeExpected);
       assertEquals(contenTypeActual,
           ConfServlet.parseAcceptHeader(request));
@@ -162,9 +165,9 @@ public class TestConfServlet {
         } else {
           // if property name is not empty, and it's not in configuration
           // expect proper error code and error message is set to the response
-          Mockito.verify(response).sendError(
-              Mockito.eq(HttpServletResponse.SC_NOT_FOUND),
-              Mockito.eq("Property " + propertyName + " not found"));
+          verify(response).sendError(
+              eq(HttpServletResponse.SC_NOT_FOUND),
+              eq("Property " + propertyName + " not found"));
         }
       }
     } finally {

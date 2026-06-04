@@ -23,9 +23,7 @@ import static org.apache.hadoop.hdfs.DFSConfigKeys.DFS_JOURNALNODE_HTTPS_ADDRESS
 import static org.apache.hadoop.hdfs.DFSConfigKeys.DFS_JOURNALNODE_HTTP_BIND_HOST_KEY;
 import static org.apache.hadoop.hdfs.DFSConfigKeys.DFS_JOURNALNODE_HTTPS_BIND_HOST_KEY;
 import static org.apache.hadoop.hdfs.DFSConfigKeys.DFS_JOURNALNODE_RPC_BIND_HOST_KEY;
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.core.Is.is;
-import static org.hamcrest.core.IsNot.not;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 
 import org.apache.hadoop.hdfs.qjournal.MiniJournalCluster;
 import org.junit.jupiter.api.AfterEach;
@@ -45,8 +43,8 @@ import java.util.concurrent.TimeUnit;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.apache.hadoop.conf.Configuration;
-import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.assertj.core.api.Assertions.assertThat;
 
 import org.apache.hadoop.hdfs.HdfsConfiguration;
 
@@ -89,7 +87,7 @@ public class TestJournalNodeRespectsBindHostKeys {
   }
 
   @Test
-  @Timeout(value = 300000, unit = TimeUnit.MILLISECONDS)
+  @Timeout(value = 300)
   public void testRpcBindHostKey() throws IOException {
     LOG.info("Testing without " + DFS_JOURNALNODE_RPC_BIND_HOST_KEY);
 
@@ -98,8 +96,8 @@ public class TestJournalNodeRespectsBindHostKeys {
         .numJournalNodes(NUM_JN).build();
     jn = jCluster.getJournalNode(0);
     String address = getRpcServerAddress(jn);
-    assertThat("Bind address not expected to be wildcard by default.",
-        address, not("/" + WILDCARD_ADDRESS));
+    assertThat(address).as("Bind address not expected to be wildcard by default.")
+        .isNotEqualTo("/" + WILDCARD_ADDRESS);
 
     LOG.info("Testing with " + DFS_JOURNALNODE_RPC_BIND_HOST_KEY);
 
@@ -111,12 +109,12 @@ public class TestJournalNodeRespectsBindHostKeys {
         .numJournalNodes(NUM_JN).build();
     jn = jCluster.getJournalNode(0);
     address = getRpcServerAddress(jn);
-    assertThat("Bind address " + address + " is not wildcard.",
-        address, is("/" + WILDCARD_ADDRESS));
+    assertThat(address).as("Bind address " + address + " is not wildcard.")
+        .isEqualTo("/" + WILDCARD_ADDRESS);
   }
 
   @Test
-  @Timeout(value = 300000, unit = TimeUnit.MILLISECONDS)
+  @Timeout(value = 300)
   public void testHttpBindHostKey() throws IOException {
     LOG.info("Testing without " + DFS_JOURNALNODE_HTTP_BIND_HOST_KEY);
 
@@ -171,7 +169,7 @@ public class TestJournalNodeRespectsBindHostKeys {
    * @throws Exception
    */
   @Test
-  @Timeout(value = 300000, unit = TimeUnit.MILLISECONDS)
+  @Timeout(value = 300)
   public void testHttpsBindHostKey() throws Exception {
     LOG.info("Testing behavior without " + DFS_JOURNALNODE_HTTPS_BIND_HOST_KEY);
 

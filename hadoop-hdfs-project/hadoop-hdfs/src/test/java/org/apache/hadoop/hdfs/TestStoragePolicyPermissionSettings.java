@@ -21,11 +21,6 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
 
 import java.io.IOException;
-import java.lang.invoke.MethodHandles;
-import java.lang.invoke.MethodHandles.Lookup;
-import java.lang.invoke.VarHandle;
-import java.lang.reflect.Field;
-import java.lang.reflect.Modifier;
 
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileSystem;
@@ -79,16 +74,6 @@ public class TestStoragePolicyPermissionSettings {
       cluster.shutdown();
       cluster = null;
     }
-  }
-
-  private void setFSNameSystemFinalField(String field, boolean value)
-      throws NoSuchFieldException, IllegalAccessException {
-    Field f = FSNamesystem.class.getDeclaredField(field);
-    f.setAccessible(true);
-    Lookup lookup = MethodHandles.privateLookupIn(Field.class, MethodHandles.lookup());
-    VarHandle modifiers = lookup.findVarHandle(Field.class, "modifiers", int.class);
-    modifiers.set(f, f.getModifiers() & ~Modifier.FINAL);
-    f.set(cluster.getNamesystem(), value);
   }
 
   private void setStoragePolicyPermissions(boolean isStoragePolicyEnabled,

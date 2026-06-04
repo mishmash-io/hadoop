@@ -34,7 +34,6 @@ import org.apache.hadoop.security.UserGroupInformation;
 import org.apache.hadoop.test.GenericTestUtils;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
-
 import org.slf4j.event.Level;
 
 /** Test reading from hdfs while a file is being written. */
@@ -153,8 +152,8 @@ public class TestReadWhileWriting {
     Assertions.assertTrue(in.getVisibleLength() >= expectedsize);
 
     //Able to read?
-    for(int i = 0; i < expectedsize; i++) {
-      Assertions.assertEquals((byte)i, (byte)in.read());  
+    for (int i = 0; i < expectedsize; i++) {
+      Assertions.assertEquals((byte) i, (byte) in.read());
     }
 
     in.close();

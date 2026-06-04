@@ -35,14 +35,15 @@ import org.apache.hadoop.hdfs.protocol.datatransfer.sasl.SaslDataTransferTestCas
 import org.apache.hadoop.io.EnumSetWritable;
 import org.apache.hadoop.security.TestPermission;
 import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.params.ParameterizedTest;
-import org.junit.jupiter.params.provider.MethodSource;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import static org.apache.hadoop.hdfs.DFSConfigKeys.*;
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.MethodSource;
 
 
 /**
@@ -69,9 +70,14 @@ public class TestBlockTokenWrappingQOP extends SaslDataTransferTestCase {
     });
   }
 
-  public void setup(String key, String value) throws Exception {
-    configKey = key;
-    qopValue = value;
+  public void initTestBlockTokenWrappingQOP(String pconfigKey, String pqopValue)
+      throws Exception {
+    this.configKey = pconfigKey;
+    this.qopValue = pqopValue;
+    setup();
+  }
+
+  public void setup() throws Exception {
     conf = createSecureConfig(this.configKey);
     conf.set(DFS_NAMENODE_RPC_ADDRESS_AUXILIARY_KEY, "12000");
     // explicitly setting service rpc for datanode. This because
@@ -111,8 +117,8 @@ public class TestBlockTokenWrappingQOP extends SaslDataTransferTestCase {
 
   @MethodSource("qopSettings")
   @ParameterizedTest
-  public void testAddBlockWrappingQOP(String configKey, String qopValue) throws Exception {
-    setup(configKey, qopValue);
+  public void testAddBlockWrappingQOP(String pconfigKey, String pqopValue) throws Exception {
+    initTestBlockTokenWrappingQOP(pconfigKey, pqopValue);
     final String src = "/testAddBlockWrappingQOP";
     final Path path = new Path(src);
 
@@ -129,8 +135,8 @@ public class TestBlockTokenWrappingQOP extends SaslDataTransferTestCase {
 
   @MethodSource("qopSettings")
   @ParameterizedTest
-  public void testAppendWrappingQOP(String configKey, String qopValue) throws Exception {
-    setup(configKey, qopValue);
+  public void testAppendWrappingQOP(String pconfigKey, String pqopValue) throws Exception {
+    initTestBlockTokenWrappingQOP(pconfigKey, pqopValue);
     final String src = "/testAppendWrappingQOP";
     final Path path = new Path(src);
 
@@ -154,8 +160,9 @@ public class TestBlockTokenWrappingQOP extends SaslDataTransferTestCase {
 
   @MethodSource("qopSettings")
   @ParameterizedTest
-  public void testGetBlockLocationWrappingQOP(String configKey, String qopValue) throws Exception {
-    setup(configKey, qopValue);
+  public void testGetBlockLocationWrappingQOP(String pconfigKey, String pqopValue)
+      throws Exception {
+    initTestBlockTokenWrappingQOP(pconfigKey, pqopValue);
     final String src = "/testGetBlockLocationWrappingQOP";
     final Path path = new Path(src);
 

@@ -28,6 +28,16 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 import static org.mockito.Mockito.times;
 
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertSame;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.fail;
+
 import javax.management.MBeanServer;
 import javax.management.ObjectName;
 
@@ -40,8 +50,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.BlockingQueue;
 import org.apache.hadoop.security.UserGroupInformation;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
+import org.apache.hadoop.util.concurrent.SubjectInheritingThread;
 import org.mockito.Mockito;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.ipc.CallQueueManager.CallQueueOverflowException;
@@ -683,7 +692,7 @@ public class TestFairCallQueue {
 
     CountDownLatch latch = new CountDownLatch(numberOfTakes);
     Taker taker = new Taker(cq, takeAttempts, "default", latch);
-    Thread t = new Thread(taker);
+    Thread t = new SubjectInheritingThread(taker);
     t.start();
     latch.await();
 
@@ -697,7 +706,7 @@ public class TestFairCallQueue {
 
     CountDownLatch latch = new CountDownLatch(numberOfPuts);
     Putter putter = new Putter(cq, putAttempts, null, latch);
-    Thread t = new Thread(putter);
+    Thread t = new SubjectInheritingThread(putter);
     t.start();
     latch.await();
 

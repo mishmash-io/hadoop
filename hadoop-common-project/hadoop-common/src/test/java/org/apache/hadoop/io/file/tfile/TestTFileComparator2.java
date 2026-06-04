@@ -32,6 +32,8 @@ import org.apache.hadoop.io.file.tfile.TFile.Writer;
 import org.apache.hadoop.test.GenericTestUtils;
 import org.junit.jupiter.api.Test;
 
+import static org.junit.jupiter.api.Assertions.*;
+
 public class TestTFileComparator2 {
   private static String ROOT = GenericTestUtils.getTestDir().getAbsolutePath();
   private static final String name = "test-tfile-comparator2";

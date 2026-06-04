@@ -31,6 +31,8 @@ import org.apache.hadoop.security.AccessControlException;
 import org.apache.hadoop.util.Progressable;
 import org.junit.jupiter.api.Test;
 
+import static org.junit.jupiter.api.Assertions.assertThrows;
+
 public class TestAfsCheckPath {
   
   private static int DEFAULT_PORT = 1234;

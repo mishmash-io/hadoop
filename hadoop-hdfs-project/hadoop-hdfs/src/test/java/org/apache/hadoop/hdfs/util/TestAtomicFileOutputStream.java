@@ -18,7 +18,11 @@
 package org.apache.hadoop.hdfs.util;
 
 import static org.apache.hadoop.test.PlatformAssumptions.assumeWindows;
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.fail;
 
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -113,25 +117,29 @@ public class TestAtomicFileOutputStream {
     
     // Should not have touched original file
     assertEquals(TEST_STRING_2, DFSTestUtil.readFile(DST_FILE));
-    
-    assertEquals(DST_FILE.getName(), Joiner.on(",").join(TEST_DIR.list()), "Temporary file should have been cleaned up");
+
+    assertEquals(DST_FILE.getName(), Joiner.on(",").join(TEST_DIR.list()),
+        "Temporary file should have been cleaned up");
   }
 
   @Test
   public void testFailToRename() throws IOException {
     assumeWindows();
-    OutputStream fos = new AtomicFileOutputStream(DST_FILE);
-    fos.write(TEST_STRING.getBytes());
-    FileUtil.setWritable(TEST_DIR, false);
-    Throwable exception = assertThrows(IOException.class, () -> {
-      try {
-        fos.close();
-      } finally {
-        IOUtils.cleanupWithLogger(null, fos);
-        FileUtil.setWritable(TEST_DIR, true);
-      }
-    });
-    assertTrue(exception.getMessage().contains("failure in native rename"));
+    OutputStream fos = null;
+    try {
+      fos = new AtomicFileOutputStream(DST_FILE);
+      fos.write(TEST_STRING.getBytes());
+      FileUtil.setWritable(TEST_DIR, false);
+      final OutputStream toClose = fos;
+      IOException ex = assertThrows(IOException.class, () -> {
+        toClose.close();
+      });
+      assertTrue(ex.getMessage().contains("failure in native rename"));
+      fos = null;
+    } finally {
+      IOUtils.cleanupWithLogger(null, fos);
+      FileUtil.setWritable(TEST_DIR, true);
+    }
   }
 
   /**

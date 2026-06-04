@@ -210,11 +210,12 @@ public class TestLz4CompressorDecompressor {
       byte[] decompressed = new byte[BYTE_SIZE];
       decompressor.decompress(decompressed, 0, decompressed.length);
 
-      assertTrue(decompressor.finished(), "testLz4CompressDecompress finished error !!!");      
+      assertTrue(decompressor.finished(), "testLz4CompressDecompress finished error !!!");
       assertArrayEquals(bytes, decompressed);
       compressor.reset();
       decompressor.reset();
-      assertTrue(decompressor.getRemaining() == 0, "decompressor getRemaining error !!!");
+      assertTrue(decompressor.getRemaining() == 0,
+          "decompressor getRemaining error !!!");
     } catch (Exception e) {
       fail("testLz4CompressDecompress ex error!!!");
     }
@@ -289,8 +290,8 @@ public class TestLz4CompressorDecompressor {
       byte[] result = new byte[BYTE_SIZE];
       inflateIn.read(result);
 
-      assertArrayEquals(result, bytes,
-          "original array not equals compress/decompressed array");
+      assertArrayEquals(result,
+          bytes, "original array not equals compress/decompressed array");
     } catch (IOException e) {
       fail("testLz4CompressorDecopressorLogicWithCompressionStreams ex error !!!");
     } finally {

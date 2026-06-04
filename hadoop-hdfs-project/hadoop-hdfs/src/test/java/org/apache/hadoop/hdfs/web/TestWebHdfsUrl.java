@@ -19,7 +19,9 @@
 package org.apache.hadoop.hdfs.web;
 
 import static org.apache.hadoop.security.UserGroupInformation.AuthenticationMethod.KERBEROS;
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.mock;
 
 import java.io.IOException;
@@ -56,7 +58,6 @@ import org.apache.hadoop.net.NetUtils;
 import org.apache.hadoop.security.SecurityUtil;
 import org.apache.hadoop.security.UserGroupInformation;
 import org.apache.hadoop.security.token.Token;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.Timeout;
@@ -69,10 +70,10 @@ public class TestWebHdfsUrl {
   public void resetUGI() {
     UserGroupInformation.setConfiguration(new Configuration());
   }
-
+  
   @Test
-  @Timeout(value = 60000, unit = TimeUnit.MILLISECONDS)
-  public void testEncodedPathUrl() throws IOException, URISyntaxException {
+  @Timeout(value = 60)
+  public void testEncodedPathUrl() throws IOException, URISyntaxException{
     Configuration conf = new Configuration();
 
     final WebHdfsFileSystem webhdfs = (WebHdfsFileSystem) FileSystem.get(
@@ -83,12 +84,12 @@ public class TestWebHdfsUrl {
     Path fsPath = new Path(pathName);
     URL encodedPathUrl = webhdfs.toUrl(PutOpParam.Op.CREATE, fsPath);
     // We should get back the original file path after cycling back and decoding
-    Assertions.assertEquals(WebHdfsFileSystem.PATH_PREFIX + pathName,
+    assertEquals(WebHdfsFileSystem.PATH_PREFIX + pathName,
         encodedPathUrl.toURI().getPath());
   }
 
   @Test
-  @Timeout(value = 60000, unit = TimeUnit.MILLISECONDS)
+  @Timeout(value = 60)
   public void testSimpleAuthParamsInUrl() throws IOException {
     Configuration conf = new Configuration();
 
@@ -110,7 +111,7 @@ public class TestWebHdfsUrl {
   }
 
   @Test
-  @Timeout(value = 60000, unit = TimeUnit.MILLISECONDS)
+  @Timeout(value = 60)
   public void testSimpleProxyAuthParamsInUrl() throws IOException {
     Configuration conf = new Configuration();
 
@@ -134,7 +135,7 @@ public class TestWebHdfsUrl {
   }
 
   @Test
-  @Timeout(value = 60000, unit = TimeUnit.MILLISECONDS)
+  @Timeout(value = 60)
   public void testSecureAuthParamsInUrl() throws IOException {
     Configuration conf = new Configuration();
     // fake turning on security so api thinks it should use tokens
@@ -227,7 +228,7 @@ public class TestWebHdfsUrl {
   }
 
   @Test
-  @Timeout(value = 60000, unit = TimeUnit.MILLISECONDS)
+  @Timeout(value = 60)
   public void testSecureProxyAuthParamsInUrl() throws IOException {
     Configuration conf = new Configuration();
     // fake turning on security so api thinks it should use tokens
@@ -325,7 +326,7 @@ public class TestWebHdfsUrl {
   }
 
   @Test
-  @Timeout(value = 60000, unit = TimeUnit.MILLISECONDS)
+  @Timeout(value = 60)
   public void testCheckAccessUrl() throws IOException {
     Configuration conf = new Configuration();
 
@@ -348,7 +349,7 @@ public class TestWebHdfsUrl {
   }
 
   @Test
-  @Timeout(value = 60000, unit = TimeUnit.MILLISECONDS)
+  @Timeout(value = 60)
   public void testBatchedListingUrl() throws Exception {
     Configuration conf = new Configuration();
 

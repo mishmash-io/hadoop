@@ -25,12 +25,19 @@ import static org.apache.hadoop.hdfs.DFSConfigKeys.DFS_NAMENODE_PATH_BASED_CACHE
 import static org.apache.hadoop.hdfs.DFSConfigKeys.DFS_NAMENODE_CACHING_ENABLED_KEY;
 import static org.apache.hadoop.hdfs.protocol.CachePoolInfo.RELATIVE_EXPIRY_NEVER;
 import static org.apache.hadoop.test.GenericTestUtils.assertExceptionContains;
-import static org.junit.jupiter.api.Assertions.*;
+import static org.apache.hadoop.test.MockitoUtil.verifyZeroInteractions;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.fail;
 
 import java.io.IOException;
 import java.security.PrivilegedExceptionAction;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.Date;
 import java.util.EnumSet;
 import java.util.Iterator;
@@ -79,6 +86,7 @@ import org.apache.hadoop.hdfs.server.blockmanagement.DatanodeManager;
 import org.apache.hadoop.hdfs.server.datanode.DataNode;
 import org.apache.hadoop.hdfs.server.datanode.DataNodeTestUtils;
 import org.apache.hadoop.hdfs.server.protocol.NamenodeProtocols;
+import org.apache.hadoop.hdfs.util.RwLockMode;
 import org.apache.hadoop.io.nativeio.NativeIO;
 import org.apache.hadoop.io.nativeio.NativeIO.POSIX.CacheManipulator;
 import org.apache.hadoop.io.nativeio.NativeIO.POSIX.NoMlockCacheManipulator;
@@ -86,7 +94,10 @@ import org.apache.hadoop.security.AccessControlException;
 import org.apache.hadoop.security.UserGroupInformation;
 import org.apache.hadoop.test.GenericTestUtils;
 import org.apache.hadoop.util.GSet;
-import org.junit.jupiter.api.*;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.Timeout;
 import org.mockito.Mockito;
 
 import java.util.function.Supplier;
@@ -163,7 +174,7 @@ public class TestCacheDirectives {
     while (iter.hasNext()) {
       dfs.removeCacheDirective(iter.next().getInfo().getId());
     }
-    waitForCachedBlocks(namenode, 0, 0, "teardown");
+    waitForCachedBlocks(cluster.getNameNode(), 0, 0, "teardown");
     if (cluster != null) {
       cluster.shutdown();
       cluster = null;
@@ -172,8 +183,10 @@ public class TestCacheDirectives {
     NativeIO.POSIX.setCacheManipulator(prevCacheManipulator);
   }
 
+
   @Test
-  @Timeout(value = 60000, unit = TimeUnit.MILLISECONDS)
+  @Timeout(value = 60)
+  @SuppressWarnings("checkstyle:methodlength")
   public void testBasicPoolOperations() throws Exception {
     final String poolName = "pool1";
     CachePoolInfo info = new CachePoolInfo(poolName).
@@ -338,7 +351,7 @@ public class TestCacheDirectives {
   }
 
   @Test
-  @Timeout(value = 60000, unit = TimeUnit.MILLISECONDS)
+  @Timeout(value = 60)
   public void testCreateAndModifyPools() throws Exception {
     String poolName = "pool1";
     String ownerName = "abc";
@@ -401,11 +414,10 @@ public class TestCacheDirectives {
   private static void validateListAll(
       RemoteIterator<CacheDirectiveEntry> iter,
       Long... ids) throws Exception {
-    for (Long id: ids) {
+    for (Long id : ids) {
       assertTrue(iter.hasNext(), "Unexpectedly few elements");
       assertEquals(id,
-          iter.next().getInfo().getId(),
-          "Unexpected directive ID");
+          iter.next().getInfo().getId(), "Unexpected directive ID");
     }
     assertFalse(iter.hasNext(), "Unexpectedly many list elements");
   }
@@ -424,7 +436,8 @@ public class TestCacheDirectives {
   }
 
   @Test
-  @Timeout(value = 60000, unit = TimeUnit.MILLISECONDS)
+  @Timeout(value = 60)
+  @SuppressWarnings("checkstyle:methodlength")
   public void testAddRemoveDirectives() throws Exception {
     proto.addCachePool(new CachePoolInfo("pool1").
         setMode(new FsPermission((short)0777)));
@@ -454,8 +467,7 @@ public class TestCacheDirectives {
     long alphaId = addAsUnprivileged(alpha);
     long alphaId2 = addAsUnprivileged(alpha);
     assertFalse(alphaId == alphaId2,
-        "Expected to get unique directives when re-adding an "
-        + "existing CacheDirectiveInfo");
+        "Expected to get unique directives when re-adding an " + "existing CacheDirectiveInfo");
     long betaId = addAsUnprivileged(beta);
 
     try {
@@ -627,7 +639,7 @@ public class TestCacheDirectives {
   }
 
   @Test
-  @Timeout(value = 60000, unit = TimeUnit.MILLISECONDS)
+  @Timeout(value = 60)
   public void testCacheManagerRestart() throws Exception {
     SecondaryNameNode secondary = null;
     try {
@@ -697,8 +709,7 @@ public class TestCacheDirectives {
 
       // Checkpoint again forcing a reload of FSN state
       boolean fetchImage = secondary.doCheckpoint();
-      assertTrue(fetchImage,
-          "Secondary should have fetched a new fsimage from NameNode");
+      assertTrue(fetchImage, "Secondary should have fetched a new fsimage from NameNode");
 
       // Remove temp pool and directive
       dfs.removeCachePool(imagePool);
@@ -751,6 +762,14 @@ public class TestCacheDirectives {
   private static void waitForCachedBlocks(NameNode nn,
       final int expectedCachedBlocks, final int expectedCachedReplicas,
       final String logString) throws Exception {
+    final String bpid = nn.getNamesystem().getBlockPoolId();
+    final NamenodeProtocols nnRpc = nn.getRpcServer();
+    Thread.sleep(5000);
+    for (DataNode dn : cluster.getDataNodes()) {
+      if (dn.getFSDataset() != null && dn.getFSDataset().getCacheUsed() == 0L) {
+        nnRpc.cacheReport(dn.getDNRegistrationForBP(bpid), bpid, Collections.emptyList());
+      }
+    }
     final FSNamesystem namesystem = nn.getNamesystem();
     final CacheManager cacheManager = namesystem.getCacheManager();
     LOG.info("Waiting for " + expectedCachedBlocks + " blocks with " +
@@ -759,7 +778,7 @@ public class TestCacheDirectives {
       @Override
       public Boolean get() {
         int numCachedBlocks = 0, numCachedReplicas = 0;
-        namesystem.readLock();
+        namesystem.readLock(RwLockMode.BM);
         try {
           GSet<CachedBlock, CachedBlock> cachedBlocks =
               cacheManager.getCachedBlocks();
@@ -772,7 +791,7 @@ public class TestCacheDirectives {
             }
           }
         } finally {
-          namesystem.readUnlock();
+          namesystem.readUnlock(RwLockMode.BM, "checkBlocks");
         }
 
         LOG.info(logString + " cached blocks: have " + numCachedBlocks +
@@ -815,7 +834,7 @@ public class TestCacheDirectives {
           fail("got IOException while calling " +
               "listCacheDirectives: " + e.getMessage());
         }
-        Assertions.assertNotNull(entry);
+        assertNotNull(entry);
         CacheDirectiveStats stats = entry.getStats();
         if ((targetBytesNeeded == stats.getBytesNeeded()) &&
             (targetBytesCached == stats.getBytesCached()) &&
@@ -912,7 +931,8 @@ public class TestCacheDirectives {
       // round it up to full blocks
       final long numBlocks = (len + blockSize - 1) / blockSize;
       BlockLocation[] locs = dfs.getFileBlockLocations(p, 0, len);
-      assertEquals(numBlocks, locs.length, "Unexpected number of block locations for path " + p);
+      assertEquals(numBlocks, locs.length,
+          "Unexpected number of block locations for path " + p);
       for (BlockLocation l: locs) {
         if (l.getCachedHosts().length > 0) {
           numCachedBlocks++;
@@ -923,16 +943,14 @@ public class TestCacheDirectives {
     LOG.info("Found " + numCachedBlocks + " of " + expectedBlocks + " blocks");
     LOG.info("Found " + numCachedReplicas + " of " + expectedReplicas
         + " replicas");
-    assertEquals(expectedBlocks,
-        numCachedBlocks,
+    assertEquals(expectedBlocks, numCachedBlocks,
         "Unexpected number of cached blocks");
-    assertEquals(expectedReplicas,
-        numCachedReplicas,
+    assertEquals(expectedReplicas, numCachedReplicas,
         "Unexpected number of cached replicas");
   }
 
   @Test
-  @Timeout(value = 120000, unit = TimeUnit.MILLISECONDS)
+  @Timeout(value = 120)
   public void testWaitForCachedReplicas() throws Exception {
     FileSystemTestHelper helper = new FileSystemTestHelper();
     GenericTestUtils.waitFor(new Supplier<Boolean>() {
@@ -992,8 +1010,10 @@ public class TestCacheDirectives {
       final long cacheUsed = dn.getCacheUsed();
       final long cacheRemaining = dn.getCacheRemaining();
       assertEquals(CACHE_CAPACITY, cacheCapacity, "Unexpected cache capacity");
-      assertEquals(cacheCapacity, cacheUsed + cacheRemaining, "Capacity not equal to used + remaining");
-      assertEquals(cacheCapacity - cacheUsed, cacheRemaining, "Remaining not equal to capacity - used");
+      assertEquals(cacheCapacity, cacheUsed + cacheRemaining,
+          "Capacity not equal to used + remaining");
+      assertEquals(cacheCapacity - cacheUsed, cacheRemaining,
+          "Remaining not equal to capacity - used");
       totalUsed += cacheUsed;
     }
     assertEquals(expected*BLOCK_SIZE, totalUsed);
@@ -1011,7 +1031,7 @@ public class TestCacheDirectives {
   }
 
   @Test
-  @Timeout(value = 120000, unit = TimeUnit.MILLISECONDS)
+  @Timeout(value = 120)
   public void testWaitForCachedReplicasInDirectory() throws Exception {
     // Create the pool
     final String pool = "friendlyPool";
@@ -1106,7 +1126,7 @@ public class TestCacheDirectives {
    * @throws Exception
    */
   @Test
-  @Timeout(value = 120000, unit = TimeUnit.MILLISECONDS)
+  @Timeout(value = 120)
   public void testReplicationFactor() throws Exception {
     // Create the pool
     final String pool = "friendlyPool";
@@ -1162,11 +1182,11 @@ public class TestCacheDirectives {
   }
 
   @Test
-  @Timeout(value = 60000, unit = TimeUnit.MILLISECONDS)
+  @Timeout(value = 60)
   public void testListCachePoolPermissions() throws Exception {
     final UserGroupInformation myUser = UserGroupInformation
         .createRemoteUser("myuser");
-    final DistributedFileSystem myDfs = 
+    final DistributedFileSystem myDfs =
         (DistributedFileSystem)DFSTestUtil.getFileSystemAs(myUser, conf);
     final String poolName = "poolparty";
     dfs.addCachePool(new CachePoolInfo(poolName)
@@ -1190,23 +1210,19 @@ public class TestCacheDirectives {
     info = it.next().getInfo();
     assertFalse(it.hasNext());
     assertEquals(poolName, info.getPoolName(), "Expected pool name");
-    assertEquals(myUser.getShortUserName(),
-        info.getOwnerName(),
-        "Mismatched owner name");
+    assertEquals(myUser.getShortUserName(), info.getOwnerName(), "Mismatched owner name");
     assertNotNull(info.getGroupName(), "Expected group name");
-    assertEquals((short) 0700,
-        info.getMode().toShort(),
-        "Mismatched mode");
-    assertEquals(limit, (long)info.getLimit(), "Mismatched limit");
+    assertEquals((short) 0700, info.getMode().toShort(), "Mismatched mode");
+    assertEquals(limit, (long) info.getLimit(), "Mismatched limit");
   }
 
   @Test
-  @Timeout(value = 120000, unit = TimeUnit.MILLISECONDS)
+  @Timeout(value = 120)
   public void testExpiry() throws Exception {
     String pool = "pool1";
     dfs.addCachePool(new CachePoolInfo(pool));
     Path p = new Path("/mypath");
-    DFSTestUtil.createFile(dfs, p, BLOCK_SIZE*2, (short)2, 0x999);
+    DFSTestUtil.createFile(dfs, p, BLOCK_SIZE * 2, (short) 2, 0x999);
     // Expire after test timeout
     Date start = new Date();
     Date expiry = DateUtils.addSeconds(start, 120);
@@ -1214,7 +1230,7 @@ public class TestCacheDirectives {
         .setPath(p)
         .setPool(pool)
         .setExpiration(CacheDirectiveInfo.Expiration.newAbsolute(expiry))
-        .setReplication((short)2)
+        .setReplication((short) 2)
         .build());
     waitForCachedBlocks(cluster.getNameNode(), 2, 4, "testExpiry:1");
     // Change it to expire sooner
@@ -1248,7 +1264,7 @@ public class TestCacheDirectives {
   }
 
   @Test
-  @Timeout(value = 120000, unit = TimeUnit.MILLISECONDS)
+  @Timeout(value = 120)
   public void testLimit() throws Exception {
     try {
       dfs.addCachePool(new CachePoolInfo("poolofnegativity").setLimit(-99l));
@@ -1300,7 +1316,8 @@ public class TestCacheDirectives {
     RemoteIterator<CachePoolEntry> it = dfs.listCachePools();
     assertTrue(it.hasNext(), "Expected a cache pool");
     CachePoolStats stats = it.next().getStats();
-    assertEquals(BLOCK_SIZE, stats.getBytesOverlimit(), "Overlimit bytes should be difference of needed and limit");
+    assertEquals(BLOCK_SIZE, stats.getBytesOverlimit(),
+        "Overlimit bytes should be difference of needed and limit");
     // Moving a directive to a pool without enough limit should fail
     CachePoolInfo inadequate =
         new CachePoolInfo("poolofinadequacy").setLimit(BLOCK_SIZE);
@@ -1323,7 +1340,8 @@ public class TestCacheDirectives {
   }
 
   @Test
-  @Timeout(value = 30000, unit = TimeUnit.MILLISECONDS)
+  @Timeout(value = 30)
+  @SuppressWarnings("checkstyle:methodlength")
   public void testMaxRelativeExpiry() throws Exception {
     // Test that negative and really big max expirations can't be set during add
     try {
@@ -1346,7 +1364,8 @@ public class TestCacheDirectives {
     RemoteIterator<CachePoolEntry> poolIt = dfs.listCachePools();
     CachePoolInfo listPool = poolIt.next().getInfo();
     assertFalse(poolIt.hasNext(), "Should only be one pool");
-    assertEquals(poolExpiration, listPool.getMaxRelativeExpiryMs().longValue(), "Expected max relative expiry to match set value");
+    assertEquals(poolExpiration, listPool.getMaxRelativeExpiryMs().longValue(),
+        "Expected max relative expiry to match set value");
     // Test that negative and really big max expirations can't be modified
     try {
       dfs.addCachePool(coolPool.setMaxRelativeExpiryMs(-1l));
@@ -1373,7 +1392,7 @@ public class TestCacheDirectives {
     assertFalse(dirIt.hasNext(), "Should only have one entry in listing");
     long listExpiration = listInfo.getExpiration().getAbsoluteMillis()
         - new Date().getTime();
-    assertTrue(Math.abs(listExpiration - poolExpiration) < 10*1000,
+    assertTrue(Math.abs(listExpiration - poolExpiration) < 10 * 1000,
         "Directive expiry should be approximately the pool's max expiry");
     // Test that the max is enforced on add for relative and absolute
     CacheDirectiveInfo.Builder builder = new CacheDirectiveInfo.Builder()
@@ -1478,9 +1497,9 @@ public class TestCacheDirectives {
     listInfo = dirIt.next().getInfo();
     listExpiration = listInfo.getExpiration().getAbsoluteMillis()
         - new Date().getTime();
-    assertTrue(Math.abs(poolExpiration/2 - listExpiration) < 10*1000,
-        "Unexpected relative expiry " + listExpiration
-        + " expected approximately " + poolExpiration/2);
+    assertTrue(Math.abs(poolExpiration / 2 - listExpiration) < 10 * 1000,
+        "Unexpected relative expiry " + listExpiration + " expected approximately "
+            + poolExpiration / 2);
     // Test that cache pool and directive expiry can be modified back to never
     dfs.modifyCachePool(destPool
         .setMaxRelativeExpiryMs(CachePoolInfo.RELATIVE_EXPIRY_NEVER));
@@ -1489,8 +1508,7 @@ public class TestCacheDirectives {
     while (!listPool.getPoolName().equals(destPool.getPoolName())) {
       listPool = poolIt.next().getInfo();
     }
-    assertEquals(CachePoolInfo.RELATIVE_EXPIRY_NEVER,
-        listPool.getMaxRelativeExpiryMs().longValue(),
+    assertEquals(CachePoolInfo.RELATIVE_EXPIRY_NEVER, listPool.getMaxRelativeExpiryMs().longValue(),
         "Expected max relative expiry to match set value");
     dfs.modifyCacheDirective(new CacheDirectiveInfo.Builder()
         .setId(listInfo.getId())
@@ -1509,25 +1527,25 @@ public class TestCacheDirectives {
   private void checkPendingCachedEmpty(MiniDFSCluster cluster)
       throws Exception {
     Thread.sleep(1000);
-    cluster.getNamesystem().readLock();
+    cluster.getNamesystem().readLock(RwLockMode.BM);
     try {
       final DatanodeManager datanodeManager =
           cluster.getNamesystem().getBlockManager().getDatanodeManager();
       for (DataNode dn : cluster.getDataNodes()) {
         DatanodeDescriptor descriptor =
             datanodeManager.getDatanode(dn.getDatanodeId());
-        Assertions.assertTrue(descriptor.getPendingCached().isEmpty(), 
+        assertTrue(descriptor.getPendingCached().isEmpty(),
             "Pending cached list of " + descriptor +
                 " is not empty, "
                 + Arrays.toString(descriptor.getPendingCached().toArray()));
       }
     } finally {
-      cluster.getNamesystem().readUnlock();
+      cluster.getNamesystem().readUnlock(RwLockMode.BM, "checkPendingCachedEmpty");
     }
   }
 
   @Test
-  @Timeout(value = 60000, unit = TimeUnit.MILLISECONDS)
+  @Timeout(value = 60)
   public void testExceedsCapacity() throws Exception {
     // Create a giant file
     final Path fileName = new Path("/exceeds");
@@ -1552,7 +1570,7 @@ public class TestCacheDirectives {
   }
 
   @Test
-  @Timeout(value = 60000, unit = TimeUnit.MILLISECONDS)
+  @Timeout(value = 60)
   public void testNoBackingReplica() throws Exception {
     // Cache all three replicas for a file.
     final Path filename = new Path("/noback");
@@ -1581,11 +1599,11 @@ public class TestCacheDirectives {
     CacheManager cm = cluster.getNamesystem().getCacheManager();
     LocatedBlocks locations = Mockito.mock(LocatedBlocks.class);
     cm.setCachedLocations(locations);
-    Mockito.verifyNoMoreInteractions(locations);
+    verifyZeroInteractions(locations);
   }
 
   @Test
-  @Timeout(value = 120000, unit = TimeUnit.MILLISECONDS)
+  @Timeout(value = 120)
   public void testAddingCacheDirectiveInfosWhenCachingIsDisabled()
       throws Exception {
     cluster.shutdown();
@@ -1642,7 +1660,7 @@ public class TestCacheDirectives {
   }
 
   @Test
-  @Timeout(value = 120000, unit = TimeUnit.MILLISECONDS)
+  @Timeout(value = 120)
   public void testExpiryTimeConsistency() throws Exception {
     conf.setInt(DFSConfigKeys.DFS_HA_LOGROLL_PERIOD_KEY, 1);
     conf.setInt(DFSConfigKeys.DFS_HA_TAILEDITS_PERIOD_KEY, 1);
@@ -1673,9 +1691,9 @@ public class TestCacheDirectives {
     HATestUtil.waitForStandbyToCatchUp(ann, sbn);
     GenericTestUtils.waitFor(() -> {
       boolean isConsistence = false;
-      ann.getNamesystem().readLock();
+      ann.getNamesystem().readLock(RwLockMode.FS);
       try {
-        sbn.getNamesystem().readLock();
+        sbn.getNamesystem().readLock(RwLockMode.FS);
         try {
           Iterator<CacheDirective> annDirectivesIt = annCachemanager.
               getCacheDirectives().iterator();
@@ -1690,10 +1708,10 @@ public class TestCacheDirectives {
             }
           }
         } finally {
-          sbn.getNamesystem().readUnlock();
+          sbn.getNamesystem().readUnlock(RwLockMode.FS, "expiryTimeConsistency");
         }
       } finally {
-        ann.getNamesystem().readUnlock();
+        ann.getNamesystem().readUnlock(RwLockMode.FS, "expiryTimeConsistency");
       }
       if (!isConsistence) {
         LOG.info("testEexpiryTimeConsistency:"

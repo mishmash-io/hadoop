@@ -39,6 +39,7 @@ import jakarta.ws.rs.Consumes;
 import jakarta.ws.rs.DELETE;
 import jakarta.ws.rs.DefaultValue;
 import jakarta.ws.rs.GET;
+import jakarta.ws.rs.OPTIONS;
 import jakarta.ws.rs.POST;
 import jakarta.ws.rs.Path;
 import jakarta.ws.rs.PathParam;
@@ -114,6 +115,14 @@ public class KMS {
         .build(domain, KMSRESTConstants.KEY_RESOURCE, keyName);
   }
 
+  @OPTIONS
+  public Response handleOptions() {
+    return Response.ok()
+        .header("Allow", "GET")
+        .header("Allow", "OPTIONS")
+        .build();
+  }
+
   @POST
   @Path(KMSRESTConstants.KEYS_RESOURCE)
   @Consumes(MediaType.APPLICATION_JSON)
@@ -175,11 +184,8 @@ public class KMS {
         keyVersion = removeKeyMaterial(keyVersion);
       }
       Map json = KMSUtil.toJSON(keyVersion);
-      String requestURL = KMSMDCFilter.getURL();
-      int idx = requestURL.lastIndexOf(KMSRESTConstants.KEYS_RESOURCE);
-      requestURL = requestURL.substring(0, idx);
       LOG.trace("Exiting createKey Method.");
-      return Response.created(getKeyURI(requestURL, name))
+      return Response.created(getKeyURI(KMSRESTConstants.SERVICE_VERSION, name))
           .type(MediaType.APPLICATION_JSON)
           .entity(json).build();
     } catch (Exception e) {

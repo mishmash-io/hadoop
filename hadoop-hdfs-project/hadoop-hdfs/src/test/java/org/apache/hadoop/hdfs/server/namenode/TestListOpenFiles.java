@@ -18,7 +18,10 @@
 package org.apache.hadoop.hdfs.server.namenode;
 
 import static org.apache.hadoop.test.LambdaTestUtils.intercept;
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.fail;
 
 import java.io.IOException;
 import java.util.EnumSet;
@@ -48,13 +51,18 @@ import org.apache.hadoop.hdfs.protocol.OpenFilesIterator;
 import org.apache.hadoop.hdfs.protocol.OpenFilesIterator.OpenFilesType;
 import org.apache.hadoop.hdfs.server.namenode.ha.HATestUtil;
 import org.apache.hadoop.hdfs.server.protocol.NamenodeProtocols;
+import org.apache.hadoop.hdfs.util.RwLockMode;
 import org.apache.hadoop.hdfs.DFSConfigKeys;
 import org.apache.hadoop.hdfs.HdfsConfiguration;
 import org.apache.hadoop.hdfs.MiniDFSCluster;
 import org.apache.hadoop.hdfs.tools.DFSAdmin;
+import org.apache.hadoop.util.ToolRunner;
+import org.apache.hadoop.util.concurrent.SubjectInheritingThread;
 import org.apache.hadoop.util.ChunkedArrayList;
-import org.apache.hadoop.util.cli.ToolRunner;
-import org.junit.jupiter.api.*;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.Timeout;
 
 /**
  * Verify open files listing.
@@ -92,7 +100,7 @@ public class TestListOpenFiles {
   }
 
   @Test
-  @Timeout(value = 120000L, unit = TimeUnit.MILLISECONDS)
+  @Timeout(120)
   public void testListOpenFilesViaNameNodeRPC() throws Exception {
     HashMap<Path, FSDataOutputStream> openFiles = new HashMap<>();
     createFiles(fs, "closed", 10);
@@ -101,8 +109,7 @@ public class TestListOpenFiles {
     BatchedEntries<OpenFileEntry> openFileEntryBatchedEntries =
         nnRpc.listOpenFiles(0, EnumSet.of(OpenFilesType.ALL_OPEN_FILES),
             OpenFilesIterator.FILTER_PATH_DEFAULT);
-    assertTrue(openFileEntryBatchedEntries.size() == 0,
-        "Open files list should be empty!");
+    assertTrue(openFileEntryBatchedEntries.size() == 0, "Open files list should be empty!");
     BatchedEntries<OpenFileEntry> openFilesBlockingDecomEntries =
         nnRpc.listOpenFiles(0, EnumSet.of(OpenFilesType.BLOCKING_DECOMMISSION),
             OpenFilesIterator.FILTER_PATH_DEFAULT);
@@ -143,18 +150,15 @@ public class TestListOpenFiles {
         batchedEntries = nnRpc.listOpenFiles(lastEntry.getId(),
             openFilesTypes, path);
       }
-      assertTrue(batchedEntries.size() <= BATCH_SIZE,
-          "Incorrect open files list size!");
+      assertTrue(batchedEntries.size() <= BATCH_SIZE, "Incorrect open files list size!");
       for (int i = 0; i < batchedEntries.size(); i++) {
         lastEntry = batchedEntries.get(i);
         String filePath = lastEntry.getFilePath();
         LOG.info("OpenFile: " + filePath);
-        assertTrue(remainingFiles.remove(new Path(filePath)),
-            "Unexpected open file: " + filePath);
+        assertTrue(remainingFiles.remove(new Path(filePath)), "Unexpected open file: " + filePath);
       }
     } while (batchedEntries.hasMore());
-    assertTrue(remainingFiles.size() == 0,
-        remainingFiles.size() + " open files not listed!");
+    assertTrue(remainingFiles.size() == 0, remainingFiles.size() + " open files not listed!");
   }
 
   /**
@@ -189,7 +193,7 @@ public class TestListOpenFiles {
    * Verify dfsadmin -listOpenFiles command in HA mode.
    */
   @Test
-  @Timeout(value = 120000, unit = TimeUnit.MILLISECONDS)
+  @Timeout(value = 120)
   public void testListOpenFilesInHA() throws Exception {
     fs.close();
     cluster.shutdown();
@@ -220,15 +224,14 @@ public class TestListOpenFiles {
       final AtomicBoolean failoverCompleted = new AtomicBoolean(false);
       final AtomicBoolean listOpenFilesError = new AtomicBoolean(false);
       final int listingIntervalMsec = 250;
-      Thread clientThread = new Thread(new Runnable() {
+      Thread clientThread = new SubjectInheritingThread(new Runnable() {
         @Override
         public void run() {
           while(!failoverCompleted.get()) {
             try {
+              assertEquals(0, ToolRunner.run(dfsAdmin, new String[]{"-listOpenFiles"}));
               assertEquals(0, ToolRunner.run(dfsAdmin,
-                  new String[] {"-listOpenFiles"}));
-              assertEquals(0, ToolRunner.run(dfsAdmin,
-                  new String[] {"-listOpenFiles", "-blockingDecommission"}));
+                  new String[]{"-listOpenFiles", "-blockingDecommission"}));
               // Sleep for some time to avoid
               // flooding logs with listing.
               Thread.sleep(listingIntervalMsec);
@@ -252,10 +255,9 @@ public class TestListOpenFiles {
       haCluster.transitionToActive(1);
       failoverCompleted.set(true);
 
-      assertEquals(0, ToolRunner.run(dfsAdmin,
-          new String[] {"-listOpenFiles"}));
-      assertEquals(0, ToolRunner.run(dfsAdmin,
-          new String[] {"-listOpenFiles", "-blockingDecommission"}));
+      assertEquals(0, ToolRunner.run(dfsAdmin, new String[]{"-listOpenFiles"}));
+      assertEquals(0,
+          ToolRunner.run(dfsAdmin, new String[]{"-listOpenFiles", "-blockingDecommission"}));
       assertFalse(listOpenFilesError.get(), "Client Error!");
 
       clientThread.join();
@@ -267,7 +269,7 @@ public class TestListOpenFiles {
   }
 
   @Test
-  @Timeout(value = 120000, unit = TimeUnit.MILLISECONDS)
+  @Timeout(value = 120)
   public void testListOpenFilesWithFilterPath() throws IOException {
     HashMap<Path, FSDataOutputStream> openFiles = new HashMap<>();
     createFiles(fs, "closed", 10);
@@ -276,8 +278,7 @@ public class TestListOpenFiles {
     BatchedEntries<OpenFileEntry> openFileEntryBatchedEntries = nnRpc
         .listOpenFiles(0, EnumSet.of(OpenFilesType.ALL_OPEN_FILES),
             OpenFilesIterator.FILTER_PATH_DEFAULT);
-    assertTrue(openFileEntryBatchedEntries.size() == 0,
-        "Open files list should be empty!");
+    assertTrue(openFileEntryBatchedEntries.size() == 0, "Open files list should be empty!");
     BatchedEntries<OpenFileEntry> openFilesBlockingDecomEntries = nnRpc
         .listOpenFiles(0, EnumSet.of(OpenFilesType.BLOCKING_DECOMMISSION),
             OpenFilesIterator.FILTER_PATH_DEFAULT);
@@ -337,7 +338,7 @@ public class TestListOpenFiles {
     FSDirectory dir = fsNamesystem.getFSDirectory();
     List<INode> removedINodes = new ChunkedArrayList<>();
     removedINodes.add(dir.getINode(path));
-    fsNamesystem.writeLock();
+    fsNamesystem.writeLock(RwLockMode.FS);
     try {
       dir.removeFromInodeMap(removedINodes);
       openFileEntryBatchedEntries = nnRpc
@@ -346,9 +347,9 @@ public class TestListOpenFiles {
       assertEquals(0, openFileEntryBatchedEntries.size());
       fsNamesystem.leaseManager.removeLease(dir.getINode(path).getId());
     } catch (NullPointerException e) {
-      Assertions.fail("Should not throw NPE when the file is deleted but has lease!");
+      fail("Should not throw NPE when the file is deleted but has lease!");
     } finally {
-      fsNamesystem.writeUnlock();
+      fsNamesystem.writeUnlock(RwLockMode.FS, "testListOpenFilesWithDeletedPath");
     }
   }
 }

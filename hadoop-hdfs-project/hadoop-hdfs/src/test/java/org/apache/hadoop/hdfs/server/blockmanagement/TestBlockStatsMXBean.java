@@ -18,7 +18,11 @@
 package org.apache.hadoop.hdfs.server.blockmanagement;
 
 import static org.apache.hadoop.test.PlatformAssumptions.assumeNotWindows;
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.fail;
 
 import java.io.File;
 import java.io.IOException;
@@ -44,13 +48,13 @@ import org.apache.hadoop.test.GenericTestUtils;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.Timeout;
 import org.eclipse.jetty.util.ajax.JSON;
+import org.junit.jupiter.api.Timeout;
 
 /**
  * Class for testing {@link BlockStatsMXBean} implementation
  */
-@Timeout(value=300000, unit=TimeUnit.MILLISECONDS)
+@Timeout(300)
 public class TestBlockStatsMXBean {
 
   private MiniDFSCluster cluster;
@@ -283,5 +287,31 @@ public class TestBlockStatsMXBean {
         .waitFor(() -> heartbeatManager.getInServiceXceiverCount() == 12, 100,
             5000);
     IOUtils.closeStreams(hotSpFileStream, coldSpFileStream);
+  }
+
+  @Test
+  public void testStorageTypePercentJMX() throws Exception {
+    URL baseUrl = new URL(cluster.getHttpUri(0));
+    String result = readOutput(new URL(baseUrl, "/jmx"));
+
+    Map<String, Object> stat = (Map<String, Object>) JSON.parse(result);
+    Object[] beans = (Object[]) stat.get("beans");
+    Map<String, Object> blockStats = null;
+    for (Object bean : beans) {
+      Map<String, Object> map = (Map<String, Object>) bean;
+      if (map.get("name").equals("Hadoop:service=NameNode,name=BlockStats")) {
+        blockStats = map;
+      }
+    }
+    assertNotNull(blockStats);
+    Object[] storageTypeStatsList =
+        (Object[]) blockStats.get("StorageTypeStats");
+    assertNotNull(storageTypeStatsList);
+    Map<String, Object> entry = (Map<String, Object>) storageTypeStatsList[0];
+    Map<String, Object> storageTypeStats = (Map<String, Object>) entry.get("value");
+
+    assertTrue(storageTypeStats.containsKey("percentUsed"));
+    assertTrue(storageTypeStats.containsKey("percentBlockPoolUsed"));
+    assertTrue(storageTypeStats.containsKey("percentRemaining"));
   }
 }

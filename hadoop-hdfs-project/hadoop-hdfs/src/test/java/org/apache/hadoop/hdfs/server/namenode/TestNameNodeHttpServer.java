@@ -34,11 +34,15 @@ import org.apache.hadoop.net.NetUtils;
 import org.apache.hadoop.security.ssl.KeyStoreTestUtil;
 import org.apache.hadoop.test.GenericTestUtils;
 import org.junit.jupiter.api.AfterAll;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedClass;
 import org.junit.jupiter.params.provider.MethodSource;
 
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
+@MethodSource("policy")
+@ParameterizedClass
 public class TestNameNodeHttpServer {
   private static final String BASEDIR = GenericTestUtils
       .getTempPath(TestNameNodeHttpServer.class.getSimpleName());
@@ -51,6 +55,13 @@ public class TestNameNodeHttpServer {
     Object[][] params = new Object[][] { { HttpConfig.Policy.HTTP_ONLY },
         { HttpConfig.Policy.HTTPS_ONLY }, { HttpConfig.Policy.HTTP_AND_HTTPS } };
     return Arrays.asList(params);
+  }
+
+  private final HttpConfig.Policy policy;
+
+  public TestNameNodeHttpServer(Policy policy) {
+    super();
+    this.policy = policy;
   }
 
   @BeforeAll
@@ -88,15 +99,14 @@ public class TestNameNodeHttpServer {
       server = new NameNodeHttpServer(conf, null, addr);
       server.start();
 
-      Assertions.assertTrue(implies(policy.isHttpEnabled(),
+      assertTrue(implies(policy.isHttpEnabled(),
           canAccess("http", server.getHttpAddress())));
-      Assertions.assertTrue(implies(!policy.isHttpEnabled(),
+      assertTrue(implies(!policy.isHttpEnabled(),
           server.getHttpAddress() == null));
 
-      Assertions.assertTrue(implies(policy.isHttpsEnabled(),
+      assertTrue(implies(policy.isHttpsEnabled(),
           canAccess("https", server.getHttpsAddress())));
-      Assertions.assertTrue(implies(!policy.isHttpsEnabled(),
-          server.getHttpsAddress() == null));
+      assertTrue(implies(!policy.isHttpsEnabled(), server.getHttpsAddress() == null));
 
     } finally {
       if (server != null) {

@@ -35,7 +35,6 @@ import org.apache.hadoop.hdfs.MiniDFSCluster;
 import org.apache.hadoop.hdfs.client.HdfsClientConfigKeys;
 import org.apache.hadoop.test.MultithreadedTestUtil.RepeatingTestThread;
 import org.apache.hadoop.test.MultithreadedTestUtil.TestContext;
-
 import org.junit.jupiter.api.Test;
 
 /**
@@ -93,11 +92,8 @@ public class TestSeveralNameNodes {
           }
         }
       }
-      assertEquals(
-          0,
-          writers.size(),
-          "Some writers didn't complete in expected runtime! Current writer state:"
-              + writers);
+      assertEquals(0, writers.size(),
+          "Some writers didn't complete in expected runtime! Current writer state:" + writers);
 
       harness.stopThreads();
     } finally {

@@ -17,11 +17,10 @@
  */
 package org.apache.hadoop.util;
 
+import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.fail;
-
-import org.junit.jupiter.api.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -73,8 +72,7 @@ public class TestAsyncDiskService {
     } catch (RuntimeException ex) {
       e = ex;
     }
-    assertNotNull(e,
-        "Executing a task on a non-existing volume should throw an "
+    assertNotNull(e, "Executing a task on a non-existing volume should throw an "
         + "Exception.");
     
     service.shutdown();

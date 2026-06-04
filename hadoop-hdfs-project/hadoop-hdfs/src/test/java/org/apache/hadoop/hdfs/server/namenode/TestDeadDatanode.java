@@ -19,7 +19,10 @@ package org.apache.hadoop.hdfs.server.namenode;
 
 import java.util.function.Supplier;
 import org.apache.hadoop.hdfs.server.protocol.SlowDiskReports;
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.fail;
 
 import java.io.IOException;
 import java.util.HashSet;
@@ -140,8 +143,7 @@ public class TestDeadDatanode {
             SlowPeerReports.EMPTY_REPORT, SlowDiskReports.EMPTY_REPORT)
         .getCommands();
     assertEquals(1, cmd.length);
-    assertEquals(cmd[0].getAction(), RegisterCommand.REGISTER
-        .getAction());
+    assertEquals(cmd[0].getAction(), RegisterCommand.REGISTER.getAction());
   }
 
   @Test
@@ -176,8 +178,8 @@ public class TestDeadDatanode {
         clientNode, new HashSet<>(), 256 * 1024 * 1024L, null, (byte) 7,
         BlockType.CONTIGUOUS, null, null);
     for (DatanodeStorageInfo datanodeStorageInfo : results) {
-      assertFalse(datanodeStorageInfo
-          .getDatanodeDescriptor().equals(clientNode), "Dead node should not be chosen");
+      assertFalse(datanodeStorageInfo.getDatanodeDescriptor().equals(clientNode),
+          "Dead node should not be chosen");
     }
   }
 
@@ -220,11 +222,11 @@ public class TestDeadDatanode {
           return dn1Desc.isAlive() && dn1Desc.isHeartbeatedSinceRegistration();
         }
       }, 100, 5000);
-      assertEquals(initialCapacity,
-          cluster.getNamesystem(0).getCapacityTotal(),
+      assertEquals(initialCapacity, cluster.getNamesystem(0).getCapacityTotal(),
           "Capacity should be 0 after all DNs dead");
       long nonDfsAfterReg = cluster.getNamesystem(0).getNonDfsUsedSpace();
-      assertEquals(dn1Desc.getNonDfsUsed() + dn2Desc.getNonDfsUsed(), nonDfsAfterReg, "NonDFS should include actual DN NonDFSUsed");
+      assertEquals(dn1Desc.getNonDfsUsed() + dn2Desc.getNonDfsUsed(), nonDfsAfterReg,
+          "NonDFS should include actual DN NonDFSUsed");
     } finally {
       if (cluster != null) {
         cluster.shutdown();

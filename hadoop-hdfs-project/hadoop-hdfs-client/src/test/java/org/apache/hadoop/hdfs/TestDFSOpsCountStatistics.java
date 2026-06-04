@@ -41,12 +41,16 @@ import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.atomic.AtomicReference;
 
 import static org.apache.hadoop.util.concurrent.HadoopExecutors.newFixedThreadPool;
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /**
  * This tests basic operations of {@link DFSOpsCountStatistics} class.
  */
-@Timeout(value=10000, unit=TimeUnit.MILLISECONDS)
+@Timeout(10)
 public class TestDFSOpsCountStatistics {
 
   private static final Logger LOG = LoggerFactory.getLogger(

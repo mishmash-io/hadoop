@@ -28,6 +28,8 @@ import java.net.URI;
 import java.net.URL;
 import java.util.ServiceConfigurationError;
 
+import org.junit.jupiter.api.Test;
+
 import static org.apache.hadoop.test.LambdaTestUtils.intercept;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertFalse;

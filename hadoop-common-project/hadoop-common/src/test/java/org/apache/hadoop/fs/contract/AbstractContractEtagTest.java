@@ -33,7 +33,7 @@ import org.apache.hadoop.fs.Path;
 
 import static org.apache.hadoop.fs.CommonPathCapabilities.ETAGS_AVAILABLE;
 import static org.apache.hadoop.fs.CommonPathCapabilities.ETAGS_PRESERVED_IN_RENAME;
-import static org.junit.jupiter.api.Assumptions.assumeTrue;
+import static org.assertj.core.api.Assumptions.assumeThat;
 
 /**
  * For filesystems which support etags, validate correctness
@@ -132,8 +132,9 @@ public abstract class AbstractContractEtagTest extends
     describe("Verify that when a file is renamed, the etag remains unchanged");
     final Path path = methodPath();
     final FileSystem fs = getFileSystem();
-    assumeTrue(fs.hasPathCapability(path, ETAGS_PRESERVED_IN_RENAME),
-        "Filesystem does not declare that etags are preserved across renames");
+    assumeThat(fs.hasPathCapability(path, ETAGS_PRESERVED_IN_RENAME))
+        .withFailMessage("Filesystem does not declare that etags are preserved across renames")
+        .isTrue();
     Path src = new Path(path, "src");
     Path dest = new Path(path, "dest");
 

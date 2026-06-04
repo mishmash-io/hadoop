@@ -23,9 +23,9 @@ import java.util.Arrays;
 import java.util.Collection;
 
 import org.assertj.core.api.Assertions;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.junit.runners.Parameterized;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedClass;
+import org.junit.jupiter.params.provider.MethodSource;
 import software.amazon.awssdk.services.s3.model.ChecksumAlgorithm;
 import software.amazon.awssdk.services.s3.model.ChecksumMode;
 import software.amazon.awssdk.services.s3.model.HeadObjectRequest;
@@ -50,7 +50,8 @@ import static org.apache.hadoop.fs.s3a.audit.S3AAuditConstants.REJECT_OUT_OF_SPA
  * If CHECKSUM_ALGORITHM config is not set in auth-keys.xml,
  * SHA256 algorithm will be picked.
  */
-@RunWith(Parameterized.class)
+@ParameterizedClass(name="checksum={0}")
+@MethodSource("params")
 public class ITestS3AChecksum extends AbstractS3ATestBase {
 
   public static final String UNKNOWN = "UNKNOWN_TO_SDK_VERSION";
@@ -60,7 +61,6 @@ public class ITestS3AChecksum extends AbstractS3ATestBase {
   /**
    * Parameterization.
    */
-  @Parameterized.Parameters(name = "checksum={0}")
   public static Collection<Object[]> params() {
     return Arrays.asList(new Object[][]{
         {"SHA256"},

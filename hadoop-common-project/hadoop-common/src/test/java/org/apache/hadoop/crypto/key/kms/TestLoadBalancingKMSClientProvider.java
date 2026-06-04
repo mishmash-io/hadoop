@@ -42,7 +42,6 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
-import java.util.concurrent.TimeUnit;
 
 import javax.net.ssl.SSLException;
 import javax.net.ssl.SSLHandshakeException;
@@ -66,7 +65,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.Timeout;
 import org.mockito.Mockito;
 
-@Timeout(value=30, unit=TimeUnit.SECONDS)
+@Timeout(30)
 public class TestLoadBalancingKMSClientProvider {
 
   @BeforeAll
@@ -954,7 +953,7 @@ public class TestLoadBalancingKMSClientProvider {
     // make sure getActualUgi() returns the current user, not login user.
     assertEquals(ugi, actualUgi,
         "testTokenSelectionWithConf() should return the" +
-            " current user, not login user");
+        " current user, not login user");
   }
 
   @Test

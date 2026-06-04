@@ -29,6 +29,9 @@ import java.nio.charset.StandardCharsets;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.ha.HAServiceProtocol.HAServiceState;
 
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+
 import org.apache.hadoop.thirdparty.com.google.common.base.Joiner;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;

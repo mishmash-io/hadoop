@@ -26,6 +26,12 @@ import static org.junit.jupiter.api.Assertions.fail;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.junit.jupiter.api.Test;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.fail;
+
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.util.cli.GenericOptionsParser;
 import org.junit.jupiter.api.Test;
@@ -46,7 +52,7 @@ public class TestGenericsUtil {
 
     for (int i = 0; i < arr.length; i++) {
       assertEquals(list.get(i), arr[i],
-              "Array has identical elements as input list");
+          "Array has identical elements as input list");
     }
   }
 
@@ -70,7 +76,7 @@ public class TestGenericsUtil {
     String[] arr = GenericsUtil.<String>toArray(String.class, list);
 
     assertEquals(0, arr.length,
-            "Assert list creation w/ no elements results in length 0");
+        "Assert list creation w/ no elements results in length 0");
   }
 
   /** This class uses generics */
@@ -120,9 +126,8 @@ public class TestGenericsUtil {
     parser =
       new GenericOptionsParser(new Configuration(),
                                new String[] {"-Dx=y=z"});
-    assertEquals(
-            "y=z", parser.getConfiguration().get("x"),
-            "Options parser gets entire ='s expresion");
+    assertEquals("y=z", parser.getConfiguration().get("x"),
+        "Options parser gets entire ='s expresion");
   }
 
   @Test
@@ -132,18 +137,19 @@ public class TestGenericsUtil {
     Integer x = new Integer(42);
     Class<Integer> c = GenericsUtil.getClass(x);
     assertEquals(Integer.class, c,
-            "Correct generic type is acquired from object");
+        "Correct generic type is acquired from object");
 
     //test with GenericClass<Integer>
     GenericClass<Integer> testSubject = new GenericClass<Integer>();
     Class<GenericClass<Integer>> c2 = GenericsUtil.getClass(testSubject);
     assertEquals(GenericClass.class, c2,
-            "Inner generics are acquired from object.");
+        "Inner generics are acquired from object.");
   }
 
   @Test
   public void testIsLog4jLogger() throws Exception {
-    assertFalse(GenericsUtil.isLog4jLogger((Class<?>) null), "False if clazz is null");
+    assertFalse(GenericsUtil.isLog4jLogger((Class<?>) null),
+        "False if clazz is null");
     assertTrue(GenericsUtil.isLog4jLogger(TestGenericsUtil.class),
         "The implementation is Log4j");
   }

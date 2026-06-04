@@ -42,9 +42,7 @@ import org.apache.hadoop.net.unix.DomainSocket;
 import org.apache.hadoop.net.unix.TemporarySocketDirectory;
 import org.apache.hadoop.security.token.Token;
 import org.apache.hadoop.test.GenericTestUtils;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
-
 import org.slf4j.event.Level;
 
 import java.io.File;
@@ -129,8 +127,8 @@ public class TestBlockTokenWithShortCircuitRead {
         @Override
         public void visit(HashMap<DatanodeInfo, PerDatanodeVisitorInfo> info) {
           // The ClientShmManager starts off empty
-          Assertions.assertEquals(0, info.size());
-        }
+              assertEquals(0, info.size());
+          }
       });
 
       // create file to read
@@ -185,11 +183,11 @@ public class TestBlockTokenWithShortCircuitRead {
     cache.getDfsClientShmManager().visit(new Visitor() {
       @Override
       public void visit(HashMap<DatanodeInfo, PerDatanodeVisitorInfo> info) {
-        Assertions.assertEquals(1, info.size());
+        assertEquals(1, info.size());
         PerDatanodeVisitorInfo vinfo = info.get(datanode);
-        Assertions.assertFalse(vinfo.disabled);
-        Assertions.assertEquals(0, vinfo.full.size());
-        Assertions.assertEquals(1, vinfo.notFull.size());
+        assertFalse(vinfo.disabled);
+        assertEquals(0, vinfo.full.size());
+        assertEquals(1, vinfo.notFull.size());
 
         int slotCnt = 0;
         DfsClientShm shm = vinfo.notFull.values().iterator().next();
@@ -197,7 +195,7 @@ public class TestBlockTokenWithShortCircuitRead {
           iter.next();
           slotCnt++;
         }
-        Assertions.assertEquals(expectedSlotCnt, slotCnt);
+        assertEquals(expectedSlotCnt, slotCnt);
       }
     });
   }

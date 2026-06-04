@@ -145,7 +145,7 @@ public class TestZlibCompressorDecompressor {
       }
     } else {
       assertTrue(ZlibFactory.isNativeZlibLoaded(conf),
-              "ZlibFactory is using native libs against request");
+          "ZlibFactory is using native libs against request");
     }
   }
 
@@ -182,8 +182,7 @@ public class TestZlibCompressorDecompressor {
       fail("testZlibCompressDecompress ex !!!", ex);
     }
   }
-  
-  
+
   private void compressDecompressLoop(int rawDataSize) throws IOException {
     byte[] rawData = null;
     rawData = generate(rawDataSize);
@@ -259,25 +258,21 @@ public class TestZlibCompressorDecompressor {
   public void testZlibFactory() {
     Configuration cfg = new Configuration();
 
-    assertTrue(
-        CompressionLevel.DEFAULT_COMPRESSION == ZlibFactory
-            .getCompressionLevel(cfg),
+    assertTrue(CompressionLevel.DEFAULT_COMPRESSION == ZlibFactory
+        .getCompressionLevel(cfg),
         "testZlibFactory compression level error !!!");
 
-    assertTrue(
-        CompressionStrategy.DEFAULT_STRATEGY == ZlibFactory
-            .getCompressionStrategy(cfg),
+    assertTrue(CompressionStrategy.DEFAULT_STRATEGY == ZlibFactory
+        .getCompressionStrategy(cfg),
         "testZlibFactory compression strategy error !!!");
 
     ZlibFactory.setCompressionLevel(cfg, CompressionLevel.BEST_COMPRESSION);
-    assertTrue(
-        CompressionLevel.BEST_COMPRESSION == ZlibFactory
-            .getCompressionLevel(cfg),
+    assertTrue(CompressionLevel.BEST_COMPRESSION == ZlibFactory
+        .getCompressionLevel(cfg),
         "testZlibFactory compression strategy error !!!");
 
     ZlibFactory.setCompressionStrategy(cfg, CompressionStrategy.FILTERED);
-    assertTrue(
-        CompressionStrategy.FILTERED == ZlibFactory.getCompressionStrategy(cfg),
+    assertTrue(CompressionStrategy.FILTERED == ZlibFactory.getCompressionStrategy(cfg),
         "testZlibFactory compression strategy error !!!");
   }
   

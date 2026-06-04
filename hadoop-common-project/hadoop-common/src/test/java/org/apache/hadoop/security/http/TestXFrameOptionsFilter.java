@@ -19,10 +19,12 @@ package org.apache.hadoop.security.http;
 
 import java.util.Collection;
 import java.util.ArrayList;
-import jakarta.servlet.FilterChain;
-import jakarta.servlet.FilterConfig;
-import jakarta.servlet.http.HttpServletRequest;
-import jakarta.servlet.http.HttpServletResponse;
+import javax.servlet.FilterChain;
+import javax.servlet.FilterConfig;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+
+import org.junit.jupiter.api.Test;
 
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
@@ -32,7 +34,7 @@ import org.mockito.stubbing.Answer;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
-import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.any;
 
 /**
  * Test the default and customized behaviors of XFrameOptionsFilter.
@@ -57,9 +59,7 @@ public class TestXFrameOptionsFilter {
         @Override
         public Object answer(InvocationOnMock invocation) throws Throwable {
           Object[] args = invocation.getArguments();
-          assertTrue(
-              ((HttpServletResponse)args[1]).
-              containsHeader(X_FRAME_OPTIONS),
+          assertTrue(((HttpServletResponse)args[1]).containsHeader(X_FRAME_OPTIONS),
               "header should be visible inside chain and filters.");
             return null;
           }
@@ -72,8 +72,7 @@ public class TestXFrameOptionsFilter {
         public Object answer(InvocationOnMock invocation) throws Throwable {
             Object[] args = invocation.getArguments();
             assertTrue("DENY".equals(args[1]),
-                "Options value incorrect should be DENY but is: "
-                + args[1]);
+                "Options value incorrect should be DENY but is: " + args[1]);
             headers.add((String)args[1]);
             return null;
           }
@@ -126,8 +125,7 @@ public class TestXFrameOptionsFilter {
         public Object answer(InvocationOnMock invocation) throws Throwable {
             Object[] args = invocation.getArguments();
             assertEquals("SAMEORIGIN", args[1],
-                "Options value incorrect should be SAMEORIGIN but is: "
-                + args[1]);
+                "Options value incorrect should be SAMEORIGIN but is: " + args[1]);
             headers.add((String)args[1]);
             return null;
           }

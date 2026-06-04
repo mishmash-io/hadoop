@@ -23,8 +23,6 @@ import java.util.List;
 import java.util.concurrent.CompletableFuture;
 
 import org.assertj.core.api.Assertions;
-import org.junit.jupiter.params.ParameterizedTest;
-import org.junit.jupiter.params.provider.MethodSource;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.ChecksumException;
 import org.apache.hadoop.fs.FSDataInputStream;
@@ -36,10 +34,20 @@ import org.apache.hadoop.fs.contract.AbstractContractVectoredReadTest;
 import org.apache.hadoop.fs.contract.AbstractFSContract;
 import org.apache.hadoop.fs.contract.ContractTestUtils;
 
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedClass;
+import org.junit.jupiter.params.provider.MethodSource;
+
 import static org.apache.hadoop.fs.contract.ContractTestUtils.validateVectoredReadResult;
 import static org.apache.hadoop.test.LambdaTestUtils.intercept;
 
+@ParameterizedClass(name="buffer-{0}")
+@MethodSource("params")
 public class TestLocalFSContractVectoredRead extends AbstractContractVectoredReadTest {
+
+  public TestLocalFSContractVectoredRead(final String bufferType) {
+    super(bufferType);
+  }
 
   @Override
   protected AbstractFSContract createContract(Configuration conf) {
@@ -53,7 +61,7 @@ public class TestLocalFSContractVectoredRead extends AbstractContractVectoredRea
     List<FileRange> someRandomRanges = new ArrayList<>();
     someRandomRanges.add(FileRange.createFileRange(10, 1024));
     someRandomRanges.add(FileRange.createFileRange(1040, 1024));
-    validateCheckReadException(testPath, DATASET_LEN, someRandomRanges, bufferType);
+    validateCheckReadException(testPath, DATASET_LEN, someRandomRanges);
   }
 
 
@@ -94,7 +102,7 @@ public class TestLocalFSContractVectoredRead extends AbstractContractVectoredRea
             .isTrue();
     CompletableFuture<FSDataInputStream> fis = localFs.openFile(testPath).build();
     try (FSDataInputStream in = fis.get()){
-      in.readVectored(ranges, getAllocate(bufferType));
+      in.readVectored(ranges, getAllocate());
       validateVectoredReadResult(ranges, datasetCorrect, 0);
     }
     final byte[] datasetCorrupted = ContractTestUtils.dataset(length, 'a', 64);
@@ -111,9 +119,8 @@ public class TestLocalFSContractVectoredRead extends AbstractContractVectoredRea
     }
   }
 
-  @ParameterizedTest
-  @MethodSource("params")
-  public void tesChecksumVectoredReadBoundaries(String bufferType) throws Exception {
+  @Test
+  public void tesChecksumVectoredReadBoundaries() throws Exception {
     Path testPath = path("boundary_range_checksum_file");
     final int length = 1071;
     LocalFileSystem localFs = (LocalFileSystem) getFileSystem();
@@ -129,7 +136,7 @@ public class TestLocalFSContractVectoredRead extends AbstractContractVectoredRea
     List<FileRange> smallRange = new ArrayList<>();
     smallRange.add(FileRange.createFileRange(1000, 71));
     try (FSDataInputStream in = fis.get()){
-      in.readVectored(smallRange, getAllocate(bufferType));
+      in.readVectored(smallRange, getAllocate());
       validateVectoredReadResult(smallRange, datasetCorrect, 0);
     }
   }

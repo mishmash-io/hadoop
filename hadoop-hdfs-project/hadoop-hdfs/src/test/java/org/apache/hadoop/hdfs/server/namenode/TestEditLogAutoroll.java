@@ -37,17 +37,20 @@ import org.apache.hadoop.hdfs.MiniDFSNNTopology;
 import org.apache.hadoop.hdfs.server.namenode.FSNamesystem.NameNodeEditLogRoller;
 import org.apache.hadoop.hdfs.server.namenode.ha.HATestUtil;
 import org.apache.hadoop.test.GenericTestUtils;
+import org.junit.jupiter.params.ParameterizedClass;
+import org.junit.jupiter.params.provider.MethodSource;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.slf4j.event.Level;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.Timeout;
-import org.junit.jupiter.params.ParameterizedTest;
-import org.junit.jupiter.params.provider.MethodSource;
 
 import java.util.function.Supplier;
 
+@MethodSource("data")
+@ParameterizedClass
 public class TestEditLogAutoroll {
   static {
     GenericTestUtils.setLogLevel(FSEditLog.LOG, Level.DEBUG);
@@ -130,11 +133,9 @@ public class TestEditLogAutoroll {
     }
   }
 
-  @MethodSource("data")
-  @ParameterizedTest
-  @Timeout(value = 60000, unit = TimeUnit.MILLISECONDS)
-  public void testEditLogAutoroll(Boolean async) throws Exception {
-    initTestEditLogAutoroll(async);
+  @Test
+  @Timeout(value = 60)
+  public void testEditLogAutoroll() throws Exception {
     // Make some edits
     final long startTxId = editLog.getCurSegmentTxId();
     for (int i=0; i<11; i++) {

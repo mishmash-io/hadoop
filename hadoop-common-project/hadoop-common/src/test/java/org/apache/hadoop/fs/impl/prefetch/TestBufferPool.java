@@ -19,6 +19,8 @@
 
 package org.apache.hadoop.fs.impl.prefetch;
 
+import org.junit.jupiter.api.Test;
+
 import org.apache.hadoop.test.AbstractHadoopTestBase;
 import org.junit.jupiter.api.Test;
 

@@ -39,13 +39,15 @@ import org.apache.hadoop.hdfs.security.token.block.BlockTokenIdentifier;
 import org.apache.hadoop.hdfs.server.namenode.FSNamesystem;
 import org.apache.hadoop.security.token.Token;
 import org.apache.hadoop.util.Time;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.Timeout;
 import org.mockito.Mockito;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /**
  * This class tests the sorting of located striped blocks based on
@@ -92,7 +94,7 @@ public class TestSortLocatedStripedBlock {
    * Note: after sorting block indices will not be in ascending order.
    */
   @Test
-  @Timeout(value = 10000, unit = TimeUnit.MILLISECONDS)
+  @Timeout(value = 10)
   public void testWithMultipleDecommnDatanodes() {
     LOG.info("Starting test testSortWithMultipleDecommnDatanodes");
     int lbsCount = 2; // two located block groups
@@ -146,7 +148,7 @@ public class TestSortLocatedStripedBlock {
    * Note: after sorting block indices will not be in ascending order.
    */
   @Test
-  @Timeout(value = 10000, unit = TimeUnit.MILLISECONDS)
+  @Timeout(value = 10)
   public void testTwoDatanodesWithSameBlockIndexAreDecommn() {
     LOG.info("Starting test testTwoDatanodesWithSameBlockIndexAreDecommn");
     int lbsCount = 2; // two located block groups
@@ -202,7 +204,7 @@ public class TestSortLocatedStripedBlock {
    * Note: after sorting block indices will not be in ascending order.
    */
   @Test
-  @Timeout(value = 10000, unit = TimeUnit.MILLISECONDS)
+  @Timeout(value = 10)
   public void testSmallerThanOneStripeWithMultpleDecommnNodes()
       throws Exception {
     LOG.info("Starting test testSmallerThanOneStripeWithDecommn");
@@ -263,7 +265,7 @@ public class TestSortLocatedStripedBlock {
    * Note: after sorting block indices will not be in ascending order.
    */
   @Test
-  @Timeout(value = 10000, unit = TimeUnit.MILLISECONDS)
+  @Timeout(value = 10)
   public void testTargetDecommnDatanodeDoesntExists() {
     LOG.info("Starting test testTargetDecommnDatanodeDoesntExists");
     int lbsCount = 2; // two located block groups
@@ -328,7 +330,7 @@ public class TestSortLocatedStripedBlock {
    * Note: after sorting block indices will not be in ascending order.
    */
   @Test
-  @Timeout(value = 10000, unit = TimeUnit.MILLISECONDS)
+  @Timeout(value = 10)
   public void testWithMultipleInServiceAndDecommnDatanodes() {
     LOG.info("Starting test testWithMultipleInServiceAndDecommnDatanodes");
     int lbsCount = 2; // two located block groups
@@ -373,12 +375,11 @@ public class TestSortLocatedStripedBlock {
     for (LocatedBlock lb : lbs) {
       byte[] blockIndices = ((LocatedStripedBlock) lb).getBlockIndices();
       // after sorting stale block index will be placed after normal nodes.
-      Assertions.assertEquals(1,
-          blockIndices[9],
-          "Failed to move stale node to bottom!");
+      assertEquals(1, blockIndices[9], "Failed to move stale node to bottom!");
       DatanodeInfo[] locations = lb.getLocations();
       // After sorting stale node d13 will be placed after normal nodes
-      Assertions.assertEquals(staleDns.remove(0), locations[9], "Failed to move stale dn after normal one!");
+      assertEquals(staleDns.remove(0), locations[9],
+          "Failed to move stale dn after normal one!");
     }
   }
 
@@ -399,15 +400,17 @@ public class TestSortLocatedStripedBlock {
         LOG.info("Block Locations size={}, locs={}, j=", nodes.length,
             dnInfo.toString(), j);
         if (j < blkGrpWidth) {
-          Assertions.assertEquals(AdminStates.NORMAL, dnInfo.getAdminState(), "Node shouldn't be decommissioned");
+          assertEquals(AdminStates.NORMAL, dnInfo.getAdminState(),
+              "Node shouldn't be decommissioned");
         } else {
           // check against decommissioned list
-          Assertions.assertTrue(
+          assertTrue(
               decommissionedNodeList.contains(dnInfo.getXferAddr()),
               "For block " + blk.getBlock() + " decommissioned node " + dnInfo
                   + " is not last node in list: " + j + "th index of "
                   + nodes.length);
-          Assertions.assertEquals(AdminStates.DECOMMISSIONED, dnInfo.getAdminState(), "Node should be decommissioned");
+          assertEquals(AdminStates.DECOMMISSIONED, dnInfo.getAdminState(),
+              "Node should be decommissioned");
         }
       }
     }
@@ -557,8 +560,10 @@ public class TestSortLocatedStripedBlock {
           locToTokenList.get(i);
       DatanodeInfo[] di = lb.getLocations();
       for (int j = 0; j < di.length; j++) {
-        Assertions.assertEquals((byte) locToIndex.get(di[j]), stripedBlk.getBlockIndices()[j], "Block index value mismatches after sorting");
-        Assertions.assertEquals(locToToken.get(di[j]), stripedBlk.getBlockTokens()[j], "Block token value mismatches after sorting");
+        assertEquals((byte) locToIndex.get(di[j]), stripedBlk.getBlockIndices()[j],
+            "Block index value mismatches after sorting");
+        assertEquals(locToToken.get(di[j]), stripedBlk.getBlockTokens()[j],
+            "Block token value mismatches after sorting");
       }
     }
   }

@@ -43,7 +43,6 @@ import org.apache.hadoop.hdfs.server.blockmanagement.BlockInfo;
 import org.apache.hadoop.hdfs.server.blockmanagement.BlockInfoStriped;
 import org.apache.hadoop.hdfs.server.blockmanagement.BlockStoragePolicySuite;
 import org.apache.hadoop.hdfs.server.common.HdfsServerConstants;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.Timeout;
@@ -53,12 +52,16 @@ import java.util.concurrent.TimeUnit;
 
 import static org.apache.hadoop.hdfs.protocol.BlockType.CONTIGUOUS;
 import static org.apache.hadoop.hdfs.protocol.BlockType.STRIPED;
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.fail;
 
 /**
  * This class tests INodeFile with striped feature.
  */
-@Timeout(value=300000, unit=TimeUnit.MILLISECONDS)
+@Timeout(300)
 public class TestStripedINodeFile {
   public static final Logger LOG = LoggerFactory.getLogger(TestINodeFile.class);
 
@@ -87,13 +90,13 @@ public class TestStripedINodeFile {
   }
 
   @Test
-  public void testInvalidECPolicy() {
-    Throwable exception = assertThrows(IllegalArgumentException.class, () -> {
+  public void testInvalidECPolicy() throws IllegalArgumentException {
+    IllegalArgumentException ex = assertThrows(IllegalArgumentException.class, () -> {
       new INodeFile(HdfsConstants.GRANDFATHER_INODE_ID, null, perm, 0L, 0L,
           null, null, (byte) 0xBB, 1024L,
-          HdfsConstants.COLD_STORAGE_POLICY_ID, BlockType.STRIPED);
+          HdfsConstants.COLD_STORAGE_POLICY_ID, STRIPED);
     });
-    assertTrue(exception.getMessage().contains("Could not find EC policy with ID 0xbb"));
+    assertTrue(ex.getMessage().contains("Could not find EC policy with ID 0xbb"));
   }
 
   @Test
@@ -161,9 +164,8 @@ public class TestStripedINodeFile {
         null, perm, 0L, 0L, null, null /*replication*/, ecPolicyID,
         1024L, HdfsConstants.WARM_STORAGE_POLICY_ID, STRIPED);
 
-    Assertions.assertTrue(inodeFile.isStriped());
-    Assertions.assertEquals(ecPolicyID.byteValue(),
-        inodeFile.getErasureCodingPolicyID());
+    assertTrue(inodeFile.isStriped());
+    assertEquals(ecPolicyID.byteValue(), inodeFile.getErasureCodingPolicyID());
   }
 
   @Test
@@ -297,7 +299,7 @@ public class TestStripedINodeFile {
    * Test the behavior of striped and contiguous block deletions.
    */
   @Test
-  @Timeout(value = 60000, unit = TimeUnit.MILLISECONDS)
+  @Timeout(value = 60)
   public void testDeleteOp() throws Exception {
     MiniDFSCluster cluster = null;
     try {
@@ -337,8 +339,7 @@ public class TestStripedINodeFile {
       INodeFile inodeStripedFile = (INodeFile) inodeStriped;
       BlockInfo[] stripedBlks = inodeStripedFile.getBlocks();
       for (BlockInfo blockInfo : stripedBlks) {
-        assertFalse(blockInfo.isDeleted(),
-            "Mistakenly marked the block as deleted!");
+        assertFalse(blockInfo.isDeleted(), "Mistakenly marked the block as deleted!");
       }
 
       // delete directory with erasure coding policy
@@ -350,13 +351,11 @@ public class TestStripedINodeFile {
       // Case-2: Verify the behavior of contiguous blocks
       // Get blocks of contiguous file
       INode inode = fsd.getINode("/parentDir/someFile");
-      assertTrue(inode instanceof INodeFile,
-          "Failed to get INodeFile for /parentDir/someFile");
+      assertTrue(inode instanceof INodeFile, "Failed to get INodeFile for /parentDir/someFile");
       INodeFile inodeFile = (INodeFile) inode;
       BlockInfo[] contiguousBlks = inodeFile.getBlocks();
       for (BlockInfo blockInfo : contiguousBlks) {
-        assertFalse(blockInfo.isDeleted(),
-            "Mistakenly marked the block as deleted!");
+        assertFalse(blockInfo.isDeleted(), "Mistakenly marked the block as deleted!");
       }
 
       // delete parent directory
@@ -378,7 +377,7 @@ public class TestStripedINodeFile {
    * will be ignored and considered default policy.
    */
   @Test
-  @Timeout(value = 60000, unit = TimeUnit.MILLISECONDS)
+  @Timeout(value = 60)
   public void testUnsuitableStoragePoliciesWithECStripedMode()
       throws Exception {
     final Configuration conf = new HdfsConfiguration();
@@ -440,7 +439,7 @@ public class TestStripedINodeFile {
           fileLen);
       for (LocatedBlock lb : locatedBlocks.getLocatedBlocks()) {
         for (StorageType type : lb.getStorageTypes()) {
-          Assertions.assertEquals(StorageType.DISK, type);
+          assertEquals(StorageType.DISK, type);
         }
       }
 

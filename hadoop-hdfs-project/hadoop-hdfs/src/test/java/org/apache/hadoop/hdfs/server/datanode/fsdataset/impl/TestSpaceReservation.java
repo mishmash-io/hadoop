@@ -31,9 +31,11 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.apache.hadoop.conf.Configuration;
 import static org.apache.hadoop.hdfs.DFSConfigKeys.*;
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.core.Is.is;
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.fail;
+import static org.assertj.core.api.Assertions.assertThat;
 
 import org.apache.hadoop.fs.BlockLocation;
 import org.apache.hadoop.fs.CommonConfigurationKeysPublic;
@@ -183,14 +185,14 @@ public class TestSpaceReservation {
       int bytesWritten = buffer.length;
 
       // Check that space was reserved for a full block minus the bytesWritten.
-      assertThat(singletonVolume.getReservedForReplicas(),
-                 is((long) fileBlockSize - bytesWritten));
+      assertThat(singletonVolume.getReservedForReplicas())
+          .isEqualTo((long) fileBlockSize - bytesWritten);
       out.close();
       out = null;
 
       // Check that the reserved space has been released since we closed the
       // file.
-      assertThat(singletonVolume.getReservedForReplicas(), is(0L));
+      assertThat(singletonVolume.getReservedForReplicas()).isEqualTo(0L);
 
       // Reopen the file for appends and write 1 more byte.
       out = fs.append(path);
@@ -200,8 +202,8 @@ public class TestSpaceReservation {
 
       // Check that space was again reserved for a full block minus the
       // bytesWritten so far.
-      assertThat(singletonVolume.getReservedForReplicas(),
-                 is((long) fileBlockSize - bytesWritten));
+      assertThat(singletonVolume.getReservedForReplicas())
+          .isEqualTo((long) fileBlockSize - bytesWritten);
 
       // Write once again and again verify the available space. This ensures
       // that the reserved space is progressively adjusted to account for bytes
@@ -209,8 +211,8 @@ public class TestSpaceReservation {
       out.write(buffer);
       out.hsync();
       bytesWritten += buffer.length;
-      assertThat(singletonVolume.getReservedForReplicas(),
-                 is((long) fileBlockSize - bytesWritten));
+      assertThat(singletonVolume.getReservedForReplicas())
+          .isEqualTo((long) fileBlockSize - bytesWritten);
     } finally {
       if (out != null) {
         out.close();
@@ -219,14 +221,14 @@ public class TestSpaceReservation {
   }
 
   @Test
-  @Timeout(value = 300000, unit = TimeUnit.MILLISECONDS)
+  @Timeout(value = 300)
   public void testWithDefaultBlockSize()
       throws IOException, InterruptedException {
     createFileAndTestSpaceReservation(GenericTestUtils.getMethodName(), BLOCK_SIZE);
   }
 
   @Test
-  @Timeout(value = 300000, unit = TimeUnit.MILLISECONDS)
+  @Timeout(value = 300)
   public void testWithNonDefaultBlockSize()
       throws IOException, InterruptedException {
     // Same test as previous one, but with a non-default block size.
@@ -234,7 +236,7 @@ public class TestSpaceReservation {
   }
 
   @Test
-  @Timeout(value = 300000, unit = TimeUnit.MILLISECONDS)
+  @Timeout(value = 300)
   public void testWithLimitedSpace() throws IOException {
     // Cluster with just enough space for a full block + meta.
     startCluster(BLOCK_SIZE, 1, 2 * BLOCK_SIZE - 1);
@@ -242,30 +244,30 @@ public class TestSpaceReservation {
     Path file1 = new Path("/" + methodName + ".01.dat");
     Path file2 = new Path("/" + methodName + ".02.dat");
 
-    // Create two files.
-    FSDataOutputStream os1 = null;
-    try {
-      os1 = fs.create(file1);
-      FSDataOutputStream os2 = fs.create(file2);
+    assertThrows(RemoteException.class, () -> {
+      // Create two files.
+      FSDataOutputStream os1 = null, os2 = null;
+      try {
+        os1 = fs.create(file1);
+        os2 = fs.create(file2);
 
-      // Write one byte to the first file.
-      byte[] data = new byte[1];
-      os1.write(data);
-      os1.hsync();
+        // Write one byte to the first file.
+        byte[] data = new byte[1];
+        os1.write(data);
+        os1.hsync();
 
-      // Try to write one byte to the second file.
-      // The block allocation must fail.
-      assertThrows(RemoteException.class, () -> {
+        // Try to write one byte to the second file.
+        // The block allocation must fail.
         os2.write(data);
         os2.hsync();
-      });
-    } finally {
-      if (os1 != null) {
-        os1.close();
-      }
+      } finally {
+        if (os1 != null) {
+          os1.close();
+        }
 
-      // os2.close() will fail as no block was allocated.
-    }
+        // os2.close() will fail as no block was allocated.
+      }
+    });
   }
 
   /**
@@ -277,7 +279,7 @@ public class TestSpaceReservation {
    * @throws IOException
    */
   @Test
-  @Timeout(value = 300000, unit = TimeUnit.MILLISECONDS)
+  @Timeout(value = 300)
   public void testSpaceReleasedOnUnexpectedEof()
       throws IOException, InterruptedException, TimeoutException {
     final short replication = 3;
@@ -310,7 +312,7 @@ public class TestSpaceReservation {
 
   @SuppressWarnings("unchecked")
   @Test
-  @Timeout(value = 30000, unit = TimeUnit.MILLISECONDS)
+  @Timeout(value = 30)
   public void testRBWFileCreationError() throws Exception {
 
     final short replication = 1;
@@ -367,7 +369,7 @@ public class TestSpaceReservation {
   }
 
   @Test
-  @Timeout(value = 30000, unit = TimeUnit.MILLISECONDS)
+  @Timeout(value = 30)
   public void testReservedSpaceInJMXBean() throws Exception {
 
     final short replication = 1;
@@ -393,7 +395,7 @@ public class TestSpaceReservation {
   }
 
   @Test
-  @Timeout(value = 300000, unit = TimeUnit.MILLISECONDS)
+  @Timeout(value = 300)
   public void testTmpSpaceReserve() throws Exception {
 
     final short replication = 2;
@@ -427,13 +429,9 @@ public class TestSpaceReservation {
 
       performReReplication(file, true);
 
-      assertEquals(byteCount1,
-          fsVolumeImpl.getRecentReserved(),
-          "Wrong reserve space for Tmp ");
+      assertEquals(byteCount1, fsVolumeImpl.getRecentReserved(), "Wrong reserve space for Tmp ");
 
-      assertEquals(0,
-          fsVolumeImpl.getReservedForReplicas(),
-          "Reserved Tmp space is not released");
+      assertEquals(0, fsVolumeImpl.getReservedForReplicas(), "Reserved Tmp space is not released");
     }
 
     // Test when file creation fails
@@ -474,12 +472,9 @@ public class TestSpaceReservation {
 
       performReReplication(file, false);
 
-      assertEquals(byteCount2,
-          fsVolumeImpl.getRecentReserved(),
-          "Wrong reserve space for Tmp ");
+      assertEquals(byteCount2, fsVolumeImpl.getRecentReserved(), "Wrong reserve space for Tmp ");
 
-      assertEquals(1000,
-          fsVolumeImpl.getReservedForReplicas(),
+      assertEquals(1000, fsVolumeImpl.getReservedForReplicas(),
           "Tmp space is not released OR released twice");
     }
   }
@@ -506,7 +501,7 @@ public class TestSpaceReservation {
    * @throws InterruptedException
    */
   @Test
-  @Timeout(value = 600000, unit = TimeUnit.MILLISECONDS)
+  @Timeout(value = 600)
   public void stressTest() throws IOException, InterruptedException {
     final int numWriters = 5;
     startCluster(SMALL_BLOCK_SIZE, 1, SMALL_BLOCK_SIZE * numWriters * 10);
@@ -536,7 +531,7 @@ public class TestSpaceReservation {
              " files and hit " + numFailures + " failures");
 
     // Check no space was leaked.
-    assertThat(singletonVolume.getReservedForReplicas(), is(0L));
+    assertThat(singletonVolume.getReservedForReplicas()).isEqualTo(0L);
   }
 
   private static class Writer extends Daemon {
@@ -557,7 +552,7 @@ public class TestSpaceReservation {
     }
 
     @Override
-    public void run() {
+    public void work() {
       /**
        * Create a file, write up to 3 blocks of data and close the file.
        * Do this in a loop until we are told to stop.
@@ -600,7 +595,7 @@ public class TestSpaceReservation {
   }
 
   @Test
-  @Timeout(value = 30000, unit = TimeUnit.MILLISECONDS)
+  @Timeout(value = 30)
   public void testReservedSpaceForAppend() throws Exception {
     final short replication = 3;
     startCluster(BLOCK_SIZE, replication, -1);
@@ -641,7 +636,7 @@ public class TestSpaceReservation {
   }
 
   @Test
-  @Timeout(value = 30000, unit = TimeUnit.MILLISECONDS)
+  @Timeout(value = 30)
   public void testReservedSpaceForPipelineRecovery() throws Exception {
     final short replication = 3;
     startCluster(BLOCK_SIZE, replication, -1);
@@ -705,7 +700,7 @@ public class TestSpaceReservation {
   }
 
   @Test
-  @Timeout(value = 60000, unit = TimeUnit.MILLISECONDS)
+  @Timeout(value = 60)
   public void testReservedSpaceForLeaseRecovery() throws Exception {
     final short replication = 3;
     conf.setInt(
@@ -770,7 +765,7 @@ public class TestSpaceReservation {
    * @throws IOException
    */
   @Test
-  @Timeout(value = 300000, unit = TimeUnit.MILLISECONDS)
+  @Timeout(value = 300)
   public void testReplicaInfoBytesReservedReleasedOnFinalize() throws IOException {
     short replication = 3;
     int bufferLength = 4096;

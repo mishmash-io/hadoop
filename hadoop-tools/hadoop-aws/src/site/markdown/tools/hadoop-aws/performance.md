@@ -110,8 +110,7 @@ it is by default, then the page size is limited to that defined in
   will, if the path references an object, cause that object to be deleted.
 * If the path does not reference an object: the path will not be deleted
   "This is for deleting objects, not directories"
-* No probes for the existence of parent directories will take place; no
-  parent directory markers will be created.
+* No probes for the existence of parent directories will take place.
   "If you need parent directories, call mkdir() yourself"
 * The list of failed keys listed in the `DeleteObjectsResponse` response
   are converted into paths and returned along with their error messages.
@@ -295,6 +294,7 @@ understands the risks.
 * If an option is to be tuned which may relax semantics, a new option MUST be defined.
 * Unknown flags are ignored; this is to avoid compatibility.
 * The option `*` means "turn everything on". This is implicitly unstable across releases.
+* Other stores may retain stricter semantics.
 
 | *Option* | *Meaning*          | Since |
 |----------|--------------------|:------|

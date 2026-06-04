@@ -23,10 +23,9 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
-
 import org.junit.jupiter.api.Test;
 
-public class TestCompressorStream extends CompressorStream{
+public class TestCompressorStream extends CompressorStream {
   
   private static FileOutputStream fop = null;
   private static File file = null;
@@ -69,8 +68,8 @@ public class TestCompressorStream extends CompressorStream{
     catch(IOException e) {
       System.out.println("Expected IOException");
     }
-    assertTrue(((CompressorStream)testCompressorStream).closed,
-        "closed shoud be true");
+    assertTrue(
+        ((CompressorStream)testCompressorStream).closed, "closed shoud be true");
     //cleanup after test case
     file.delete();
   }

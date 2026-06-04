@@ -20,9 +20,12 @@ package org.apache.hadoop.fs.shell;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.test.GenericTestUtils;
 import org.apache.hadoop.util.cli.ToolRunner;
-import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.Test;
-import org.mockito.Mockito;
+
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.Mockito.any;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 public class TestFsShell {
 
@@ -63,11 +66,11 @@ public class TestFsShell {
     try (GenericTestUtils.SystemErrCapturer capture =
              new GenericTestUtils.SystemErrCapturer()) {
       ToolRunner.run(shell, new String[]{"dfs -mkdirs"});
-      Assertions.assertThat(capture.getOutput())
+      assertThat(capture.getOutput())
           .as("FSShell dfs command did not print the error " +
               "message when invalid command is passed")
           .contains("-mkdirs: Unknown command");
-      Assertions.assertThat(capture.getOutput())
+      assertThat(capture.getOutput())
           .as("FSShell dfs command did not print help " +
               "message when invalid command is passed")
           .contains("Usage: hadoop fs [generic options]");
@@ -77,22 +80,22 @@ public class TestFsShell {
   @Test
   public void testExceptionNullMessage() throws Exception {
     final String cmdName = "-cmdExNullMsg";
-    final Command cmd = Mockito.mock(Command.class);
-    Mockito.when(cmd.run(Mockito.any(String[].class))).thenThrow(
+    final Command cmd = mock(Command.class);
+    when(cmd.run(any())).thenThrow(
         new IllegalArgumentException());
-    Mockito.when(cmd.getUsage()).thenReturn(cmdName);
+    when(cmd.getUsage()).thenReturn(cmdName);
 
-    final CommandFactory cmdFactory = Mockito.mock(CommandFactory.class);
+    final CommandFactory cmdFactory = mock(CommandFactory.class);
     final String[] names = {cmdName};
-    Mockito.when(cmdFactory.getNames()).thenReturn(names);
-    Mockito.when(cmdFactory.getInstance(cmdName)).thenReturn(cmd);
+    when(cmdFactory.getNames()).thenReturn(names);
+    when(cmdFactory.getInstance(cmdName)).thenReturn(cmd);
 
     FsShell shell = new FsShell(new Configuration());
     shell.commandFactory = cmdFactory;
     try (GenericTestUtils.SystemErrCapturer capture =
              new GenericTestUtils.SystemErrCapturer()) {
       ToolRunner.run(shell, new String[]{cmdName});
-      Assertions.assertThat(capture.getOutput())
+      assertThat(capture.getOutput())
           .contains(cmdName + ": Null exception message");
     }
   }

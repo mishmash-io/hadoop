@@ -25,8 +25,8 @@ import org.apache.hadoop.security.UserGroupInformation;
 import org.apache.hadoop.test.GenericTestUtils;
 import org.apache.hadoop.util.Shell;
 import org.apache.hadoop.util.Time;
-import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.mockito.invocation.InvocationOnMock;
 import org.mockito.stubbing.Answer;
@@ -41,7 +41,11 @@ import java.util.Map;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
@@ -321,32 +325,23 @@ public class TestConfiguredFailoverProxyProvider {
     assertEquals(2, proxyResults.size());
     if (Shell.isJavaVersionAtLeast(14) && useFQDN) {
       // JDK-8225499. The string format of unresolved address has been changed.
-      assertTrue(
-          proxyResults.containsKey(resolvedHost1 + "/<unresolved>:8020"),
+      assertTrue(proxyResults.containsKey(resolvedHost1 + "/<unresolved>:8020"),
           "nn1 wasn't returned: " + proxyResults);
-      assertTrue(
-          proxyResults.containsKey(resolvedHost2 + "/<unresolved>:8020"),
+      assertTrue(proxyResults.containsKey(resolvedHost2 + "/<unresolved>:8020"),
           "nn2 wasn't returned: " + proxyResults);
     } else {
-      assertTrue(
-          proxyResults.containsKey(resolvedHost1 + ":8020"),
+      assertTrue(proxyResults.containsKey(resolvedHost1 + ":8020"),
           "nn1 wasn't returned: " + proxyResults);
-      assertTrue(
-          proxyResults.containsKey(resolvedHost2 + ":8020"),
+      assertTrue(proxyResults.containsKey(resolvedHost2 + ":8020"),
           "nn2 wasn't returned: " + proxyResults);
     }
 
     // Check that the Namenodes were invoked
     assertEquals(NUM_ITERATIONS, nn1Count.get() + nn2Count.get());
-    assertTrue(nn1Count.get() < NUM_ITERATIONS,
-        "nn1 was selected too much:" + nn1Count.get());
-    assertTrue(nn1Count.get() > 0,
-        "nn1 should have been selected: " + nn1Count.get());
-    assertTrue(nn2Count.get() < NUM_ITERATIONS,
-        "nn2 was selected too much:" + nn2Count.get());
-    assertTrue(
-        nn2Count.get() > 0,
-        "nn2 should have been selected: " + nn2Count.get());
+    assertTrue(nn1Count.get() < NUM_ITERATIONS, "nn1 was selected too much:" + nn1Count.get());
+    assertTrue(nn1Count.get() > 0, "nn1 should have been selected: " + nn1Count.get());
+    assertTrue(nn2Count.get() < NUM_ITERATIONS, "nn2 was selected too much:" + nn2Count.get());
+    assertTrue(nn2Count.get() > 0, "nn2 should have been selected: " + nn2Count.get());
   }
 
   @Test
@@ -403,18 +398,17 @@ public class TestConfiguredFailoverProxyProvider {
   }
 
   @Test
-  public void testResolveDomainNameUsingDNSUnknownHost() {
-    assertThrows(RuntimeException.class, () -> {
-      Configuration dnsConf = new Configuration(conf);
-      addDNSSettings(dnsConf, false, false);
+  public void testResolveDomainNameUsingDNSUnknownHost() throws Exception {
+    Configuration dnsConf = new Configuration(conf);
+    addDNSSettings(dnsConf, false, false);
 
-      Map<InetSocketAddress, ClientProtocol> proxyMap = new HashMap<>();
+    Map<InetSocketAddress, ClientProtocol> proxyMap = new HashMap<>();
+    assertThrows(RuntimeException.class, () -> {
       ConfiguredFailoverProxyProvider<ClientProtocol> provider =
           new ConfiguredFailoverProxyProvider<>(
               dnsConf, ns3Uri, ClientProtocol.class, createFactory(proxyMap));
 
-      assertNull(provider,
-          "failover proxy cannot be created due to unknownhost");
+      assertNull(provider, "failover proxy cannot be created due to unknownhost");
     });
   }
 

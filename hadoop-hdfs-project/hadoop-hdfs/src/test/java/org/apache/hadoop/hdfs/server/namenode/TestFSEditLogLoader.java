@@ -18,7 +18,10 @@
 package org.apache.hadoop.hdfs.server.namenode;
 
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.fail;
 import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.spy;
@@ -64,15 +67,18 @@ import org.apache.hadoop.test.GenericTestUtils;
 import org.apache.hadoop.test.GenericTestUtils.LogCapturer;
 import org.apache.hadoop.test.PathUtils;
 import org.apache.hadoop.util.FakeTimer;
-import org.slf4j.event.Level;
-
-import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.ParameterizedClass;
 import org.junit.jupiter.params.provider.MethodSource;
+import org.slf4j.event.Level;
+import org.junit.jupiter.api.Test;
 
 import org.apache.hadoop.thirdparty.com.google.common.collect.Maps;
 import org.apache.hadoop.thirdparty.com.google.common.io.Files;
 
+@MethodSource("data")
+@ParameterizedClass
 public class TestFSEditLogLoader {
+
   public static Collection<Object[]> data() {
     Collection<Object[]> params = new ArrayList<Object[]>();
     params.add(new Object[]{ Boolean.FALSE });
@@ -401,7 +407,8 @@ public class TestFSEditLogLoader {
           Long.MAX_VALUE, true);
       long expectedEndTxId = (txId == (NUM_TXNS + 1)) ?
           NUM_TXNS : (NUM_TXNS + 1);
-      assertEquals(expectedEndTxId, validation.getEndTxId(), "Failed when corrupting txn opcode at " + txOffset);
+      assertEquals(expectedEndTxId, validation.getEndTxId(),
+          "Failed when corrupting txn opcode at " + txOffset);
       assertTrue(!validation.hasCorruptHeader());
     }
 
@@ -418,8 +425,8 @@ public class TestFSEditLogLoader {
           Long.MAX_VALUE, true);
       long expectedEndTxId = (txId == 0) ?
           HdfsServerConstants.INVALID_TXID : (txId - 1);
-      assertEquals(expectedEndTxId, validation.getEndTxId(), "Failed when corrupting txid " + txId + " txn opcode " +
-        "at " + txOffset);
+      assertEquals(expectedEndTxId, validation.getEndTxId(),
+          "Failed when corrupting txid " + txId + " txn opcode " + "at " + txOffset);
       assertTrue(!validation.hasCorruptHeader());
     }
   }
@@ -770,8 +777,7 @@ public class TestFSEditLogLoader {
       // check if new policy is reapplied through edit log
       ErasureCodingPolicy ecPolicy =
           ErasureCodingPolicyManager.getInstance().getByID(newPolicy.getId());
-      assertEquals(ErasureCodingPolicyState.DISABLED,
-          DFSTestUtil.getECPolicyState(ecPolicy));
+      assertEquals(ErasureCodingPolicyState.DISABLED, DFSTestUtil.getECPolicyState(ecPolicy));
 
       // 2. enable policy
       fs.enableErasureCodingPolicy(newPolicy.getName());
@@ -779,8 +785,7 @@ public class TestFSEditLogLoader {
       cluster.waitActive();
       ecPolicy =
           ErasureCodingPolicyManager.getInstance().getByID(newPolicy.getId());
-      assertEquals(ErasureCodingPolicyState.ENABLED,
-          DFSTestUtil.getECPolicyState(ecPolicy));
+      assertEquals(ErasureCodingPolicyState.ENABLED, DFSTestUtil.getECPolicyState(ecPolicy));
 
       // create a new file, use the policy
       final Path dirPath = new Path("/striped");
@@ -797,8 +802,7 @@ public class TestFSEditLogLoader {
       cluster.waitActive();
       ecPolicy =
           ErasureCodingPolicyManager.getInstance().getByID(newPolicy.getId());
-      assertEquals(ErasureCodingPolicyState.DISABLED,
-          DFSTestUtil.getECPolicyState(ecPolicy));
+      assertEquals(ErasureCodingPolicyState.DISABLED, DFSTestUtil.getECPolicyState(ecPolicy));
       // read file
       DFSTestUtil.readFileAsBytes(fs, filePath);
 
@@ -808,8 +812,7 @@ public class TestFSEditLogLoader {
       cluster.waitActive();
       ecPolicy =
           ErasureCodingPolicyManager.getInstance().getByID(newPolicy.getId());
-      assertEquals(ErasureCodingPolicyState.REMOVED,
-          DFSTestUtil.getECPolicyState(ecPolicy));
+      assertEquals(ErasureCodingPolicyState.REMOVED, DFSTestUtil.getECPolicyState(ecPolicy));
       // read file
       DFSTestUtil.readFileAsBytes(fs, filePath);
 

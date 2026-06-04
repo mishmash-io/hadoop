@@ -153,7 +153,7 @@ public class TestDFSZKFailoverController extends ClientBaseWithFixes {
   }
 
   @Test
-  @Timeout(value = 60000, unit = TimeUnit.MILLISECONDS)
+  @Timeout(value = 60)
   /**
    * Ensure the cluster simply starts with a hdfs jceks credential provider
    * configured. HDFS-14013.
@@ -171,7 +171,7 @@ public class TestDFSZKFailoverController extends ClientBaseWithFixes {
    * Test that thread dump is captured after NN state changes.
    */
   @Test
-  @Timeout(value = 60000, unit = TimeUnit.MILLISECONDS)
+  @Timeout(value = 60)
   public void testThreadDumpCaptureAfterNNStateChange() throws Exception {
     startCluster();
     MockNameNodeResourceChecker mockResourceChecker =
@@ -190,7 +190,7 @@ public class TestDFSZKFailoverController extends ClientBaseWithFixes {
    * active NN down.
    */
   @Test
-  @Timeout(value = 60000, unit = TimeUnit.MILLISECONDS)
+  @Timeout(value = 60)
   public void testFailoverAndBackOnNNShutdown() throws Exception {
     startCluster();
     Path p1 = new Path("/dir1");
@@ -222,9 +222,9 @@ public class TestDFSZKFailoverController extends ClientBaseWithFixes {
     assertEquals(AlwaysSucceedFencer.getLastFencedService().getAddress(),
         thr2.zkfc.getLocalTarget().getAddress());
   }
-
+  
   @Test
-  @Timeout(value = 30000, unit = TimeUnit.MILLISECONDS)
+  @Timeout(value = 30)
   public void testManualFailover() throws Exception {
     startCluster();
     thr2.zkfc.getLocalTarget().getZKFCProxy(conf, 15000).gracefulFailover();
@@ -237,19 +237,18 @@ public class TestDFSZKFailoverController extends ClientBaseWithFixes {
   }
 
   @Test
-  @Timeout(value = 30000, unit = TimeUnit.MILLISECONDS)
+  @Timeout(value = 30)
   public void testWithoutBindAddressSet() throws Exception {
     startCluster();
     DFSZKFailoverController zkfc = DFSZKFailoverController.create(
         conf);
 
-    assertEquals(zkfc.getRpcAddressToBindTo().getHostString(),
-        LOCALHOST_SERVER_ADDRESS,
+    assertEquals(zkfc.getRpcAddressToBindTo().getHostString(), LOCALHOST_SERVER_ADDRESS,
         "Bind address not expected to be wildcard by default.");
   }
 
   @Test
-  @Timeout(value = 30000, unit = TimeUnit.MILLISECONDS)
+  @Timeout(value = 30)
   public void testWithBindAddressSet() throws Exception {
     startCluster();
     conf.set(DFS_NAMENODE_SERVICE_RPC_BIND_HOST_KEY, WILDCARD_ADDRESS);
@@ -280,17 +279,15 @@ public class TestDFSZKFailoverController extends ClientBaseWithFixes {
   }
 
   @Test
-  @Timeout(value = 30000, unit = TimeUnit.MILLISECONDS)
+  @Timeout(value = 30)
   public void testManualFailoverWithDFSHAAdmin() throws Exception {
     startCluster();
     DFSHAAdmin tool = new DFSHAAdmin();
     tool.setConf(conf);
-    assertEquals(0, 
-        tool.run(new String[]{"-failover", "nn1", "nn2"}));
+    assertEquals(0, tool.run(new String[]{"-failover", "nn1", "nn2"}));
     waitForHAState(0, HAServiceState.STANDBY);
     waitForHAState(1, HAServiceState.ACTIVE);
-    assertEquals(0,
-        tool.run(new String[]{"-failover", "nn2", "nn1"}));
+    assertEquals(0, tool.run(new String[]{"-failover", "nn2", "nn1"}));
     waitForHAState(0, HAServiceState.ACTIVE);
     waitForHAState(1, HAServiceState.STANDBY);
     // Answer "yes" to the prompt for --forcemanual
@@ -310,8 +307,8 @@ public class TestDFSZKFailoverController extends ClientBaseWithFixes {
   }
 
   @Test
-  @Timeout(value = 30000, unit = TimeUnit.MILLISECONDS)
-  public void testElectionOnObserver() throws Exception {
+  @Timeout(value = 30)
+  public void testElectionOnObserver() throws Exception{
     startCluster();
     InputStream inOriginial = System.in;
     try {
@@ -330,8 +327,7 @@ public class TestDFSZKFailoverController extends ClientBaseWithFixes {
       thr2.zkfc.getLocalTarget().getZKFCProxy(conf, 15000).cedeActive(-1);
 
       // This namenode is in observer state, it shouldn't join election
-      assertEquals(false,
-          thr2.zkfc.getElectorForTests().getWantToBeInElection());
+      assertEquals(false, thr2.zkfc.getElectorForTests().getWantToBeInElection());
     } finally {
       System.setIn(inOriginial);
     }

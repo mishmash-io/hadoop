@@ -20,6 +20,8 @@ package org.apache.hadoop.util;
 
 import java.util.function.Supplier;
 
+import org.junit.jupiter.api.Test;
+
 import org.apache.hadoop.test.LambdaTestUtils;
 import org.junit.jupiter.api.Test;
 

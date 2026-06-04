@@ -20,7 +20,9 @@ package org.apache.hadoop.fs.store;
 
 import java.io.IOException;
 
-import jakarta.annotation.Nonnull;
+import javax.annotation.Nonnull;
+
+import org.junit.jupiter.api.Test;
 
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FSBuilder;

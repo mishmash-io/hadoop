@@ -17,7 +17,9 @@
  */
 package org.apache.hadoop.hdfs;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.fail;
 
 import java.io.FileNotFoundException;
 import java.io.IOException;
@@ -183,10 +185,8 @@ public class TestSetTimes {
       fileSys.setTimes(dir1, mtime4, atime4);
       // check new modification time on file
       stat = fileSys.getFileStatus(dir1);
-      assertTrue(mtime4 == stat
-          .getModificationTime(), "Not matching the modification times");
-      assertTrue(atime4 == stat
-          .getAccessTime(), "Not matching the access times");
+      assertTrue(mtime4 == stat.getModificationTime(), "Not matching the modification times");
+      assertTrue(atime4 == stat.getAccessTime(), "Not matching the access times");
 
       Path nonExistingDir = new Path(dir1, "/nonExistingDir/");
       try {
@@ -291,7 +291,7 @@ public class TestSetTimes {
    * Regression test for HDFS-3981.
    */
   @Test
-  @Timeout(value = 60000, unit = TimeUnit.MILLISECONDS)
+  @Timeout(value = 60)
   public void testGetBlockLocationsOnlyUsesReadLock() throws IOException {
     Configuration conf = new HdfsConfiguration();
     conf.setInt(DFSConfigKeys.DFS_NAMENODE_ACCESSTIME_PRECISION_KEY, 100*1000);

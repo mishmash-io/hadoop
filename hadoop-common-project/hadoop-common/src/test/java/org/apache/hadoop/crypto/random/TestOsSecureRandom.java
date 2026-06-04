@@ -25,8 +25,11 @@ import java.util.concurrent.TimeUnit;
 
 import org.apache.commons.lang3.SystemUtils;
 import org.apache.hadoop.conf.Configuration;
+
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.Timeout;
+
+import static org.junit.jupiter.api.Assumptions.assumeTrue;
 
 public class TestOsSecureRandom {
 
@@ -38,7 +41,7 @@ public class TestOsSecureRandom {
   }
 
   @Test
-  @Timeout(value=120000, unit=TimeUnit.MILLISECONDS)
+  @Timeout(value = 120)
   public void testRandomBytes() throws Exception {
     OsSecureRandom random = getOsSecureRandom();
     // len = 16
@@ -72,7 +75,7 @@ public class TestOsSecureRandom {
    * constant value.
    */
   @Test
-  @Timeout(value=120000, unit=TimeUnit.MILLISECONDS)
+  @Timeout(value = 120)
   public void testRandomInt() throws Exception {
     OsSecureRandom random = getOsSecureRandom();
     
@@ -89,7 +92,7 @@ public class TestOsSecureRandom {
    * constant value.
    */
   @Test
-  @Timeout(value=120000, unit=TimeUnit.MILLISECONDS)
+  @Timeout(value = 120)
   public void testRandomLong() throws Exception {
     OsSecureRandom random = getOsSecureRandom();
     
@@ -106,7 +109,7 @@ public class TestOsSecureRandom {
    * constant value.
    */
   @Test
-  @Timeout(value=120000, unit=TimeUnit.MILLISECONDS)
+  @Timeout(value = 120)
   public void testRandomFloat() throws Exception {
     OsSecureRandom random = getOsSecureRandom();
     
@@ -123,7 +126,7 @@ public class TestOsSecureRandom {
    * constant value.
    */
   @Test
-  @Timeout(value=120000, unit=TimeUnit.MILLISECONDS)
+  @Timeout(value = 120)
   public void testRandomDouble() throws Exception {
     OsSecureRandom random = getOsSecureRandom();
     
@@ -136,7 +139,7 @@ public class TestOsSecureRandom {
   }
 
   @Test
-  @Timeout(value=120000, unit=TimeUnit.MILLISECONDS)
+  @Timeout(value = 120)
   public void testRefillReservoir() throws Exception {
     OsSecureRandom random = getOsSecureRandom();
 

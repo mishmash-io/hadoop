@@ -87,6 +87,7 @@ import org.apache.hadoop.hdfs.server.namenode.NameNodeAdapter;
 import org.apache.hadoop.hdfs.server.namenode.ha.HATestUtil;
 import org.apache.hadoop.hdfs.tools.NNHAServiceTarget;
 import org.apache.hadoop.hdfs.util.HostsFileWriter;
+import org.apache.hadoop.hdfs.util.RwLockMode;
 import org.apache.hadoop.metrics2.MetricsRecordBuilder;
 import org.apache.hadoop.metrics2.MetricsSource;
 import org.apache.hadoop.metrics2.lib.DefaultMetricsSystem;
@@ -214,7 +215,7 @@ public class TestNameNodeMetrics {
    * basic sanity tests.
    */
   @Test
-  @Timeout(value = 10000, unit = TimeUnit.MILLISECONDS)
+  @Timeout(value = 10)
   public void testCapacityMetrics() throws Exception {
     MetricsRecordBuilder rb = getMetrics(NS_METRICS);
     long capacityTotal = MetricsAsserts.getLongGauge("CapacityTotal", rb);
@@ -462,6 +463,8 @@ public class TestNameNodeMetrics {
     assertEquals(namesystem.getMissingReplOneBlocksCount(),
         namesystem.getMissingReplicationOneBlocks(),
         "Missing blocks with replication factor one not matching!");
+    assertEquals(namesystem.getBadlyDistributedBlocksCount(),
+        namesystem.getBadlyDistributedBlocks(), "Blocks with badly distributed are not matching!");
     assertEquals(namesystem.getBytesInFuture(),
         namesystem.getBytesInFutureReplicatedBlocks() +
             namesystem.getBytesInFutureECBlockGroups(),
@@ -493,12 +496,12 @@ public class TestNameNodeMetrics {
     // Corrupt first replica of the block
     LocatedBlock block = NameNodeAdapter.getBlockLocations(
         cluster.getNameNode(), file.toString(), 0, 1).get(0);
-    cluster.getNamesystem().writeLock();
+    cluster.getNamesystem().writeLock(RwLockMode.BM);
     try {
       bm.findAndMarkBlockAsCorrupt(block.getBlock(), block.getLocations()[0],
           "STORAGE_ID", "TEST");
     } finally {
-      cluster.getNamesystem().writeUnlock();
+      cluster.getNamesystem().writeUnlock(RwLockMode.BM, "testCorruptBlock");
     }
 
     BlockManagerTestUtil.updateState(bm);
@@ -512,6 +515,7 @@ public class TestNameNodeMetrics {
     assertGauge("LowRedundancyReplicatedBlocks", 1L, rb);
     assertGauge("CorruptReplicatedBlocks", 1L, rb);
     assertGauge("HighestPriorityLowRedundancyReplicatedBlocks", 1L, rb);
+    assertGauge("BadlyDistributedBlocks", 0L, rb);
     // Verify striped blocks metrics
     assertGauge("LowRedundancyECBlockGroups", 0L, rb);
     assertGauge("CorruptECBlockGroups", 0L, rb);
@@ -539,6 +543,7 @@ public class TestNameNodeMetrics {
     assertGauge("LowRedundancyReplicatedBlocks", 0L, rb);
     assertGauge("CorruptReplicatedBlocks", 0L, rb);
     assertGauge("HighestPriorityLowRedundancyReplicatedBlocks", 0L, rb);
+    assertGauge("BadlyDistributedBlocks", 0L, rb);
     // Verify striped blocks metrics
     assertGauge("LowRedundancyECBlockGroups", 0L, rb);
     assertGauge("CorruptECBlockGroups", 0L, rb);
@@ -564,7 +569,7 @@ public class TestNameNodeMetrics {
   }
 
   @Test
-  @Timeout(value = 90000L, unit = TimeUnit.MILLISECONDS)
+  @Timeout(90)
   public void testStripedFileCorruptBlocks() throws Exception {
     final long fileLen = BLOCK_SIZE * 4;
     final Path ecFile = new Path(ecDir, "ecFile.log");
@@ -586,12 +591,12 @@ public class TestNameNodeMetrics {
     assert lbs.get(0) instanceof LocatedStripedBlock;
     LocatedStripedBlock bg = (LocatedStripedBlock) (lbs.get(0));
 
-    cluster.getNamesystem().writeLock();
+    cluster.getNamesystem().writeLock(RwLockMode.BM);
     try {
       bm.findAndMarkBlockAsCorrupt(bg.getBlock(), bg.getLocations()[0],
           "STORAGE_ID", "TEST");
     } finally {
-      cluster.getNamesystem().writeUnlock();
+      cluster.getNamesystem().writeUnlock(RwLockMode.BM, "testStripedFileCorruptBlocks");
     }
 
     BlockManagerTestUtil.updateState(bm);
@@ -605,6 +610,7 @@ public class TestNameNodeMetrics {
     assertGauge("LowRedundancyReplicatedBlocks", 0L, rb);
     assertGauge("CorruptReplicatedBlocks", 0L, rb);
     assertGauge("HighestPriorityLowRedundancyReplicatedBlocks", 0L, rb);
+    assertGauge("BadlyDistributedBlocks", 0L, rb);
     // Verify striped block groups metrics
     assertGauge("LowRedundancyECBlockGroups", 1L, rb);
     assertGauge("CorruptECBlockGroups", 1L, rb);
@@ -684,12 +690,12 @@ public class TestNameNodeMetrics {
     // Corrupt the only replica of the block to result in a missing block
     LocatedBlock block = NameNodeAdapter.getBlockLocations(
         cluster.getNameNode(), file.toString(), 0, 1).get(0);
-    cluster.getNamesystem().writeLock();
+    cluster.getNamesystem().writeLock(RwLockMode.BM);
     try {
       bm.findAndMarkBlockAsCorrupt(block.getBlock(), block.getLocations()[0],
           "STORAGE_ID", "TEST");
     } finally {
-      cluster.getNamesystem().writeUnlock();
+      cluster.getNamesystem().writeUnlock(RwLockMode.BM, "testMissingBlock");
     }
     Thread.sleep(1000); // Wait for block to be marked corrupt
     MetricsRecordBuilder rb = getMetrics(NS_METRICS);
@@ -698,6 +704,7 @@ public class TestNameNodeMetrics {
     assertGauge("MissingReplOneBlocks", 1L, rb);
     assertGauge("HighestPriorityLowRedundancyReplicatedBlocks", 0L, rb);
     assertGauge("HighestPriorityLowRedundancyECBlocks", 0L, rb);
+    assertGauge("BadlyDistributedBlocks", 0L, rb);
     fs.delete(file, true);
     waitForDnMetricValue(NS_METRICS, "UnderReplicatedBlocks", 0L);
   }
@@ -806,7 +813,7 @@ public class TestNameNodeMetrics {
    * the other tests in here don't use HA. See HDFS-7501.
    */
   @Test
-  @Timeout(value = 300000, unit = TimeUnit.MILLISECONDS)
+  @Timeout(value = 300)
   public void testTransactionSinceLastCheckpointMetrics() throws Exception {
     Random random = new Random();
     int retryCount = 0;
@@ -843,7 +850,7 @@ public class TestNameNodeMetrics {
         // checkpoint.
         assertEquals(4L, // 2 txns added further when catch-up is called.
             cluster2.getNameNode(1).getNamesystem()
-              .getTransactionsSinceLastCheckpoint(), // 2 txns added further when catch-up is called.
+                .getTransactionsSinceLastCheckpoint(),
             "SBN failed to track 2 transactions pre-checkpoint.");
         // Complete up to the boundary required for
         // an auto-checkpoint. Using 94 to expect fsimage
@@ -859,7 +866,7 @@ public class TestNameNodeMetrics {
         // (as fixed in HDFS-7501).
         assertEquals(0L,
             cluster2.getNameNode(1).getNamesystem()
-              .getTransactionsSinceLastCheckpoint(),
+                .getTransactionsSinceLastCheckpoint(),
             "Should be zero right after the checkpoint.");
         fs2.mkdirs(new Path("/tmp-t3"));
         fs2.mkdirs(new Path("/tmp-t4"));
@@ -868,7 +875,7 @@ public class TestNameNodeMetrics {
         // the checkpoint resets it to zero again.
         assertEquals(4L,
             cluster2.getNameNode(1).getNamesystem()
-              .getTransactionsSinceLastCheckpoint(),
+                .getTransactionsSinceLastCheckpoint(),
             "SBN failed to track 2 added txns after the ckpt.");
         cluster2.shutdown();
         break;
@@ -963,7 +970,7 @@ public class TestNameNodeMetrics {
    * construction
    */
   @Test
-  @Timeout(value = 60000, unit = TimeUnit.MILLISECONDS)
+  @Timeout(value = 60)
   public void testNumActiveClientsAndFilesUnderConstructionMetrics()
       throws Exception {
     final Path file1 = getTestPath("testFileAdd1");

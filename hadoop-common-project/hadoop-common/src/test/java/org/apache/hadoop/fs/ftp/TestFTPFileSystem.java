@@ -22,7 +22,6 @@ import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.util.Comparator;
-import java.util.concurrent.TimeUnit;
 
 import org.apache.hadoop.util.Preconditions;
 import org.junit.jupiter.api.AfterEach;
@@ -43,16 +42,20 @@ import org.apache.hadoop.fs.permission.FsAction;
 import org.apache.hadoop.io.IOUtils;
 import org.apache.hadoop.test.GenericTestUtils;
 import org.apache.hadoop.test.LambdaTestUtils;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.Timeout;
 
-import static org.hamcrest.CoreMatchers.equalTo;
-import static org.hamcrest.MatcherAssert.assertThat;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /**
  * Test basic @{link FTPFileSystem} class methods. Contract tests are in
  * TestFTPContractXXXX.
  */
-@Timeout(value=180000, unit=TimeUnit.MILLISECONDS)
+@Timeout(180)
 public class TestFTPFileSystem {
 
   private FtpTestServer server;
@@ -95,7 +98,7 @@ public class TestFTPFileSystem {
       outputStream.write(bytesExpected);
     }
     try (FSDataInputStream input = fs.open(new Path("test1.txt"))) {
-      assertThat(bytesExpected, equalTo(IOUtils.readFullyToByteArray(input)));
+      assertThat(bytesExpected).isEqualTo(IOUtils.readFullyToByteArray(input));
     }
   }
 
@@ -233,5 +236,47 @@ public class TestFTPFileSystem {
     conf.setLong(FTPFileSystem.FS_FTP_TIMEOUT, timeout);
     ftp.setTimeout(client, conf);
     assertEquals(client.getControlKeepAliveTimeout(), timeout);
+  }
+
+  private static void touch(FileSystem fs, Path filePath)
+          throws IOException {
+    // Create a file with a single byte of data.
+    touch(fs, filePath, new byte[] {1});
+  }
+
+  private static void touch(FileSystem fs, Path path, byte[] data)
+          throws IOException {
+    try (FSDataOutputStream out = fs.create(path)) {
+      if (data != null) {
+        out.write(data);
+      }
+    }
+  }
+
+  /**
+   * Test renaming a file.
+   *
+   * @throws Exception
+   */
+  @Test
+  public void testRenameFileWithFullQualifiedPath() throws Exception {
+    BaseUser user = server.addUser("test", "password", new WritePermission());
+    Configuration configuration = new Configuration();
+    configuration.set("fs.defaultFS", "ftp:///");
+    configuration.set("fs.ftp.host", "localhost");
+    configuration.setInt("fs.ftp.host.port", server.getPort());
+    configuration.set("fs.ftp.user.localhost", user.getName());
+    configuration.set("fs.ftp.password.localhost", user.getPassword());
+    configuration.setBoolean("fs.ftp.impl.disable.cache", true);
+
+    FileSystem fs = FileSystem.get(configuration);
+
+    // All the file operations will be relative to the root directory specified by the testDir
+    // member variable.
+    Path ftpDir = fs.makeQualified(new Path("/"));
+    Path file1 = fs.makeQualified(new Path(ftpDir, "renamefile" + "1"));
+    Path file2 = fs.makeQualified(new Path(ftpDir, "renamefile" + "2"));
+    touch(fs, file1);
+    assertTrue(fs.rename(file1, file2));
   }
 }

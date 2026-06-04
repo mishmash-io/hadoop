@@ -17,7 +17,9 @@
  */
 package org.apache.hadoop.hdfs;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertArrayEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.io.IOException;
 import java.io.OutputStream;
@@ -228,8 +230,9 @@ public class AppendTestUtil {
   private static void checkData(final byte[] actual, int from,
                                 final byte[] expected, String message) {
     for (int idx = 0; idx < actual.length; idx++) {
-      assertEquals(expected[from+idx], actual[idx], message+" byte "+(from+idx)+" differs. expected "+
-                   expected[from+idx]+" actual "+actual[idx]);
+      assertEquals(expected[from + idx], actual[idx],
+          message + " byte " + (from + idx) + " differs. expected " +
+              expected[from + idx] + " actual " + actual[idx]);
       actual[idx] = 0;
     }
   }

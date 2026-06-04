@@ -34,9 +34,11 @@ import org.apache.hadoop.net.NetUtils;
 import org.apache.hadoop.security.ssl.KeyStoreTestUtil;
 import org.apache.hadoop.test.GenericTestUtils;
 import org.junit.jupiter.api.AfterAll;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public class TestHttpsFileSystem {
   private static final String BASEDIR =
@@ -94,9 +96,9 @@ public class TestHttpsFileSystem {
     FSDataOutputStream os = fs.create(f);
     os.write(23);
     os.close();
-    Assertions.assertTrue(fs.exists(f));
+    assertTrue(fs.exists(f));
     InputStream is = fs.open(f);
-    Assertions.assertEquals(23, is.read());
+    assertEquals(23, is.read());
     is.close();
     fs.close();
   }

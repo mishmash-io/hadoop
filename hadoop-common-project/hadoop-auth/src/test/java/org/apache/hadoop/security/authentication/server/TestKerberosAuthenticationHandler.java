@@ -13,6 +13,11 @@
  */
 package org.apache.hadoop.security.authentication.server;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.fail;
+
 import org.apache.hadoop.minikdc.KerberosSecurityTestcase;
 import org.apache.hadoop.security.authentication.KerberosTestUtils;
 import org.apache.hadoop.security.authentication.client.AuthenticationException;
@@ -24,10 +29,6 @@ import org.ietf.jgss.GSSContext;
 import org.ietf.jgss.GSSManager;
 import org.ietf.jgss.GSSName;
 import org.junit.jupiter.api.AfterEach;
-import static org.junit.jupiter.api.Assertions.assertNull;
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertTrue;
-import static org.junit.jupiter.api.Assertions.fail;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.Timeout;
@@ -49,7 +50,7 @@ import java.util.concurrent.TimeUnit;
 /**
  * Tests for Kerberos Authentication Handler.
  */
-@Timeout(value=60000, unit=TimeUnit.MILLISECONDS)
+@Timeout(60)
 public class TestKerberosAuthenticationHandler
     extends KerberosSecurityTestcase {
 
@@ -214,8 +215,8 @@ public class TestKerberosAuthenticationHandler
       Principal principal = new KerberosPrincipal(
           user + "@" + KerberosTestUtils.getRealm());
       boolean expected = user.startsWith("HTTP/");
-      assertEquals(expected, 
-          loginPrincipals.contains(principal), "checking for "+user);
+      assertEquals(expected,
+          loginPrincipals.contains(principal), "checking for " + user);
     }
   }
 

@@ -20,7 +20,6 @@ package org.apache.hadoop.fs;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.fail;
-
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -67,7 +66,7 @@ public class TestDFVariations {
   }
 
   @Test
-  @Timeout(value=5000, unit=TimeUnit.MILLISECONDS)
+  @Timeout(value = 5)
   public void testMount() throws Exception {
     XXDF df = new XXDF();
     String expectedMount =
@@ -76,7 +75,7 @@ public class TestDFVariations {
   }
 
   @Test
-  @Timeout(value=5000, unit=TimeUnit.MILLISECONDS)
+  @Timeout(value = 5)
   public void testFileSystem() throws Exception {
     XXDF df = new XXDF();
     String expectedFileSystem =
@@ -85,7 +84,7 @@ public class TestDFVariations {
   }
 
   @Test
-  @Timeout(value=5000, unit=TimeUnit.MILLISECONDS)
+  @Timeout(value = 5)
   public void testDFInvalidPath() throws Exception {
     // Generate a path that doesn't exist
     Random random = new Random(0xDEADBEEFl);
@@ -109,7 +108,7 @@ public class TestDFVariations {
   }
   
   @Test
-  @Timeout(value=5000, unit=TimeUnit.MILLISECONDS)
+  @Timeout(value = 5)
   public void testDFMalformedOutput() throws Exception {
     DF df = new DF(new File("/"), 0l);
     BufferedReader reader = new BufferedReader(new StringReader(
@@ -156,15 +155,14 @@ public class TestDFVariations {
   }
 
   @Test
-  @Timeout(value=5000, unit=TimeUnit.MILLISECONDS)
+  @Timeout(value = 5)
   public void testGetMountCurrentDirectory() throws Exception {
     File currentDirectory = new File(".");
     String workingDir = currentDirectory.getAbsoluteFile().getCanonicalPath();
     DF df = new DF(new File(workingDir), 0L);
     String mountPath = df.getMount();
     File mountDir = new File(mountPath);
-    assertTrue(mountDir.exists(),
-        "Mount dir ["+mountDir.getAbsolutePath()+"] should exist.");
+    assertTrue(mountDir.exists(), "Mount dir ["+mountDir.getAbsolutePath()+"] should exist.");
     assertTrue(mountDir.isDirectory(),
         "Mount dir ["+mountDir.getAbsolutePath()+"] should be directory.");
     assertTrue(workingDir.startsWith(mountPath),

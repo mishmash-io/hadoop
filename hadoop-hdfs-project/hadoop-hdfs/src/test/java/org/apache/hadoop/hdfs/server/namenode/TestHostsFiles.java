@@ -23,6 +23,8 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import java.lang.management.ManagementFactory;
 import java.util.Arrays;
 
+import org.junit.jupiter.params.ParameterizedClass;
+import org.junit.jupiter.params.provider.MethodSource;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.apache.hadoop.conf.Configuration;
@@ -38,6 +40,7 @@ import org.apache.hadoop.hdfs.server.blockmanagement.CombinedHostFileManager;
 import org.apache.hadoop.hdfs.server.blockmanagement.HostConfigManager;
 import org.apache.hadoop.hdfs.server.blockmanagement.HostFileManager;
 import org.apache.hadoop.hdfs.util.HostsFileWriter;
+import org.junit.jupiter.api.Test;
 
 import javax.management.MBeanServer;
 
@@ -50,6 +53,8 @@ import javax.management.ObjectName;
  * DFS_HOSTS and DFS_HOSTS_EXCLUDE tests
  * 
  */
+@MethodSource("data")
+@ParameterizedClass
 public class TestHostsFiles {
   private static final Logger LOG =
       LoggerFactory.getLogger(TestHostsFiles.class.getName());
@@ -138,7 +143,7 @@ public class TestHostsFiles {
               "Hadoop:service=NameNode,name=NameNodeInfo");
       String nodes = (String) mbs.getAttribute(mxbeanName, "LiveNodes");
       assertTrue(nodes.contains("Decommissioned"),
-              "Live nodes should contain the decommissioned node");
+          "Live nodes should contain the decommissioned node");
     } finally {
       if (cluster != null) {
         cluster.shutdown();

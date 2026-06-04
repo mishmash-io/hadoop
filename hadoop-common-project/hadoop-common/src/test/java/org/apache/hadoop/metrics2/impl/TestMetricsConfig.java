@@ -20,6 +20,10 @@ package org.apache.hadoop.metrics2.impl;
 
 import java.util.Map;
 
+import org.junit.jupiter.api.Test;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
 import org.apache.commons.configuration2.Configuration;
 import org.junit.jupiter.api.Test;
 import org.slf4j.Logger;
@@ -97,21 +101,16 @@ public class TestMetricsConfig {
 
     LOG.debug("asserting foo == default foo");
     // Check default lookups
-    assertEquals("default foo",
-                 t1i1.getString("foo"),
-                 "value of foo in t1 instance i1");
-    assertEquals("p1.t1 default bar",
-                 t1i1.getString("bar"),
-                 "value of bar in t1 instance i1");
-    assertEquals("default foo",
-                 t1i42.getString("foo"),
-                 "value of foo in t1 instance 42");
-    assertEquals("p1.t2.i1.foo",
-                 t2i1.getString("foo"),
-                 "value of foo in t2 instance i1");
-    assertEquals("p1 default bar",
-                 t2i1.getString("bar"),
-                 "value of bar in t2 instance i1");
+    assertEquals("default foo", t1i1.getString("foo"),
+        "value of foo in t1 instance i1");
+    assertEquals("p1.t1 default bar", t1i1.getString("bar"),
+        "value of bar in t1 instance i1");
+    assertEquals("default foo", t1i42.getString("foo"),
+        "value of foo in t1 instance 42");
+    assertEquals("p1.t2.i1.foo", t2i1.getString("foo"),
+        "value of foo in t2 instance i1");
+    assertEquals("p1 default bar", t2i1.getString("bar"),
+        "value of bar in t2 instance i1");
   }
 
   /**

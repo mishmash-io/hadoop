@@ -19,11 +19,6 @@
 package org.apache.hadoop.fs.shell;
 
 import org.apache.hadoop.conf.Configuration;
-import org.apache.hadoop.fs.CommonConfigurationKeysPublic;
-import org.apache.hadoop.fs.FSDataOutputStream;
-import org.apache.hadoop.fs.FileSystem;
-import org.apache.hadoop.fs.LocalFileSystem;
-import org.apache.hadoop.fs.Path;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
@@ -71,9 +66,12 @@ public class TestFsShellList {
     String[] lsArgv = new String[]{"-ls", testRootDir.toString()};
     assertThat(shell.run(lsArgv)).isEqualTo(0);
 
-    createFile(new Path(testRootDir, "abc\bd\tef"));
+    if (!Path.WINDOWS) {
+      createFile(new Path(testRootDir, "abc\bd\tef"));
+      createFile(new Path(testRootDir, "qq\r123"));
+    }
+
     createFile(new Path(testRootDir, "ghi"));
-    createFile(new Path(testRootDir, "qq\r123"));
     lsArgv = new String[]{"-ls", testRootDir.toString()};
     assertThat(shell.run(lsArgv)).isEqualTo(0);
 
@@ -86,14 +84,13 @@ public class TestFsShellList {
  */
   @Test
   public void testListWithUGI() throws Exception {
-    FsShell fsShell = new FsShell(new Configuration());
-    //Passing Dummy such that it should through IAE
-    fsShell.getConf()
-        .set(CommonConfigurationKeysPublic.HADOOP_SECURITY_AUTHENTICATION,
-            "DUMMYAUTH");
-    String[] lsArgv = new String[] {"-ls", testRootDir.toString()};
-    assertThrows(IllegalArgumentException.class, () ->  {
-        fsShell.run(lsArgv);
+    assertThrows(IllegalArgumentException.class, () -> {
+      FsShell fsShell = new FsShell(new Configuration());
+      //Passing Dummy such that it should through IAE
+      fsShell.getConf().set(CommonConfigurationKeysPublic.HADOOP_SECURITY_AUTHENTICATION,
+          "DUMMYAUTH");
+      String[] lsArgv = new String[]{"-ls", testRootDir.toString()};
+      fsShell.run(lsArgv);
     });
   }
 }

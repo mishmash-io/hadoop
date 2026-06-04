@@ -27,7 +27,6 @@ import java.util.Map;
 import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.TestInfo;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -78,8 +77,8 @@ public abstract class AbstractContractBulkDeleteTest extends AbstractFSContractT
 
   @BeforeEach
   @Override
-  public void setup(TestInfo info) throws Exception {
-    super.setup(info);
+  public void setup() throws Exception {
+    super.setup();
     fs = getFileSystem();
     basePath = path(getClass().getName());
     dynamicWrappedIO = new DynamicWrappedIO();

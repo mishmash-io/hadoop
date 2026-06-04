@@ -13,10 +13,11 @@
  */
 package org.apache.hadoop.security.authentication.util;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNull;
+
 import java.util.Map;
 import javax.security.auth.login.AppConfigurationEntry;
-import static org.junit.jupiter.api.Assertions.assertNull;
-import static org.junit.jupiter.api.Assertions.assertEquals;
 import org.junit.jupiter.api.Test;
 
 public class TestJaasConfiguration {
@@ -42,7 +43,7 @@ public class TestJaasConfiguration {
     assertEquals(1, entries.length);
     AppConfigurationEntry entry = entries[0];
     assertEquals(AppConfigurationEntry.LoginModuleControlFlag.REQUIRED,
-            entry.getControlFlag());
+        entry.getControlFlag());
     assertEquals(krb5LoginModuleName, entry.getLoginModuleName());
     Map<String, ?> options = entry.getOptions();
     assertEquals("/some/location/foo.keytab", options.get("keyTab"));

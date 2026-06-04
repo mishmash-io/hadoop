@@ -19,7 +19,9 @@
 package org.apache.hadoop.security;
 
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.fail;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
@@ -53,7 +55,6 @@ import org.slf4j.event.Level;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-
 
 public class TestRefreshUserMappings {
   private static final Logger LOG = LoggerFactory.getLogger(
@@ -151,8 +152,8 @@ public class TestRefreshUserMappings {
     List<String> g3 = groups.getGroups(user);
     LOG.debug(g3.toString());
     for(int i=0; i<g3.size(); i++) {
-      assertFalse(g1.get(i).equals(g3.get(i)), "Should be different group: "
-              + g1.get(i) + " and " + g3.get(i));
+      assertFalse(g1.get(i).equals(g3.get(i)),
+          "Should be different group: " + g1.get(i) + " and " + g3.get(i));
     }
 
     // Test timeout

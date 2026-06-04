@@ -251,7 +251,7 @@ public class TestCredShell {
       CredentialShell shell = new CredentialShell();
       shell.setConf(new Configuration());
       assertEquals(0, shell.init(new String[] {cmd, "-help"}),
-              "Expected help argument on " + cmd + " to return 0");
+          "Expected help argument on " + cmd + " to return 0");
     }
   }
 
@@ -259,12 +259,12 @@ public class TestCredShell {
   public void testEmptyArgForCommands() throws Exception {
     CredentialShell shell = new CredentialShell();
     String[] command = { "list", "-provider" };
-    assertEquals(1, shell.init(command),
-        "Expected empty argument on " + command + " to return 1");
+    assertEquals(1,
+        shell.init(command), "Expected empty argument on " + command + " to return 1");
 
     for (String cmd : Arrays.asList("create", "delete")) {
       shell.setConf(new Configuration());
-      assertEquals(1, shell.init(new String[] { cmd }),
+      assertEquals(1, shell.init(new String[]{cmd}),
           "Expected empty argument on " + cmd + " to return 1");
     }
   }

@@ -18,7 +18,12 @@
 package org.apache.hadoop.hdfs.server.namenode;
 
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.fail;
 
 import java.io.IOException;
 import java.util.concurrent.TimeUnit;
@@ -44,7 +49,10 @@ import org.apache.hadoop.security.AccessControlException;
 import org.apache.hadoop.security.UserGroupInformation;
 import org.apache.hadoop.test.GenericTestUtils;
 import org.apache.hadoop.test.LambdaTestUtils;
-import org.junit.jupiter.api.*;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.Timeout;
 
 public class TestHDFSConcat {
   public static final Logger LOG =
@@ -196,7 +204,7 @@ public class TestHDFSConcat {
     
     //verifications
     // 1. number of blocks
-    assertEquals(trgBlocks, totalBlocks); 
+    assertEquals(trgBlocks, totalBlocks);
         
     // 2. file lengths
     assertEquals(trgLen, totalLen);
@@ -355,7 +363,7 @@ public class TestHDFSConcat {
     
     // 3. removal of the src file
     fStatus = nn.getFileInfo(name2);
-    assertNull(fStatus, "File "+name2+ "still exists"); // file shouldn't exist
+    assertNull(fStatus, "File " + name2 + "still exists"); // file shouldn't exist
   
     // 4. content
     checkFileContent(byteFileConcat, new byte [] [] {byteFile1, byteFile2});
@@ -440,15 +448,14 @@ public class TestHDFSConcat {
     }
 
     ContentSummary summary = dfs.getContentSummary(foo);
-    Assertions.assertEquals(11, summary.getFileCount());
-    Assertions.assertEquals(blockSize * REPL_FACTOR +
-            blockSize * 2 * srcRepl * srcNum, summary.getSpaceConsumed());
+    assertEquals(11, summary.getFileCount());
+    assertEquals(blockSize * REPL_FACTOR + blockSize * 2 * srcRepl * srcNum,
+        summary.getSpaceConsumed());
 
     dfs.concat(target, srcs);
     summary = dfs.getContentSummary(foo);
-    Assertions.assertEquals(1, summary.getFileCount());
-    Assertions.assertEquals(
-        blockSize * REPL_FACTOR + blockSize * 2 * REPL_FACTOR * srcNum,
+    assertEquals(1, summary.getFileCount());
+    assertEquals(blockSize * REPL_FACTOR + blockSize * 2 * REPL_FACTOR * srcNum,
         summary.getSpaceConsumed());
   }
 
@@ -471,23 +478,22 @@ public class TestHDFSConcat {
     }
 
     ContentSummary summary = dfs.getContentSummary(bar);
-    Assertions.assertEquals(11, summary.getFileCount());
-    Assertions.assertEquals(dsQuota, summary.getSpaceConsumed());
+    assertEquals(11, summary.getFileCount());
+    assertEquals(dsQuota, summary.getSpaceConsumed());
 
     try {
       dfs.concat(target, srcs);
       fail("QuotaExceededException expected");
     } catch (RemoteException e) {
-      Assertions.assertTrue(
+      assertTrue(
           e.unwrapRemoteException() instanceof QuotaExceededException);
     }
 
     dfs.setQuota(foo, Long.MAX_VALUE - 1, Long.MAX_VALUE - 1);
     dfs.concat(target, srcs);
     summary = dfs.getContentSummary(bar);
-    Assertions.assertEquals(1, summary.getFileCount());
-    Assertions.assertEquals(blockSize * repl * (srcNum + 1),
-        summary.getSpaceConsumed());
+    assertEquals(1, summary.getFileCount());
+    assertEquals(blockSize * repl * (srcNum + 1), summary.getSpaceConsumed());
   }
 
   @Test
@@ -504,7 +510,7 @@ public class TestHDFSConcat {
   }
 
   @Test
-  @Timeout(value = 30000, unit = TimeUnit.MILLISECONDS)
+  @Timeout(value = 30)
   public void testConcatReservedRelativePaths() throws IOException {
     String testPathDir = "/.reserved/raw/ezone";
     Path dir = new Path(testPathDir);
@@ -515,7 +521,7 @@ public class TestHDFSConcat {
     DFSTestUtil.createFile(dfs, src, blockSize, REPL_FACTOR, 1);
     try {
       dfs.concat(trg, new Path[] { src });
-      Assertions.fail("Must throw Exception!");
+      fail("Must throw Exception!");
     } catch (IOException e) {
       String errMsg = "Concat operation doesn't support "
           + FSDirectory.DOT_RESERVED_STRING + " relative path : " + trg;

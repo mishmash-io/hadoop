@@ -63,8 +63,7 @@ public class TestBlockDecompressorStream {
     
     // check compressed output 
     buf = bytesOut.toByteArray();
-    assertEquals(
-        bufLen + 4, buf.length,
+    assertEquals(bufLen + 4, buf.length,
         "empty file compressed output size is not " + (bufLen + 4));
     
     // use compressed output as input for decompression
@@ -73,7 +72,7 @@ public class TestBlockDecompressorStream {
     // get decompression stream
     try (BlockDecompressorStream blockDecompressorStream =
       new BlockDecompressorStream(bytesIn, new FakeDecompressor(), 1024)) {
-      assertEquals(-1 , blockDecompressorStream.read(),
+      assertEquals(-1, blockDecompressorStream.read(),
           "return value is not -1");
     } catch (IOException e) {
       fail("unexpected IOException : ", e);

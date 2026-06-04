@@ -22,6 +22,7 @@ import java.util.Map;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.http.FilterContainer;
 import org.apache.hadoop.security.authentication.server.PseudoAuthenticationHandler;
+import org.junit.jupiter.api.Test;
 
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;

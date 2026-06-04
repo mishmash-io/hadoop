@@ -25,10 +25,10 @@ import org.apache.hadoop.service.ServiceOperations;
 import static org.apache.hadoop.test.GenericTestUtils.*;
 import org.apache.hadoop.util.ExitCodeProvider;
 import org.apache.hadoop.util.ExitUtil;
-import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Timeout;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -39,9 +39,8 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.util.Arrays;
 import java.util.List;
-import java.util.concurrent.TimeUnit;
 
-@Timeout(value=15000, unit=TimeUnit.MILLISECONDS)
+@Timeout(15)
 public class AbstractServiceLauncherTestBase extends Assertions implements
     LauncherExitCodes {
   private static final Logger LOG = LoggerFactory.getLogger(

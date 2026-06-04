@@ -18,7 +18,9 @@
 package org.apache.hadoop.hdfs.server.blockmanagement;
 
 import static org.apache.hadoop.hdfs.DFSConfigKeys.DFS_USE_DFS_NETWORK_TOPOLOGY_KEY;
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -40,9 +42,7 @@ import org.apache.hadoop.hdfs.server.common.HdfsServerConstants;
 import org.apache.hadoop.net.NetworkTopology;
 import org.apache.hadoop.net.NetworkTopologyWithNodeGroup;
 import org.apache.hadoop.net.Node;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-
 
 public class TestReplicationPolicyWithNodeGroup extends BaseReplicationPolicyTest {
   @Override
@@ -896,9 +896,9 @@ public class TestReplicationPolicyWithNodeGroup extends BaseReplicationPolicyTes
     favouredNodes.add(dataNodes[0]);
     targets = chooseTarget(2, dataNodes[7], null, favouredNodes);
     assertTrue(expectedTargets.contains(targets[0].getDatanodeDescriptor()),
-      "1st Replica is incorrect");
+        "1st Replica is incorrect");
     assertTrue(expectedTargets.contains(targets[1].getDatanodeDescriptor()),
-      "2nd Replica is incorrect");
+        "2nd Replica is incorrect");
   }
 
   /**

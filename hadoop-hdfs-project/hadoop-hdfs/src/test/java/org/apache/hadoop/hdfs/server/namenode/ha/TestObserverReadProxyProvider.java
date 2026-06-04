@@ -42,8 +42,8 @@ import org.apache.hadoop.ipc.StandbyException;
 import org.apache.hadoop.security.UserGroupInformation;
 import org.apache.hadoop.tools.GetUserMappingsProtocol;
 import org.apache.hadoop.util.StopWatch;
-import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.Timeout;
 import org.mockito.Mockito;
@@ -54,7 +54,11 @@ import org.slf4j.event.Level;
 import static org.apache.hadoop.ha.HAServiceProtocol.HAServiceState;
 
 import static org.apache.hadoop.hdfs.server.namenode.ha.ObserverReadProxyProvider.*;
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertArrayEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.fail;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.Mockito.mock;
@@ -141,7 +145,7 @@ public class TestObserverReadProxyProvider {
               InetSocketAddress nnAddr, Class<ClientProtocol> xface,
               UserGroupInformation ugi, boolean withRetries,
               AtomicBoolean fallbackToSimpleAuth) {
-            return proxyMap.get(nnAddr.toString());
+            return proxyMap.get(nnAddr.toString().replaceAll("/<unresolved>", ""));
           }
         })  {
       @Override
@@ -176,8 +180,7 @@ public class TestObserverReadProxyProvider {
     ObserverReadProxyProvider<GetUserMappingsProtocol> userProxyProvider =
         new ObserverReadProxyProvider<>(proxyProvider.conf, nnURI,
             GetUserMappingsProtocol.class, proxyFactory);
-    assertArrayEquals(fakeGroups,
-        userProxyProvider.getProxy().proxy.getGroupsForUser(fakeUser));
+    assertArrayEquals(fakeGroups, userProxyProvider.getProxy().proxy.getGroupsForUser(fakeUser));
   }
 
   @Test
@@ -261,8 +264,7 @@ public class TestObserverReadProxyProvider {
       doWrite();
       fail("Write should fail; failover required");
     } catch (RemoteException re) {
-      assertEquals(re.getClassName(),
-          StandbyException.class.getCanonicalName());
+      assertEquals(re.getClassName(), StandbyException.class.getCanonicalName());
     }
     proxyProvider.performFailover(proxyProvider.getProxy().proxy);
     doWrite();
@@ -509,7 +511,7 @@ public class TestObserverReadProxyProvider {
    * Fail the test if we don't complete it in 4s.
    */
   @Test
-  @Timeout(value = 4000, unit = TimeUnit.MILLISECONDS)
+  @Timeout(value = 4)
   public void testStandbyGetHAServiceStateTimeout() throws Exception {
     setupProxyProvider(4, NAMENODE_HA_STATE_PROBE_TIMEOUT_SHORT);
     namenodeAnswers[0].setActiveState();
@@ -529,7 +531,7 @@ public class TestObserverReadProxyProvider {
 
   private void assertHandledBy(int namenodeIdx) {
     assertEquals(namenodeAddrs[namenodeIdx],
-        proxyProvider.getLastProxy().proxyInfo);
+        proxyProvider.getLastProxy().proxyInfo.replaceAll("/<unresolved>", ""));
   }
 
   private static void doWrite(ClientProtocol client) throws Exception {

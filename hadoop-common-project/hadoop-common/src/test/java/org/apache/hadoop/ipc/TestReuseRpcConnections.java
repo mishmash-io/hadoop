@@ -18,7 +18,6 @@
 
 package org.apache.hadoop.ipc;
 import static org.junit.jupiter.api.Assertions.assertEquals;
-
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
 
@@ -65,7 +64,7 @@ public class TestReuseRpcConnections extends TestRpcBase {
   }
 
   @Test
-  @Timeout(value=60000, unit=TimeUnit.MILLISECONDS)
+  @Timeout(value = 60)
   public void testDefaultRetryPolicyReuseConnections() throws Exception {
     RetryPolicy rp1 = null;
     RetryPolicy rp2 = null;
@@ -109,7 +108,7 @@ public class TestReuseRpcConnections extends TestRpcBase {
   }
 
   @Test
-  @Timeout(value=60000, unit=TimeUnit.MILLISECONDS)
+  @Timeout(value = 60)
   public void testRetryPolicyTryOnceThenFail() throws Exception {
     final RetryPolicy rp1 = TestConnectionRetryPolicy.newTryOnceThenFail();
     final RetryPolicy rp2 = TestConnectionRetryPolicy.newTryOnceThenFail();

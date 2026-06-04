@@ -26,8 +26,8 @@ import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hdfs.protocol.DatanodeInfo;
 import org.apache.hadoop.test.GenericTestUtils;
+import org.apache.hadoop.util.concurrent.SubjectInheritingThread;
 import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
@@ -44,7 +44,12 @@ import static org.apache.hadoop.hdfs.client.HdfsClientConfigKeys.DFS_CLIENT_DEAD
 import static org.apache.hadoop.hdfs.client.HdfsClientConfigKeys.DFS_CLIENT_DEAD_NODE_DETECTION_PROBE_SUSPECT_NODE_INTERVAL_MS_KEY;
 import static org.apache.hadoop.hdfs.client.HdfsClientConfigKeys.DFS_CLIENT_MAX_BLOCK_ACQUIRE_FAILURES_KEY;
 import static org.apache.hadoop.hdfs.client.HdfsClientConfigKeys.DFS_CLIENT_DEAD_NODE_DETECTION_IDLE_SLEEP_MS_KEY;
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNotSame;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertSame;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /**
  * Tests for dead node detection in DFSClient.
@@ -323,15 +328,15 @@ public class TestDeadNodeDetection {
       }
       waitForSuspectNode(din.getDFSClient());
       cluster.restartDataNode(one, true);
-      Assertions.assertEquals(1,
+      assertEquals(1,
           deadNodeDetector.getSuspectNodesProbeQueue().size());
-      Assertions.assertEquals(0,
+      assertEquals(0,
           deadNodeDetector.clearAndGetDetectedDeadNodes().size());
       deadNodeDetector.startProbeScheduler();
       Thread.sleep(1000);
-      Assertions.assertEquals(0,
+      assertEquals(0,
           deadNodeDetector.getSuspectNodesProbeQueue().size());
-      Assertions.assertEquals(0,
+      assertEquals(0,
           deadNodeDetector.clearAndGetDetectedDeadNodes().size());
     } finally {
       in.close();
@@ -452,7 +457,7 @@ public class TestDeadNodeDetection {
     }
 
     private void startWaitForDeadNodeThread(DFSClient dfsClient, int size) {
-      new Thread(() -> {
+      new SubjectInheritingThread(() -> {
         DeadNodeDetector deadNodeDetector =
             dfsClient.getClientContext().getDeadNodeDetector();
         while (deadNodeDetector.clearAndGetDetectedDeadNodes().size() != size) {

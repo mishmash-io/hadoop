@@ -22,7 +22,12 @@ import java.util.concurrent.TimeUnit;
 
 import org.apache.hadoop.hdfs.server.protocol.DataNodeUsageReport;
 import org.apache.hadoop.hdfs.server.protocol.DataNodeUsageReportUtil;
-import org.junit.jupiter.api.*;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.Timeout;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 /**
  * Test class for {@link DataNodeUsageReport}.
@@ -53,13 +58,13 @@ public class TestDNUsageReport {
    * in Storage Reports.
    */
   @Test
-  @Timeout(value = 60000, unit = TimeUnit.MILLISECONDS)
+  @Timeout(value = 60)
   public void testUsageReport() throws IOException {
 
     // Test1
     DataNodeUsageReport report = dnUsageUtil.getUsageReport(0,
         0, 0, 0, 0, 0, 0);
-    Assertions.assertEquals(report, DataNodeUsageReport.EMPTY_REPORT);
+    assertEquals(report, DataNodeUsageReport.EMPTY_REPORT);
 
     // Test2
     bytesWritten = 200;
@@ -73,22 +78,18 @@ public class TestDNUsageReport {
         bytesRead, writeTime, readTime, writeBlock, readBlock,
         timeSinceLastReport);
 
-    Assertions.assertEquals(bytesWritten / timeSinceLastReport,
-        report.getBytesWrittenPerSec());
-    Assertions.assertEquals(bytesRead / timeSinceLastReport,
-        report.getBytesReadPerSec());
-    Assertions.assertEquals(writeTime, report.getWriteTime());
-    Assertions.assertEquals(readTime, report.getReadTime());
-    Assertions.assertEquals(writeBlock / timeSinceLastReport,
-        report.getBlocksWrittenPerSec());
-    Assertions.assertEquals(readBlock / timeSinceLastReport,
-        report.getBlocksReadPerSec());
+    assertEquals(bytesWritten / timeSinceLastReport, report.getBytesWrittenPerSec());
+    assertEquals(bytesRead / timeSinceLastReport, report.getBytesReadPerSec());
+    assertEquals(writeTime, report.getWriteTime());
+    assertEquals(readTime, report.getReadTime());
+    assertEquals(writeBlock / timeSinceLastReport, report.getBlocksWrittenPerSec());
+    assertEquals(readBlock / timeSinceLastReport, report.getBlocksReadPerSec());
 
     // Test3
     DataNodeUsageReport report2 = dnUsageUtil.getUsageReport(bytesWritten,
         bytesRead, writeTime, readTime, writeBlock, readBlock,
         0);
-    Assertions.assertEquals(report, report2);
+    assertEquals(report, report2);
 
     // Test4
     long bytesWritten2 = 50000;
@@ -102,15 +103,15 @@ public class TestDNUsageReport {
         bytesRead2, writeTime2, readTime2, writeBlock2, readBlock2,
         timeSinceLastReport);
 
-    Assertions.assertEquals((bytesWritten2 - bytesWritten) / timeSinceLastReport,
+    assertEquals((bytesWritten2 - bytesWritten) / timeSinceLastReport,
         report2.getBytesWrittenPerSec());
-    Assertions.assertEquals((bytesRead2 - bytesRead) / timeSinceLastReport,
+    assertEquals((bytesRead2 - bytesRead) / timeSinceLastReport,
         report2.getBytesReadPerSec());
-    Assertions.assertEquals(writeTime2 - writeTime, report2.getWriteTime());
-    Assertions.assertEquals(readTime2 - readTime, report2.getReadTime());
-    Assertions.assertEquals((writeBlock2 - writeBlock) / timeSinceLastReport,
+    assertEquals(writeTime2 - writeTime, report2.getWriteTime());
+    assertEquals(readTime2 - readTime, report2.getReadTime());
+    assertEquals((writeBlock2 - writeBlock) / timeSinceLastReport,
         report2.getBlocksWrittenPerSec());
-    Assertions.assertEquals((readBlock2 - readBlock) / timeSinceLastReport,
+    assertEquals((readBlock2 - readBlock) / timeSinceLastReport,
         report2.getBlocksReadPerSec());
   }
 }

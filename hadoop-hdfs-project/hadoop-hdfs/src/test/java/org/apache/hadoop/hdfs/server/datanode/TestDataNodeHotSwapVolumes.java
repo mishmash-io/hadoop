@@ -51,8 +51,8 @@ import org.apache.hadoop.io.MultipleIOException;
 import org.apache.hadoop.test.GenericTestUtils;
 import org.apache.hadoop.util.Lists;
 import org.apache.hadoop.util.Time;
+import org.apache.hadoop.util.concurrent.SubjectInheritingThread;
 import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.Timeout;
 
@@ -84,16 +84,16 @@ import org.mockito.stubbing.Answer;
 
 import static org.apache.hadoop.hdfs.DFSConfigKeys.DFS_DATANODE_DATA_DIR_KEY;
 import static org.apache.hadoop.test.PlatformAssumptions.assumeNotWindows;
-import static org.hamcrest.CoreMatchers.anyOf;
-import static org.hamcrest.CoreMatchers.containsString;
-import static org.hamcrest.CoreMatchers.not;
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.core.Is.is;
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.fail;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.timeout;
+import static org.assertj.core.api.Assertions.assertThat;
 
 public class TestDataNodeHotSwapVolumes {
   private static final Logger LOG = LoggerFactory.getLogger(
@@ -337,9 +337,9 @@ public class TestDataNodeHotSwapVolumes {
 
     String newDataDir = newDataDirBuf.toString();
     assertThat(
-        "DN did not update its own config",
-        dn.reconfigurePropertyImpl(DFS_DATANODE_DATA_DIR_KEY, newDataDir),
-        is(conf.get(DFS_DATANODE_DATA_DIR_KEY)));
+        dn.reconfigurePropertyImpl(DFS_DATANODE_DATA_DIR_KEY, newDataDir))
+        .as("DN did not update its own config")
+        .isEqualTo(conf.get(DFS_DATANODE_DATA_DIR_KEY));
 
     // Await on the latch for needed operations to complete
     waitLatch.await();
@@ -367,7 +367,8 @@ public class TestDataNodeHotSwapVolumes {
     };
     Collections.sort(expectedStorageLocations, comparator);
     Collections.sort(effectiveStorageLocations, comparator);
-    assertEquals(expectedStorageLocations, effectiveStorageLocations, "Effective volumes doesnt match expected");
+    assertEquals(expectedStorageLocations, effectiveStorageLocations,
+        "Effective volumes doesnt match expected");
 
     // Check that all newly created volumes are appropriately formatted.
     for (File volumeDir : newVolumeDirs) {
@@ -396,7 +397,7 @@ public class TestDataNodeHotSwapVolumes {
    * Test adding one volume on a running MiniDFSCluster with only one NameNode.
    */
   @Test
-  @Timeout(value = 60000, unit = TimeUnit.MILLISECONDS)
+  @Timeout(value = 60)
   public void testAddOneNewVolume()
       throws IOException, ReconfigurationException,
       InterruptedException, TimeoutException {
@@ -431,7 +432,7 @@ public class TestDataNodeHotSwapVolumes {
    * with only one NameNode to reproduce HDFS-13677.
    */
   @Test
-  @Timeout(value = 60000, unit = TimeUnit.MILLISECONDS)
+  @Timeout(value = 60)
   public void testReAddVolumeWithBlocks()
       throws IOException, ReconfigurationException,
       InterruptedException, TimeoutException {
@@ -452,10 +453,10 @@ public class TestDataNodeHotSwapVolumes {
     Collection<String> oldDirs = getDataDirs(dn);
     String newDirs = oldDirs.iterator().next();  // Keep the first volume.
     assertThat(
-        "DN did not update its own config",
         dn.reconfigurePropertyImpl(
-            DFSConfigKeys.DFS_DATANODE_DATA_DIR_KEY, newDirs),
-        is(dn.getConf().get(DFS_DATANODE_DATA_DIR_KEY)));
+            DFSConfigKeys.DFS_DATANODE_DATA_DIR_KEY, newDirs))
+        .as("DN did not update its own config")
+        .isEqualTo(dn.getConf().get(DFS_DATANODE_DATA_DIR_KEY));
     assertFileLocksReleased(
         new ArrayList<String>(oldDirs).subList(1, oldDirs.size()));
 
@@ -473,10 +474,10 @@ public class TestDataNodeHotSwapVolumes {
 
     // Now add the original volume back again and ensure 15 blocks are reported
     assertThat(
-        "DN did not update its own config",
         dn.reconfigurePropertyImpl(
-            DFSConfigKeys.DFS_DATANODE_DATA_DIR_KEY, String.join(",", oldDirs)),
-        is(dn.getConf().get(DFS_DATANODE_DATA_DIR_KEY)));
+            DFSConfigKeys.DFS_DATANODE_DATA_DIR_KEY, String.join(",", oldDirs)))
+        .as("DN did not update its own config")
+        .isEqualTo(dn.getConf().get(DFS_DATANODE_DATA_DIR_KEY));
     dn.scheduleAllBlockReport(0);
     blockReports = cluster.getAllBlockReports(bpid);
 
@@ -496,7 +497,7 @@ public class TestDataNodeHotSwapVolumes {
   }
 
   @Test
-  @Timeout(value = 60000, unit = TimeUnit.MILLISECONDS)
+  @Timeout(value = 60)
   public void testAddVolumesDuringWrite()
       throws IOException, InterruptedException, TimeoutException,
       ReconfigurationException {
@@ -540,7 +541,7 @@ public class TestDataNodeHotSwapVolumes {
   }
 
   @Test
-  @Timeout(value = 180000, unit = TimeUnit.MILLISECONDS)
+  @Timeout(value = 180)
   public void testAddVolumesConcurrently()
       throws IOException, InterruptedException, TimeoutException,
       ReconfigurationException {
@@ -567,12 +568,12 @@ public class TestDataNodeHotSwapVolumes {
 
     // Thread to list all storage available at DataNode,
     // when the volumes are being added in parallel.
-    final Thread listStorageThread = new Thread(new Runnable() {
+    final SubjectInheritingThread listStorageThread = new SubjectInheritingThread(new Runnable() {
       @Override
       public void run() {
         while (addVolumeCompletionLatch.getCount() != newVolumeCount) {
           int i = 0;
-          while(i++ < 1000) {
+          while (i++ < 1000) {
             try {
               dn.getStorage().listStorageDirectories();
             } catch (Exception e) {
@@ -591,7 +592,7 @@ public class TestDataNodeHotSwapVolumes {
       public Object answer(InvocationOnMock invocationOnMock) throws Throwable {
         final Random r = new Random();
         Thread addVolThread =
-            new Thread(new Runnable() {
+            new SubjectInheritingThread(new Runnable() {
               @Override
               public void run() {
                 try {
@@ -627,8 +628,10 @@ public class TestDataNodeHotSwapVolumes {
     listStorageThread.join();
 
     // Verify errors while adding volumes and listing storage directories
-    Assertions.assertEquals(false, addVolumeError.get(), "Error adding volumes!");
-    Assertions.assertEquals(false, listStorageError.get(), "Error listing storage!");
+    assertEquals(false, addVolumeError.get(),
+        "Error adding volumes!");
+    assertEquals(false, listStorageError.get(),
+        "Error listing storage!");
 
     int additionalBlockCount = 9;
     int totalBlockCount = initialBlockCount + additionalBlockCount;
@@ -645,7 +648,7 @@ public class TestDataNodeHotSwapVolumes {
   }
 
   @Test
-  @Timeout(value = 60000, unit = TimeUnit.MILLISECONDS)
+  @Timeout(value = 60)
   public void testAddVolumesToFederationNN()
       throws IOException, TimeoutException, InterruptedException,
       ReconfigurationException {
@@ -681,7 +684,7 @@ public class TestDataNodeHotSwapVolumes {
   }
 
   @Test
-  @Timeout(value = 60000, unit = TimeUnit.MILLISECONDS)
+  @Timeout(value = 60)
   public void testRemoveOneVolume()
       throws ReconfigurationException, InterruptedException, TimeoutException,
       IOException {
@@ -694,10 +697,10 @@ public class TestDataNodeHotSwapVolumes {
     Collection<String> oldDirs = getDataDirs(dn);
     String newDirs = oldDirs.iterator().next();  // Keep the first volume.
     assertThat(
-        "DN did not update its own config",
         dn.reconfigurePropertyImpl(
-            DFSConfigKeys.DFS_DATANODE_DATA_DIR_KEY, newDirs),
-        is(dn.getConf().get(DFS_DATANODE_DATA_DIR_KEY)));
+            DFSConfigKeys.DFS_DATANODE_DATA_DIR_KEY, newDirs))
+        .as("DN did not update its own config")
+        .isEqualTo(dn.getConf().get(DFS_DATANODE_DATA_DIR_KEY));
     assertFileLocksReleased(
       new ArrayList<String>(oldDirs).subList(1, oldDirs.size()));
     dn.scheduleAllBlockReport(0);
@@ -724,7 +727,7 @@ public class TestDataNodeHotSwapVolumes {
   }
 
   @Test
-  @Timeout(value = 60000, unit = TimeUnit.MILLISECONDS)
+  @Timeout(value = 60)
   public void testReplicatingAfterRemoveVolume()
       throws InterruptedException, TimeoutException, IOException,
       ReconfigurationException {
@@ -752,10 +755,10 @@ public class TestDataNodeHotSwapVolumes {
       break;
     }
     assertThat(
-        "DN did not update its own config",
         dn.reconfigurePropertyImpl(
-            DFSConfigKeys.DFS_DATANODE_DATA_DIR_KEY, newDirs),
-        is(dn.getConf().get(DFS_DATANODE_DATA_DIR_KEY)));
+            DFSConfigKeys.DFS_DATANODE_DATA_DIR_KEY, newDirs))
+        .as("DN did not update its own config")
+        .isEqualTo(dn.getConf().get(DFS_DATANODE_DATA_DIR_KEY));
     oldDirs.remove(newDirs);
     assertFileLocksReleased(oldDirs);
 
@@ -791,8 +794,8 @@ public class TestDataNodeHotSwapVolumes {
       String errorMessage = e.getCause().getMessage();
       String messages[] = errorMessage.split("\\r?\\n");
       assertEquals(2, messages.length);
-      assertThat(messages[0], containsString("new_vol0"));
-      assertThat(messages[1], containsString("new_vol2"));
+      assertThat(messages[0]).contains("new_vol0");
+      assertThat(messages[1]).contains("new_vol2");
     }
 
     // Make sure that vol0 and vol2's metadata are not left in memory.
@@ -800,15 +803,16 @@ public class TestDataNodeHotSwapVolumes {
     try (FsDatasetSpi.FsVolumeReferences volumes =
         dataset.getFsVolumeReferences()) {
       for (FsVolumeSpi volume : volumes) {
-        assertThat(new File(volume.getStorageLocation().getUri()).toString(),
-            is(not(anyOf(is(newDirs.get(0)), is(newDirs.get(2))))));
+        assertThat(new File(volume.getStorageLocation().getUri()).toString())
+            .isNotIn(newDirs.get(0), newDirs.get(2));
       }
     }
     DataStorage storage = dn.getStorage();
     for (int i = 0; i < storage.getNumStorageDirs(); i++) {
       Storage.StorageDirectory sd = storage.getStorageDir(i);
-      assertThat(sd.getRoot().toString(),
-          is(not(anyOf(is(newDirs.get(0)), is(newDirs.get(2))))));
+      assertThat(
+          sd.getRoot().toString())
+          .isNotIn(newDirs.get(0), newDirs.get(2));
     }
 
     // The newly effective conf does not have vol0 and vol2.
@@ -817,9 +821,8 @@ public class TestDataNodeHotSwapVolumes {
     assertEquals(4, effectiveVolumes.length);
     for (String ev : effectiveVolumes) {
       assertThat(
-          new File(StorageLocation.parse(ev).getUri()).getCanonicalPath(),
-          is(not(anyOf(is(newDirs.get(0)), is(newDirs.get(2)))))
-      );
+          new File(StorageLocation.parse(ev).getUri()).getCanonicalPath())
+          .isNotIn(newDirs.get(0), newDirs.get(2));
     }
   }
 
@@ -843,7 +846,7 @@ public class TestDataNodeHotSwapVolumes {
   }
 
   @Test
-  @Timeout(value = 600000, unit = TimeUnit.MILLISECONDS)
+  @Timeout(value = 600)
   public void testRemoveVolumeBeingWritten()
       throws InterruptedException, TimeoutException, ReconfigurationException,
       IOException, BrokenBarrierException {
@@ -926,7 +929,7 @@ public class TestDataNodeHotSwapVolumes {
       final DataNode dataNode = dn;
       final CyclicBarrier reconfigBarrier = new CyclicBarrier(2);
 
-      Thread reconfigThread = new Thread(() -> {
+      Thread reconfigThread = new SubjectInheritingThread(() -> {
         try {
           reconfigBarrier.await();
 
@@ -934,10 +937,10 @@ public class TestDataNodeHotSwapVolumes {
           barrier.await();
 
           assertThat(
-              "DN did not update its own config",
               dataNode.reconfigurePropertyImpl(
-                  DFS_DATANODE_DATA_DIR_KEY, newDirs),
-              is(dataNode.getConf().get(DFS_DATANODE_DATA_DIR_KEY)));
+                  DFS_DATANODE_DATA_DIR_KEY, newDirs))
+              .as("DN did not update its own config")
+              .isEqualTo(dataNode.getConf().get(DFS_DATANODE_DATA_DIR_KEY));
           done.set(true);
         } catch (ReconfigurationException |
             InterruptedException |
@@ -971,7 +974,8 @@ public class TestDataNodeHotSwapVolumes {
         System.out.println("Vol: " +
             fsVolumeReferences.get(i).getBaseURI().toString());
       }
-      assertEquals(1, fsVolumeReferences.size(), "Volume remove wasn't successful.");
+      assertEquals(1, fsVolumeReferences.size(),
+          "Volume remove wasn't successful.");
     }
 
     // Verify the file has sufficient replications.
@@ -992,7 +996,8 @@ public class TestDataNodeHotSwapVolumes {
 
     try (FsDatasetSpi.FsVolumeReferences fsVolumeReferences = fsDatasetSpi
         .getFsVolumeReferences()) {
-      assertEquals(1, fsVolumeReferences.size(), "Volume remove wasn't successful.");
+      assertEquals(1, fsVolumeReferences.size(),
+          "Volume remove wasn't successful.");
       FsVolumeSpi volume = fsVolumeReferences.get(0);
       String bpid = cluster.getNamesystem().getBlockPoolId();
       FsVolumeSpi.BlockIterator blkIter = volume.newBlockIterator(bpid, "test");
@@ -1001,13 +1006,13 @@ public class TestDataNodeHotSwapVolumes {
         blkIter.nextBlock();
         blockCount++;
       }
-      assertTrue(blockCount > 1, String.format("DataNode(%d) should have more than 1 blocks",
-          dataNodeIdx));
+      assertTrue(blockCount > 1,
+          String.format("DataNode(%d) should have more than 1 blocks", dataNodeIdx));
     }
   }
 
   @Test
-  @Timeout(value = 60000, unit = TimeUnit.MILLISECONDS)
+  @Timeout(value = 60)
   public void testAddBackRemovedVolume()
       throws IOException, TimeoutException, InterruptedException,
       ReconfigurationException {
@@ -1022,9 +1027,9 @@ public class TestDataNodeHotSwapVolumes {
     String removeDataDir = oldDataDir.split(",")[1];
 
     assertThat(
-        "DN did not update its own config",
-        dn.reconfigurePropertyImpl(DFS_DATANODE_DATA_DIR_KEY, keepDataDir),
-        is(dn.getConf().get(DFS_DATANODE_DATA_DIR_KEY)));
+        dn.reconfigurePropertyImpl(DFS_DATANODE_DATA_DIR_KEY, keepDataDir))
+        .as("DN did not update its own config")
+        .isEqualTo(dn.getConf().get(DFS_DATANODE_DATA_DIR_KEY));
     for (int i = 0; i < cluster.getNumNameNodes(); i++) {
       String bpid = cluster.getNamesystem(i).getBlockPoolId();
       BlockPoolSliceStorage bpsStorage =
@@ -1042,9 +1047,9 @@ public class TestDataNodeHotSwapVolumes {
     // Bring the removed directory back. It only successes if all metadata about
     // this directory were removed from the previous step.
     assertThat(
-        "DN did not update its own config",
-        dn.reconfigurePropertyImpl(DFS_DATANODE_DATA_DIR_KEY, oldDataDir),
-        is(dn.getConf().get(DFS_DATANODE_DATA_DIR_KEY)));
+        dn.reconfigurePropertyImpl(DFS_DATANODE_DATA_DIR_KEY, oldDataDir))
+        .as("DN did not update its own config")
+        .isEqualTo(dn.getConf().get(DFS_DATANODE_DATA_DIR_KEY));
   }
 
   /**
@@ -1053,7 +1058,7 @@ public class TestDataNodeHotSwapVolumes {
    * configuration to reload the new volume on the same directory as the failed one.
    */
   @Test
-  @Timeout(value = 60000, unit = TimeUnit.MILLISECONDS)
+  @Timeout(value = 60)
   public void testDirectlyReloadAfterCheckDiskError()
       throws Exception {
     // The test uses DataNodeTestUtils#injectDataDirFailure() to simulate
@@ -1082,9 +1087,9 @@ public class TestDataNodeHotSwapVolumes {
     DataNodeTestUtils.restoreDataDirFromFailure(dirToFail);
     LOG.info("reconfiguring DN ");
     assertThat(
-        "DN did not update its own config",
-        dn.reconfigurePropertyImpl(DFS_DATANODE_DATA_DIR_KEY, oldDataDir),
-        is(dn.getConf().get(DFS_DATANODE_DATA_DIR_KEY)));
+        dn.reconfigurePropertyImpl(DFS_DATANODE_DATA_DIR_KEY, oldDataDir))
+        .as("DN did not update its own config")
+        .isEqualTo(dn.getConf().get(DFS_DATANODE_DATA_DIR_KEY));
 
     createFile(new Path("/test2"), 32, (short)2);
     FsVolumeImpl restoredVolume = DataNodeTestUtils.getVolume(dn, dirToFail);
@@ -1096,7 +1101,7 @@ public class TestDataNodeHotSwapVolumes {
 
   /** Test that a full block report is sent after hot swapping volumes */
   @Test
-  @Timeout(value = 100000, unit = TimeUnit.MILLISECONDS)
+  @Timeout(value = 100)
   public void testFullBlockReportAfterRemovingVolumes()
       throws IOException, ReconfigurationException {
 
@@ -1120,10 +1125,11 @@ public class TestDataNodeHotSwapVolumes {
     // Remove a data dir from datanode
     File dataDirToKeep = cluster.getInstanceStorageDir(0, 0);
     assertThat(
-        "DN did not update its own config",
         dn.reconfigurePropertyImpl(
-            DFS_DATANODE_DATA_DIR_KEY, dataDirToKeep.toString()),
-        is(dn.getConf().get(DFS_DATANODE_DATA_DIR_KEY)));
+            DFS_DATANODE_DATA_DIR_KEY, dataDirToKeep.toString()))
+        .as("DN did not update its own config")
+        .isEqualTo(dn.getConf().get(DFS_DATANODE_DATA_DIR_KEY));
+
 
     // We should get 1 full report
     Mockito.verify(spy, timeout(60000).times(1)).blockReport(
@@ -1134,7 +1140,7 @@ public class TestDataNodeHotSwapVolumes {
   }
 
   @Test
-  @Timeout(value = 60000, unit = TimeUnit.MILLISECONDS)
+  @Timeout(value = 60)
   public void testAddVolumeWithVolumeOnSameMount()
       throws IOException {
     shutdown();

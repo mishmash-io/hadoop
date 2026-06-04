@@ -17,9 +17,14 @@
  */
 package org.apache.hadoop.util;
 
-import java.util.concurrent.TimeUnit;
 import java.util.function.Supplier;
 import org.apache.commons.io.FileUtils;
+
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.Timeout;
+import org.junit.jupiter.api.TestInfo;
+import org.junit.jupiter.api.Assertions;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -36,20 +41,14 @@ import java.util.Map;
 
 import org.apache.hadoop.fs.FileUtil;
 import org.apache.hadoop.test.GenericTestUtils;
-import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.TestInfo;
-import org.junit.jupiter.api.Timeout;
+import org.apache.hadoop.util.concurrent.SubjectInheritingThread;
 
 import static org.apache.hadoop.util.Shell.*;
-import static org.junit.jupiter.api.Assumptions.assumeFalse;
 import static org.junit.jupiter.api.Assumptions.assumeTrue;
+import static org.junit.jupiter.api.Assumptions.assumeFalse;
 
-@Timeout(value=30000, unit=TimeUnit.MILLISECONDS)
+@Timeout(value = 30)
 public class TestShell extends Assertions {
-
-  private String methodName;
 
   private File rootTestDir = GenericTestUtils.getTestDir();
 
@@ -87,11 +86,10 @@ public class TestShell extends Assertions {
   }
 
   @BeforeEach
-  public void setup(TestInfo info) {
-    methodName = info.getDisplayName();
+  public void setup(TestInfo testInfo) {
     rootTestDir.mkdirs();
     assertTrue(rootTestDir.isDirectory(), "Not a directory " + rootTestDir);
-    methodDir = new File(rootTestDir, methodName);
+    methodDir = new File(rootTestDir, testInfo.getDisplayName());
   }
 
   @Test
@@ -108,7 +106,7 @@ public class TestShell extends Assertions {
    * @param search what to search for it
    */
   private void assertInString(String string, String search) {
-    assertNotNull("Empty String", string);
+    assertNotNull(string, "Empty String");
     if (!string.contains(search)) {
       fail("Did not find \"" + search + "\" in " + string);
     }
@@ -472,18 +470,18 @@ public class TestShell extends Assertions {
   }
 
   @Test
-  @Timeout(value=120000, unit=TimeUnit.MILLISECONDS)
+  @Timeout(value = 120)
   public void testDestroyAllShellProcesses() throws Throwable {
     assumeFalse(WINDOWS);
-    StringBuffer sleepCommand = new StringBuffer();
+    StringBuilder sleepCommand = new StringBuilder();
     sleepCommand.append("sleep 200");
     String[] shellCmd = {"bash", "-c", sleepCommand.toString()};
     final ShellCommandExecutor shexc1 = new ShellCommandExecutor(shellCmd);
     final ShellCommandExecutor shexc2 = new ShellCommandExecutor(shellCmd);
 
-    Thread shellThread1 = new Thread() {
+    SubjectInheritingThread shellThread1 = new SubjectInheritingThread() {
       @Override
-      public void run() {
+      public void work() {
         try {
           shexc1.execute();
         } catch(IOException ioe) {
@@ -491,9 +489,9 @@ public class TestShell extends Assertions {
         }
       }
     };
-    Thread shellThread2 = new Thread() {
+    SubjectInheritingThread shellThread2 = new SubjectInheritingThread() {
       @Override
-      public void run() {
+      public void work() {
         try {
           shexc2.execute();
         } catch(IOException ioe) {

@@ -18,7 +18,6 @@
 package org.apache.hadoop.fs.viewfs;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import java.io.File;
@@ -33,8 +32,8 @@ import org.apache.hadoop.fs.FsConstants;
 import org.apache.hadoop.fs.LocalFileSystem;
 import org.apache.hadoop.fs.Path;
 import org.junit.jupiter.api.AfterAll;
-import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
 /**
@@ -122,8 +121,8 @@ public class TestHCFSMountTableConfigLoader {
         new Path(invalidMountFileName.toURI()), conf);
     // Pass mount table directory
     loader.load(path.toString(), conf);
-    assertNull(conf.get(MOUNT_LINK_KEY_SRC_TWO));
-    assertNull(conf.get(MOUNT_LINK_KEY_SRC_ONE));
+    assertEquals(null, conf.get(MOUNT_LINK_KEY_SRC_TWO));
+    assertEquals(null, conf.get(MOUNT_LINK_KEY_SRC_ONE));
     invalidMountFileName.delete();
   }
 
@@ -138,16 +137,15 @@ public class TestHCFSMountTableConfigLoader {
     invalidMountFileName.createNewFile();
     // Pass mount table directory
     loader.load(path.toString(), conf);
-    assertNull(conf.get(MOUNT_LINK_KEY_SRC_TWO));
-    assertNull(conf.get(MOUNT_LINK_KEY_SRC_ONE));
+    assertEquals(null, conf.get(MOUNT_LINK_KEY_SRC_TWO));
+    assertEquals(null, conf.get(MOUNT_LINK_KEY_SRC_ONE));
     invalidMountFileName.delete();
   }
 
   @Test
   public void testLoadWithMountFile() throws Exception {
     assertThrows(FileNotFoundException.class, () -> {
-      loader.load(new URI(targetTestRoot.toString() + "/Non-Existent-File.xml")
-        .toString(), conf);
+      loader.load(new URI(targetTestRoot.toString() + "/Non-Existent-File.xml").toString(), conf);
     });
   }
 

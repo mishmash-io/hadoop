@@ -19,7 +19,12 @@ package org.apache.hadoop.hdfs.server.namenode.snapshot;
 
 import static org.apache.hadoop.hdfs.server.namenode.INodeId.INVALID_INODE_ID;
 import static org.apache.hadoop.test.GenericTestUtils.assertExceptionContains;
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotEquals;
+import static org.junit.jupiter.api.Assertions.assertSame;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.fail;
 
 import java.io.IOException;
 import java.util.concurrent.TimeUnit;
@@ -40,7 +45,10 @@ import org.apache.hadoop.hdfs.server.namenode.FSNamesystem;
 import org.apache.hadoop.hdfs.server.namenode.INodeFile;
 import org.apache.hadoop.hdfs.server.namenode.NameNode;
 import org.apache.hadoop.hdfs.server.namenode.NameNodeAdapter;
-import org.junit.jupiter.api.*;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.Timeout;
 
 /**
  * Test cases for snapshot-related information in blocksMap.
@@ -94,8 +102,8 @@ public class TestSnapshotBlocksMap {
 
   static void assertBlockCollection(final BlockManager blkManager,
       final INodeFile file, final BlockInfo b) {
-    Assertions.assertSame(b, blkManager.getStoredBlock(b));
-    Assertions.assertEquals(file.getId(), b.getBlockCollectionId());
+    assertSame(b, blkManager.getStoredBlock(b));
+    assertEquals(file.getId(), b.getBlockCollectionId());
   }
 
   /**
@@ -103,7 +111,7 @@ public class TestSnapshotBlocksMap {
    * sure the corresponding record is updated correctly.
    */
   @Test
-  @Timeout(value = 60000, unit = TimeUnit.MILLISECONDS)
+  @Timeout(value = 60)
   public void testDeletionWithSnapshots() throws Exception {
     Path file0 = new Path(sub1, "file0");
     Path file1 = new Path(sub1, "file1");
@@ -145,7 +153,7 @@ public class TestSnapshotBlocksMap {
     {
       INodeFile f1 = assertBlockCollection(file1.toString(), 2, fsdir,
           blockmanager);
-      Assertions.assertSame(INodeFile.class, f1.getClass());
+      assertSame(INodeFile.class, f1.getClass());
       hdfs.setReplication(file1, (short)2);
       f1 = assertBlockCollection(file1.toString(), 2, fsdir, blockmanager);
       assertTrue(f1.isWithSnapshot());
@@ -197,7 +205,7 @@ public class TestSnapshotBlocksMap {
    * restarting post checkpoint. refer HDFS-5427
    */
   @Test
-  @Timeout(value = 30000, unit = TimeUnit.MILLISECONDS)
+  @Timeout(value = 30)
   public void testReadSnapshotFileWithCheckpoint() throws Exception {
     Path foo = new Path("/foo");
     hdfs.mkdirs(foo);
@@ -224,7 +232,7 @@ public class TestSnapshotBlocksMap {
    * deleted after restarting post checkpoint. refer HDFS-5427
    */
   @Test
-  @Timeout(value = 30000, unit = TimeUnit.MILLISECONDS)
+  @Timeout(value = 30)
   public void testReadRenamedSnapshotFileWithCheckpoint() throws Exception {
     final Path foo = new Path("/foo");
     final Path foo2 = new Path("/foo2");

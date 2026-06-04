@@ -41,6 +41,7 @@ import java.util.concurrent.TimeUnit;
 import org.apache.hadoop.metrics2.MetricsRecordBuilder;
 import org.apache.hadoop.metrics2.util.Quantile;
 import org.apache.hadoop.thirdparty.com.google.common.math.Stats;
+import org.apache.hadoop.util.concurrent.SubjectInheritingThread;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.Timeout;
 import org.slf4j.Logger;
@@ -210,7 +211,7 @@ public class TestMutableMetrics {
       rates.add("metric" + i, 0);
     }
 
-    Thread[] threads = new Thread[n];
+    SubjectInheritingThread[] threads = new SubjectInheritingThread[n];
     final CountDownLatch firstAddsFinished = new CountDownLatch(threads.length);
     final CountDownLatch firstSnapshotsFinished = new CountDownLatch(1);
     final CountDownLatch secondAddsFinished =
@@ -221,9 +222,9 @@ public class TestMutableMetrics {
     final Random sleepRandom = new Random(seed);
     for (int tIdx = 0; tIdx < threads.length; tIdx++) {
       final int threadIdx = tIdx;
-      threads[threadIdx] = new Thread() {
+      threads[threadIdx] = new SubjectInheritingThread() {
         @Override
-        public void run() {
+        public void work() {
           try {
             for (int i = 0; i < 1000; i++) {
               rates.add("metric" + (i % n), (i / n) % 2 == 0 ? 1 : 2);
@@ -405,7 +406,7 @@ public class TestMutableMetrics {
    * specified error bounds.
    */
   @Test
-  @Timeout(value=30000, unit=TimeUnit.MILLISECONDS)
+  @Timeout(value = 30)
   public void testMutableQuantilesError() throws Exception {
     MetricsRecordBuilder mb = mockMetricsRecordBuilder();
     MetricsRegistry registry = new MetricsRegistry("test");
@@ -452,7 +453,7 @@ public class TestMutableMetrics {
    * specified error bounds.
    */
   @Test
-  @Timeout(value=30000, unit=TimeUnit.MILLISECONDS)
+  @Timeout(value = 30)
   public void testMutableInverseQuantilesError() throws Exception {
     MetricsRecordBuilder mb = mockMetricsRecordBuilder();
     MetricsRegistry registry = new MetricsRegistry("test");
@@ -493,7 +494,7 @@ public class TestMutableMetrics {
    * interval.
    */
   @Test
-  @Timeout(value=30000, unit=TimeUnit.MILLISECONDS)
+  @Timeout(value = 30)
   public void testMutableQuantilesRollover() throws Exception {
     MetricsRecordBuilder mb = mockMetricsRecordBuilder();
     MetricsRegistry registry = new MetricsRegistry("test");
@@ -542,7 +543,7 @@ public class TestMutableMetrics {
    * interval.
    */
   @Test
-  @Timeout(value=30000, unit=TimeUnit.MILLISECONDS)
+  @Timeout(value = 30)
   public void testMutableInverseQuantilesRollover() throws Exception {
     MetricsRecordBuilder mb = mockMetricsRecordBuilder();
     MetricsRegistry registry = new MetricsRegistry("test");
@@ -592,7 +593,7 @@ public class TestMutableMetrics {
    * have been added to the window
    */
   @Test
-  @Timeout(value=30000, unit=TimeUnit.MILLISECONDS)
+  @Timeout(value = 30)
   public void testMutableQuantilesEmptyRollover() throws Exception {
     MetricsRecordBuilder mb = mockMetricsRecordBuilder();
     MetricsRegistry registry = new MetricsRegistry("test");
@@ -615,7 +616,7 @@ public class TestMutableMetrics {
    * have been added to the window
    */
   @Test
-  @Timeout(value=30000, unit=TimeUnit.MILLISECONDS)
+  @Timeout(value = 30)
   public void testMutableInverseQuantilesEmptyRollover() throws Exception {
     MetricsRecordBuilder mb = mockMetricsRecordBuilder();
     MetricsRegistry registry = new MetricsRegistry("test");
@@ -637,7 +638,7 @@ public class TestMutableMetrics {
    * Test {@link MutableGaugeFloat#incr()}.
    */
   @Test
-  @Timeout(value=30000, unit=TimeUnit.MILLISECONDS)
+  @Timeout(value = 30)
   public void testMutableGaugeFloat() {
     MutableGaugeFloat mgf = new MutableGaugeFloat(Context, 3.2f);
     assertEquals(3.2f, mgf.value(), 0.0);

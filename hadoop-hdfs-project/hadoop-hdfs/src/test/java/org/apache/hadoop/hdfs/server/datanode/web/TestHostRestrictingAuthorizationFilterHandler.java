@@ -30,11 +30,15 @@ import org.junit.jupiter.api.Test;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hdfs.server.common.HostRestrictingAuthorizationFilter;
 import org.apache.hadoop.hdfs.web.WebHdfsFileSystem;
+import org.junit.jupiter.api.Test;
 
 import java.net.InetSocketAddress;
 import java.net.SocketAddress;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public class TestHostRestrictingAuthorizationFilterHandler {
 
@@ -87,8 +91,7 @@ public class TestHostRestrictingAuthorizationFilterHandler {
         new DefaultFullHttpRequest(HttpVersion.HTTP_1_1,
             HttpMethod.GET,
             WebHdfsFileSystem.PATH_PREFIX + "/allowed/file_three?op=OPEN");
-    assertTrue(channel.writeInbound(allowedHttpRequest),
-        "Should successfully accept request");
+    assertTrue(channel.writeInbound(allowedHttpRequest), "Should successfully accept request");
     assertTrue(channel.writeInbound(allowedHttpRequest2),
         "Should successfully accept request, second time");
     assertTrue(channel.writeInbound(allowedHttpRequest3),
@@ -123,8 +126,7 @@ public class TestHostRestrictingAuthorizationFilterHandler {
         new DefaultFullHttpRequest(HttpVersion.HTTP_1_1,
             HttpMethod.GET,
             WebHdfsFileSystem.PATH_PREFIX + "/allowed/file_three?op=OPEN");
-    assertTrue(channel1.writeInbound(allowedHttpRequest),
-        "Should successfully accept request");
+    assertTrue(channel1.writeInbound(allowedHttpRequest), "Should successfully accept request");
     assertTrue(channel2.writeInbound(allowedHttpRequest2),
         "Should successfully accept request, second time");
 
@@ -146,8 +148,7 @@ public class TestHostRestrictingAuthorizationFilterHandler {
             HttpMethod.GET,
             WebHdfsFileSystem.PATH_PREFIX + "/user/myName/fooFile?op" +
                 "=GETFILECHECKSUM");
-    assertTrue(channel.writeInbound(httpRequest),
-        "Should successfully accept request");
+    assertTrue(channel.writeInbound(httpRequest), "Should successfully accept request");
   }
 
   /*

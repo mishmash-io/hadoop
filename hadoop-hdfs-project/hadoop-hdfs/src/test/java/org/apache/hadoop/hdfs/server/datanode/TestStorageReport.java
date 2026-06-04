@@ -40,12 +40,11 @@ import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Mockito;
 
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.core.Is.is;
 import static org.junit.jupiter.api.Assertions.assertNotSame;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.ArgumentMatchers.anyLong;
+import static org.assertj.core.api.Assertions.assertThat;
 
 public class TestStorageReport {
   public static final Logger LOG =
@@ -115,8 +114,8 @@ public class TestStorageReport {
     StorageReport[] reports = captor.getValue();
 
     for (StorageReport report: reports) {
-      assertThat(report.getStorage().getStorageType(), is(storageType));
-      assertThat(report.getStorage().getState(), is(DatanodeStorage.State.NORMAL));
+      assertThat(report.getStorage().getStorageType()).isEqualTo(storageType);
+      assertThat(report.getStorage().getState()).isEqualTo(DatanodeStorage.State.NORMAL);
     }
   }
 }

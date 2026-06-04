@@ -43,7 +43,10 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.fail;
 
 /**
  * Tests for the batched listing API.
@@ -77,13 +80,15 @@ public class TestBatchedListDirectories {
   private static void assertSubDirEquals(int i, int j, Path p) {
     assertTrue(p.toString().startsWith("hdfs://"));
     Path expected = getSubDirName(i, j);
-    assertEquals(expected.toString(), p.toUri().getPath(), "Unexpected subdir name");
+    assertEquals(expected.toString(), p.toUri().getPath(),
+        "Unexpected subdir name");
   }
 
   private static void assertFileEquals(int i, int j, int k, Path p) {
     assertTrue(p.toString().startsWith("hdfs://"));
     Path expected = getFileName(i, j, k);
-    assertEquals(expected.toString(), p.toUri().getPath(), "Unexpected file name");
+    assertEquals(expected.toString(), p.toUri().getPath(),
+        "Unexpected file name");
   }
 
   private static void loadData() throws Exception {
@@ -156,7 +161,7 @@ public class TestBatchedListDirectories {
   }
 
   @Test
-  public void testEmptyPath() {
+  public void testEmptyPath() throws Exception {
     assertThrows(FileNotFoundException.class, () -> {
       List<Path> paths = Lists.newArrayList();
       getStatuses(paths);
@@ -182,7 +187,7 @@ public class TestBatchedListDirectories {
   }
 
   @Test
-  public void listDoesNotExist() {
+  public void listDoesNotExist() throws Exception {
     assertThrows(FileNotFoundException.class, () -> {
       List<Path> paths = Lists.newArrayList();
       paths.add(new Path("/does/not/exist"));
@@ -225,7 +230,8 @@ public class TestBatchedListDirectories {
     dfs.setWorkingDirectory(new Path("/dir0"));
     List<Path> paths = Lists.newArrayList(new Path("."));
     List<FileStatus> statuses = getStatuses(paths);
-    assertEquals(SECOND_LEVEL_DIRS, statuses.size(), "Wrong number of items");
+    assertEquals(SECOND_LEVEL_DIRS, statuses.size(),
+        "Wrong number of items");
     for (int i = 0; i < SECOND_LEVEL_DIRS; i++) {
       FileStatus stat = statuses.get(i);
       assertSubDirEquals(0, i, stat.getPath());
@@ -237,7 +243,8 @@ public class TestBatchedListDirectories {
     dfs.setWorkingDirectory(new Path("/dir0"));
     List<Path> paths = Lists.newArrayList(new Path("subdir0"));
     List<FileStatus> statuses = getStatuses(paths);
-    assertEquals(FILES_PER_DIR, statuses.size(), "Wrong number of items");
+    assertEquals(FILES_PER_DIR, statuses.size(),
+        "Wrong number of items");
     for (int i = 0; i < FILES_PER_DIR; i++) {
       FileStatus stat = statuses.get(i);
       assertFileEquals(0, 0, i, stat.getPath());
@@ -318,12 +325,12 @@ public class TestBatchedListDirectories {
 
   @Test
   public void listTooManyDirectories() throws Exception {
-    List<Path> paths = Lists.newArrayList(FILE_PATHS);
-    paths.add(SUBDIR_PATHS.get(0));
-    Exception e = assertThrows(RemoteException.class, () -> {
+    RemoteException ex = assertThrows(RemoteException.class, () -> {
+      List<Path> paths = Lists.newArrayList(FILE_PATHS);
+      paths.add(SUBDIR_PATHS.get(0));
       getStatuses(paths);
     });
-    assertTrue(e.getMessage().contains("Too many source paths"));
+    assertTrue(ex.getMessage().contains("Too many source paths"));
   }
 
   @Test
@@ -394,7 +401,7 @@ public class TestBatchedListDirectories {
   }
 
   @Test
-  public void listInaccessibleDir() {
+  public void listInaccessibleDir() throws Exception {
     assertThrows(AccessControlException.class, () -> {
       List<Path> paths = Lists.newArrayList(INACCESSIBLE_DIR_PATH);
       listAsNormalUser(paths);
@@ -402,7 +409,7 @@ public class TestBatchedListDirectories {
   }
 
   @Test
-  public void listInaccessibleFile() {
+  public void listInaccessibleFile() throws Exception {
     assertThrows(AccessControlException.class, () -> {
       List<Path> paths = Lists.newArrayList(INACCESSIBLE_FILE_PATH);
       listAsNormalUser(paths);

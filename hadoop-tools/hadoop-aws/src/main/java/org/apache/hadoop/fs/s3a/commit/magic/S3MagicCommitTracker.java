@@ -82,7 +82,7 @@ public class S3MagicCommitTracker extends MagicCommitTracker {
     PutObjectRequest originalDestPut = getWriter().createPutObjectRequest(
         getOriginalDestKey(),
         0,
-        new PutObjectOptions(true, null,
+        new PutObjectOptions(null,
             headers,
             EnumSet.noneOf(WriteObjectFlags.class),
             ""));

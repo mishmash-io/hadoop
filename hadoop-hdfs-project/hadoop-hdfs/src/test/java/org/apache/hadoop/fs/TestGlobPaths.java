@@ -18,7 +18,11 @@
 package org.apache.hadoop.fs;
 
 import static org.apache.hadoop.test.PlatformAssumptions.assumeNotWindows;
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.fail;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -34,11 +38,7 @@ import org.apache.hadoop.hdfs.MiniDFSCluster;
 import org.apache.hadoop.hdfs.server.namenode.INodeId;
 import org.apache.hadoop.security.AccessControlException;
 import org.apache.hadoop.security.UserGroupInformation;
-import org.junit.jupiter.api.AfterAll;
-import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.Disabled;
-import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.*;
 
 public class TestGlobPaths {
 
@@ -106,7 +106,8 @@ public class TestGlobPaths {
     fs.createNewFile(fNormal);
     fs.createNewFile(fWithCR);
     statuses = fs.globStatus(new Path(d1, "f1*"));
-    assertEquals(2, statuses.length, "Expected both normal and CR-carrying files in result: ");
+    assertEquals(2, statuses.length,
+        "Expected both normal and CR-carrying files in result: ");
     cleanupDFS();
   }
 
@@ -895,14 +896,14 @@ public class TestGlobPaths {
       // Test simple glob
       FileStatus[] statuses = wrap.globStatus(new Path(USER_DIR + "/alpha/*"),
           new AcceptAllPathFilter());
-      Assertions.assertEquals(1, statuses.length);
-      Assertions.assertEquals(USER_DIR + "/alpha/beta", statuses[0].getPath()
+      assertEquals(1, statuses.length);
+      assertEquals(USER_DIR + "/alpha/beta", statuses[0].getPath()
           .toUri().getPath());
       // Test glob through symlink
       statuses = wrap.globStatus(new Path(USER_DIR + "/alphaLink/*"),
           new AcceptAllPathFilter());
-      Assertions.assertEquals(1, statuses.length);
-      Assertions.assertEquals(USER_DIR + "/alphaLink/beta", statuses[0].getPath()
+      assertEquals(1, statuses.length);
+      assertEquals(USER_DIR + "/alphaLink/beta", statuses[0].getPath()
           .toUri().getPath());
       // If the terminal path component in a globbed path is a symlink,
       // we don't dereference that link.
@@ -910,8 +911,8 @@ public class TestGlobPaths {
           + "/alphaLink/betaLink"), false);
       statuses = wrap.globStatus(new Path(USER_DIR + "/alpha/betaLi*"),
           new AcceptAllPathFilter());
-      Assertions.assertEquals(1, statuses.length);
-      Assertions.assertEquals(USER_DIR + "/alpha/betaLink", statuses[0].getPath()
+      assertEquals(1, statuses.length);
+      assertEquals(USER_DIR + "/alpha/betaLink", statuses[0].getPath()
           .toUri().getPath());
       // todo: test symlink-to-symlink-to-dir, etc.
     }
@@ -954,20 +955,20 @@ public class TestGlobPaths {
       // Test glob through symlink to a symlink to a directory
       FileStatus statuses[] = wrap.globStatus(new Path(USER_DIR
           + "/alphaLinkLink"), new AcceptAllPathFilter());
-      Assertions.assertEquals(1, statuses.length);
-      Assertions.assertEquals(USER_DIR + "/alphaLinkLink", statuses[0].getPath()
+      assertEquals(1, statuses.length);
+      assertEquals(USER_DIR + "/alphaLinkLink", statuses[0].getPath()
           .toUri().getPath());
       statuses = wrap.globStatus(new Path(USER_DIR + "/alphaLinkLink/*"),
           new AcceptAllPathFilter());
-      Assertions.assertEquals(1, statuses.length);
-      Assertions.assertEquals(USER_DIR + "/alphaLinkLink/beta", statuses[0]
+      assertEquals(1, statuses.length);
+      assertEquals(USER_DIR + "/alphaLinkLink/beta", statuses[0]
           .getPath().toUri().getPath());
       // Test glob of dangling symlink (theta does not actually exist)
       wrap.createSymlink(new Path(USER_DIR + "theta"), new Path(USER_DIR
           + "/alpha/kappa"), false);
       statuses = wrap.globStatus(new Path(USER_DIR + "/alpha/kappa/kappa"),
           new AcceptAllPathFilter());
-      Assertions.assertNull(statuses);
+      assertNull(statuses);
       // Test glob of symlinks
       wrap.createFile(USER_DIR + "/alpha/beta/gamma");
       wrap.createSymlink(new Path(USER_DIR + "gamma"), new Path(USER_DIR
@@ -978,12 +979,12 @@ public class TestGlobPaths {
           USER_DIR + "/alpha/beta/gammaLinkLinkLink"), false);
       statuses = wrap.globStatus(new Path(USER_DIR
           + "/alpha/*/gammaLinkLinkLink"), new AcceptAllPathFilter());
-      Assertions.assertEquals(1, statuses.length);
-      Assertions.assertEquals(USER_DIR + "/alpha/beta/gammaLinkLinkLink",
+      assertEquals(1, statuses.length);
+      assertEquals(USER_DIR + "/alpha/beta/gammaLinkLinkLink",
           statuses[0].getPath().toUri().getPath());
       statuses = wrap.globStatus(new Path(USER_DIR + "/alpha/beta/*"),
           new AcceptAllPathFilter());
-      Assertions.assertEquals(USER_DIR + "/alpha/beta/gamma;" + USER_DIR
+      assertEquals(USER_DIR + "/alpha/beta/gamma;" + USER_DIR
           + "/alpha/beta/gammaLink;" + USER_DIR + "/alpha/beta/gammaLinkLink;"
           + USER_DIR + "/alpha/beta/gammaLinkLinkLink",
           TestPath.mergeStatuses(statuses));
@@ -995,7 +996,7 @@ public class TestGlobPaths {
       statuses = wrap.globStatus(
           new Path(USER_DIR + "/tweedledee/unobtainium"),
           new AcceptAllPathFilter());
-      Assertions.assertNull(statuses);
+      assertNull(statuses);
     }
   }
 
@@ -1035,19 +1036,19 @@ public class TestGlobPaths {
       // PathFilter
       FileStatus statuses[] = wrap.globStatus(
           new Path(USER_DIR + "/alpha/beta"), new AcceptPathsEndingInZ());
-      Assertions.assertNull(statuses);
+      assertNull(statuses);
       statuses = wrap.globStatus(new Path(USER_DIR + "/alphaLinkz/betaz"),
           new AcceptPathsEndingInZ());
-      Assertions.assertEquals(1, statuses.length);
-      Assertions.assertEquals(USER_DIR + "/alphaLinkz/betaz", statuses[0].getPath()
+      assertEquals(1, statuses.length);
+      assertEquals(USER_DIR + "/alphaLinkz/betaz", statuses[0].getPath()
           .toUri().getPath());
       statuses = wrap.globStatus(new Path(USER_DIR + "/*/*"),
           new AcceptPathsEndingInZ());
-      Assertions.assertEquals(USER_DIR + "/alpha/betaz;" + USER_DIR
+      assertEquals(USER_DIR + "/alpha/betaz;" + USER_DIR
           + "/alphaLinkz/betaz", TestPath.mergeStatuses(statuses));
       statuses = wrap.globStatus(new Path(USER_DIR + "/*/*"),
           new AcceptAllPathFilter());
-      Assertions.assertEquals(USER_DIR + "/alpha/beta;" + USER_DIR
+      assertEquals(USER_DIR + "/alpha/beta;" + USER_DIR
           + "/alpha/betaz;" + USER_DIR + "/alphaLinkz/beta;" + USER_DIR
           + "/alphaLinkz/betaz", TestPath.mergeStatuses(statuses));
     }
@@ -1081,22 +1082,22 @@ public class TestGlobPaths {
           + "/alphaLink"), false);
       FileStatus statuses[] = wrap.globStatus(
           new Path(USER_DIR + "/alphaLink"), new AcceptAllPathFilter());
-      Assertions.assertEquals(1, statuses.length);
+      assertEquals(1, statuses.length);
       Path path = statuses[0].getPath();
-      Assertions.assertEquals(USER_DIR + "/alpha", path.toUri().getPath());
-      Assertions.assertEquals("hdfs", path.toUri().getScheme());
+      assertEquals(USER_DIR + "/alpha", path.toUri().getPath());
+      assertEquals("hdfs", path.toUri().getScheme());
 
       // FileContext can list a file:/// URI.
       // Since everyone should have the root directory, we list that.
       statuses = fc.util().globStatus(new Path("file:///"),
           new AcceptAllPathFilter());
-      Assertions.assertEquals(1, statuses.length);
+      assertEquals(1, statuses.length);
       Path filePath = statuses[0].getPath();
-      Assertions.assertEquals("file", filePath.toUri().getScheme());
-      Assertions.assertEquals("/", filePath.toUri().getPath());
+      assertEquals("file", filePath.toUri().getScheme());
+      assertEquals("/", filePath.toUri().getPath());
 
       // The FileSystem should have scheme 'hdfs'
-      Assertions.assertEquals("hdfs", fs.getScheme());
+      assertEquals("hdfs", fs.getScheme());
     }
   }
 
@@ -1179,13 +1180,13 @@ public class TestGlobPaths {
       try {
         wrap.globStatus(new Path("/no*/*"),
             new AcceptAllPathFilter());
-        Assertions.fail("expected to get an AccessControlException when " +
+        fail("expected to get an AccessControlException when " +
             "globbing through a directory we don't have permissions " +
             "to list.");
       } catch (AccessControlException ioe) {
       }
 
-      Assertions.assertEquals("/norestrictions/val",
+      assertEquals("/norestrictions/val",
         TestPath.mergeStatuses(wrap.globStatus(
             new Path("/norestrictions/*"),
                 new AcceptAllPathFilter())));
@@ -1212,7 +1213,7 @@ public class TestGlobPaths {
 
     void run() throws Exception {
       String reservedRoot = "/.reserved/.inodes/" + INodeId.ROOT_INODE_ID;
-      Assertions.assertEquals(reservedRoot,
+      assertEquals(reservedRoot,
         TestPath.mergeStatuses(wrap.
             globStatus(new Path(reservedRoot), new AcceptAllPathFilter())));
     }
@@ -1243,8 +1244,8 @@ public class TestGlobPaths {
       privWrap.setOwner(new Path("/"), newOwner, null);
       FileStatus[] status = 
           wrap.globStatus(rootPath, new AcceptAllPathFilter());
-      Assertions.assertEquals(1, status.length);
-      Assertions.assertEquals(newOwner, status[0].getOwner());
+      assertEquals(1, status.length);
+      assertEquals(newOwner, status[0].getOwner());
       privWrap.setOwner(new Path("/"), oldRootStatus.getOwner(), null);
     }
   }
@@ -1276,8 +1277,8 @@ public class TestGlobPaths {
         FileStatus[] statuses =
             wrap.globStatus(new Path("/filed*/alpha"),
                   new AcceptAllPathFilter());
-        Assertions.assertEquals(1, statuses.length);
-        Assertions.assertEquals("/filed_away/alpha", statuses[0].getPath()
+        assertEquals(1, statuses.length);
+        assertEquals("/filed_away/alpha", statuses[0].getPath()
             .toUri().getPath());
         privWrap.mkdir(new Path("/filed_away/alphabet"),
             new FsPermission((short)0777), true);
@@ -1285,8 +1286,8 @@ public class TestGlobPaths {
             new FsPermission((short)0777), true);
         statuses = wrap.globStatus(new Path("/filed*/alph*/*b*"),
                   new AcceptAllPathFilter());
-        Assertions.assertEquals(1, statuses.length);
-        Assertions.assertEquals("/filed_away/alphabet/abc", statuses[0].getPath()
+        assertEquals(1, statuses.length);
+        assertEquals("/filed_away/alphabet/abc", statuses[0].getPath()
             .toUri().getPath());
       } finally {
         privWrap.delete(new Path("/filed"), true);
@@ -1311,12 +1312,12 @@ public class TestGlobPaths {
     FileSystem fs = FileSystem.getLocal(conf);
     String localTmp = System.getProperty("java.io.tmpdir");
     Path base = new Path(new Path(localTmp), UUID.randomUUID().toString());
-    Assertions.assertTrue(fs.mkdirs(base));
-    Assertions.assertTrue(fs.mkdirs(new Path(base, "e")));
-    Assertions.assertTrue(fs.mkdirs(new Path(base, "c")));
-    Assertions.assertTrue(fs.mkdirs(new Path(base, "a")));
-    Assertions.assertTrue(fs.mkdirs(new Path(base, "d")));
-    Assertions.assertTrue(fs.mkdirs(new Path(base, "b")));
+    assertTrue(fs.mkdirs(base));
+    assertTrue(fs.mkdirs(new Path(base, "e")));
+    assertTrue(fs.mkdirs(new Path(base, "c")));
+    assertTrue(fs.mkdirs(new Path(base, "a")));
+    assertTrue(fs.mkdirs(new Path(base, "d")));
+    assertTrue(fs.mkdirs(new Path(base, "b")));
     fs.deleteOnExit(base);
     FileStatus[] status = fs.globStatus(new Path(base, "*"));
     ArrayList list = new ArrayList();
@@ -1324,7 +1325,7 @@ public class TestGlobPaths {
         list.add(f.getPath().toString());
     }
     boolean sorted = Ordering.natural().isOrdered(list);
-    Assertions.assertTrue(sorted);
+    assertTrue(sorted);
   }
 }
 

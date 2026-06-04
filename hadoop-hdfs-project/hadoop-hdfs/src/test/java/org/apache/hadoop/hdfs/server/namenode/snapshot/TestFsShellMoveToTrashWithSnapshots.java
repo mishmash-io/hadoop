@@ -20,8 +20,10 @@ package org.apache.hadoop.hdfs.server.namenode.snapshot;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.CommonConfigurationKeys;
 import org.apache.hadoop.fs.Path;
-import org.junit.jupiter.api.*;
-
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.Timeout;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -31,6 +33,8 @@ import java.util.List;
 import java.util.concurrent.*;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.Function;
+
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /**
  * Testing snapshots with FsShell move-to-trash feature.
@@ -239,7 +243,7 @@ public class TestFsShellMoveToTrashWithSnapshots {
     for (MyFile f : files) {
       final String original = f.trash.toUri().getPath();
       if (!original.startsWith(trashPathPrefix)) {
-        Assertions.assertTrue(original.startsWith(commonPrefix));
+        assertTrue(original.startsWith(commonPrefix));
 
         final int i = original.indexOf('/', commonPrefix.length());
         final String suffix = original.substring(i + 1);
@@ -249,13 +253,13 @@ public class TestFsShellMoveToTrashWithSnapshots {
   }
 
   @Test
-  @Timeout(value = 300_000, unit = TimeUnit.MILLISECONDS)
+  @Timeout(value = 300)
   public void test100tasks20files() throws Exception {
     runMultipleTasks(100, 20);
   }
 
   @Test
-  @Timeout(value = 300_000, unit = TimeUnit.MILLISECONDS)
+  @Timeout(value = 300)
   public void test10tasks200files() throws Exception {
     runMultipleTasks(10, 200);
   }
@@ -286,7 +290,7 @@ public class TestFsShellMoveToTrashWithSnapshots {
   }
 
   @Test
-  @Timeout(value = 100_000, unit = TimeUnit.MILLISECONDS)
+  @Timeout(value = 100)
   public void test4files() throws Exception {
     final Path dbDir = cluster.mkdirs(WAREHOUSE_DIR + "db");
     final Path tmpDir = cluster.mkdirs(WAREHOUSE_DIR + "tmp");
@@ -296,7 +300,7 @@ public class TestFsShellMoveToTrashWithSnapshots {
   }
 
   @Test
-  @Timeout(value = 300_000, unit = TimeUnit.MILLISECONDS)
+  @Timeout(value = 300)
   public void test200files() throws Exception {
     final Path dbDir = cluster.mkdirs(WAREHOUSE_DIR + "db");
     final Path tmpDir = cluster.mkdirs(WAREHOUSE_DIR + "tmp");
@@ -306,7 +310,7 @@ public class TestFsShellMoveToTrashWithSnapshots {
   }
 
   @Test
-  @Timeout(value = 300_000, unit = TimeUnit.MILLISECONDS)
+  @Timeout(value = 300)
   public void test50files10times() throws Exception {
     final Path tmpDir = cluster.mkdirs(WAREHOUSE_DIR + "tmp");
     final List<MyFile> buckets = new ArrayList<>();

@@ -36,9 +36,8 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.concurrent.TimeUnit;
 
-@Timeout(value=180000, unit=TimeUnit.MILLISECONDS)
+@Timeout(180)
 public class TestKMSACLs {
-
   @Test
   public void testDefaults() {
     final KMSACLs acls = new KMSACLs(new Configuration(false));
@@ -74,16 +73,13 @@ public class TestKMSACLs {
     conf.set(DEFAULT_KEY_ACL_PREFIX + "ALL", "invalid");
     conf.set(WHITELIST_KEY_ACL_PREFIX + "ALL", "invalid");
     final KMSACLs acls = new KMSACLs(conf);
-    assertTrue(acls.keyAcls.size() == 2,
-        "expected key ACL size is 2 but got "
+    assertTrue(acls.keyAcls.size() == 2, "expected key ACL size is 2 but got "
         + acls.keyAcls.size());
-    assertTrue(acls.whitelistKeyAcls.size() == 1,
-        "expected whitelist ACL size is 1 but got "
+    assertTrue(acls.whitelistKeyAcls.size() == 1, "expected whitelist ACL size is 1 but got "
         + acls.whitelistKeyAcls.size());
     assertFalse(acls.whitelistKeyAcls.containsKey(KeyOpType.ALL),
         "ALL should not be allowed for whitelist ACLs.");
-    assertTrue(acls.defaultKeyAcls.size() == 1,
-        "expected default ACL size is 1 but got "
+    assertTrue(acls.defaultKeyAcls.size() == 1, "expected default ACL size is 1 but got "
         + acls.defaultKeyAcls.size());
     assertTrue(acls.defaultKeyAcls.size() == 1,
         "ALL should not be allowed for default ACLs.");
@@ -103,8 +99,7 @@ public class TestKMSACLs {
     conf.set(WHITELIST_KEY_ACL_PREFIX + "DECRYPT_EEK", "whitelist1");
     conf.set(WHITELIST_KEY_ACL_PREFIX + "DECRYPT_EEK", "*");
     final KMSACLs acls = new KMSACLs(conf);
-    assertTrue(acls.keyAcls.size() == 2,
-        "expected key ACL size is 2 but got "
+    assertTrue(acls.keyAcls.size() == 2, "expected key ACL size is 2 but got "
         + acls.keyAcls.size());
     assertKeyAcl("test_key_1", acls, KeyOpType.DECRYPT_EEK, "decrypt2");
     assertKeyAcl("test_key_2", acls, KeyOpType.ALL, "all1", "all3");
@@ -189,8 +184,7 @@ public class TestKMSACLs {
     assertDefaultKeyAcl(acls, KeyOpType.DECRYPT_EEK, "new");
     assertTrue(acls.keyAcls.isEmpty());
     assertTrue(acls.whitelistKeyAcls.isEmpty());
-    assertEquals(1, acls.defaultKeyAcls.size(),
-        "Got unexpected sized acls:"
+    assertEquals(1, acls.defaultKeyAcls.size(), "Got unexpected sized acls:"
         + acls.defaultKeyAcls);
   }
 
@@ -224,7 +218,6 @@ public class TestKMSACLs {
     for (String name : names) {
       expected.add(name);
     }
-    assertEquals(expected, actual,
-        "defaultKeyAcls don't match for op:" + op);
+    assertEquals(expected, actual, "defaultKeyAcls don't match for op:" + op);
   }
 }

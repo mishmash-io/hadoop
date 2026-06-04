@@ -47,15 +47,15 @@ import org.apache.hadoop.hdfs.server.balancer.NameNodeConnector;
 import org.apache.hadoop.hdfs.server.common.HdfsServerConstants;
 import org.apache.hadoop.hdfs.server.sps.ExternalSPSContext;
 import org.apache.hadoop.test.GenericTestUtils;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.Timeout;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.function.Supplier;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 /**
  * Tests that StoragePolicySatisfier daemon is able to check the striped blocks
@@ -109,7 +109,7 @@ public class TestStoragePolicySatisfierWithStripedFile {
    * moving to satisfy the storage policy.
    */
   @Test
-  @Timeout(value = 300000, unit = TimeUnit.MILLISECONDS)
+  @Timeout(value = 300)
   public void testMoverWithFullStripe() throws Exception {
     // start 11 datanodes
     int numOfDatanodes = 11;
@@ -169,7 +169,7 @@ public class TestStoragePolicySatisfierWithStripedFile {
           fileLen);
       for (LocatedBlock lb : locatedBlocks.getLocatedBlocks()) {
         for (StorageType type : lb.getStorageTypes()) {
-          Assertions.assertEquals(StorageType.DISK, type);
+          assertEquals(StorageType.DISK, type);
         }
       }
       StripedFileTestUtil.verifyLocatedStripedBlocks(locatedBlocks,
@@ -220,7 +220,7 @@ public class TestStoragePolicySatisfierWithStripedFile {
    * should do local block movement as it has ARCHIVE storage type.
    */
   @Test
-  @Timeout(value = 300000, unit = TimeUnit.MILLISECONDS)
+  @Timeout(value = 300)
   public void testWhenOnlyFewTargetNodesAreAvailableToSatisfyStoragePolicy()
       throws Exception {
     // start 10 datanodes
@@ -280,7 +280,7 @@ public class TestStoragePolicySatisfierWithStripedFile {
           fileLen);
       for (LocatedBlock lb : locatedBlocks.getLocatedBlocks()) {
         for (StorageType type : lb.getStorageTypes()) {
-          Assertions.assertEquals(StorageType.DISK, type);
+          assertEquals(StorageType.DISK, type);
         }
       }
       Thread.sleep(5000);
@@ -330,7 +330,7 @@ public class TestStoragePolicySatisfierWithStripedFile {
    * 6. All replica  should be moved in proper storage based on policy.
    */
   @Test
-  @Timeout(value = 300000, unit = TimeUnit.MILLISECONDS)
+  @Timeout(value = 300)
   public void testSPSWhenFileHasLowRedundancyBlocks() throws Exception {
     // start 9 datanodes
     int numOfDatanodes = 9;
@@ -427,7 +427,7 @@ public class TestStoragePolicySatisfierWithStripedFile {
    * SPS won't schedule any block movement for this path.
    */
   @Test
-  @Timeout(value = 300000, unit = TimeUnit.MILLISECONDS)
+  @Timeout(value = 300)
   public void testWhenNoTargetDatanodeToSatisfyStoragePolicy()
       throws Exception {
     // start 10 datanodes
@@ -486,7 +486,7 @@ public class TestStoragePolicySatisfierWithStripedFile {
           fileLen);
       for (LocatedBlock lb : locatedBlocks.getLocatedBlocks()) {
         for (StorageType type : lb.getStorageTypes()) {
-          Assertions.assertEquals(StorageType.DISK, type);
+          assertEquals(StorageType.DISK, type);
         }
       }
       StripedFileTestUtil.verifyLocatedStripedBlocks(locatedBlocks,

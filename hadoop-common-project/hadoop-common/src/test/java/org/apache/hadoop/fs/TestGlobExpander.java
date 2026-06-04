@@ -23,6 +23,7 @@ import java.io.IOException;
 import java.util.List;
 
 import org.junit.jupiter.api.Test;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 public class TestGlobExpander {
 
@@ -56,15 +57,11 @@ public class TestGlobExpander {
   private void checkExpansion(String filePattern, String... expectedExpansions)
       throws IOException {
     List<String> actualExpansions = GlobExpander.expand(filePattern);
-    assertEquals(
-        expectedExpansions.length,
-        actualExpansions.size(),
-        "Different number of expansions");
+    assertEquals(expectedExpansions.length,
+        actualExpansions.size(), "Different number of expansions");
     for (int i = 0; i < expectedExpansions.length; i++) {
-      assertEquals(
-          expectedExpansions[i],
-          actualExpansions.get(i),
-          "Expansion of " + filePattern);
+      assertEquals(expectedExpansions[i],
+          actualExpansions.get(i), "Expansion of " + filePattern);
     }
   }
 }

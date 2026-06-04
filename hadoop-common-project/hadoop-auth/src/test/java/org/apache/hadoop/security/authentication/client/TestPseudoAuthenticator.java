@@ -13,10 +13,11 @@
  */
 package org.apache.hadoop.security.authentication.client;
 
-import org.apache.hadoop.security.authentication.server.AuthenticationFilter;
-import org.apache.hadoop.security.authentication.server.PseudoAuthenticationHandler;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+
+import org.apache.hadoop.security.authentication.server.AuthenticationFilter;
+import org.apache.hadoop.security.authentication.server.PseudoAuthenticationHandler;
 import org.junit.jupiter.api.Test;
 
 import java.net.HttpURLConnection;
@@ -66,7 +67,7 @@ public class TestPseudoAuthenticator {
       conn.connect();
       assertEquals(HttpURLConnection.HTTP_UNAUTHORIZED, conn.getResponseCode());
       assertTrue(conn.getHeaderFields().containsKey("WWW-Authenticate"));
-      assertEquals("Unauthorized", conn.getResponseMessage());
+      assertEquals("Authentication required", conn.getResponseMessage());
     } finally {
       auth.stop();
     }

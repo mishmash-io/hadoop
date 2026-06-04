@@ -17,7 +17,9 @@
  */
 package org.apache.hadoop.hdfs.server.namenode;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 import java.lang.management.ManagementFactory;
 import java.util.HashSet;
@@ -33,12 +35,16 @@ import javax.management.ObjectName;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.hdfs.util.RwLockMode;
 import org.apache.hadoop.hdfs.DFSTestUtil;
 import org.apache.hadoop.hdfs.DistributedFileSystem;
 import org.apache.hadoop.hdfs.MiniDFSCluster;
 import org.apache.hadoop.metrics2.impl.ConfigBuilder;
 import org.apache.hadoop.metrics2.impl.TestMetricsConfig;
 import org.apache.hadoop.test.GenericTestUtils;
+import org.apache.hadoop.util.concurrent.SubjectInheritingThread;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.Timeout;
 import org.eclipse.jetty.util.ajax.JSON;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.Timeout;
@@ -53,10 +59,10 @@ public class TestFSNamesystemMBean {
    * JMX properties. If it can access all the properties, the test is
    * considered successful.
    */
-  private static class MBeanClient extends Thread {
+  private static class MBeanClient extends SubjectInheritingThread {
     private boolean succeeded = false;
     @Override
-    public void run() {
+    public void work() {
       try {
         MBeanServer mbs = ManagementFactory.getPlatformMBeanServer();
 
@@ -153,18 +159,18 @@ public class TestFSNamesystemMBean {
       cluster.waitActive();
 
       fsn = cluster.getNameNode().namesystem;
-      fsn.writeLock();
+      fsn.writeLock(RwLockMode.GLOBAL);
       Thread.sleep(jmxCachePeriod * 1000);
 
       MBeanClient client = new MBeanClient();
       client.start();
       client.join(20000);
-      assertTrue(client.succeeded, "JMX calls are blocked when FSNamesystem's writerlock" +
-          "is owned by another thread");
+      assertTrue(client.succeeded,
+          "JMX calls are blocked when FSNamesystem's writerlock" + "is owned by another thread");
       client.interrupt();
     } finally {
-      if (fsn != null && fsn.hasWriteLock()) {
-        fsn.writeUnlock();
+      if (fsn != null && fsn.hasWriteLock(RwLockMode.GLOBAL)) {
+        fsn.writeUnlock(RwLockMode.GLOBAL, "testWithFSNamesystemWriteLock");
       }
       if (cluster != null) {
         cluster.shutdown();
@@ -189,8 +195,8 @@ public class TestFSNamesystemMBean {
         MBeanClient client = new MBeanClient();
         client.start();
         client.join(20000);
-        assertTrue(client.succeeded, "JMX calls are blocked when FSEditLog" +
-            " is synchronized by another thread");
+        assertTrue(client.succeeded,
+            "JMX calls are blocked when FSEditLog" + " is synchronized by another thread");
         client.interrupt();
       }
     } finally {
@@ -201,7 +207,7 @@ public class TestFSNamesystemMBean {
   }
 
   @Test
-  @Timeout(value = 120000, unit = TimeUnit.MILLISECONDS)
+  @Timeout(value = 120)
   public void testFsEditLogMetrics() throws Exception {
     final Configuration conf = new Configuration();
     MiniDFSCluster cluster = null;

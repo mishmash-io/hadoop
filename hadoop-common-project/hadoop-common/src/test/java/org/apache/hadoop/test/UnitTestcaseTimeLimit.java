@@ -17,6 +17,9 @@
  */
 package org.apache.hadoop.test;
 
+
+import org.junit.jupiter.api.Timeout;
+
 /**
  * Class for test units to extend in order that their individual tests will
  * be timed out and fail automatically should they run more than 10 seconds.
@@ -25,8 +28,7 @@ package org.apache.hadoop.test;
  *
  * Deprecated - add a Timeout annotation directly to your class.
  */
-@Deprecated
+@Timeout(10)
 public class UnitTestcaseTimeLimit {
   public final int timeOutSecs = 10;
-  
 }

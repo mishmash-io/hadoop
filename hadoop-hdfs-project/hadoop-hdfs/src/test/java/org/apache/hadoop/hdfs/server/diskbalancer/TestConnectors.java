@@ -24,11 +24,12 @@ import org.apache.hadoop.hdfs.server.diskbalancer.connectors.ClusterConnector;
 import org.apache.hadoop.hdfs.server.diskbalancer.connectors.ConnectorFactory;
 import org.apache.hadoop.hdfs.server.diskbalancer.datamodel.DiskBalancerCluster;
 import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import java.io.IOException;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 /**
  * Test Class that tests connectors.
@@ -61,8 +62,10 @@ public class TestConnectors {
     DiskBalancerCluster diskBalancerCluster =
         new DiskBalancerCluster(nameNodeConnector);
     diskBalancerCluster.readClusterInfo();
-    Assertions.assertEquals(numDatanodes, diskBalancerCluster.getNodes().size(), "Expected number of Datanodes not found.");
-    Assertions.assertEquals(volumeCount, diskBalancerCluster.getNodes().get(0).getVolumeCount(), "Expected number of volumes not found.");
+    assertEquals(numDatanodes, diskBalancerCluster.getNodes().size(),
+        "Expected number of Datanodes not found.");
+    assertEquals(volumeCount, diskBalancerCluster.getNodes().get(0).getVolumeCount(),
+        "Expected number of volumes not found.");
   }
 
   @Test
@@ -76,8 +79,7 @@ public class TestConnectors {
     String diskBalancerJson = diskBalancerCluster.toJson();
     DiskBalancerCluster serializedCluster =
         DiskBalancerCluster.parseJson(diskBalancerJson);
-    Assertions.assertEquals(diskBalancerCluster.getNodes().size(),
-        serializedCluster.getNodes().size(),
-        "Parsed cluster is not equal to persisted info.");
+    assertEquals(diskBalancerCluster.getNodes().size(),
+        serializedCluster.getNodes().size(), "Parsed cluster is not equal to persisted info.");
   }
 }

@@ -18,7 +18,10 @@
 
 package org.apache.hadoop.hdfs.server.datanode;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.fail;
 
 import java.io.IOException;
 import java.util.List;
@@ -75,9 +78,7 @@ public class TestDataNodeExit {
       Thread.sleep(WAIT_TIME_IN_MILLIS);
       iterations--;
     }
-    assertEquals(expected,
-        dn.getBpOsCount(),
-        "Mismatch in number of BPServices running");
+    assertEquals(expected, dn.getBpOsCount(), "Mismatch in number of BPServices running");
   }
 
   @Test

@@ -43,10 +43,8 @@ import org.apache.hadoop.test.GenericTestUtils;
 import org.apache.hadoop.util.Lists;
 import org.apache.hadoop.util.VersionInfo;
 
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -92,8 +90,7 @@ public class TestDatanodeRegister {
   @Test
   public void testSoftwareVersionDifferences() throws Exception {
     // We expect no exception to be thrown when the software versions match.
-    assertEquals(VersionInfo.getVersion(),
-        actor.retrieveNamespaceInfo().getSoftwareVersion());
+    assertEquals(VersionInfo.getVersion(), actor.retrieveNamespaceInfo().getSoftwareVersion());
     
     // We expect no exception to be thrown when the min NN version is below the
     // reported NN version.
@@ -159,8 +156,7 @@ public class TestDatanodeRegister {
       localActor.stop();
       localActor.register(nsInfo);
     } catch (IOException e) {
-      Assertions.assertEquals("DN shut down before block pool registered",
-          e.getMessage());
+      assertEquals("DN shut down before block pool registered", e.getMessage());
     }
   }
 

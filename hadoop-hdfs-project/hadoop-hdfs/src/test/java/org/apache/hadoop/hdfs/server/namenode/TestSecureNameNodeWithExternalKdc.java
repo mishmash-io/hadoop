@@ -16,7 +16,10 @@
  */
 
 package org.apache.hadoop.hdfs.server.namenode;
-import static org.junit.jupiter.api.Assertions.*;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.fail;
 
 import java.io.IOException;
 import java.security.PrivilegedExceptionAction;
@@ -32,7 +35,8 @@ import org.apache.hadoop.hdfs.MiniDFSCluster;
 import org.apache.hadoop.security.UserGroupInformation;
 import org.apache.hadoop.security.UserGroupInformation.AuthenticationMethod;
 import static org.apache.hadoop.security.SecurityUtilTestHelper.isExternalKdcRunning;
-import org.junit.jupiter.api.Assumptions;
+import static org.junit.jupiter.api.Assumptions.assumeTrue;
+
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -56,7 +60,7 @@ public class TestSecureNameNodeWithExternalKdc {
   @BeforeEach
   public void testExternalKdcRunning() {
     // Tests are skipped if external KDC is not running.
-    Assumptions.assumeTrue(isExternalKdcRunning());
+    assumeTrue(isExternalKdcRunning());
   }
 
   @Test
@@ -69,8 +73,7 @@ public class TestSecureNameNodeWithExternalKdc {
         System.getProperty("dfs.namenode.kerberos.internal.spnego.principal");
       String nnKeyTab = System.getProperty("dfs.namenode.keytab.file");
       assertNotNull(nnPrincipal, "NameNode principal was not specified");
-      assertNotNull(nnSpnegoPrincipal,
-        "NameNode SPNEGO principal was not specified");
+      assertNotNull(nnSpnegoPrincipal, "NameNode SPNEGO principal was not specified");
       assertNotNull(nnKeyTab, "NameNode keytab was not specified");
 
       Configuration conf = new HdfsConfiguration();
@@ -114,8 +117,7 @@ public class TestSecureNameNodeWithExternalKdc {
       Path p = new Path("/tmp/alpha");
       fs.mkdirs(p);
       assertNotNull(fs.listStatus(p));
-      assertEquals(AuthenticationMethod.KERBEROS,
-          ugi.getAuthenticationMethod());
+      assertEquals(AuthenticationMethod.KERBEROS, ugi.getAuthenticationMethod());
     } finally {
       if (cluster != null) {
         cluster.shutdown();

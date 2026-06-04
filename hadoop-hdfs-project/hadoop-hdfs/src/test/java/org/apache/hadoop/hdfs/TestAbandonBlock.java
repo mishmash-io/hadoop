@@ -17,6 +17,7 @@
  */
 package org.apache.hadoop.hdfs;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.fail;
 
 import java.io.IOException;
@@ -31,7 +32,6 @@ import org.apache.hadoop.hdfs.protocol.LocatedBlock;
 import org.apache.hadoop.hdfs.protocol.LocatedBlocks;
 import org.apache.hadoop.hdfs.protocol.QuotaExceededException;
 import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -100,7 +100,8 @@ public class TestAbandonBlock {
     cluster.restartNameNode();
     blocks = dfsclient.getNamenode().getBlockLocations(src, 0,
         Integer.MAX_VALUE);
-    Assertions.assertEquals(orginalNumBlocks, blocks.locatedBlockCount() + 1, "Blocks " + b + " has not been abandoned.");
+    assertEquals(orginalNumBlocks, blocks.locatedBlockCount() + 1, "Blocks " +
+        b + " has not been abandoned.");
   }
 
   @Test

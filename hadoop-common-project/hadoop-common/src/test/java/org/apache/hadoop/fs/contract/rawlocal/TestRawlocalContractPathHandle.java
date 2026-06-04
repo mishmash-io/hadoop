@@ -24,6 +24,9 @@ import org.apache.hadoop.fs.contract.AbstractFSContract;
 public class TestRawlocalContractPathHandle
     extends AbstractContractPathHandleTest {
 
+  public TestRawlocalContractPathHandle() {
+  }
+
   @Override
   protected AbstractFSContract createContract(Configuration conf) {
     return new RawlocalFSContract(conf);

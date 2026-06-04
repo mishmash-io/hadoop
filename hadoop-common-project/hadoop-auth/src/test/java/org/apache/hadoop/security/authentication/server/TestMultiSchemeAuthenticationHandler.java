@@ -23,6 +23,14 @@ import static org.apache.hadoop.security.authentication.server.KerberosAuthentic
 import static org.apache.hadoop.security.authentication.server.KerberosAuthenticationHandler.KEYTAB;
 import static org.apache.hadoop.security.authentication.server.KerberosAuthenticationHandler.NAME_RULES;
 import static org.apache.hadoop.security.authentication.server.LdapConstants.*;
+import static org.apache.hadoop.security.authentication.server.HttpConstants.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.fail;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 import java.io.File;
 import java.util.Properties;
@@ -43,16 +51,11 @@ import org.apache.directory.server.core.integ.ApacheDSTestExtension;
 import org.apache.hadoop.minikdc.KerberosSecurityTestcase;
 import org.apache.hadoop.security.authentication.KerberosTestUtils;
 import org.apache.hadoop.security.authentication.client.AuthenticationException;
-import static org.junit.jupiter.api.Assertions.assertNull;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.fail;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.Timeout;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.Mockito;
 
 /**
  * This unit test verifies the functionality of "multi-scheme" auth handler.
@@ -129,57 +132,61 @@ public class TestMultiSchemeAuthenticationHandler
   }
 
   @Test
+  @Timeout(value = 60, unit = TimeUnit.SECONDS)
   public void testRequestWithoutAuthorization() throws Exception {
-    HttpServletRequest request = Mockito.mock(HttpServletRequest.class);
-    HttpServletResponse response = Mockito.mock(HttpServletResponse.class);
+    HttpServletRequest request = mock(HttpServletRequest.class);
+    HttpServletResponse response = mock(HttpServletResponse.class);
 
     assertNull(handler.authenticate(request, response));
-    Mockito.verify(response).addHeader(WWW_AUTHENTICATE_HEADER, BASIC);
-    Mockito.verify(response).addHeader(WWW_AUTHENTICATE_HEADER, NEGOTIATE);
-    Mockito.verify(response).setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+    verify(response).addHeader(WWW_AUTHENTICATE_HEADER, BASIC);
+    verify(response).addHeader(WWW_AUTHENTICATE_HEADER, NEGOTIATE);
+    verify(response).setStatus(HttpServletResponse.SC_UNAUTHORIZED);
   }
 
   @Test
+  @Timeout(value = 60, unit = TimeUnit.SECONDS)
   public void testRequestWithInvalidAuthorization() throws Exception {
-    HttpServletRequest request = Mockito.mock(HttpServletRequest.class);
-    HttpServletResponse response = Mockito.mock(HttpServletResponse.class);
+    HttpServletRequest request = mock(HttpServletRequest.class);
+    HttpServletResponse response = mock(HttpServletResponse.class);
 
     final Base64 base64 = new Base64(0);
     String credentials = "bjones:invalidpassword";
-    Mockito.when(request.getHeader(AUTHORIZATION_HEADER))
+    when(request.getHeader(AUTHORIZATION_HEADER))
         .thenReturn(base64.encodeToString(credentials.getBytes()));
     assertNull(handler.authenticate(request, response));
-    Mockito.verify(response).addHeader(WWW_AUTHENTICATE_HEADER, BASIC);
-    Mockito.verify(response).addHeader(WWW_AUTHENTICATE_HEADER, NEGOTIATE);
-    Mockito.verify(response).setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+    verify(response).addHeader(WWW_AUTHENTICATE_HEADER, BASIC);
+    verify(response).addHeader(WWW_AUTHENTICATE_HEADER, NEGOTIATE);
+    verify(response).setStatus(HttpServletResponse.SC_UNAUTHORIZED);
   }
 
   @Test
+  @Timeout(value = 60, unit = TimeUnit.SECONDS)
   public void testRequestWithLdapAuthorization() throws Exception {
-    HttpServletRequest request = Mockito.mock(HttpServletRequest.class);
-    HttpServletResponse response = Mockito.mock(HttpServletResponse.class);
+    HttpServletRequest request = mock(HttpServletRequest.class);
+    HttpServletResponse response = mock(HttpServletResponse.class);
 
     final Base64 base64 = new Base64(0);
     String credentials = base64.encodeToString("bjones:p@ssw0rd".getBytes());
     String authHeader = BASIC + " " + credentials;
-    Mockito.when(request.getHeader(AUTHORIZATION_HEADER))
+    when(request.getHeader(AUTHORIZATION_HEADER))
         .thenReturn(authHeader);
     AuthenticationToken token = handler.authenticate(request, response);
     assertNotNull(token);
-    Mockito.verify(response).setStatus(HttpServletResponse.SC_OK);
+    verify(response).setStatus(HttpServletResponse.SC_OK);
     assertEquals(TYPE, token.getType());
-    assertEquals("bjones", token.getUserName());
-    assertEquals("bjones", token.getName());
+    assertEquals(token.getUserName(), "bjones");
+    assertEquals(token.getName(), "bjones");
   }
 
   @Test
+  @Timeout(value = 60, unit = TimeUnit.SECONDS)
   public void testRequestWithInvalidKerberosAuthorization() throws Exception {
     String token = new Base64(0).encodeToString(new byte[]{0, 1, 2});
 
-    HttpServletRequest request = Mockito.mock(HttpServletRequest.class);
-    HttpServletResponse response = Mockito.mock(HttpServletResponse.class);
+    HttpServletRequest request = mock(HttpServletRequest.class);
+    HttpServletResponse response = mock(HttpServletResponse.class);
 
-    Mockito.when(request.getHeader(AUTHORIZATION_HEADER)).thenReturn(
+    when(request.getHeader(AUTHORIZATION_HEADER)).thenReturn(
         NEGOTIATE + token);
 
     try {

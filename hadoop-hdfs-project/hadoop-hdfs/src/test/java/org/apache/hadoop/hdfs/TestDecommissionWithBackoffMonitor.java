@@ -37,6 +37,7 @@ public class TestDecommissionWithBackoffMonitor extends TestDecommission {
 
   @BeforeEach
   @Override
+  @BeforeEach
   public void setup() throws IOException {
     super.setup();
     Configuration conf = getConf();

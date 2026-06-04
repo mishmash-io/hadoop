@@ -25,7 +25,7 @@ import java.io.PrintStream;
 
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.security.UserGroupInformation;
-import org.apache.hadoop.util.cli.Tool;
+import org.apache.hadoop.util.Tool;
 import org.apache.hadoop.util.cli.ToolRunner;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -67,8 +67,7 @@ public abstract class GetGroupsTestBase {
   public void testMultipleExistingUsers() throws Exception {
     String actualOutput = runTool(conf,
         new String[]{testUser1.getUserName(), testUser2.getUserName()}, true);
-    assertEquals(
-        getExpectedOutput(testUser1) + getExpectedOutput(testUser2), actualOutput,
+    assertEquals(getExpectedOutput(testUser1) + getExpectedOutput(testUser2), actualOutput,
         "Show the output for both users given");
   }
   
@@ -76,21 +75,17 @@ public abstract class GetGroupsTestBase {
   public void testNonExistentUser() throws Exception {
     String actualOutput = runTool(conf,
         new String[]{"does-not-exist"}, true);
-    assertEquals(
-        getExpectedOutput(UserGroupInformation.createRemoteUser("does-not-exist")),
-        actualOutput,
-        "Show the output for only the user given, with no groups");
+    assertEquals(getExpectedOutput(UserGroupInformation.createRemoteUser("does-not-exist")),
+        actualOutput, "Show the output for only the user given, with no groups");
   }
   
   @Test
   public void testMultipleNonExistingUsers() throws Exception {
     String actualOutput = runTool(conf,
         new String[]{"does-not-exist1", "does-not-exist2"}, true);
-    assertEquals(
-        getExpectedOutput(UserGroupInformation.createRemoteUser("does-not-exist1")) +
+    assertEquals(getExpectedOutput(UserGroupInformation.createRemoteUser("does-not-exist1")) +
         getExpectedOutput(UserGroupInformation.createRemoteUser("does-not-exist2")),
-        actualOutput,
-        "Show the output for only the user given, with no groups");
+        actualOutput, "Show the output for only the user given, with no groups");
   }
   
   @Test
@@ -98,8 +93,7 @@ public abstract class GetGroupsTestBase {
     String actualOutput = runTool(conf,
         new String[]{"does-not-exist1", testUser1.getUserName(),
                      "does-not-exist2", testUser2.getUserName()}, true);
-    assertEquals(
-        getExpectedOutput(UserGroupInformation.createRemoteUser("does-not-exist1")) +
+    assertEquals(getExpectedOutput(UserGroupInformation.createRemoteUser("does-not-exist1")) +
         getExpectedOutput(testUser1) +
         getExpectedOutput(UserGroupInformation.createRemoteUser("does-not-exist2")) +
         getExpectedOutput(testUser2),

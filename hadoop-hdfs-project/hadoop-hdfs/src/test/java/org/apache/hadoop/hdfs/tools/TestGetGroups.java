@@ -23,8 +23,7 @@ import java.io.PrintStream;
 import org.apache.hadoop.hdfs.HdfsConfiguration;
 import org.apache.hadoop.hdfs.MiniDFSCluster;
 import org.apache.hadoop.tools.GetGroupsTestBase;
-import org.apache.hadoop.util.cli.Tool;
-
+import org.apache.hadoop.util.Tool;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 

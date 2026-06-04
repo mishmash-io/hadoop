@@ -40,10 +40,8 @@ import org.apache.hadoop.test.GenericTestUtils;
 import org.apache.hadoop.test.Whitebox;
 import org.apache.hadoop.util.StringUtils;
 import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-
 import org.slf4j.event.Level;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -59,6 +57,9 @@ import java.util.Random;
 import java.util.Set;
 import java.util.concurrent.ThreadLocalRandom;
 import java.util.concurrent.TimeoutException;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.fail;
 
 public class TestLeaseRecoveryStriped {
   public static final Logger LOG = LoggerFactory
@@ -188,7 +189,7 @@ public class TestLeaseRecoveryStriped {
         String msg = "failed testCase at i=" + i + ", blockLengths="
             + blockLengths + "\n"
             + StringUtils.stringifyException(e);
-        Assertions.fail(msg);
+        fail(msg);
       }
     }
   }
@@ -244,7 +245,7 @@ public class TestLeaseRecoveryStriped {
         String msg = "failed testCase at i=" + i + ", blockLengths="
             + blockLengths + "\n"
             + StringUtils.stringifyException(e);
-        Assertions.fail(msg);
+        fail(msg);
       }
     }
   }
@@ -260,11 +261,40 @@ public class TestLeaseRecoveryStriped {
     checkSafeLength(1024 * 1024 * 1024, 6442450944L); // Length of: 1 GiB
   }
 
+  /**
+   * 1. Write 1MB data, then flush it.
+   * 2. Mock client quiet exceptionally.
+   * 3. Trigger lease recovery.
+   * 4. Lease recovery successfully.
+   */
+  @Test
+  public void testLeaseRecoveryWithManyZeroLengthReplica() {
+    int curCellSize = (int)1024 * 1024;
+    try {
+      final FSDataOutputStream out = dfs.create(p);
+      final DFSStripedOutputStream stripedOut = (DFSStripedOutputStream) out
+          .getWrappedStream();
+      for (int pos = 0; pos < curCellSize; pos++) {
+        out.write(StripedFileTestUtil.getByte(pos));
+      }
+      for (int i = 0; i < dataBlocks + parityBlocks; i++) {
+        StripedDataStreamer s = stripedOut.getStripedDataStreamer(i);
+        waitStreamerAllAcked(s);
+        stopBlockStream(s);
+      }
+      recoverLease();
+      LOG.info("Trigger recover lease manually successfully.");
+    } catch (Throwable e) {
+      String msg = "failed testCase" + StringUtils.stringifyException(e);
+      fail(msg);
+    }
+  }
+
   private void checkSafeLength(int blockLength, long expectedSafeLength) {
     int[] blockLengths = new int[]{blockLength, blockLength, blockLength, blockLength,
         blockLength, blockLength};
     long safeLength = new BlockLengths(ecPolicy, blockLengths).getSafeLength();
-    Assertions.assertEquals(expectedSafeLength, safeLength);
+    assertEquals(expectedSafeLength, safeLength);
   }
 
   private void runTest(int[] blockLengths, long safeLength) throws Exception {

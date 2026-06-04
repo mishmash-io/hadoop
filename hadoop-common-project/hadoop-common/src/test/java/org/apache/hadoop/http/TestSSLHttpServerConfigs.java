@@ -141,35 +141,35 @@ public class TestSSLHttpServerConfigs {
   }
 
   @Test
-  @Timeout(value=120000, unit=TimeUnit.MILLISECONDS)
+  @Timeout(value = 120)
   public void testServerSetup() throws Exception {
     setupKeyStores(SERVER_PWD, CLIENT_PWD, TRUST_STORE_PWD);
     testServerStart(SERVER_PWD, SERVER_PWD, TRUST_STORE_PWD);
   }
 
   @Test
-  @Timeout(value=120000, unit=TimeUnit.MILLISECONDS)
+  @Timeout(value = 120)
   public void testServerSetupWithoutTrustPassword() throws Exception {
     setupKeyStores(SERVER_PWD, CLIENT_PWD, TRUST_STORE_PWD);
     testServerStart(SERVER_PWD, SERVER_PWD, null);
   }
 
   @Test
-  @Timeout(value=120000, unit=TimeUnit.MILLISECONDS)
+  @Timeout(value = 120)
   public void testServerSetupWithoutKeyStorePassword() throws Exception {
     setupKeyStores(SERVER_PWD, CLIENT_PWD, TRUST_STORE_PWD);
     testServerStart(SERVER_PWD, null, null);
   }
 
   @Test
-  @Timeout(value=120000, unit=TimeUnit.MILLISECONDS)
+  @Timeout(value = 120)
   public void testServerSetupWithoutKeyStoreKeyPassword() throws Exception {
     setupKeyStores(SERVER_PWD, CLIENT_PWD, TRUST_STORE_PWD);
     testServerStart(null, SERVER_PWD, null);
   }
 
   @Test
-  @Timeout(value=120000, unit=TimeUnit.MILLISECONDS)
+  @Timeout(value = 120)
   public void testServerSetupWithNoKeyStorePassword() throws Exception {
     setupKeyStores(SERVER_PWD, CLIENT_PWD, TRUST_STORE_PWD);
     // Accessing KeyStore without either of KeyStore.KeyPassword or KeyStore
@@ -185,7 +185,7 @@ public class TestSSLHttpServerConfigs {
   }
 
   @Test
-  @Timeout(value=120000, unit=TimeUnit.MILLISECONDS)
+  @Timeout(value = 120)
   public void testServerSetupWithWrongKeyStorePassword() throws Exception {
     setupKeyStores(SERVER_PWD, CLIENT_PWD, TRUST_STORE_PWD);
 
@@ -212,7 +212,7 @@ public class TestSSLHttpServerConfigs {
   }
 
   @Test
-  @Timeout(value=120000, unit=TimeUnit.MILLISECONDS)
+  @Timeout(value = 120)
   public void testKeyStoreSetupWithoutTrustStorePassword() throws Exception {
     // Setup TrustStore without TrustStore password
     setupKeyStores(SERVER_PWD, CLIENT_PWD, "");
@@ -233,7 +233,7 @@ public class TestSSLHttpServerConfigs {
   }
 
   @Test
-  @Timeout(value=120000, unit=TimeUnit.MILLISECONDS)
+  @Timeout(value = 120)
   public void testKeyStoreSetupWithoutKeyStorePassword() throws Exception {
     // Setup KeyStore without KeyStore password
     setupKeyStores(SERVER_PWD, "", TRUST_STORE_PWD);
@@ -254,7 +254,7 @@ public class TestSSLHttpServerConfigs {
   }
 
   @Test
-  @Timeout(value=120000, unit=TimeUnit.MILLISECONDS)
+  @Timeout(value = 120)
   public void testKeyStoreSetupWithoutPassword() throws Exception {
     // Setup KeyStore without any password
     setupKeyStores("", "", "");

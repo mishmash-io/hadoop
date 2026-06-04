@@ -32,6 +32,9 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.MethodSource;
 
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.MethodSource;
+
 public class TestNativeCrc32 {
 
   private static final long BASE_POSITION = 0;
@@ -39,6 +42,8 @@ public class TestNativeCrc32 {
   private static final String IO_BYTES_PER_CHECKSUM_KEY =
     "io.bytes.per.checksum";
   private static final int NUM_CHUNKS = 3;
+
+  private DataChecksum.Type checksumType;
 
   private int bytesPerChecksum;
   private String fileName;
@@ -52,10 +57,15 @@ public class TestNativeCrc32 {
     return params;
   }
 
-  public void setup(DataChecksum.Type checksumType) {
+  public void initTestNativeCrc32(DataChecksum.Type pChecksumType) {
+    this.checksumType = pChecksumType;
+    setup();
+  }
+
+  public void setup() {
     assumeTrue(NativeCrc32.isAvailable());
     assertEquals(4, checksumType.size,
-      "These tests assume they can write a checksum value as a 4-byte int.");
+        "These tests assume they can write a checksum value as a 4-byte int.");
     Configuration conf = new Configuration();
     bytesPerChecksum = conf.getInt(IO_BYTES_PER_CHECKSUM_KEY,
       IO_BYTES_PER_CHECKSUM_DEFAULT);
@@ -65,9 +75,10 @@ public class TestNativeCrc32 {
 
   @ParameterizedTest
   @MethodSource("data")
-  public void testVerifyChunkedSumsSuccess(DataChecksum.Type checksumType) throws ChecksumException {
-    setup(checksumType);
-    allocateDirectByteBuffers(checksumType);
+  public void testVerifyChunkedSumsSuccess(DataChecksum.Type pChecksumType)
+      throws ChecksumException {
+    initTestNativeCrc32(pChecksumType);
+    allocateDirectByteBuffers();
     fillDataAndValidChecksums();
     NativeCrc32.verifyChunkedSums(bytesPerChecksum, checksumType.id,
       checksums, data, fileName, BASE_POSITION);
@@ -75,19 +86,20 @@ public class TestNativeCrc32 {
 
   @ParameterizedTest
   @MethodSource("data")
-  public void testVerifyChunkedSumsFail(DataChecksum.Type checksumType) {
-    setup(checksumType);
-    allocateDirectByteBuffers(checksumType);
+  public void testVerifyChunkedSumsFail(DataChecksum.Type pChecksumType) {
+    initTestNativeCrc32(pChecksumType);
+    allocateDirectByteBuffers();
     fillDataAndInvalidChecksums();
     assertThrows(ChecksumException.class,
         () -> NativeCrc32.verifyChunkedSums(bytesPerChecksum, checksumType.id,
-            checksums, data, fileName, BASE_POSITION));
+        checksums, data, fileName, BASE_POSITION));
   }
 
   @ParameterizedTest
   @MethodSource("data")
-  public void testVerifyChunkedSumsSuccessOddSize(DataChecksum.Type checksumType) throws ChecksumException {
-    setup(checksumType);
+  public void testVerifyChunkedSumsSuccessOddSize(DataChecksum.Type pChecksumType)
+      throws ChecksumException {
+    initTestNativeCrc32(pChecksumType);
     // Test checksum with an odd number of bytes. This is a corner case that
     // is often broken in checksum calculation, because there is an loop which
     // handles an even multiple or 4 or 8 bytes and then some additional code
@@ -104,9 +116,10 @@ public class TestNativeCrc32 {
 
   @ParameterizedTest
   @MethodSource("data")
-  public void testVerifyChunkedSumsByteArraySuccess(DataChecksum.Type checksumType) throws ChecksumException {
-    setup(checksumType);
-    allocateArrayByteBuffers(checksumType);
+  public void testVerifyChunkedSumsByteArraySuccess(DataChecksum.Type pChecksumType)
+      throws ChecksumException {
+    initTestNativeCrc32(pChecksumType);
+    allocateArrayByteBuffers();
     fillDataAndValidChecksums();
     NativeCrc32.verifyChunkedSumsByteArray(bytesPerChecksum, checksumType.id,
       checksums.array(), checksums.position(), data.array(), data.position(),
@@ -115,9 +128,9 @@ public class TestNativeCrc32 {
 
   @ParameterizedTest
   @MethodSource("data")
-  public void testVerifyChunkedSumsByteArrayFail(DataChecksum.Type checksumType) {
-    setup(checksumType);
-    allocateArrayByteBuffers(checksumType);
+  public void testVerifyChunkedSumsByteArrayFail(DataChecksum.Type pChecksumType) {
+    initTestNativeCrc32(pChecksumType);
+    allocateArrayByteBuffers();
     fillDataAndInvalidChecksums();
     assertThrows(ChecksumException.class,
         () -> NativeCrc32.verifyChunkedSumsByteArray(bytesPerChecksum,
@@ -128,9 +141,10 @@ public class TestNativeCrc32 {
 
   @ParameterizedTest
   @MethodSource("data")
-  public void testCalculateChunkedSumsSuccess(DataChecksum.Type checksumType) throws ChecksumException {
-    setup(checksumType);
-    allocateDirectByteBuffers(checksumType);
+  public void testCalculateChunkedSumsSuccess(DataChecksum.Type pChecksumType)
+      throws ChecksumException {
+    initTestNativeCrc32(pChecksumType);
+    allocateDirectByteBuffers();
     fillDataAndValidChecksums();
     NativeCrc32.calculateChunkedSums(bytesPerChecksum, checksumType.id,
       checksums, data);
@@ -138,9 +152,10 @@ public class TestNativeCrc32 {
 
   @ParameterizedTest
   @MethodSource("data")
-  public void testCalculateChunkedSumsFail(DataChecksum.Type checksumType) throws ChecksumException {
-    setup(checksumType);
-    allocateDirectByteBuffers(checksumType);
+  public void testCalculateChunkedSumsFail(DataChecksum.Type pChecksumType)
+      throws ChecksumException {
+    initTestNativeCrc32(pChecksumType);
+    allocateDirectByteBuffers();
     fillDataAndInvalidChecksums();
     NativeCrc32.calculateChunkedSums(bytesPerChecksum, checksumType.id,
       checksums, data);
@@ -148,9 +163,10 @@ public class TestNativeCrc32 {
 
   @ParameterizedTest
   @MethodSource("data")
-  public void testCalculateChunkedSumsByteArraySuccess(DataChecksum.Type checksumType) throws ChecksumException {
-    setup(checksumType);
-    allocateArrayByteBuffers(checksumType);
+  public void testCalculateChunkedSumsByteArraySuccess(DataChecksum.Type pChecksumType)
+      throws ChecksumException {
+    initTestNativeCrc32(pChecksumType);
+    allocateArrayByteBuffers();
     fillDataAndValidChecksums();
     NativeCrc32.calculateChunkedSumsByteArray(bytesPerChecksum, checksumType.id,
       checksums.array(), checksums.position(), data.array(), data.position(),
@@ -159,9 +175,10 @@ public class TestNativeCrc32 {
 
   @ParameterizedTest
   @MethodSource("data")
-  public void testCalculateChunkedSumsByteArrayFail(DataChecksum.Type checksumType) throws ChecksumException {
-    setup(checksumType);
-    allocateArrayByteBuffers(checksumType);
+  public void testCalculateChunkedSumsByteArrayFail(DataChecksum.Type pChecksumType)
+      throws ChecksumException {
+    initTestNativeCrc32(pChecksumType);
+    allocateArrayByteBuffers();
     fillDataAndInvalidChecksums();
     NativeCrc32.calculateChunkedSumsByteArray(bytesPerChecksum, checksumType.id,
       checksums.array(), checksums.position(), data.array(), data.position(),
@@ -171,9 +188,10 @@ public class TestNativeCrc32 {
   @ParameterizedTest
   @MethodSource("data")
   @SuppressWarnings("deprecation")
-  public void testNativeVerifyChunkedSumsSuccess(DataChecksum.Type checksumType) throws ChecksumException {
-    setup(checksumType);
-    allocateDirectByteBuffers(checksumType);
+  public void testNativeVerifyChunkedSumsSuccess(DataChecksum.Type pChecksumType)
+      throws ChecksumException {
+    initTestNativeCrc32(pChecksumType);
+    allocateDirectByteBuffers();
     fillDataAndValidChecksums();
     NativeCrc32.nativeVerifyChunkedSums(bytesPerChecksum, checksumType.id,
       checksums, checksums.position(), data, data.position(), data.remaining(),
@@ -183,9 +201,9 @@ public class TestNativeCrc32 {
   @ParameterizedTest
   @MethodSource("data")
   @SuppressWarnings("deprecation")
-  public void testNativeVerifyChunkedSumsFail(DataChecksum.Type checksumType) {
-    setup(checksumType);
-    allocateDirectByteBuffers(checksumType);
+  public void testNativeVerifyChunkedSumsFail(DataChecksum.Type pChecksumType) {
+    initTestNativeCrc32(pChecksumType);
+    allocateDirectByteBuffers();
     fillDataAndInvalidChecksums();
     assertThrows(ChecksumException.class,
         () -> NativeCrc32.nativeVerifyChunkedSums(bytesPerChecksum,

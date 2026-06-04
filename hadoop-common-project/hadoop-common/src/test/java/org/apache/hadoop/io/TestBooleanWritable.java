@@ -24,6 +24,9 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import java.io.IOException;
 
 import org.junit.jupiter.api.Test;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public class TestBooleanWritable {
 
@@ -59,15 +62,24 @@ public class TestBooleanWritable {
    */
   @Test
   public void testCommonMethods() {    
-    assertTrue(newInstance(true).equals(newInstance(true)), "testCommonMethods1 error !!!");
-    assertTrue(newInstance(false).equals(newInstance(false)), "testCommonMethods2 error  !!!");
-    assertFalse(newInstance(false).equals(newInstance(true)), "testCommonMethods3 error !!!");
-    assertTrue(checkHashCode(newInstance(true), newInstance(true)), "testCommonMethods4 error !!!");
-    assertFalse(checkHashCode(newInstance(true), newInstance(false)), "testCommonMethods5 error !!! ");
-    assertTrue(newInstance(true).compareTo(newInstance(false)) > 0, "testCommonMethods6 error !!!");
-    assertTrue(newInstance(false).compareTo(newInstance(true)) < 0, "testCommonMethods7 error !!!");
-    assertTrue(newInstance(false).compareTo(newInstance(false)) == 0, "testCommonMethods8 error !!!");
-    assertEquals("true", newInstance(true).toString(), "testCommonMethods9 error !!!");
+    assertTrue(newInstance(true).equals(newInstance(true)),
+        "testCommonMethods1 error !!!");
+    assertTrue(newInstance(false).equals(newInstance(false)),
+        "testCommonMethods2 error  !!!");
+    assertFalse(newInstance(false).equals(newInstance(true)),
+        "testCommonMethods3 error !!!");
+    assertTrue(checkHashCode(newInstance(true), newInstance(true)),
+        "testCommonMethods4 error !!!");
+    assertFalse(checkHashCode(newInstance(true), newInstance(false)),
+        "testCommonMethods5 error !!! ");
+    assertTrue(newInstance(true).compareTo(newInstance(false)) > 0,
+        "testCommonMethods6 error !!!" );
+    assertTrue(newInstance(false).compareTo(newInstance(true)) < 0,
+        "testCommonMethods7 error !!!" );
+    assertTrue(newInstance(false).compareTo(newInstance(false)) == 0,
+        "testCommonMethods8 error !!!" );
+    assertEquals("true", newInstance(true).toString(),
+        "testCommonMethods9 error !!!");
   }
   
   private boolean checkHashCode(BooleanWritable f, BooleanWritable s) {

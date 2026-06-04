@@ -17,6 +17,7 @@
  */
 package org.apache.hadoop.io;
 
+import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
@@ -113,10 +114,11 @@ public class TestBytesWritable {
     BytesWritable copyBuf = new BytesWritable(bytes); // old
     // using zero copy constructor shouldn't result in a copy
     assertTrue(bytes == zeroBuf.getBytes(),
-      "copy took place, backing array != array passed to constructor");
+        "copy took place, backing array != array passed to constructor");
     assertTrue(zeroBuf.getLength() == bytes.length,
-      "length of BW should backing byte array");
-    assertEquals(zeroBuf, copyBuf, "objects with same backing array should be equal");
+        "length of BW should backing byte array");
+    assertEquals(zeroBuf, copyBuf,
+        "objects with same backing array should be equal");
     assertEquals(zeroBuf.toString(), copyBuf.toString(),
         "string repr of objects with same backing array should be equal");
     assertTrue(zeroBuf.compareTo(copyBuf) == 0,
@@ -149,9 +151,11 @@ public class TestBytesWritable {
     assertTrue(bw.compareTo(new ByteWritable((byte)0x8)) > 0, "testSetByteWritable error > 0");
     assertTrue(bw.compareTo(new ByteWritable((byte)0x9)) == 0, "testSetByteWritable error == 0");
     assertTrue(bw.equals(new ByteWritable((byte)0x9)), "testSetByteWritable equals error !!!");
-    assertTrue(! bw.equals(new ByteWritable((byte)0xA)), "testSetByteWritable equals error !!!");
-    assertTrue(! bw.equals(new IntWritable(1)), "testSetByteWritable equals error !!!");
-    assertEquals("9", bw.toString(), "testSetByteWritable error ");    
+    assertTrue(! bw.equals(new ByteWritable((byte)0xA)),
+        "testSetByteWritable equals error !!!");
+    assertTrue(! bw.equals(new IntWritable(1)),
+        "testSetByteWritable equals error !!!");
+    assertEquals("9", bw.toString(), "testSetByteWritable error ");
   }
   
 }

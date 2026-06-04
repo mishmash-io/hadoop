@@ -33,6 +33,9 @@ import org.apache.hadoop.test.GenericTestUtils;
 import org.apache.hadoop.util.StringUtils;
 import org.junit.jupiter.api.Test;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.fail;
+
 /** Unit tests for UTF8. */
 @SuppressWarnings("deprecation")
 public class TestUTF8 {

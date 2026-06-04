@@ -32,7 +32,6 @@ import org.apache.hadoop.test.GenericTestUtils;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
-
 import org.slf4j.event.Level;
 
 public class TestClientBlockVerification {

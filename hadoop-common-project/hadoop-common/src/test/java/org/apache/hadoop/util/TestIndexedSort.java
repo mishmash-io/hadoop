@@ -23,6 +23,9 @@ import java.io.IOException;
 import java.util.Arrays;
 import java.util.Random;
 
+import org.junit.jupiter.api.Test;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
 import org.apache.hadoop.io.DataInputBuffer;
 import org.apache.hadoop.io.DataOutputBuffer;
 import org.apache.hadoop.io.Text;
@@ -116,7 +119,7 @@ public class TestIndexedSort {
     sorter.sort(s, 0, SAMPLE);
     int[] check = s.getSorted();
     assertTrue(Arrays.equals(values, check),
-               "seed: " + seed + "\ndoesn't match\n");
+        "seed: " + seed + "\ndoesn't match\n");
   }
 
   public void sortWritable(IndexedSorter sorter) throws Exception {
@@ -130,7 +133,7 @@ public class TestIndexedSort {
     sorter.sort(s, 0, SAMPLE);
     String[] check = s.getSorted();
     assertTrue(Arrays.equals(values, check),
-               "seed: " + seed + "\ndoesn't match");
+        "seed: " + seed + "\ndoesn't match");
   }
 
 
@@ -273,14 +276,13 @@ public class TestIndexedSort {
     @Override
     public int compare(int i, int j) {
       assertTrue(++comparisions < maxcmp,
-                 "Expected fewer than " + maxcmp + " comparisons");
+          "Expected fewer than " + maxcmp + " comparisons");
       return s.compare(i, j);
     }
 
     @Override
     public void swap(int i, int j) {
-      assertTrue(++swaps < maxswp,
-                 "Expected fewer than " + maxswp + " swaps");
+      assertTrue(++swaps < maxswp, "Expected fewer than " + maxswp + " swaps");
       s.swap(i, j);
     }
 

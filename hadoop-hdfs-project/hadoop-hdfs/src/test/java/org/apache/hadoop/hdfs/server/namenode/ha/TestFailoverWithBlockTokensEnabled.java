@@ -17,7 +17,9 @@
  */
 package org.apache.hadoop.hdfs.server.namenode.ha;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.fail;
 
 import java.io.IOException;
 import java.net.URISyntaxException;
@@ -108,8 +110,8 @@ public class TestFailoverWithBlockTokensEnabled {
         }
         int first = btsms[i].getSerialNoForTesting();
         int second = btsms[j].getSerialNoForTesting();
-        assertFalse(first == second, "Overlap found for set serial number (" + serialNumber + ") is " + i + ": "
-            + first + " == " + j + ": " + second);
+        assertFalse(first == second, "Overlap found for set serial number (" + serialNumber
+            + ") is " + i + ": " + first + " == " + j + ": " + second);
       }
     }
   }

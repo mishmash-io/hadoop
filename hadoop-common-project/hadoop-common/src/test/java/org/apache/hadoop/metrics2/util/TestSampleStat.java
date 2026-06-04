@@ -18,9 +18,8 @@
 
 package org.apache.hadoop.metrics2.util;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-
 import org.junit.jupiter.api.Test;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 /**
  * Test the running sample stat computation

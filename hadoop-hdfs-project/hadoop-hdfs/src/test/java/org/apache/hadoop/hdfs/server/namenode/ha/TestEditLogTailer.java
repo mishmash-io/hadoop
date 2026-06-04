@@ -17,7 +17,11 @@
  */
 package org.apache.hadoop.hdfs.server.namenode.ha;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.fail;
+import org.junit.jupiter.params.ParameterizedClass;
+import org.junit.jupiter.params.provider.MethodSource;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
@@ -57,14 +61,14 @@ import org.apache.hadoop.hdfs.server.namenode.NameNodeAdapter;
 import org.apache.hadoop.test.GenericTestUtils;
 import org.apache.hadoop.util.FakeTimer;
 import org.slf4j.event.Level;
-
+import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.Timeout;
-import org.junit.jupiter.params.ParameterizedTest;
-import org.junit.jupiter.params.provider.MethodSource;
 
 import java.util.function.Supplier;
 import org.mockito.Mockito;
 
+@MethodSource("data")
+@ParameterizedClass
 public class TestEditLogTailer {
   static {
     GenericTestUtils.setLogLevel(FSEditLog.LOG, Level.DEBUG);
@@ -311,11 +315,9 @@ public class TestEditLogTailer {
     }, 100, 10000);
   }
 
-  @MethodSource("data")
-  @ParameterizedTest
-  @Timeout(value = 20000, unit = TimeUnit.MILLISECONDS)
-  public void testRollEditTimeoutForActiveNN(Boolean async) throws IOException {
-    initTestEditLogTailer(async);
+  @Test
+  @Timeout(value = 20)
+  public void testRollEditTimeoutForActiveNN() throws IOException {
     Configuration conf = getConf();
     conf.setInt(DFSConfigKeys.DFS_HA_TAILEDITS_ROLLEDITS_TIMEOUT_KEY, 5); // 5s
     conf.setInt(DFSConfigKeys.DFS_HA_TAILEDITS_PERIOD_KEY, 1);

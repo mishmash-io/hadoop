@@ -18,6 +18,9 @@
 
 package org.apache.hadoop.fs.http;
 
+import mockwebserver3.MockResponse;
+import mockwebserver3.MockWebServer;
+import mockwebserver3.RecordedRequest;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
@@ -39,6 +42,8 @@ import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.util.stream.IntStream;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+
 /**
  * Testing HttpFileSystem.
  */
@@ -55,8 +60,8 @@ public class TestHttpFileSystem {
       InterruptedException {
     final String data = "foo";
     try (MockWebServer server = new MockWebServer()) {
-      IntStream.rangeClosed(1, 3).forEach(i -> server.enqueue(
-          new MockResponse.Builder().body(data).build()));
+      final MockResponse response = new MockResponse.Builder().body(data).build();
+      IntStream.rangeClosed(1, 3).forEach(i -> server.enqueue(response));
       server.start();
       URI uri = URI.create(String.format("http://%s:%d", server.getHostName(),
           server.getPort()));
@@ -65,7 +70,7 @@ public class TestHttpFileSystem {
       assertSameData(fs, new Path("/foo"), data);
       assertSameData(fs, new Path("foo"), data);
       RecordedRequest req = server.takeRequest();
-      assertEquals("/foo", req.getTarget());
+      assertEquals("/foo", req.getUrl().encodedPath());
     }
   }
 

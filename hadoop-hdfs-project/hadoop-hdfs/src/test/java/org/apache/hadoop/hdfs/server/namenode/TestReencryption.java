@@ -65,17 +65,21 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.Timeout;
-
 import static org.apache.hadoop.test.GenericTestUtils.assertExceptionContains;
-import static org.junit.jupiter.api.Assertions.*;
-
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.fail;
 import org.slf4j.LoggerFactory;
 import org.slf4j.event.Level;
 
 /**
  * Test class for re-encryption.
  */
-@Timeout(value=180000, unit=TimeUnit.MILLISECONDS)
+@Timeout(180)
 public class TestReencryption {
 
   protected static final org.slf4j.Logger LOG =
@@ -488,7 +492,8 @@ public class TestReencryption {
     restartClusterDisableReencrypt();
 
     final Long zoneId = fsn.getFSDirectory().getINode(zone.toString()).getId();
-    assertEquals(zoneId, getReencryptionStatus().getNextUnprocessedZone(), "Re-encrypt should restore to the last checkpoint zone");
+    assertEquals(zoneId, getReencryptionStatus().getNextUnprocessedZone(),
+        "Re-encrypt should restore to the last checkpoint zone");
     assertEquals(new Path(subdir, "4").toString(),
         getEzManager().getZoneStatus(zone.toString()).getLastCheckpointFile(),
         "Re-encrypt should restore to the last checkpoint file");
@@ -610,8 +615,8 @@ public class TestReencryption {
         "Completion time should be positive. " + zs.getCompletionTime());
     assertTrue(zs.getCompletionTime() >= zs.getSubmissionTime(),
         "Completion time " + zs.getCompletionTime()
-            + " should be no less than submission time "
-            + zs.getSubmissionTime());
+        + " should be no less than submission time "
+        + zs.getSubmissionTime());
   }
 
   @Test
@@ -1374,13 +1379,15 @@ public class TestReencryption {
   private void assertKeyVersionChanged(final Path file,
       final FileEncryptionInfo original) throws Exception {
     final FileEncryptionInfo actual = getFileEncryptionInfo(file);
-    assertNotEquals(original.getEzKeyVersionName(), actual.getEzKeyVersionName(), "KeyVersion should be different");
+    assertNotEquals(original.getEzKeyVersionName(), actual.getEzKeyVersionName(),
+        "KeyVersion should be different");
   }
 
   private void assertKeyVersionEquals(final Path file,
       final FileEncryptionInfo expected) throws Exception {
     final FileEncryptionInfo actual = getFileEncryptionInfo(file);
-    assertEquals(expected.getEzKeyVersionName(), actual.getEzKeyVersionName(), "KeyVersion should be the same");
+    assertEquals(expected.getEzKeyVersionName(), actual.getEzKeyVersionName(),
+        "KeyVersion should be the same");
   }
 
   @Test

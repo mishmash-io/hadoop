@@ -18,7 +18,6 @@
 package org.apache.hadoop.hdfs.server.namenode;
 
 import static org.apache.hadoop.hdfs.DFSConfigKeys.*;
-import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import java.io.File;
 import java.io.IOException;
@@ -36,15 +35,19 @@ import org.apache.hadoop.hdfs.security.token.delegation.DelegationTokenIdentifie
 import org.apache.hadoop.hdfs.security.token.delegation.DelegationTokenSecretManager;
 import org.apache.hadoop.hdfs.server.common.Storage.StorageDirectory;
 import org.apache.hadoop.hdfs.server.namenode.NNStorage.NameNodeDirType;
+import org.apache.hadoop.hdfs.util.RwLockMode;
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.security.UserGroupInformation;
 import org.apache.hadoop.security.token.Token;
-import org.junit.jupiter.api.Assertions;
+import org.apache.hadoop.util.concurrent.SubjectInheritingThread;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.Timeout;
 import org.mockito.invocation.InvocationOnMock;
 import org.mockito.stubbing.Answer;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.*;
 
 /**
@@ -135,7 +138,7 @@ public class TestSecurityTokenEditLog {
       Thread threadId[] = new Thread[NUM_THREADS];
       for (int i = 0; i < NUM_THREADS; i++) {
         Transactions trans = new Transactions(namesystem, NUM_TRANSACTIONS);
-        threadId[i] = new Thread(trans, "TransactionThread-" + i);
+        threadId[i] = new SubjectInheritingThread(trans, "TransactionThread-" + i);
         threadId[i].start();
       }
   
@@ -173,9 +176,9 @@ public class TestSecurityTokenEditLog {
       if(cluster != null) cluster.shutdown();
     }
   }
-
+  
   @Test
-  @Timeout(value = 10000, unit = TimeUnit.MILLISECONDS)
+  @Timeout(value = 10)
   public void testEditsForCancelOnTokenExpire() throws IOException,
   InterruptedException {
     long renewInterval = 2000;
@@ -199,8 +202,8 @@ public class TestSecurityTokenEditLog {
         @Override
         public Void answer(InvocationOnMock invocation) throws Throwable {
           // fsn claims read lock if either read or write locked.
-          Assertions.assertTrue(fsnRef.get().hasReadLock());
-          Assertions.assertFalse(fsnRef.get().hasWriteLock());
+          assertTrue(fsnRef.get().hasReadLock(RwLockMode.FS));
+          assertFalse(fsnRef.get().hasWriteLock(RwLockMode.FS));
           return null;
         }
       }

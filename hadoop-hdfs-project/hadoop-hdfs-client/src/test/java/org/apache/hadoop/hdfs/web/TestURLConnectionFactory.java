@@ -28,12 +28,16 @@ import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.FileUtil;
 import org.apache.hadoop.security.authentication.client.ConnectionConfigurator;
 import static org.apache.hadoop.security.ssl.FileBasedKeyStoresFactory.SSL_MONITORING_THREAD_NAME;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
 import org.apache.hadoop.security.ssl.KeyStoreTestUtil;
 import org.apache.hadoop.security.ssl.SSLFactory;
 import org.apache.hadoop.test.GenericTestUtils;
 import org.apache.hadoop.util.Lists;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
+
 import org.slf4j.LoggerFactory;
 
 public final class TestURLConnectionFactory {
@@ -46,14 +50,14 @@ public final class TestURLConnectionFactory {
       @Override
       public HttpURLConnection configure(HttpURLConnection conn)
           throws IOException {
-        Assertions.assertEquals(u, conn.getURL());
+        assertEquals(u, conn.getURL());
         conns.add(conn);
         return conn;
       }
     });
 
     fc.openConnection(u);
-    Assertions.assertEquals(1, conns.size());
+    assertEquals(1, conns.size());
   }
 
   @Test
@@ -64,8 +68,8 @@ public final class TestURLConnectionFactory {
         GenericTestUtils.LogCapturer.captureLogs(
             LoggerFactory.getLogger(URLConnectionFactory.class));
     URLConnectionFactory.newDefaultURLConnectionFactory(conf);
-    Assertions.assertTrue(logs.getOutput().contains(
-        "Cannot load customized ssl related configuration"),
+    assertTrue(logs.getOutput()
+        .contains("Cannot load customized ssl related configuration"),
         "Expected log for ssl init failure not found!");
   }
 
@@ -103,7 +107,7 @@ public final class TestURLConnectionFactory {
         reloaderThread = thread;
       }
     }
-    Assertions.assertTrue(reloaderThread.isAlive(), "Reloader is not alive");
+    assertTrue(reloaderThread.isAlive(), "Reloader is not alive");
 
     fs.close();
 
@@ -115,6 +119,6 @@ public final class TestURLConnectionFactory {
       }
       Thread.sleep(1000);
     }
-    Assertions.assertFalse(reloaderStillAlive, "Reloader is still alive");
+    assertFalse(reloaderStillAlive, "Reloader is still alive");
   }
 }

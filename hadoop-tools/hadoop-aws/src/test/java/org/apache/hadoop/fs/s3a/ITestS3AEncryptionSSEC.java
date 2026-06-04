@@ -24,7 +24,11 @@ import java.util.Arrays;
 import java.util.Collection;
 
 import org.assertj.core.api.Assertions;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedClass;
+import org.junit.jupiter.params.provider.MethodSource;
 
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileSystem;
@@ -58,7 +62,8 @@ import static org.apache.hadoop.test.LambdaTestUtils.intercept;
  * Equally "vexing" has been the optimizations of getFileStatus(), wherein
  * LIST comes before HEAD path + /
  */
-@RunWith(Parameterized.class)
+@ParameterizedClass(name="analytics-accelerator-enabled-{0}")
+@MethodSource("params")
 public class ITestS3AEncryptionSSEC extends AbstractTestS3AEncryption {
 
   private static final String SERVICE_AMAZON_S3_STATUS_CODE_403
@@ -80,7 +85,6 @@ public class ITestS3AEncryptionSSEC extends AbstractTestS3AEncryption {
 
   private final boolean analyticsAcceleratorEnabled;
 
-  @Parameterized.Parameters(name = "analyticsAcceleratorEnabled={0}")
   public static Collection<Object[]> params() {
     return Arrays.asList(new Object[][]{
             {true},
@@ -117,6 +121,7 @@ public class ITestS3AEncryptionSSEC extends AbstractTestS3AEncryption {
     return conf;
   }
 
+  @BeforeEach
   @Override
   public void setup() throws Exception {
     super.setup();
@@ -127,6 +132,7 @@ public class ITestS3AEncryptionSSEC extends AbstractTestS3AEncryption {
     assumeStoreAwsHosted(getFileSystem());
   }
 
+  @AfterEach
   @Override
   public void teardown() throws Exception {
     super.teardown();
@@ -294,7 +300,7 @@ public class ITestS3AEncryptionSSEC extends AbstractTestS3AEncryption {
   @Test
   public void testListStatusEncryptedFile() throws Exception {
     Path pathABC = new Path(methodPath(), "a/b/c/");
-    assertTrue("mkdirs failed", getFileSystem().mkdirs(pathABC));
+    assertTrue(getFileSystem().mkdirs(pathABC), "mkdirs failed");
 
     Path fileToStat = new Path(pathABC, "fileToStat.txt");
     writeThenReadFile(fileToStat, TEST_FILE_LEN);

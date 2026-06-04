@@ -45,7 +45,6 @@ import org.apache.hadoop.hdfs.server.blockmanagement.DatanodeManager;
 import org.apache.hadoop.hdfs.server.datanode.DataNode;
 import org.apache.hadoop.hdfs.server.datanode.DataNodeTestUtils;
 import org.apache.hadoop.hdfs.server.datanode.FsDatasetTestUtils;
-
 import org.junit.jupiter.api.Test;
 
 
@@ -425,7 +424,7 @@ public class TestNamenodeCapacityReport {
     assertEquals(expectedTotalLoad, namesystem.getTotalLoad(), EPSILON);
     if (expectedInServiceNodes != 0) {
       assertEquals(expectedInServiceLoad / expectedInServiceNodes,
-        getInServiceXceiverAverage(namesystem), EPSILON);
+          getInServiceXceiverAverage(namesystem), EPSILON);
     } else {
       assertEquals(0.0, getInServiceXceiverAverage(namesystem), EPSILON);
     }

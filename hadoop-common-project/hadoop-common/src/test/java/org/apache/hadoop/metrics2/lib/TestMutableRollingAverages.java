@@ -34,7 +34,9 @@ import static org.apache.hadoop.test.MetricsAsserts.*;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.anyDouble;
 import static org.mockito.ArgumentMatchers.eq;
-import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
 
 /**
  * This class tests various cases of the algorithms implemented in
@@ -47,7 +49,7 @@ public class TestMutableRollingAverages {
    * empty roll over.
    */
   @Test
-  @Timeout(value=30000, unit=TimeUnit.MILLISECONDS)
+  @Timeout(value = 30)
   public void testRollingAveragesEmptyRollover() throws Exception {
     final MetricsRecordBuilder rb = mockMetricsRecordBuilder();
     /* 5s interval and 2 windows */
@@ -82,7 +84,7 @@ public class TestMutableRollingAverages {
    * </p>
    */
   @Test
-  @Timeout(value=30000, unit=TimeUnit.MILLISECONDS)
+  @Timeout(value = 30)
   public void testRollingAveragesRollover() throws Exception {
     final MetricsRecordBuilder rb = mockMetricsRecordBuilder();
     final String name = "foo2";
@@ -139,7 +141,7 @@ public class TestMutableRollingAverages {
    * @throws Exception
    */
   @Test
-  @Timeout(value=30000, unit=TimeUnit.MILLISECONDS)
+  @Timeout(value = 30)
   public void testMutableRollingAveragesMetric() throws Exception {
     DummyTestMetric testMetric = new DummyTestMetric();
     testMetric.create();
@@ -161,10 +163,8 @@ public class TestMutableRollingAverages {
 
     double metric1Avg = getDoubleGauge("[Metric1]RollingAvgTesting", rb);
     double metric2Avg = getDoubleGauge("[Metric2]RollingAvgTesting", rb);
-    assertTrue(metric1Avg == 500.0,
-        "The rolling average of metric1 is not as expected");
-    assertTrue(metric2Avg == 1000.0,
-        "The rolling average of metric2 is not as expected");
+    assertTrue(metric1Avg == 500.0, "The rolling average of metric1 is not as expected");
+    assertTrue(metric2Avg == 1000.0, "The rolling average of metric2 is not as expected");
 
   }
 

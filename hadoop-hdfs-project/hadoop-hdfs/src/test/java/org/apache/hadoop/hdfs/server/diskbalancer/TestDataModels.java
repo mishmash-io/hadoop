@@ -21,7 +21,6 @@ import org.apache.hadoop.hdfs.server.diskbalancer.datamodel.DiskBalancerCluster;
 import org.apache.hadoop.hdfs.server.diskbalancer.datamodel.DiskBalancerDataNode;
 import org.apache.hadoop.hdfs.server.diskbalancer.datamodel.DiskBalancerVolume;
 import org.apache.hadoop.hdfs.server.diskbalancer.datamodel.DiskBalancerVolumeSet;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
 import java.util.Collections;
@@ -29,6 +28,11 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.TreeSet;
 import java.util.UUID;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 /**
  * Tests DiskBalancer Data models.
@@ -38,14 +42,14 @@ public class TestDataModels {
   public void testCreateRandomVolume() throws Exception {
     DiskBalancerTestUtil util = new DiskBalancerTestUtil();
     DiskBalancerVolume vol = util.createRandomVolume(StorageType.DISK);
-    Assertions.assertNotNull(vol.getUuid());
-    Assertions.assertNotNull(vol.getPath());
-    Assertions.assertNotNull(vol.getStorageType());
-    Assertions.assertFalse(vol.isFailed());
-    Assertions.assertFalse(vol.isTransient());
-    Assertions.assertTrue(vol.getCapacity() > 0);
-    Assertions.assertTrue((vol.getCapacity() - vol.getReserved()) > 0);
-    Assertions.assertTrue((vol.getReserved() + vol.getUsed()) < vol.getCapacity());
+    assertNotNull(vol.getUuid());
+    assertNotNull(vol.getPath());
+    assertNotNull(vol.getStorageType());
+    assertFalse(vol.isFailed());
+    assertFalse(vol.isTransient());
+    assertTrue(vol.getCapacity() > 0);
+    assertTrue((vol.getCapacity() - vol.getReserved()) > 0);
+    assertTrue((vol.getReserved() + vol.getUsed()) < vol.getCapacity());
   }
 
   @Test
@@ -53,9 +57,8 @@ public class TestDataModels {
     DiskBalancerTestUtil util = new DiskBalancerTestUtil();
     DiskBalancerVolumeSet vSet =
         util.createRandomVolumeSet(StorageType.SSD, 10);
-    Assertions.assertEquals(10, vSet.getVolumeCount());
-    Assertions.assertEquals(StorageType.SSD.toString(),
-        vSet.getVolumes().get(0).getStorageType());
+    assertEquals(10, vSet.getVolumeCount());
+    assertEquals(StorageType.SSD.toString(), vSet.getVolumes().get(0).getStorageType());
 
   }
 
@@ -64,7 +67,7 @@ public class TestDataModels {
     DiskBalancerTestUtil util = new DiskBalancerTestUtil();
     DiskBalancerDataNode node = util.createRandomDataNode(
         new StorageType[]{StorageType.DISK, StorageType.RAM_DISK}, 10);
-    Assertions.assertNotNull(node.getNodeDataDensity());
+    assertNotNull(node.getNodeDataDensity());
   }
 
   @Test
@@ -86,11 +89,11 @@ public class TestDataModels {
 
     for (int x = 0; x < queueSize; x++) {
 
-      Assertions.assertEquals(reverseList.get(x).getCapacity(),
+      assertEquals(reverseList.get(x).getCapacity(),
           highList.get(x).getCapacity());
-      Assertions.assertEquals(reverseList.get(x).getReserved(),
+      assertEquals(reverseList.get(x).getReserved(),
           highList.get(x).getReserved());
-      Assertions.assertEquals(reverseList.get(x).getUsed(),
+      assertEquals(reverseList.get(x).getUsed(),
           highList.get(x).getUsed());
     }
   }
@@ -117,7 +120,7 @@ public class TestDataModels {
     node.addVolume(v2);
 
     for (DiskBalancerVolumeSet vsets : node.getVolumeSets().values()) {
-      Assertions.assertFalse(vsets.isBalancingNeeded(10.0f));
+      assertFalse(vsets.isBalancingNeeded(10.0f));
     }
   }
 
@@ -143,7 +146,7 @@ public class TestDataModels {
     node.addVolume(v2);
 
     for (DiskBalancerVolumeSet vsets : node.getVolumeSets().values()) {
-      Assertions.assertFalse(vsets.isBalancingNeeded(10.0f));
+      assertFalse(vsets.isBalancingNeeded(10.0f));
     }
   }
 
@@ -170,7 +173,7 @@ public class TestDataModels {
     node.addVolume(v2);
 
     for (DiskBalancerVolumeSet vsets : node.getVolumeSets().values()) {
-      Assertions.assertFalse(vsets.isBalancingNeeded(10.0f));
+      assertFalse(vsets.isBalancingNeeded(10.0f));
     }
   }
 
@@ -194,7 +197,7 @@ public class TestDataModels {
     node.addVolume(v2);
 
     for (DiskBalancerVolumeSet vsets : node.getVolumeSets().values()) {
-      Assertions.assertTrue(vsets.isBalancingNeeded(10.0f));
+      assertTrue(vsets.isBalancingNeeded(10.0f));
     }
   }
 
@@ -206,7 +209,7 @@ public class TestDataModels {
     DiskBalancerVolume parsedVolume =
         DiskBalancerVolume.parseJson(originalString);
     String parsedString = parsedVolume.toJson();
-    Assertions.assertEquals(originalString, parsedString);
+    assertEquals(originalString, parsedString);
   }
 
   @Test
@@ -220,9 +223,8 @@ public class TestDataModels {
 
     DiskBalancerCluster newCluster =
         DiskBalancerCluster.parseJson(cluster.toJson());
-    Assertions.assertEquals(cluster.getNodes(), newCluster.getNodes());
-    Assertions
-        .assertEquals(cluster.getNodes().size(), newCluster.getNodes().size());
+    assertEquals(cluster.getNodes(), newCluster.getNodes());
+    assertEquals(cluster.getNodes().size(), newCluster.getNodes().size());
   }
 
   @Test
@@ -233,11 +235,11 @@ public class TestDataModels {
     DiskBalancerVolume v1 = util.createRandomVolume(StorageType.DISK);
     v1.setCapacity(DiskBalancerTestUtil.GB);
     v1.setUsed(2 * DiskBalancerTestUtil.GB);
-    Assertions.assertEquals(v1.getUsed(),v1.getCapacity());
+    assertEquals(v1.getUsed(), v1.getCapacity());
     // If usage is less than capacity, usage should be set to the real usage
     DiskBalancerVolume v2 = util.createRandomVolume(StorageType.DISK);
     v2.setCapacity(2*DiskBalancerTestUtil.GB);
     v2.setUsed(DiskBalancerTestUtil.GB);
-    Assertions.assertEquals(v1.getUsed(),DiskBalancerTestUtil.GB);
+    assertEquals(v1.getUsed(), DiskBalancerTestUtil.GB);
   }
 }

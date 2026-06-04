@@ -34,7 +34,6 @@ import org.apache.hadoop.hdfs.MiniDFSCluster;
 import org.apache.hadoop.hdfs.client.HdfsClientConfigKeys;
 import org.apache.hadoop.test.GenericTestUtils;
 import org.apache.hadoop.test.PathUtils;
-
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.Timeout;
 
@@ -80,7 +79,7 @@ public class TestDataNodeFaultInjector {
   }
 
   @Test
-  @Timeout(value = 60000, unit = TimeUnit.MILLISECONDS)
+  @Timeout(value = 60)
   public void testDelaySendingAckToUpstream() throws Exception {
     final MetricsDataNodeFaultInjector mdnFaultInjector =
         new MetricsDataNodeFaultInjector() {
@@ -100,7 +99,7 @@ public class TestDataNodeFaultInjector {
   }
 
   @Test
-  @Timeout(value = 60000, unit = TimeUnit.MILLISECONDS)
+  @Timeout(value = 60)
   public void testDelaySendingPacketDownstream() throws Exception {
     final MetricsDataNodeFaultInjector mdnFaultInjector =
         new MetricsDataNodeFaultInjector() {

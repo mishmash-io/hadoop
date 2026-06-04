@@ -26,18 +26,19 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertNull;
-import static org.junit.jupiter.api.Assertions.assertTrue;
-import static org.junit.jupiter.api.Assertions.fail;
-
 import java.io.File;
 import java.io.IOException;
 import java.net.URI;
 import java.nio.charset.StandardCharsets;
 import java.util.HashSet;
 import java.util.Set;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.fail;
+
 
 /**
  * This test class checks basic operations with {@link HarFileSystem} including
@@ -260,7 +261,7 @@ public class TestHarFileSystemBasics {
       expectedFileNames.remove(fileName);
     }
     assertEquals(0, expectedFileNames.size(),
-                 "Didn't find all of the expected file names: " + expectedFileNames);
+        "Didn't find all of the expected file names: " + expectedFileNames);
   }
 
   @Test
@@ -274,9 +275,8 @@ public class TestHarFileSystemBasics {
     Path path = new Path(harPathWithUserinfo);
     Path qualifiedPath = path.getFileSystem(conf).makeQualified(path);
     assertTrue(qualifiedPath.toString().equals(harPathWithUserinfo),
-               String.format(
-                   "The qualified path (%s) did not match the expected path (%s).",
-                   qualifiedPath.toString(), harPathWithUserinfo));
+        String.format("The qualified path (%s) did not match the expected path (%s).",
+        qualifiedPath.toString(), harPathWithUserinfo));
   }
 
   // ========== Negative:

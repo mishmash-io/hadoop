@@ -21,7 +21,10 @@ import static org.apache.hadoop.fs.permission.AclEntryScope.*;
 import static org.apache.hadoop.fs.permission.AclEntryType.*;
 import static org.apache.hadoop.fs.permission.FsAction.*;
 import static org.apache.hadoop.hdfs.server.namenode.AclTestHelpers.*;
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.fail;
 
 import java.io.IOException;
 import java.security.PrivilegedExceptionAction;
@@ -44,7 +47,12 @@ import org.apache.hadoop.hdfs.DFSTestUtil;
 import org.apache.hadoop.hdfs.HdfsConfiguration;
 import org.apache.hadoop.hdfs.MiniDFSCluster;
 import org.apache.hadoop.test.GenericTestUtils;
-import org.junit.jupiter.api.*;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.Timeout;
 
 public class TestPermissionSymlinks {
 
@@ -102,7 +110,7 @@ public class TestPermissionSymlinks {
   }
 
   @Test
-  @Timeout(value = 5000, unit = TimeUnit.MILLISECONDS)
+  @Timeout(value = 5)
   public void testDelete() throws Exception {
     fs.setPermission(linkParent, new FsPermission((short) 0555));
     doDeleteLinkParentNotWritable();
@@ -175,7 +183,7 @@ public class TestPermissionSymlinks {
   }
 
   @Test
-  @Timeout(value = 5000, unit = TimeUnit.MILLISECONDS)
+  @Timeout(value = 5)
   public void testReadWhenTargetNotReadable() throws Exception {
     fs.setPermission(target, new FsPermission((short) 0000));
     doReadTargetNotReadable();
@@ -209,7 +217,7 @@ public class TestPermissionSymlinks {
   }
 
   @Test
-  @Timeout(value = 5000, unit = TimeUnit.MILLISECONDS)
+  @Timeout(value = 5)
   public void testFileStatus() throws Exception {
     fs.setPermission(target, new FsPermission((short) 0000));
     doGetFileLinkStatusTargetNotReadable();
@@ -232,7 +240,8 @@ public class TestPermissionSymlinks {
       public Object run() throws IOException {
         FileContext myfc = FileContext.getFileContext(conf);
         FileStatus stat = myfc.getFileLinkStatus(link);
-        assertEquals(link.makeQualified(fs.getUri(), fs.getWorkingDirectory()), stat.getPath(), "Expected link's FileStatus path to match link!");
+        assertEquals(link.makeQualified(fs.getUri(), fs.getWorkingDirectory()), stat.getPath(),
+            "Expected link's FileStatus path to match link!");
         Path linkTarget = myfc.getLinkTarget(link);
         assertEquals(target, linkTarget, "Expected link's target to match target!");
         return null;
@@ -241,7 +250,7 @@ public class TestPermissionSymlinks {
   }
 
   @Test
-  @Timeout(value = 5000, unit = TimeUnit.MILLISECONDS)
+  @Timeout(value = 5)
   public void testRenameLinkTargetNotWritableFC() throws Exception {
     fs.setPermission(target, new FsPermission((short) 0555));
     fs.setPermission(targetParent, new FsPermission((short) 0555));
@@ -281,7 +290,7 @@ public class TestPermissionSymlinks {
   }
 
   @Test
-  @Timeout(value = 5000, unit = TimeUnit.MILLISECONDS)
+  @Timeout(value = 5)
   public void testRenameSrcNotWritableFC() throws Exception {
     fs.setPermission(linkParent, new FsPermission((short) 0555));
     doRenameSrcNotWritableFC();
@@ -319,7 +328,7 @@ public class TestPermissionSymlinks {
   // See {@link ClientProtocol#rename} and {@link ClientProtocol#rename2}.
 
   @Test
-  @Timeout(value = 5000, unit = TimeUnit.MILLISECONDS)
+  @Timeout(value = 5)
   public void testRenameLinkTargetNotWritableFS() throws Exception {
     fs.setPermission(target, new FsPermission((short) 0555));
     fs.setPermission(targetParent, new FsPermission((short) 0555));
@@ -359,7 +368,7 @@ public class TestPermissionSymlinks {
   }
 
   @Test
-  @Timeout(value = 5000, unit = TimeUnit.MILLISECONDS)
+  @Timeout(value = 5)
   public void testRenameSrcNotWritableFS() throws Exception {
     fs.setPermission(linkParent, new FsPermission((short) 0555));
     doRenameSrcNotWritableFS();

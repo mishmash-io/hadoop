@@ -29,8 +29,9 @@ import org.junit.jupiter.api.Timeout;
  * The Balancer ensures that it disperses RPCs to the NameNode
  * in order to avoid NN's RPC queue saturation.
  */
-@Timeout(value=100, unit=TimeUnit.SECONDS)
+@Timeout(100)
 public class TestBalancerRPCDelay {
+
   private TestBalancer testBalancer;
 
   @BeforeEach

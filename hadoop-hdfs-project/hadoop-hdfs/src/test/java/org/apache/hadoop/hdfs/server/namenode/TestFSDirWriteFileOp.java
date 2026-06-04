@@ -38,7 +38,6 @@ import org.apache.hadoop.hdfs.AddBlockFlag;
 import org.apache.hadoop.hdfs.server.blockmanagement.BlockManager;
 import org.apache.hadoop.hdfs.server.namenode.FSDirWriteFileOp.ValidateAddBlockResult;
 import org.apache.hadoop.net.Node;
-
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
 
@@ -73,8 +72,8 @@ public class TestFSDirWriteFileOp {
     verifyNoMoreInteractions(bmMock);
 
     assertNull(
-        nodeCaptor.getValue(),
-        "Source node was assigned a value. Expected 'null' value because "
+
+        nodeCaptor.getValue(), "Source node was assigned a value. Expected 'null' value because "
             + "chooseTarget was flagged to ignore source node locality");
   }
 }

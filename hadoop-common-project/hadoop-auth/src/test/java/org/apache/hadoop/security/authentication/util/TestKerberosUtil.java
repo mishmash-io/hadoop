@@ -16,6 +16,11 @@
  */
 package org.apache.hadoop.security.authentication.util;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.fail;
+
 import java.io.File;
 import java.io.IOException;
 import java.net.UnknownHostException;
@@ -32,11 +37,6 @@ import org.apache.kerby.kerberos.kerb.type.KerberosTime;
 import org.apache.kerby.kerberos.kerb.type.base.EncryptionKey;
 import org.apache.kerby.kerberos.kerb.type.base.EncryptionType;
 import org.apache.kerby.kerberos.kerb.type.base.PrincipalName;
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.junit.jupiter.api.Assertions.assertTrue;
-import static org.junit.jupiter.api.Assertions.fail;
-
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
 
@@ -73,41 +73,31 @@ public class TestKerberosUtil {
       atDefaultRealm = "@" + defaultRealm;
     }
     // check that the test environment is as expected
-    assertEquals(
-        KerberosUtil.getDomainRealm(service + "/" + localHostname.toLowerCase(Locale.US)),
-        defaultRealm,
-        "testGetServerPrincipal assumes localhost realm is default");
-    assertEquals(
-        KerberosUtil.getDomainRealm(service + "/" + testHost.toLowerCase(Locale.US)),
-        defaultRealm,
-        "testGetServerPrincipal assumes realm of testHost 'FooBar' is default");
+    assertEquals(KerberosUtil.getDomainRealm(service + "/" + localHostname.toLowerCase(Locale.US)),
+        defaultRealm, "testGetServerPrincipal assumes localhost realm is default");
+    assertEquals(KerberosUtil.getDomainRealm(service + "/" + testHost.toLowerCase(Locale.US)),
+        defaultRealm, "testGetServerPrincipal assumes realm of testHost 'FooBar' is default");
 
     // send null hostname
-    assertEquals(
-        service + "/" + localHostname.toLowerCase(Locale.US) + atDefaultRealm,
+    assertEquals(service + "/" + localHostname.toLowerCase(Locale.US) + atDefaultRealm,
         KerberosUtil.getServicePrincipal(service, null),
         "When no hostname is sent");
     // send empty hostname
-    assertEquals(
-        service + "/" + localHostname.toLowerCase(Locale.US) + atDefaultRealm,
+    assertEquals(service + "/" + localHostname.toLowerCase(Locale.US) + atDefaultRealm,
         KerberosUtil.getServicePrincipal(service, ""),
         "When empty hostname is sent");
     // send 0.0.0.0 hostname
-    assertEquals(
-        service + "/" + localHostname.toLowerCase(Locale.US) + atDefaultRealm,
+    assertEquals(service + "/" + localHostname.toLowerCase(Locale.US) + atDefaultRealm,
         KerberosUtil.getServicePrincipal(service, "0.0.0.0"),
         "When 0.0.0.0 hostname is sent");
     // send uppercase hostname
-    assertEquals(
-        service + "/" + testHost.toLowerCase(Locale.US) + atDefaultRealm,
+    assertEquals(service + "/" + testHost.toLowerCase(Locale.US) + atDefaultRealm,
         KerberosUtil.getServicePrincipal(service, testHost),
         "When uppercase hostname is sent");
     // send lowercase hostname
-    assertEquals(
-        service + "/" + testHost.toLowerCase(Locale.US) + atDefaultRealm,
-        KerberosUtil.getServicePrincipal(
-            service, testHost.toLowerCase(Locale.US)),
-            "When lowercase hostname is sent");
+    assertEquals(service + "/" + testHost.toLowerCase(Locale.US) + atDefaultRealm,
+        KerberosUtil.getServicePrincipal(service, testHost.toLowerCase(Locale.US)),
+        "When lowercase hostname is sent");
   }
 
   @Test
@@ -142,8 +132,7 @@ public class TestKerberosUtil {
     int expectedSize = 0;
     List<String> principalList = Arrays.asList(principals);
     for (String principal : testPrincipals) {
-      assertTrue(principalList.contains(principal),
-          "missing principal "+principal);
+      assertTrue(principalList.contains(principal), "missing principal "+principal);
       expectedSize++;
     }
     assertEquals(expectedSize, principals.length);

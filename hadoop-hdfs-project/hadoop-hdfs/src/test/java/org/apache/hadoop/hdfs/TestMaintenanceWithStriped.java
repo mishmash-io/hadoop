@@ -50,8 +50,10 @@ import org.apache.hadoop.hdfs.server.namenode.NameNode;
 import org.apache.hadoop.hdfs.server.namenode.NameNodeAdapter;
 import org.apache.hadoop.hdfs.util.HostsFileWriter;
 import org.apache.hadoop.test.GenericTestUtils;
-import org.junit.jupiter.api.*;
-
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.Timeout;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -149,14 +151,14 @@ public class TestMaintenanceWithStriped {
    * @throws Exception
    */
   @Test
-  @Timeout(value = 120000, unit = TimeUnit.MILLISECONDS)
+  @Timeout(value = 120)
   public void testInMaintenance() throws Exception {
     //1. create EC file
     // d0 d1 d2 d3 d4 d5 d6 d7 d8
     final Path ecFile = new Path(ecDir, "testInMaintenance");
     int writeBytes = cellSize * dataBlocks;
     writeStripedFile(dfs, ecFile, writeBytes);
-    Assertions.assertEquals(0, bm.numOfUnderReplicatedBlocks());
+    assertEquals(0, bm.numOfUnderReplicatedBlocks());
     FileChecksum fileChecksum1 = dfs.getFileChecksum(ecFile, writeBytes);
 
     final INodeFile fileNode = cluster.getNamesystem().getFSDirectory()
@@ -197,7 +199,7 @@ public class TestMaintenanceWithStriped {
     assertEquals(5, bm.countNodes(blockInfo).maintenanceNotForReadReplicas());
 
     FileChecksum fileChecksum2 = dfs.getFileChecksum(ecFile, writeBytes);
-    Assertions.assertEquals(fileChecksum1, fileChecksum2, "Checksum mismatches!");
+    assertEquals(fileChecksum1, fileChecksum2, "Checksum mismatches!");
   }
 
 

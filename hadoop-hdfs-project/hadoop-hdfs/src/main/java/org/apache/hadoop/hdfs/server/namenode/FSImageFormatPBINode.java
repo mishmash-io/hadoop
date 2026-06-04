@@ -789,6 +789,7 @@ public final class FSImageFormatPBINode {
           outputInodes = 0;
           parent.commitSubSection(summary,
               FSImageFormatProtobuf.SectionName.INODE_DIR_SUB);
+          out = parent.getSectionOutputStream();
         }
       }
       parent.commitSectionAndSubSection(summary,
@@ -816,6 +817,7 @@ public final class FSImageFormatPBINode {
         if (i % parent.getInodesPerSubSection() == 0) {
           parent.commitSubSection(summary,
               FSImageFormatProtobuf.SectionName.INODE_SUB);
+          out = parent.getSectionOutputStream();
         }
       }
       parent.commitSectionAndSubSection(summary,

@@ -29,8 +29,10 @@ import org.apache.hadoop.hdfs.server.namenode.NNStorage;
 import org.apache.hadoop.hdfs.server.namenode.FSEditLogOpCodes;
 import org.apache.hadoop.hdfs.util.Holder;
 import org.apache.hadoop.test.GenericTestUtils;
-import org.junit.jupiter.api.*;
-
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.Timeout;
 import org.slf4j.event.Level;
 
 import java.io.File;
@@ -50,6 +52,7 @@ import static org.apache.hadoop.hdfs.server.namenode.snapshot.SnapshotManager.DF
 import static org.apache.hadoop.hdfs.server.namenode.snapshot.TestOrderedSnapshotDeletion.assertMarkedAsDeleted;
 import static org.apache.hadoop.hdfs.server.namenode.snapshot.TestOrderedSnapshotDeletion.assertNotMarkedAsDeleted;
 import static org.apache.hadoop.hdfs.server.namenode.snapshot.TestOrderedSnapshotDeletion.getDeletedSnapshotName;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
@@ -83,7 +86,7 @@ public class TestOrderedSnapshotDeletionGc {
   }
 
   @Test
-  @Timeout(value = 60000, unit = TimeUnit.MILLISECONDS)
+  @Timeout(value = 60)
   public void testSingleDir() throws Exception {
     final DistributedFileSystem hdfs = cluster.getFileSystem();
 
@@ -94,17 +97,17 @@ public class TestOrderedSnapshotDeletionGc {
     final Path sub0 = new Path(snapshottableDir, "sub0");
     hdfs.mkdirs(sub0);
     final Path s0path = hdfs.createSnapshot(snapshottableDir, "s0");
-    Assertions.assertTrue(exist(s0path, hdfs));
+    assertTrue(exist(s0path, hdfs));
 
     final Path sub1 = new Path(snapshottableDir, "sub1");
     hdfs.mkdirs(sub1);
     final Path s1path = hdfs.createSnapshot(snapshottableDir, "s1");
-    Assertions.assertTrue(exist(s1path, hdfs));
+    assertTrue(exist(s1path, hdfs));
 
     final Path sub2 = new Path(snapshottableDir, "sub2");
     hdfs.mkdirs(sub2);
     final Path s2path = hdfs.createSnapshot(snapshottableDir, "s2");
-    Assertions.assertTrue(exist(s2path, hdfs));
+    assertTrue(exist(s2path, hdfs));
 
     assertNotMarkedAsDeleted(s0path, cluster);
     assertNotMarkedAsDeleted(s1path, cluster);
@@ -116,9 +119,9 @@ public class TestOrderedSnapshotDeletionGc {
     assertMarkedAsDeleted(s2path, snapshottableDir, cluster);
     final Path s2pathNew = new Path(s2path.getParent(),
         getDeletedSnapshotName(hdfs, snapshottableDir, s2path.getName()));
-    Assertions.assertFalse(exist(s2path, hdfs));
-    Assertions.assertTrue(exist(s2pathNew, hdfs));
-    Assertions.assertFalse(s2path.equals(s2pathNew));
+    assertFalse(exist(s2path, hdfs));
+    assertTrue(exist(s2pathNew, hdfs));
+    assertFalse(s2path.equals(s2pathNew));
 
     hdfs.deleteSnapshot(snapshottableDir, "s1");
     assertNotMarkedAsDeleted(s0path, cluster);
@@ -126,9 +129,9 @@ public class TestOrderedSnapshotDeletionGc {
     assertMarkedAsDeleted(s2path, snapshottableDir, cluster);
     final Path s1pathNew = new Path(s1path.getParent(),
         getDeletedSnapshotName(hdfs, snapshottableDir, s1path.getName()));
-    Assertions.assertFalse(exist(s1path, hdfs));
-    Assertions.assertTrue(exist(s1pathNew, hdfs));
-    Assertions.assertFalse(s1path.equals(s1pathNew));
+    assertFalse(exist(s1path, hdfs));
+    assertTrue(exist(s1pathNew, hdfs));
+    assertFalse(s1path.equals(s1pathNew));
     // should not be gc'ed
     Thread.sleep(10*GC_PERIOD);
     assertNotMarkedAsDeleted(s0path, cluster);
@@ -136,7 +139,7 @@ public class TestOrderedSnapshotDeletionGc {
     assertMarkedAsDeleted(s2path, snapshottableDir, cluster);
 
     hdfs.deleteSnapshot(snapshottableDir, "s0");
-    Assertions.assertFalse(exist(s0path, hdfs));
+    assertFalse(exist(s0path, hdfs));
 
     waitForGc(Arrays.asList(s1pathNew, s2pathNew), hdfs);
     // total no of edit log records created for delete snapshot will be equal
@@ -159,8 +162,8 @@ public class TestOrderedSnapshotDeletionGc {
     EnumMap<FSEditLogOpCodes, Holder<Integer>> counts;
     counts = FSImageTestUtil.countEditLogOpTypes(editFile);
     if (editLogOpCount > 0) {
-      assertEquals(editLogOpCount, (int) counts.get(FSEditLogOpCodes.
-          OP_DELETE_SNAPSHOT).held);
+      assertEquals(editLogOpCount,
+          (int) counts.get(FSEditLogOpCodes.OP_DELETE_SNAPSHOT).held);
     }
     // make sure the gc thread doesn't start for a long time after the restart
     conf.setInt(DFS_NAMENODE_SNAPSHOT_DELETION_ORDERED_GC_PERIOD_MS,
@@ -169,7 +172,7 @@ public class TestOrderedSnapshotDeletionGc {
         .build();
     cluster.waitActive();
     // ensure after the edits get replayed , all the snapshots are deleted
-    Assertions.assertEquals(0,
+    assertEquals(0,
         cluster.getNamesystem().getSnapshotManager().getNumSnapshots());
   }
 
@@ -196,7 +199,7 @@ public class TestOrderedSnapshotDeletionGc {
   }
 
   @Test
-  @Timeout(value = 60000, unit = TimeUnit.MILLISECONDS)
+  @Timeout(value = 60)
   public void testMultipleDirs() throws Exception {
     final int numSnapshottables = 10;
     final DistributedFileSystem hdfs = cluster.getFileSystem();
@@ -236,7 +239,7 @@ public class TestOrderedSnapshotDeletionGc {
       hdfs.mkdirs(sub);
       final Path p = hdfs.createSnapshot(snapshottableDir, "s" + i);
       snapshotPaths.add(p);
-      Assertions.assertTrue(exist(p, hdfs));
+      assertTrue(exist(p, hdfs));
     }
   }
 }

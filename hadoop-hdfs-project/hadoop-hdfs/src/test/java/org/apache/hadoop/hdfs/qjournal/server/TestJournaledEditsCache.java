@@ -38,7 +38,11 @@ import org.junit.jupiter.api.Test;
 
 import static org.apache.hadoop.hdfs.qjournal.QJMTestUtil.createGabageTxns;
 import static org.apache.hadoop.hdfs.qjournal.QJMTestUtil.createTxnData;
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertArrayEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.fail;
 
 
 /**
@@ -208,13 +212,14 @@ public class TestJournaledEditsCache {
   }
 
   @Test
-  public void testReadUninitializedCache() {
-    assertThrows(JournaledEditsCache.CacheMissException.class, () ->
-      cache.retrieveEdits(1, 10, new ArrayList<>()));
+  public void testReadUninitializedCache() throws Exception {
+    assertThrows(JournaledEditsCache.CacheMissException.class, () -> {
+      cache.retrieveEdits(1, 10, new ArrayList<>());
+    });
   }
 
   @Test
-  public void testCacheMalformedInput() {
+  public void testCacheMalformedInput() throws Exception {
     assertThrows(JournaledEditsCache.CacheMissException.class, () -> {
       storeEdits(1, 1);
       cache.retrieveEdits(-1, 10, new ArrayList<>());
@@ -226,7 +231,7 @@ public class TestJournaledEditsCache {
     // Assert the default configs.
     Configuration config = new Configuration();
     cache = new JournaledEditsCache(config);
-    assertEquals((int) (Runtime.getRuntime().maxMemory() * 0.5f), cache.getCapacity());
+    assertEquals((long) (Runtime.getRuntime().maxMemory() * 0.5f), cache.getCapacity());
 
     // Set dfs.journalnode.edit-cache-size.bytes.
     Configuration config1 = new Configuration();
@@ -239,7 +244,7 @@ public class TestJournaledEditsCache {
     Configuration config2 = new Configuration();
     config2.setFloat(DFSConfigKeys.DFS_JOURNALNODE_EDIT_CACHE_SIZE_FRACTION_KEY, 0.1f);
     cache = new JournaledEditsCache(config2);
-    assertEquals((int) (Runtime.getRuntime().maxMemory() * 0.1f), cache.getCapacity());
+    assertEquals((long) (Runtime.getRuntime().maxMemory() * 0.1f), cache.getCapacity());
   }
 
   private void storeEdits(int startTxn, int endTxn) throws Exception {

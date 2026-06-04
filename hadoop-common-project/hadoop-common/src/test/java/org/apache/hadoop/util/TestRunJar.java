@@ -107,9 +107,9 @@ public class TestRunJar {
     RunJar.unJar(new File(TEST_ROOT_DIR, TEST_JAR_NAME),
                  unjarDir, MATCH_ANY);
     assertTrue(new File(unjarDir, TestRunJar.FOOBAR_TXT).exists(),
-               "foobar unpacked");
+        "foobar unpacked");
     assertTrue(new File(unjarDir, FOOBAZ_TXT).exists(),
-               "foobaz unpacked");
+        "foobaz unpacked");
   }
 
   /**
@@ -124,9 +124,8 @@ public class TestRunJar {
                  unjarDir,
                  Pattern.compile(".*baz.*"));
     assertFalse(new File(unjarDir, TestRunJar.FOOBAR_TXT).exists(),
-                "foobar not unpacked");
-    assertTrue(new File(unjarDir, FOOBAZ_TXT).exists(),
-               "foobaz unpacked");
+        "foobar not unpacked");
+    assertTrue(new File(unjarDir, FOOBAZ_TXT).exists(), "foobaz unpacked");
   }
 
   private File generateBigJar(File dir) throws Exception {
@@ -186,14 +185,16 @@ public class TestRunJar {
             unjarDir, MATCH_ANY);
 
     String failureMessage = "Last modify time was lost during unJar";
-    assertEquals(MOCKED_NOW, new File(unjarDir, TestRunJar.FOOBAR_TXT).lastModified(), failureMessage);
-    assertEquals(MOCKED_NOW_PLUS_TWO_SEC, new File(unjarDir, FOOBAZ_TXT).lastModified(), failureMessage);
+    assertEquals(MOCKED_NOW, new File(unjarDir, TestRunJar.FOOBAR_TXT).lastModified(),
+        failureMessage);
+    assertEquals(MOCKED_NOW_PLUS_TWO_SEC, new File(unjarDir, FOOBAZ_TXT).lastModified(),
+        failureMessage);
   }
 
   private File getUnjarDir(String dirName) {
     File unjarDir = new File(TEST_ROOT_DIR, dirName);
     assertFalse(new File(unjarDir, TestRunJar.FOOBAR_TXT).exists(),
-                "unjar dir shouldn't exist at test start");
+        "unjar dir shouldn't exist at test start");
     return unjarDir;
   }
 

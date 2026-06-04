@@ -50,7 +50,6 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.Timeout;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -103,7 +102,7 @@ public class TestFsDatasetCacheRevocation {
    * occurs.
    */
   @Test
-  @Timeout(value = 120000, unit = TimeUnit.MILLISECONDS)
+  @Timeout(value = 120)
   public void testPinning() throws Exception {
     assumeTrue(NativeCodeLoader.isNativeCodeLoaded());
     assumeNotWindows();
@@ -154,7 +153,7 @@ public class TestFsDatasetCacheRevocation {
    * release the replica for a long time, we will un-mlock it.
    */
   @Test
-  @Timeout(value = 120000, unit = TimeUnit.MILLISECONDS)
+  @Timeout(value = 120)
   public void testRevocation() throws Exception {
     assumeTrue(NativeCodeLoader.isNativeCodeLoaded());
     assumeNotWindows();

@@ -307,6 +307,8 @@ public class LineRecordReader implements RecordReader<LongWritable, Text> {
     try {
       if (in != null) {
         in.close();
+      } else if (fileIn != null) {
+        fileIn.close();
       }
     } finally {
       if (decompressor != null) {

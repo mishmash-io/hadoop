@@ -49,6 +49,9 @@ import org.apache.hadoop.net.NetUtils;
 import org.apache.hadoop.security.UserGroupInformation.AuthenticationMethod;
 import org.apache.hadoop.security.token.Token;
 import org.apache.hadoop.security.token.TokenInfo;
+import org.apache.hadoop.thirdparty.com.google.common.cache.CacheBuilder;
+import org.apache.hadoop.thirdparty.com.google.common.cache.CacheLoader;
+import org.apache.hadoop.thirdparty.com.google.common.cache.LoadingCache;
 import org.apache.hadoop.util.StopWatch;
 import org.apache.hadoop.util.StringUtils;
 import org.slf4j.Logger;
@@ -85,6 +88,7 @@ public final class SecurityUtil {
 
   private static boolean logSlowLookups;
   private static int slowLookupThresholdMs;
+  private static long cachingInterval = 0;
 
   static {
     setConfigurationInternal(new Configuration());
@@ -101,6 +105,10 @@ public final class SecurityUtil {
     boolean useIp = conf.getBoolean(
         CommonConfigurationKeys.HADOOP_SECURITY_TOKEN_SERVICE_USE_IP,
         CommonConfigurationKeys.HADOOP_SECURITY_TOKEN_SERVICE_USE_IP_DEFAULT);
+    cachingInterval = conf.getTimeDuration(
+        CommonConfigurationKeys.HADOOP_SECURITY_HOSTNAME_CACHE_EXPIRE_INTERVAL_SECONDS,
+        CommonConfigurationKeys.HADOOP_SECURITY_HOSTNAME_CACHE_EXPIRE_INTERVAL_SECONDS_DEFAULT,
+        TimeUnit.SECONDS);
     setTokenServiceUseIp(useIp);
 
     logSlowLookups = conf.getBoolean(
@@ -134,8 +142,8 @@ public final class SecurityUtil {
     }
     useIpForTokenService = flag;
     hostResolver = !useIpForTokenService
-        ? new QualifiedHostResolver()
-        : new StandardHostResolver();
+        ? new QualifiedHostResolver(cachingInterval)
+        : new StandardHostResolver(cachingInterval);
   }
   
   /**
@@ -581,17 +589,62 @@ public final class SecurityUtil {
       return hostResolver.getByName(hostname);
     }
   }
-  
+
   interface HostResolver {
-    InetAddress getByName(String host) throws UnknownHostException;    
+    InetAddress getByName(String host) throws UnknownHostException;
   }
-  
+
+  static abstract class CacheableHostResolver implements HostResolver {
+    private volatile LoadingCache<String, InetAddress> cache;
+
+    CacheableHostResolver(long expiryIntervalSecs) {
+      if (expiryIntervalSecs > 0) {
+        cache = CacheBuilder.newBuilder()
+            .expireAfterWrite(expiryIntervalSecs, TimeUnit.SECONDS)
+            .build(new CacheLoader<String, InetAddress>() {
+              @Override
+              public InetAddress load(String key) throws Exception {
+                return resolve(key);
+              }
+            });
+      }
+    }
+    protected abstract InetAddress resolve(String host) throws UnknownHostException;
+
+    @Override
+    public InetAddress getByName(String host) throws UnknownHostException {
+      if (cache != null) {
+        try {
+          return cache.get(host);
+        } catch (Exception e) {
+          Throwable cause = e.getCause();
+          if (cause instanceof UnknownHostException) {
+            throw (UnknownHostException) cause;
+          }
+          String message = (cause != null ? cause.getMessage() : "Unknown error");
+          throw new UnknownHostException("Error resolving host " + host + ": " + message);
+        }
+      } else {
+        return resolve(host);
+      }
+    }
+
+    @VisibleForTesting
+    public LoadingCache<String, InetAddress> getCache() {
+      return cache;
+    }
+  }
   /**
    * Uses standard java host resolution
    */
-  static class StandardHostResolver implements HostResolver {
+  static class StandardHostResolver extends CacheableHostResolver {
+
+    StandardHostResolver(long expiryIntervalSecs) {
+      super(expiryIntervalSecs);
+    }
+
     @Override
-    public InetAddress getByName(String host) throws UnknownHostException {
+    public InetAddress resolve(String host) throws UnknownHostException {
       return InetAddress.getByName(host);
     }
   }
@@ -618,7 +671,7 @@ public final class SecurityUtil {
    * NOTE: this resolver is only used if:
    *       hadoop.security.token.service.use_ip=false 
    */
-  protected static class QualifiedHostResolver implements HostResolver {
+  protected static class QualifiedHostResolver extends CacheableHostResolver {
     private List<String> searchDomains = new ArrayList<>();
     {
       ResolverConfig resolverConfig = ResolverConfig.getCurrentConfig();
@@ -627,6 +680,13 @@ public final class SecurityUtil {
       }
     }
 
+    QualifiedHostResolver() {
+      this(0);
+    }
+
+    QualifiedHostResolver(long expiryIntervalSecs) {
+      super(expiryIntervalSecs);
+    }
     /**
      * Create an InetAddress with a fully qualified hostname of the given
      * hostname.  InetAddress does not qualify an incomplete hostname that
@@ -640,7 +700,7 @@ public final class SecurityUtil {
      * @throws UnknownHostException if host does not exist
      */
     @Override
-    public InetAddress getByName(String host) throws UnknownHostException {
+    public InetAddress resolve(String host) throws UnknownHostException {
       InetAddress addr = null;
 
       if (InetAddresses.isInetAddress(host)) {

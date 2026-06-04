@@ -16,7 +16,10 @@
  * limitations under the License.
  */
 package org.apache.hadoop.hdfs.server.namenode.ha;
-import static org.junit.jupiter.api.Assertions.*;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
 
 import java.io.File;
 import java.io.FilenameFilter;
@@ -45,7 +48,6 @@ import static org.apache.hadoop.hdfs.qjournal.client.QuorumJournalManager.QJM_RP
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

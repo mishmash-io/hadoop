@@ -96,41 +96,32 @@ public class TestClusterTopology extends Assertions {
     // create exclude list
     List<Node> excludedNodes = new ArrayList<Node>();
 
-    assertEquals(4,
-        cluster.countNumOfAvailableNodes(NodeBase.ROOT, excludedNodes),
+    assertEquals(4, cluster.countNumOfAvailableNodes(NodeBase.ROOT, excludedNodes),
         "4 nodes should be available");
     NodeElement deadNode = getNewNode("node5", "/d1/r2");
     excludedNodes.add(deadNode);
-    assertEquals(4,
-        cluster.countNumOfAvailableNodes(NodeBase.ROOT, excludedNodes),
+    assertEquals(4, cluster.countNumOfAvailableNodes(NodeBase.ROOT, excludedNodes),
         "4 nodes should be available with extra excluded Node");
     // add one existing node to exclude list
     excludedNodes.add(node4);
-    assertEquals(3,
-        cluster.countNumOfAvailableNodes(NodeBase.ROOT, excludedNodes),
+    assertEquals(3, cluster.countNumOfAvailableNodes(NodeBase.ROOT, excludedNodes),
         "excluded nodes with ROOT scope should be considered");
     assertEquals(2,
-        cluster.countNumOfAvailableNodes("~" + deadNode.getNetworkLocation(),
-            excludedNodes),
+        cluster.countNumOfAvailableNodes("~" + deadNode.getNetworkLocation(), excludedNodes),
         "excluded nodes without ~ scope should be considered");
-    assertEquals(1,
-        cluster.countNumOfAvailableNodes(deadNode.getNetworkLocation(),
-            excludedNodes),
-        "excluded nodes with rack scope should be considered");
+    assertEquals(1, cluster.countNumOfAvailableNodes(deadNode.getNetworkLocation(),
+        excludedNodes), "excluded nodes with rack scope should be considered");
     // adding the node in excluded scope to excluded list
     excludedNodes.add(node2);
     assertEquals(2,
-        cluster.countNumOfAvailableNodes("~" + deadNode.getNetworkLocation(),
-            excludedNodes),
+        cluster.countNumOfAvailableNodes("~" + deadNode.getNetworkLocation(), excludedNodes),
         "excluded nodes with ~ scope should be considered");
     // getting count with non-exist scope.
-    assertEquals(0,
-        cluster.countNumOfAvailableNodes("/non-exist", excludedNodes),
+    assertEquals(0, cluster.countNumOfAvailableNodes("/non-exist", excludedNodes),
         "No nodes should be considered for non-exist scope");
     // remove a node from the cluster
     cluster.remove(node1);
-    assertEquals(1,
-        cluster.countNumOfAvailableNodes(NodeBase.ROOT, excludedNodes),
+    assertEquals(1, cluster.countNumOfAvailableNodes(NodeBase.ROOT, excludedNodes),
         "1 node should be available");
   }
 
@@ -189,8 +180,8 @@ public class TestClusterTopology extends Assertions {
     }
 
     // Check that they have the proper distribution
-    assertFalse(chiSquareTestRejectedCounter==3,
-            "Random not choosing nodes with proper distribution");
+    assertFalse(chiSquareTestRejectedCounter == 3,
+        "Random not choosing nodes with proper distribution");
 
     // Pick random nodes excluding the 2 nodes in /d1/r3
     HashMap<String, Integer> histogram = new HashMap<String, Integer>();
@@ -276,9 +267,9 @@ public class TestClusterTopology extends Assertions {
     for (Pair<Integer, NodeElement> test: new Pair[]{Pair.of(0, node1),
         Pair.of(2, node2), Pair.of(4, node3)}) {
       int expect = test.getLeft();
-      assertEquals(expect, cluster.getWeight(node1, test.getRight()), test.toString());
-      assertEquals(expect,
-          cluster.getWeightUsingNetworkLocation(node1, test.getRight()),
+      assertEquals(expect, cluster.getWeight(node1, test.getRight()),
+          test.toString());
+      assertEquals(expect, cluster.getWeightUsingNetworkLocation(node1, test.getRight()),
           test.toString());
     }
     // Reset so that we can have 2 levels
@@ -291,8 +282,7 @@ public class TestClusterTopology extends Assertions {
         Pair.of(2, node6), Pair.of(4, node7), Pair.of(6, node8)}) {
       int expect = test.getLeft();
       assertEquals(expect, cluster.getWeight(node5, test.getRight()), test.toString());
-      assertEquals(expect,
-          cluster.getWeightUsingNetworkLocation(node5, test.getRight()),
+      assertEquals(expect, cluster.getWeightUsingNetworkLocation(node5, test.getRight()),
           test.toString());
     }
   }

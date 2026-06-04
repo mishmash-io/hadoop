@@ -25,6 +25,9 @@ import java.io.PrintStream;
 
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.tools.CommandShell;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -108,20 +111,20 @@ public class TestCommandShell {
     rc = ex.run(args1);
     assertEquals(0, rc, outMsg("test exit code - normal hello"));
     assertTrue(outContent.toString().contains(Example.HELLO_MSG),
-               outMsg("test normal hello message"));
+        outMsg("test normal hello message"));
 
     outContent.reset();
     String[] args2 = {"hello", "x"};
     rc = ex.run(args2);
     assertEquals(1, rc, outMsg("test exit code - bad hello"));
     assertTrue(outContent.toString().contains(Example.Hello.HELLO_USAGE),
-               outMsg("test bad hello message"));
+        outMsg("test bad hello message"));
 
     outContent.reset();
     String[] args3 = {"goodbye"};
     rc = ex.run(args3);
     assertEquals(0, rc, outMsg("test exit code - normal goodbye"));
     assertTrue(outContent.toString().contains(Example.GOODBYE_MSG),
-               outMsg("test normal goodbye message"));
+        outMsg("test normal goodbye message"));
   }
 }

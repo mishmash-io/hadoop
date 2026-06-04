@@ -39,6 +39,7 @@ import org.apache.hadoop.security.authorize.ProxyUsers;
 import org.apache.hadoop.test.GenericTestUtils;
 import org.apache.hadoop.test.GenericTestUtils.LogCapturer;
 import org.apache.hadoop.util.Lists;
+import org.apache.hadoop.util.concurrent.SubjectInheritingThread;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -73,7 +74,11 @@ import static org.apache.hadoop.hdfs.DFSConfigKeys.DFS_NAMENODE_ACLS_ENABLED_KEY
 import static org.apache.hadoop.hdfs.DFSConfigKeys.DFS_NAMENODE_AUDIT_LOGGERS_KEY;
 import static org.apache.hadoop.hdfs.DFSConfigKeys.DFS_NAMENODE_AUDIT_LOG_WITH_REMOTE_PORT_KEY;
 import static org.apache.hadoop.hdfs.DFSConfigKeys.NNTOP_ENABLED_KEY;
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.fail;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doThrow;
 
@@ -311,7 +316,7 @@ public class TestAuditLogger {
           .build();
       CallerContext.setCurrent(context);
       LOG.info("Set current caller context as {}", CallerContext.getCurrent());
-      Thread child = new Thread(new Runnable()
+      Thread child = new SubjectInheritingThread(new Runnable()
       {
         @Override
         public void run() {
@@ -338,7 +343,7 @@ public class TestAuditLogger {
               .setSignature("L".getBytes(CallerContext.SIGNATURE_ENCODING))
               .build();
       LOG.info("Set current caller context as {}", CallerContext.getCurrent());
-      child = new Thread(new Runnable()
+      child = new SubjectInheritingThread(new Runnable()
       {
         @Override
         public void run() {
@@ -473,7 +478,7 @@ public class TestAuditLogger {
    * over FS Shell.
    */
   @Test
-  @Timeout(value = 60000, unit = TimeUnit.MILLISECONDS)
+  @Timeout(value = 60)
   public void testAuditLogForAcls() throws Exception {
     final Configuration conf = new HdfsConfiguration();
     conf.setBoolean(DFS_NAMENODE_ACLS_ENABLED_KEY, true);

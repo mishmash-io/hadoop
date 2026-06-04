@@ -17,16 +17,17 @@
  */
 
 package org.apache.hadoop.fs.contract;
+
 import org.assertj.core.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import java.io.IOException;
 import java.util.Arrays;
 
 import org.apache.hadoop.fs.FSDataInputStream;
 import org.apache.hadoop.fs.Path;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.TestInfo;
+import org.apache.hadoop.test.tags.FlakyTest;
 
 import static org.apache.hadoop.fs.contract.ContractTestUtils.createFile;
 import static org.apache.hadoop.fs.contract.ContractTestUtils.dataset;
@@ -34,7 +35,12 @@ import static org.apache.hadoop.fs.contract.ContractTestUtils.readNBytes;
 
 /**
  * Contract tests for {@link org.apache.hadoop.fs.CanUnbuffer#unbuffer}.
+ * Some of these test cases can fail if the FS read() call returns less
+ * than requested, which is a valid (possibly correct) implementation
+ * of {@code InputStream.read(buffer[])} which may return only those bytes
+ * which can be returned without blocking for more data.
  */
+@FlakyTest("buffer underflow")
 public abstract class AbstractContractUnbufferTest extends AbstractFSContractTestBase {
 
   private Path file;
@@ -107,6 +113,7 @@ public abstract class AbstractContractUnbufferTest extends AbstractFSContractTes
     }
   }
 
+
   @Test
   public void testUnbufferMultipleReads() throws IOException {
     describe("unbuffer a file multiple times");
@@ -120,8 +127,7 @@ public abstract class AbstractContractUnbufferTest extends AbstractFSContractTes
       validateFileContents(stream, TEST_FILE_LEN / 2, TEST_FILE_LEN / 2);
       unbuffer(stream);
       assertEquals(TEST_FILE_LEN,
-              stream.getPos(),
-              "stream should be at end of file");
+          stream.getPos(), "stream should be at end of file");
     }
   }
 
@@ -129,8 +135,7 @@ public abstract class AbstractContractUnbufferTest extends AbstractFSContractTes
     long pos = stream.getPos();
     stream.unbuffer();
     assertEquals(pos,
-            stream.getPos(),
-            "unbuffer unexpectedly changed the stream position");
+        stream.getPos(), "unbuffer unexpectedly changed the stream position");
   }
 
   protected void validateFullFileContents(FSDataInputStream stream)

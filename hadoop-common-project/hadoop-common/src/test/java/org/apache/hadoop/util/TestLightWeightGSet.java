@@ -31,6 +31,9 @@ import org.junit.jupiter.api.Timeout;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
 /** Testing {@link LightWeightGSet} */
 public class TestLightWeightGSet {
   public static final Logger LOG =
@@ -70,7 +73,7 @@ public class TestLightWeightGSet {
   }
 
   @Test
-  @Timeout(value=60000, unit=TimeUnit.MILLISECONDS)
+  @Timeout(value = 60)
   public void testRemoveAllViaIterator() {
     ArrayList<Integer> list = getRandomList(100, 123);
     LightWeightGSet<TestElement, TestElement> set =
@@ -87,7 +90,7 @@ public class TestLightWeightGSet {
   }
 
   @Test
-  @Timeout(value=60000, unit=TimeUnit.MILLISECONDS)
+  @Timeout(value = 60)
   public void testRemoveSomeViaIterator() {
     ArrayList<Integer> list = getRandomList(100, 123);
     LightWeightGSet<TestElement, TestElement> set =

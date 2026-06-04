@@ -17,7 +17,8 @@
  */
 package org.apache.hadoop.hdfs;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.lang.reflect.Method;
 import java.util.Arrays;
@@ -32,14 +33,14 @@ import org.apache.hadoop.hdfs.qjournal.server.JournalNodeRpcServer;
 import org.apache.hadoop.hdfs.server.namenode.NameNodeRpcServer;
 import org.apache.hadoop.hdfs.server.datanode.DataNode;
 import org.apache.hadoop.security.authorize.Service;
+import org.apache.hadoop.test.TestName;
 import org.apache.hadoop.util.Sets;
 
 import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.TestInfo;
+
+import org.junit.jupiter.api.extension.RegisterExtension;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.MethodSource;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -66,8 +67,8 @@ public class TestHDFSPolicyProvider {
         }
       };
 
-  
-  public String testName;
+  @RegisterExtension
+  private TestName methodName = new TestName();
 
   private Class<?> rpcServerClass;
 
@@ -80,8 +81,9 @@ public class TestHDFSPolicyProvider {
     }
   }
 
-  public void initTestHDFSPolicyProvider(Class<?> rpcServerClass) {
-    this.rpcServerClass = rpcServerClass;
+  public void initTestHDFSPolicyProvider(Class<?> pRpcServerClass) {
+    this.rpcServerClass = pRpcServerClass;
+    initialize();
   }
 
   public static List<Class<?>[]> data() {
@@ -92,10 +94,10 @@ public class TestHDFSPolicyProvider {
     });
   }
 
-  @MethodSource("data")
   @ParameterizedTest(name = "protocolsForServer-{0}")
-  public void testPolicyProviderForServer(Class<?> rpcServerClass) {
-    initTestHDFSPolicyProvider(rpcServerClass);
+  @MethodSource("data")
+  public void testPolicyProviderForServer(Class<?> pRpcServerClass) {
+    initTestHDFSPolicyProvider(pRpcServerClass);
     List<?> ifaces = ClassUtils.getAllInterfaces(rpcServerClass);
     Set<Class<?>> serverProtocols = new HashSet<>(ifaces.size());
     for (Object obj : ifaces) {
@@ -105,25 +107,16 @@ public class TestHDFSPolicyProvider {
       }
     }
     LOG.info("Running test {} for RPC server {}.  Found server protocols {} "
-        + "and policy provider protocols {}.", testName,
+        + "and policy provider protocols {}.", methodName.getMethodName(),
         rpcServerClass.getName(), serverProtocols, policyProviderProtocols);
     assertFalse(serverProtocols.isEmpty(),
         "Expected to find at least one protocol in server.");
     final Set<Class<?>> differenceSet =
         Sets.difference(serverProtocols, policyProviderProtocols);
-    assertTrue(
-        differenceSet.isEmpty(),
+    assertTrue(differenceSet.isEmpty(),
         String.format("Following protocols for server %s are not defined in "
-            + "%s: %s",
+                + "%s: %s",
             rpcServerClass.getName(), HDFSPolicyProvider.class.getName(),
             Arrays.toString(differenceSet.toArray())));
-  }
-
-  @BeforeEach
-  public void setup(TestInfo testInfo) {
-    Optional<Method> testMethod = testInfo.getTestMethod();
-    if (testMethod.isPresent()) {
-      this.testName = testMethod.get().getName();
-    }
   }
 }

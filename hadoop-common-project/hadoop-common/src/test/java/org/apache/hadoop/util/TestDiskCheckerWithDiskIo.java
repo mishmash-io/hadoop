@@ -23,24 +23,25 @@ import org.apache.hadoop.util.DiskChecker.FileIoProvider;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.Timeout;
 
-import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.junit.jupiter.api.Assertions.assertTrue;
-
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.attribute.PosixFilePermissions;
-import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
+
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
 
 /**
  * Verify {@link DiskChecker} validation routines that perform
  * Disk IO.
  */
-@Timeout(value=30000, unit=TimeUnit.MILLISECONDS)
+@Timeout(30)
 public final class TestDiskCheckerWithDiskIo {
+
   /**
    * Verify DiskChecker ignores at least 2 transient file creation errors.
    */
@@ -56,9 +57,9 @@ public final class TestDiskCheckerWithDiskIo {
    */
   @Test
   public final void testDiskIoDetectsCreateErrors() throws Throwable {
-    DiskChecker.replaceFileOutputStreamProvider(new TestFileIoProvider(
-        DiskChecker.DISK_IO_MAX_ITERATIONS, 0));
     assertThrows(DiskErrorException.class, () -> {
+      DiskChecker.replaceFileOutputStreamProvider(new TestFileIoProvider(
+          DiskChecker.DISK_IO_MAX_ITERATIONS, 0));
       checkDirs(false);
     });
   }
@@ -78,9 +79,9 @@ public final class TestDiskCheckerWithDiskIo {
    */
   @Test
   public final void testDiskIoDetectsWriteErrors() throws Throwable {
-    DiskChecker.replaceFileOutputStreamProvider(new TestFileIoProvider(
-        0, DiskChecker.DISK_IO_MAX_ITERATIONS));
-    assertThrows(DiskErrorException.class, () -> {
+    assertThrows(DiskErrorException.class, ()->{
+      DiskChecker.replaceFileOutputStreamProvider(new TestFileIoProvider(
+          0, DiskChecker.DISK_IO_MAX_ITERATIONS));
       checkDirs(false);
     });
   }
@@ -94,14 +95,12 @@ public final class TestDiskCheckerWithDiskIo {
     assertTrue(".001".matches("\\.00\\d$"));
     for (int i = 1; i < DiskChecker.DISK_IO_MAX_ITERATIONS; ++i) {
       final File file = DiskChecker.getFileNameForDiskIoCheck(rootDir, i);
-      assertTrue(
-          file.toString().matches("^.*\\.[0-9]+$"),
+      assertTrue(file.toString().matches("^.*\\.[0-9]+$"),
           "File name does not match expected pattern: " + file);
     }
     final File guidFile = DiskChecker.getFileNameForDiskIoCheck(
         rootDir, DiskChecker.DISK_IO_MAX_ITERATIONS);
-    assertTrue(
-        guidFile.toString().matches("^.*\\.[A-Za-z0-9-]+$"),
+    assertTrue(guidFile.toString().matches("^.*\\.[A-Za-z0-9-]+$"),
         "File name does not match expected pattern: " + guidFile);
   }
 

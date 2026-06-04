@@ -43,7 +43,7 @@ import org.apache.hadoop.util.Lists;
 
 import org.junit.jupiter.api.Test;
 
-import static org.apache.hadoop.hdfs.server.namenode.NameNodeAdapter.getFileInfo;
+import org.junit.jupiter.api.Test;
 
 import org.apache.hadoop.thirdparty.com.google.common.base.Joiner;
 

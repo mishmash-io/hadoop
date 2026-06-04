@@ -21,7 +21,7 @@ package org.apache.hadoop.io.wrappedio.impl;
 import java.io.Serializable;
 import java.io.UncheckedIOException;
 import java.util.Map;
-import jakarta.annotation.Nullable;
+import javax.annotation.Nullable;
 
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;

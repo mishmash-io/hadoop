@@ -22,9 +22,11 @@ import java.util.concurrent.TimeUnit;
 
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hdfs.DFSTestUtil;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.Timeout;
+
+import static org.junit.jupiter.api.Assertions.assertArrayEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 /**
  * Tests NameNode interaction for all XAttr APIs.
@@ -39,7 +41,7 @@ public class TestNameNodeXAttr extends FSXAttrBaseTest {
   private static final Path target = new Path(targetParent, "target");
 
   @Test
-  @Timeout(value = 120000, unit = TimeUnit.MILLISECONDS)
+  @Timeout(value = 120)
   public void testXAttrSymlinks() throws Exception {
     fs.mkdirs(linkParent);
     fs.mkdirs(targetParent);
@@ -50,27 +52,27 @@ public class TestNameNodeXAttr extends FSXAttrBaseTest {
     fs.setXAttr(target, name2, value2);
     
     Map<String, byte[]> xattrs = fs.getXAttrs(link);
-    Assertions.assertEquals(xattrs.size(), 2);
-    Assertions.assertArrayEquals(value1, xattrs.get(name1));
-    Assertions.assertArrayEquals(value2, xattrs.get(name2));
+    assertEquals(xattrs.size(), 2);
+    assertArrayEquals(value1, xattrs.get(name1));
+    assertArrayEquals(value2, xattrs.get(name2));
     
     fs.setXAttr(link, name3, null);
     xattrs = fs.getXAttrs(target);
-    Assertions.assertEquals(xattrs.size(), 3);
-    Assertions.assertArrayEquals(value1, xattrs.get(name1));
-    Assertions.assertArrayEquals(value2, xattrs.get(name2));
-    Assertions.assertArrayEquals(new byte[0], xattrs.get(name3));
+    assertEquals(xattrs.size(), 3);
+    assertArrayEquals(value1, xattrs.get(name1));
+    assertArrayEquals(value2, xattrs.get(name2));
+    assertArrayEquals(new byte[0], xattrs.get(name3));
     
     fs.removeXAttr(link, name1);
     xattrs = fs.getXAttrs(target);
-    Assertions.assertEquals(xattrs.size(), 2);
-    Assertions.assertArrayEquals(value2, xattrs.get(name2));
-    Assertions.assertArrayEquals(new byte[0], xattrs.get(name3));
+    assertEquals(xattrs.size(), 2);
+    assertArrayEquals(value2, xattrs.get(name2));
+    assertArrayEquals(new byte[0], xattrs.get(name3));
     
     fs.removeXAttr(target, name3);
     xattrs = fs.getXAttrs(link);
-    Assertions.assertEquals(xattrs.size(), 1);
-    Assertions.assertArrayEquals(value2, xattrs.get(name2));
+    assertEquals(xattrs.size(), 1);
+    assertArrayEquals(value2, xattrs.get(name2));
     
     fs.delete(linkParent, true);
     fs.delete(targetParent, true);

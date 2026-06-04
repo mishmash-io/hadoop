@@ -28,10 +28,7 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.Timeout;
-
 import java.io.IOException;
-import java.util.concurrent.TimeUnit;
-
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
@@ -74,7 +71,7 @@ public class TestRefreshNamenodeReplicationConfig {
    * updated successfully.
    */
   @Test
-  @Timeout(value = 90000, unit = TimeUnit.MILLISECONDS)
+  @Timeout(value = 90)
   public void testParamsCanBeReconfigured() throws ReconfigurationException {
 
     assertEquals(8, bm.getMaxReplicationStreams());
@@ -105,7 +102,7 @@ public class TestRefreshNamenodeReplicationConfig {
    * value for each parameter.
    */
   @Test
-  @Timeout(value = 90000, unit = TimeUnit.MILLISECONDS)
+  @Timeout(value = 90)
   public void testReconfigureFailsWithInvalidValues() throws Exception {
     String[] keys = new String[]{
         DFSConfigKeys.DFS_NAMENODE_REPLICATION_MAX_STREAMS_KEY,
@@ -120,8 +117,9 @@ public class TestRefreshNamenodeReplicationConfig {
           LambdaTestUtils.intercept(ReconfigurationException.class,
               () -> cluster.getNameNode().reconfigurePropertyImpl(key, "-20"));
       assertTrue(e.getCause() instanceof IllegalArgumentException);
-      assertEquals(key+" = '-20' is invalid. It should be a "
-          +"positive, non-zero integer value.", e.getCause().getMessage());
+      assertEquals(
+          key + " = '-20' is invalid. It should be a " + "positive, non-zero integer value.",
+          e.getCause().getMessage());
     }
     // Ensure none of the values were updated from the defaults
     assertEquals(8, bm.getMaxReplicationStreams());
@@ -134,8 +132,8 @@ public class TestRefreshNamenodeReplicationConfig {
           LambdaTestUtils.intercept(ReconfigurationException.class,
               () -> cluster.getNameNode().reconfigurePropertyImpl(key, "0"));
       assertTrue(e.getCause() instanceof IllegalArgumentException);
-      assertEquals(key+" = '0' is invalid. It should be a "
-          +"positive, non-zero integer value.", e.getCause().getMessage());
+      assertEquals(key + " = '0' is invalid. It should be a " + "positive, non-zero integer value.",
+          e.getCause().getMessage());
     }
 
     // Ensure none of the values were updated from the defaults

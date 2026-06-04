@@ -25,7 +25,6 @@ import static org.junit.jupiter.api.Assertions.fail;
 import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.concurrent.TimeUnit;
 
 import org.apache.hadoop.util.IdentityHashStore;
 import org.apache.hadoop.util.IdentityHashStore.Visitor;
@@ -33,6 +32,11 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.Timeout;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.fail;
 
 public class TestIdentityHashStore {
   private static final Logger LOG =
@@ -61,7 +65,7 @@ public class TestIdentityHashStore {
   }
 
   @Test
-  @Timeout(value=60000, unit=TimeUnit.MILLISECONDS)
+  @Timeout(value = 60)
   public void testStartingWithZeroCapacity() {
     IdentityHashStore<Key, Integer> store = 
         new IdentityHashStore<Key, Integer>(0);
@@ -88,7 +92,7 @@ public class TestIdentityHashStore {
   }
   
   @Test
-  @Timeout(value=60000, unit=TimeUnit.MILLISECONDS)
+  @Timeout(value = 60)
   public void testDuplicateInserts() {
     IdentityHashStore<Key, Integer> store = 
         new IdentityHashStore<Key, Integer>(4);
@@ -107,7 +111,7 @@ public class TestIdentityHashStore {
     Key equalToKey1 = new Key("key1");
 
     // IdentityHashStore compares by object equality, not equals()
-    assertNull(store.get(equalToKey1)); 
+    assertNull(store.get(equalToKey1));
 
     assertTrue(!store.isEmpty());
     assertEquals(value1, store.get(key1));
@@ -130,7 +134,7 @@ public class TestIdentityHashStore {
   }
   
   @Test
-  @Timeout(value=60000, unit=TimeUnit.MILLISECONDS)
+  @Timeout(value = 60)
   public void testAdditionsAndRemovals() {
     IdentityHashStore<Key, Integer> store = 
         new IdentityHashStore<Key, Integer>(0);
@@ -159,8 +163,7 @@ public class TestIdentityHashStore {
         fail("expected all entries to be removed");
       }
     });
-    assertTrue(store.isEmpty(),
-        "expected the store to be " +
+    assertTrue(store.isEmpty(), "expected the store to be " +
         "empty, but found " + store.numElements() + " elements.");
     assertEquals(1024, store.capacity());
   }

@@ -49,7 +49,9 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.fail;
-import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.spy;
+import static org.mockito.Mockito.when;
 
 public class TestMapFile {
   private static final Logger LOG = LoggerFactory.getLogger(TestMapFile.class);
@@ -523,10 +525,8 @@ public class TestMapFile {
       Path index = new Path(dir, MapFile.INDEX_FILE_NAME);
       fs.rename(index, index.suffix(".orig"));
 
-      assertEquals(size,
-                   MapFile.fix(fs, dir, IntWritable.class, Text.class,
-                               false, conf),
-                   "No of valid MapFile entries wrong");
+      assertEquals(size, MapFile.fix(fs, dir, IntWritable.class, Text.class, false, conf),
+          "No of valid MapFile entries wrong");
       reader = new MapFile.Reader(dir, conf);
       IntWritable key;
       Text val = new Text();
@@ -538,7 +538,7 @@ public class TestMapFile {
         }
       }
       assertEquals(0, notFound,
-                   "With MapFile.fix-ed index, could not get entries # ");
+          "With MapFile.fix-ed index, could not get entries # ");
     } finally {
       IOUtils.cleanupWithLogger(null, writer, reader);
       if (fs.exists(dir)) {

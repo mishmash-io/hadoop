@@ -39,7 +39,7 @@ import java.util.stream.Collectors;
 import javax.annotation.Nullable;
 
 import org.assertj.core.api.Assertions;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import software.amazon.awssdk.auth.credentials.AwsBasicCredentials;
@@ -190,6 +190,23 @@ public class TestS3AAWSCredentialsProvider extends HadoopTestBase {
   }
 
   @Test
+  public void testNonSdkExceptionConversion() throws Throwable {
+    // Create a mock credential provider that throws a non-SDK exception
+    AwsCredentialsProvider mockProvider = () -> {
+      throw new RuntimeException("Test credential error");
+    };
+
+    // Create the provider list with our mock provider
+    AWSCredentialProviderList providerList =
+        new AWSCredentialProviderList(Collections.singletonList(mockProvider));
+
+    // Attempt to get credentials, which should trigger the exception
+    intercept(NoAuthWithAWSException.class,
+        "No AWS Credentials provided",
+        () -> providerList.resolveCredentials());
+  }
+
+  @Test
   public void testDefaultChainNoURI() throws Exception {
     Configuration conf = new Configuration(false);
     // use the default credential provider chain
@@ -243,7 +260,67 @@ public class TestS3AAWSCredentialsProvider extends HadoopTestBase {
         Arrays.asList(
             EnvironmentVariableCredentialsProvider.class),
         Sets.newHashSet());
-    assertTrue("empty credentials", credentials.size() > 0);
+    assertTrue(credentials.size() > 0, "empty credentials");
+  }
+
+  /**
+   * Test S3A credentials provider remapping with assumed role
+   * credentials provider.
+   */
+  @Test
+  public void testAssumedRoleWithRemap() throws Throwable {
+    Configuration conf = new Configuration(false);
+    conf.set(ASSUMED_ROLE_CREDENTIALS_PROVIDER,
+        "custom.assume.role.key1,custom.assume.role.key2,custom.assume.role.key3");
+    conf.set(AWS_CREDENTIALS_PROVIDER_MAPPING,
+        "custom.assume.role.key1="
+            + CredentialProviderListFactory.ENVIRONMENT_CREDENTIALS_V2
+            + " ,custom.assume.role.key2 ="
+            + CountInvocationsProvider.NAME
+            + ", custom.assume.role.key3= "
+            + CredentialProviderListFactory.PROFILE_CREDENTIALS_V1);
+    final AWSCredentialProviderList credentials =
+        buildAWSProviderList(
+            new URI("s3a://bucket1"),
+            conf,
+            ASSUMED_ROLE_CREDENTIALS_PROVIDER,
+            new ArrayList<>(),
+            new HashSet<>());
+    Assertions
+        .assertThat(credentials.size())
+        .describedAs("List of Credentials providers")
+        .isEqualTo(3);
+  }
+
+  /**
+   * Test S3A credentials provider remapping with aws
+   * credentials provider.
+   */
+  @Test
+  public void testAwsCredentialProvidersWithRemap() throws Throwable {
+    Configuration conf = new Configuration(false);
+    conf.set(AWS_CREDENTIALS_PROVIDER,
+        "custom.aws.creds.key1,custom.aws.creds.key2,custom.aws.creds.key3,custom.aws.creds.key4");
+    conf.set(AWS_CREDENTIALS_PROVIDER_MAPPING,
+        "custom.aws.creds.key1="
+            + CredentialProviderListFactory.ENVIRONMENT_CREDENTIALS_V2
+            + " ,\ncustom.aws.creds.key2="
+            + CountInvocationsProvider.NAME
+            + "\n, custom.aws.creds.key3="
+            + CredentialProviderListFactory.PROFILE_CREDENTIALS_V1
+            + ",custom.aws.creds.key4 = "
+            + CredentialProviderListFactory.PROFILE_CREDENTIALS_V2);
+    final AWSCredentialProviderList credentials =
+        buildAWSProviderList(
+            new URI("s3a://bucket1"),
+            conf,
+            AWS_CREDENTIALS_PROVIDER,
+            new ArrayList<>(),
+            new HashSet<>());
+    Assertions
+        .assertThat(credentials.size())
+        .describedAs("List of Credentials providers")
+        .isEqualTo(4);
   }
 
   /**
@@ -484,13 +561,12 @@ public class TestS3AAWSCredentialsProvider extends HadoopTestBase {
       Class<?> expectedClass =
           expectedClasses.get(i);
       AwsCredentialsProvider provider = providers.get(i);
-      assertNotNull(
+      assertNotNull(provider,
           String.format("At position %d, expected class is %s, but found null.",
-              i, expectedClass), provider);
-      assertTrue(
+          i, expectedClass));
+      assertTrue(expectedClass.isAssignableFrom(provider.getClass()),
           String.format("At position %d, expected class is %s, but found %s.",
-              i, expectedClass, provider.getClass()),
-          expectedClass.isAssignableFrom(provider.getClass()));
+          i, expectedClass, provider.getClass()));
     }
   }
 
@@ -501,12 +577,12 @@ public class TestS3AAWSCredentialsProvider extends HadoopTestBase {
   @Test
   public void testAuthenticationContainsProbes() {
     Configuration conf = new Configuration(false);
-    assertFalse("found AssumedRoleCredentialProvider",
-        authenticationContains(conf, AssumedRoleCredentialProvider.NAME));
+    assertFalse(authenticationContains(conf, AssumedRoleCredentialProvider.NAME),
+        "found AssumedRoleCredentialProvider");
 
     conf.set(AWS_CREDENTIALS_PROVIDER, AssumedRoleCredentialProvider.NAME);
-    assertTrue("didn't find AssumedRoleCredentialProvider",
-        authenticationContains(conf, AssumedRoleCredentialProvider.NAME));
+    assertTrue(authenticationContains(conf, AssumedRoleCredentialProvider.NAME),
+        "didn't find AssumedRoleCredentialProvider");
   }
 
   @Test
@@ -521,17 +597,17 @@ public class TestS3AAWSCredentialsProvider extends HadoopTestBase {
     providers.close();
 
     S3ARetryPolicy retryPolicy = new S3ARetryPolicy(new Configuration(false));
-    assertEquals("Expected no retry on auth failure",
-        RetryPolicy.RetryAction.FAIL.action,
-        retryPolicy.shouldRetry(noAuth, 0, 0, true).action);
+    assertEquals(RetryPolicy.RetryAction.FAIL.action,
+        retryPolicy.shouldRetry(noAuth, 0, 0, true).action,
+        "Expected no retry on auth failure");
 
     try {
       throw S3AUtils.translateException("login", "", noAuth);
     } catch (AccessDeniedException expected) {
       // this is what we want; other exceptions will be passed up
-      assertEquals("Expected no retry on AccessDeniedException",
-          RetryPolicy.RetryAction.FAIL.action,
-          retryPolicy.shouldRetry(expected, 0, 0, true).action);
+      assertEquals(RetryPolicy.RetryAction.FAIL.action,
+          retryPolicy.shouldRetry(expected, 0, 0, true).action,
+          "Expected no retry on AccessDeniedException");
     }
 
   }
@@ -540,31 +616,30 @@ public class TestS3AAWSCredentialsProvider extends HadoopTestBase {
   public void testRefCounting() throws Throwable {
     AWSCredentialProviderList providers
         = new AWSCredentialProviderList();
-    assertEquals("Ref count for " + providers,
-        1, providers.getRefCount());
+    assertEquals(1, providers.getRefCount(), "Ref count for " + providers);
     AWSCredentialProviderList replicate = providers.share();
     assertEquals(providers, replicate);
-    assertEquals("Ref count after replication for " + providers,
-        2, providers.getRefCount());
-    assertFalse("Was closed " + providers, providers.isClosed());
+    assertEquals(2, providers.getRefCount(),
+        "Ref count after replication for " + providers);
+    assertFalse(providers.isClosed(), "Was closed " + providers);
     providers.close();
-    assertFalse("Was closed " + providers, providers.isClosed());
-    assertEquals("Ref count after close() for " + providers,
-        1, providers.getRefCount());
+    assertFalse(providers.isClosed(), "Was closed " + providers);
+    assertEquals(1, providers.getRefCount(),
+        "Ref count after close() for " + providers);
 
     // this should now close it
     providers.close();
-    assertTrue("Was not closed " + providers, providers.isClosed());
-    assertEquals("Ref count after close() for " + providers,
-        0, providers.getRefCount());
-    assertEquals("Ref count after second close() for " + providers,
-        0, providers.getRefCount());
+    assertTrue(providers.isClosed(), "Was not closed " + providers);
+    assertEquals(0, providers.getRefCount(),
+        "Ref count after close() for " + providers);
+    assertEquals(0, providers.getRefCount(),
+        "Ref count after second close() for " + providers);
     intercept(IllegalStateException.class, "closed",
         () -> providers.share());
     // final call harmless
     providers.close();
-    assertEquals("Ref count after close() for " + providers,
-        0, providers.getRefCount());
+    assertEquals(0, providers.getRefCount(),
+        "Ref count after close() for " + providers);
 
     intercept(NoAuthWithAWSException.class,
         AWSCredentialProviderList.CREDENTIALS_REQUESTED_WHEN_CLOSED,
@@ -632,12 +707,10 @@ public class TestS3AAWSCredentialsProvider extends HadoopTestBase {
     List<Future<AwsCredentials>> results = new ArrayList<>();
 
     try {
-      assertFalse(
-          "Provider not initialized. isInitialized should be false",
-          provider.isInitialized());
-      assertFalse(
-          "Provider not initialized. hasCredentials should be false",
-          provider.hasCredentials());
+      assertFalse(provider.isInitialized(),
+          "Provider not initialized. isInitialized should be false");
+      assertFalse(provider.hasCredentials(),
+          "Provider not initialized. hasCredentials should be false");
       if (provider.getInitializationException() != null) {
         throw new AssertionError(
             "Provider not initialized. getInitializationException should return null",
@@ -650,22 +723,20 @@ public class TestS3AAWSCredentialsProvider extends HadoopTestBase {
 
       for (Future<AwsCredentials> result : results) {
         AwsCredentials credentials = result.get();
-        assertEquals("Access key from credential provider",
-            "expectedAccessKey", credentials.accessKeyId());
-        assertEquals("Secret key from credential provider",
-            "expectedSecret", credentials.secretAccessKey());
+        assertEquals("expectedAccessKey", credentials.accessKeyId(),
+            "Access key from credential provider");
+        assertEquals("expectedSecret", credentials.secretAccessKey(),
+            "Secret key from credential provider");
       }
     } finally {
       pool.awaitTermination(TERMINATION_TIMEOUT, TimeUnit.SECONDS);
       pool.shutdown();
     }
 
-    assertTrue(
-        "Provider initialized without errors. isInitialized should be true",
-        provider.isInitialized());
-    assertTrue(
-        "Provider initialized without errors. hasCredentials should be true",
-        provider.hasCredentials());
+    assertTrue(provider.isInitialized(),
+        "Provider initialized without errors. isInitialized should be true");
+    assertTrue(provider.hasCredentials(),
+        "Provider initialized without errors. hasCredentials should be true");
     if (provider.getInitializationException() != null) {
       throw new AssertionError(
           "Provider initialized without errors. getInitializationException should return null",
@@ -701,10 +772,10 @@ public class TestS3AAWSCredentialsProvider extends HadoopTestBase {
     List<Future<AwsCredentials>> results = new ArrayList<>();
 
     try {
-      assertFalse("Provider not initialized. isInitialized should be false",
-          provider.isInitialized());
-      assertFalse("Provider not initialized. hasCredentials should be false",
-          provider.hasCredentials());
+      assertFalse(provider.isInitialized(),
+          "Provider not initialized. isInitialized should be false");
+      assertFalse(provider.hasCredentials(),
+          "Provider not initialized. hasCredentials should be false");
       if (provider.getInitializationException() != null) {
         throw new AssertionError(
             "Provider not initialized. getInitializationException should return null",
@@ -726,15 +797,14 @@ public class TestS3AAWSCredentialsProvider extends HadoopTestBase {
       pool.shutdown();
     }
 
-    assertTrue(
-        "Provider initialization failed. isInitialized should be true",
-        provider.isInitialized());
-    assertFalse(
-        "Provider initialization failed. hasCredentials should be false",
-        provider.hasCredentials());
-    assertTrue(
-        "Provider initialization failed. getInitializationException should contain the error",
-        provider.getInitializationException().getMessage().contains("expected error"));
+    assertTrue(provider.isInitialized(),
+        "Provider initialization failed. isInitialized should be true");
+    assertFalse(provider.hasCredentials(),
+        "Provider initialization failed. hasCredentials should be false");
+    assertTrue(provider.getInitializationException().
+        getMessage().contains("expected error"),
+        "Provider initialization failed. " +
+        "getInitializationException should contain the error");
   }
 
 

@@ -21,8 +21,9 @@ package org.apache.hadoop.util.dynamic;
 
 import java.util.concurrent.Callable;
 
-import org.apache.hadoop.test.AbstractHadoopTestBase;
 import org.junit.jupiter.api.Test;
+
+import org.apache.hadoop.test.AbstractHadoopTestBase;
 
 import static org.apache.hadoop.test.LambdaTestUtils.intercept;
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -165,7 +166,6 @@ public class TestDynConstructors extends AbstractHadoopTestBase {
 
     assertNotNull(ctor.invokeChecked(null),
         "Should allow invokeChecked(null, ...)");
-    assertNotNull(ctor.invoke(null),
-        "Should allow invoke(null, ...)");
+    assertNotNull(ctor.invoke(null), "Should allow invoke(null, ...)");
   }
 }

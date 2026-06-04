@@ -50,6 +50,10 @@ import org.apache.hadoop.test.GenericTestUtils;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertSame;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public class TestCredentials {
   private static final String DEFAULT_HMAC_ALGORITHM = "HmacSHA1";
@@ -119,12 +123,11 @@ public class TestCredentials {
         "getTokenMap should return collection of size 2");
     assertTrue(tokenMap.containsKey(alias1),
         "Token for alias " + alias1 + " must be present");
-    assertTrue(tokenMap.containsKey(alias2),
-        "Token for alias " + alias2 + " must be present");
+    assertTrue(tokenMap.containsKey(alias2), "Token for alias " + alias2 + " must be present");
     assertEquals(service1, tokenMap.get(alias1).getService(),
         "Token for service " + service1 + " must be present");
-    assertEquals(service2, tokenMap.get(alias2).getService(),
-        "Token for service " + service2 + " must be present");
+    assertEquals(service2,
+        tokenMap.get(alias2).getService(), "Token for service " + service2 + " must be present");
 
 
     // compare secret keys
@@ -134,8 +137,7 @@ public class TestCredentials {
 
     for (Map.Entry<Text, byte[]> entry : m.entrySet()) {
       byte[] key = secretKeyMap.get(entry.getKey());
-      assertNotNull(key,
-          "Secret key for alias " + entry.getKey() + " not found");
+      assertNotNull(key, "Secret key for alias " + entry.getKey() + " not found");
       assertTrue(Arrays.equals(key, entry.getValue()),
           "Keys don't match for alias " + entry.getKey());
     }
@@ -249,28 +251,19 @@ public class TestCredentials {
 
   private void assertCredentials(String tag, Text alias, Text keykey,
                                  Credentials a, Credentials b) {
-    assertEquals(a.numberOfTokens(),
-                 b.numberOfTokens(),
-                 tag + ": test token count");
+    assertEquals(a.numberOfTokens(), b.numberOfTokens(), tag + ": test token count");
     assertEquals(a.getToken(alias).getService(),
-                 b.getToken(alias).getService(),
-                 tag + ": test service");
+        b.getToken(alias).getService(), tag + ": test service");
     assertEquals(a.getToken(alias).getKind(),
-                 b.getToken(alias).getKind(),
-                 tag + ": test kind");
-    assertTrue(
-               Arrays.equals(a.getToken(alias).getPassword(),
-                      b.getToken(alias).getPassword()),
-               tag + ": test password");
+        b.getToken(alias).getKind(), tag + ": test kind");
+    assertTrue(Arrays.equals(a.getToken(alias).getPassword(),
+        b.getToken(alias).getPassword()), tag + ": test password");
     assertTrue(Arrays.equals(a.getToken(alias).getIdentifier(),
-                             b.getToken(alias).getIdentifier()),
-               tag + ": test identifier");
+        b.getToken(alias).getIdentifier()), tag + ": test identifier");
     assertEquals(a.numberOfSecretKeys(),
-                 b.numberOfSecretKeys(),
-                 tag + ": test number of keys");
+        b.numberOfSecretKeys(), tag + ": test number of keys");
     assertTrue(Arrays.equals(a.getSecretKey(keykey),
-                             b.getSecretKey(keykey)),
-               tag + ":test key values");
+        b.getSecretKey(keykey)), tag + ":test key values");
   }
 
   private void writeCredentialsStream(Credentials creds, String filename)

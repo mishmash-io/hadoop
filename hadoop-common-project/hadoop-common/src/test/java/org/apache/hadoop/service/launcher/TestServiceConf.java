@@ -26,6 +26,8 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInfo;
 
 import static org.apache.hadoop.service.launcher.LauncherArguments.*;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.TestInfo;
 
 import java.io.File;
 import java.io.FileWriter;
@@ -99,8 +101,7 @@ public class TestServiceConf
     List<String> args = launcher.extractCommandOptions(extracted,
         argsList);
     if (!args.isEmpty()) {
-      assertEquals(0, args.size(),
-          "args beginning with " + args.get(0));
+      assertEquals(0, args.size(), "args beginning with " + args.get(0));
     }
     assertEquals("true", extracted.get("propagated", "unset"));
   }
@@ -123,17 +124,16 @@ public class TestServiceConf
 
     List<String> args = launcher.extractCommandOptions(extracted, argsList);
     if (!args.isEmpty()) {
-      assertEquals(0, args.size(),
-          "args beginning with " + args.get(0));
+      assertEquals(0, args.size(), "args beginning with " + args.get(0));
     }
     assertTrue(extracted.getBoolean(key1, false));
     assertEquals(7, extracted.getInt(key2, -1));
   }
 
   @Test
-  public void testConfArgWrongFiletype(TestInfo info) throws Throwable {
+  public void testConfArgWrongFiletype(TestInfo testInfo) throws Throwable {
     new File(CONF_FILE_DIR).mkdirs();
-    File file = new File(CONF_FILE_DIR, info.getDisplayName());
+    File file = new File(CONF_FILE_DIR, testInfo.getDisplayName());
     try (FileWriter fileWriter = new FileWriter(file)) {
       fileWriter.write("not-a-conf-file");
       fileWriter.close();

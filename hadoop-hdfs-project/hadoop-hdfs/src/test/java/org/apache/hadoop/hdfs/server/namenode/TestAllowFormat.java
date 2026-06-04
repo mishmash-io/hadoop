@@ -21,7 +21,9 @@ import static org.apache.hadoop.hdfs.DFSConfigKeys.DFS_DATANODE_DATA_DIR_KEY;
 import static org.apache.hadoop.hdfs.DFSConfigKeys.DFS_NAMENODE_CHECKPOINT_DIR_KEY;
 import static org.apache.hadoop.hdfs.DFSConfigKeys.DFS_NAMENODE_NAME_DIR_KEY;
 import static org.apache.hadoop.hdfs.DFSConfigKeys.DFS_NAMENODE_SUPPORT_ALLOW_FORMAT_KEY;
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.fail;
 
 import java.io.File;
 import java.io.IOException;
@@ -134,8 +136,9 @@ public class TestAllowFormat {
       fail("Format succeeded, when it should have failed");
     } catch (IOException e) { // expected to fail
       // Verify we got message we expected
-      assertTrue(e.getMessage().startsWith("The option " + 
-                                    DFS_NAMENODE_SUPPORT_ALLOW_FORMAT_KEY), 
+      assertTrue(
+          e.getMessage().startsWith("The option " + 
+              DFS_NAMENODE_SUPPORT_ALLOW_FORMAT_KEY),
           "Exception was not about formatting Namenode");
       LOG.info("Expected failure: " + StringUtils.stringifyException(e));
       LOG.info("Done verifying format will fail with allowformat false");

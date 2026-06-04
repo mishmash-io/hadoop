@@ -20,10 +20,13 @@ package org.apache.hadoop.yarn.server.nodemanager.api.deviceplugin;
 
 import java.io.Serializable;
 import java.util.Objects;
+import javax.xml.bind.annotation.XmlAccessType;
+import javax.xml.bind.annotation.XmlAccessorType;
 
 /**
  * Represent one "device" resource.
  * */
+@XmlAccessorType(XmlAccessType.FIELD)
 public final class Device implements Serializable, Comparable {
 
   private static final long serialVersionUID = -7270474563684671656L;
@@ -32,32 +35,32 @@ public final class Device implements Serializable, Comparable {
    * An plugin specified index number.
    * Must set. Recommend starting from 0
    * */
-  private final int id;
+  private int id;
 
   /**
    * The device node like "/dev/devname".
    * Optional
    * */
-  private final String devPath;
+  private String devPath;
 
   /**
    * The major device number.
    * Optional
    * */
-  private final int majorNumber;
+  private int majorNumber;
 
   /**
    * The minor device number.
    * Optional
    * */
-  private final int minorNumber;
+  private int minorNumber;
 
   /**
    * PCI Bus ID in format.
    * [[[[&lt;domain&gt;]:]&lt;bus&gt;]:][&lt;slot&gt;][.[&lt;func&gt;]].
    * Optional. Can get from "lspci -D" in Linux
    * */
-  private final String busID;
+  private String busID;
 
   /**
    * Is healthy or not.
@@ -86,6 +89,9 @@ public final class Device implements Serializable, Comparable {
     this.busID = builder.busID;
     this.isHealthy = builder.isHealthy;
     this.status = builder.status;
+  }
+
+  private Device() {
   }
 
   public int getId() {

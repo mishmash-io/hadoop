@@ -21,6 +21,8 @@ package org.apache.hadoop.fs.impl.prefetch;
 
 import java.nio.ByteBuffer;
 
+import org.junit.jupiter.api.Test;
+
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.LocalDirAllocator;
 import org.apache.hadoop.test.AbstractHadoopTestBase;

@@ -117,11 +117,9 @@ public abstract class AbstractContractRenameTest extends
       destUnchanged = !renamed;
 
       if (renameOverwritesDest) {
-        assertTrue(renamed,
-            expectedTo + "overwrite destination, but got false");
+        assertTrue(renamed, expectedTo + "overwrite destination, but got false");
       } else if (renameReturnsFalseOnRenameDestExists) {
-        assertFalse(renamed,
-            expectedTo + "be rejected with false, but destination " +
+        assertFalse(renamed, expectedTo + "be rejected with false, but destination " +
             "was overwritten");
       } else if (renamed) {
         String destDirLS = generateAndLogErrorListing(srcFile, destFile);

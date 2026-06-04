@@ -21,6 +21,10 @@ import java.io.ByteArrayOutputStream;
 import java.io.PrintStream;
 import java.util.Arrays;
 
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.Parameter;
+import org.junit.jupiter.params.ParameterizedClass;
+import org.junit.jupiter.params.provider.MethodSource;
 import org.slf4j.event.Level;
 
 import org.apache.hadoop.conf.Configuration;
@@ -33,17 +37,18 @@ import org.apache.hadoop.hdfs.tools.DFSck;
 import org.apache.hadoop.test.GenericTestUtils;
 import org.apache.hadoop.util.cli.ToolRunner;
 
-import org.junit.jupiter.params.ParameterizedTest;
-import org.junit.jupiter.params.provider.MethodSource;
-
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+@ParameterizedClass(name = "ProxyProvider: {0}")
+@MethodSource("data")
 public class TestHAFsck {
   
   static {
     GenericTestUtils.setLogLevel(DFSUtil.LOG, Level.TRACE);
   }
+
+  @Parameter(0)
   private String proxyProvider;
 
   public String getProxyProvider() {

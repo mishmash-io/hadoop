@@ -43,10 +43,10 @@ import org.junit.jupiter.api.Timeout;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Mockito;
 
-import static org.hamcrest.core.Is.is;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.times;
+import static org.assertj.core.api.Assertions.assertThat;
 
 /**
  * Tests that the DataNode respects
@@ -100,7 +100,7 @@ public class TestDnRespectsBlockReportSplitThreshold {
     List<StorageBlockReport[]> listOfReports = captor.getAllValues();
     int numBlocksReported = 0;
     for (StorageBlockReport[] reports : listOfReports) {
-      assertThat(reports.length, is(expectedReportsPerCall));
+      assertThat(reports.length).isEqualTo(expectedReportsPerCall);
 
       for (StorageBlockReport report : reports) {
         BlockListAsLongs blockList = report.getBlocks();
@@ -116,7 +116,7 @@ public class TestDnRespectsBlockReportSplitThreshold {
    * call per storage.
    */
   @Test
-  @Timeout(value = 300000, unit = TimeUnit.MILLISECONDS)
+  @Timeout(value = 300)
   public void testAlwaysSplit() throws IOException, InterruptedException {
     startUpCluster(0);
     NameNode nn = cluster.getNameNode();
@@ -149,7 +149,7 @@ public class TestDnRespectsBlockReportSplitThreshold {
    * the threshold.
    */
   @Test
-  @Timeout(value = 300000, unit = TimeUnit.MILLISECONDS)
+  @Timeout(value = 300)
   public void testCornerCaseUnderThreshold() throws IOException, InterruptedException {
     startUpCluster(BLOCKS_IN_FILE + 1);
     NameNode nn = cluster.getNameNode();
@@ -182,7 +182,7 @@ public class TestDnRespectsBlockReportSplitThreshold {
    * threshold.
    */
   @Test
-  @Timeout(value = 300000, unit = TimeUnit.MILLISECONDS)
+  @Timeout(value = 300)
   public void testCornerCaseAtThreshold() throws IOException, InterruptedException {
     startUpCluster(BLOCKS_IN_FILE);
     NameNode nn = cluster.getNameNode();

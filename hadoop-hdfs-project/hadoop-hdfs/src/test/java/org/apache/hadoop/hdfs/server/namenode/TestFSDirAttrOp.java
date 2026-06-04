@@ -24,13 +24,17 @@ import org.apache.hadoop.fs.permission.FsPermission;
 import org.apache.hadoop.fs.permission.PermissionStatus;
 import org.apache.hadoop.hdfs.DFSUtil;
 import org.apache.hadoop.hdfs.server.namenode.snapshot.SnapshotManager;
-
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 
 import java.io.FileNotFoundException;
+import java.util.Random;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.ArgumentMatchers.anyInt;
+import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.Mockito.when;
 
 /**
@@ -55,7 +59,8 @@ public class TestFSDirAttrOp {
     when(fsd.getAccessTimePrecision()).thenReturn(precision);
     when(fsd.hasWriteLock()).thenReturn(Boolean.TRUE);
     when(iip.getLastINode()).thenReturn(inode);
-    when(iip.getLatestSnapshotId()).thenReturn(Mockito.anyInt());
+    when(iip.getLatestSnapshotId()).thenReturn(new Random().nextInt());
+    when(inode.setModificationTime(anyLong(), anyInt())).thenReturn(inode);
     when(inode.getAccessTime()).thenReturn(atime0);
 
     return FSDirAttrOp.unprotectedSetTimes(fsd, iip, mtime, atime, force);
@@ -101,11 +106,11 @@ public class TestFSDirAttrOp {
 
   @Test
   public void testUnprotectedSetOwner() throws Exception {
-    assertTrue(unprotectedSetAttributes((short) 0777, (short) 0777, "user1",
-            "user2", true),
+    assertTrue(unprotectedSetAttributes((short) 0777, (short) 0777, "user1", "user2",
+            true),
         "SetOwner should return true for a new user");
-    assertFalse(unprotectedSetAttributes((short) 0777, (short) 0777, "user1",
-            "user1", true),
+    assertFalse(unprotectedSetAttributes((short) 0777, (short) 0777, "user1", "user1",
+            true),
         "SetOwner should return false for same user");
   }
 
@@ -114,12 +119,12 @@ public class TestFSDirAttrOp {
     // atime < access time + precision
     assertFalse(unprotectedSetTimes(100, 0, 1000, -1, false),
         "SetTimes should not update access time "
-          + "because it's within the last precision interval");
+            + "because it's within the last precision interval");
 
     // atime = access time + precision
     assertFalse(unprotectedSetTimes(1000, 0, 1000, -1, false),
         "SetTimes should not update access time "
-          + "because it's within the last precision interval");
+            + "because it's within the last precision interval");
 
     // atime > access time + precision
     assertTrue(unprotectedSetTimes(1011, 10, 1000, -1, false),
@@ -135,15 +140,15 @@ public class TestFSDirAttrOp {
   }
 
   @Test
-  public void testUnprotectedSetTimesFNFE() {
+  public void testUnprotectedSetTimesFNFE()
+      throws FileNotFoundException {
     assertThrows(FileNotFoundException.class, () -> {
       FSDirectory fsd = Mockito.mock(FSDirectory.class);
       INodesInPath iip = Mockito.mock(INodesInPath.class);
-
       when(fsd.hasWriteLock()).thenReturn(Boolean.TRUE);
       when(iip.getLastINode()).thenReturn(null);
-
       FSDirAttrOp.unprotectedSetTimes(fsd, iip, 0, 0, false);
     });
+
   }
 }

@@ -21,6 +21,7 @@ package org.apache.hadoop.fs.store;
 import java.io.IOException;
 import java.util.Random;
 
+import org.junit.jupiter.api.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -88,13 +89,10 @@ public class TestDataBlocks {
     // Verify that the DataBlock has data written.
     assertTrue(dataBlock.hasData(), "Expected Data block to have data");
     // Verify the size of data.
-    assertEquals(ONE_KB,
-        dataBlock.dataSize(),
-        "Mismatch in data size in block");
+    assertEquals(ONE_KB, dataBlock.dataSize(), "Mismatch in data size in block");
     // Verify that no capacity is left in the data block to write more.
     assertFalse(dataBlock.hasCapacity(1),
-        "Expected the data block to have no capacity to write 1 byte "
-        + "of data");
+        "Expected the data block to have no capacity to write 1 byte of data");
   }
 
   /**
@@ -113,8 +111,7 @@ public class TestDataBlocks {
     // Verify that we can call toByteArray() more than once and gives the
     // same byte[].
     assertEquals(bytesWritten, blockUploadData.toByteArray(),
-        "Mismatch in byteArray provided by toByteArray() the second "
-        + "time");
+        "Mismatch in byteArray provided by toByteArray() the second time");
     IOUtils.close(blockUploadData);
     // Verify that after closing blockUploadData, we can't call toByteArray().
     LambdaTestUtils.intercept(IllegalStateException.class,

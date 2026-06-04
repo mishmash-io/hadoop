@@ -105,6 +105,7 @@ import org.apache.hadoop.ipc.protobuf.RpcHeaderProtos.RpcSaslProto.SaslState;
 import org.apache.hadoop.ipc.protobuf.RpcHeaderProtos.RPCTraceInfoProto;
 import org.apache.hadoop.net.NetUtils;
 import org.apache.hadoop.security.AccessControlException;
+import org.apache.hadoop.security.SaslMechanismFactory;
 import org.apache.hadoop.security.SaslPropertiesResolver;
 import org.apache.hadoop.security.SaslRpcServer;
 import org.apache.hadoop.security.SaslRpcServer.AuthMethod;
@@ -122,6 +123,8 @@ import org.apache.hadoop.util.ExitUtil;
 import org.apache.hadoop.util.ProtoUtil;
 import org.apache.hadoop.util.StringUtils;
 import org.apache.hadoop.util.Time;
+import org.apache.hadoop.util.concurrent.SubjectInheritingThread;
+
 import java.util.concurrent.atomic.AtomicBoolean;
 import org.apache.hadoop.tracing.Span;
 import org.apache.hadoop.tracing.SpanContext;
@@ -137,6 +140,7 @@ import org.apache.hadoop.thirdparty.protobuf.CodedOutputStream;
 import org.apache.hadoop.thirdparty.protobuf.Message;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.apache.hadoop.security.AuthorizationContext;
 
 /** An abstract IPC service.  IPC calls take a single {@link Writable} as a
  * parameter, and return a {@link Writable} as their value.  A service runs on
@@ -349,13 +353,13 @@ public abstract class Server {
    * after the call returns.
    */
   private static final ThreadLocal<Call> CurCall = new ThreadLocal<Call>();
-  
+
   /** @return Get the current call. */
   @VisibleForTesting
   public static ThreadLocal<Call> getCurCall() {
     return CurCall;
   }
-  
+
   /**
    * Returns the currently active RPC call's sequential ID number.  A negative
    * call ID indicates an invalid value, such as if there is no currently active
@@ -636,7 +640,8 @@ public abstract class Server {
     rpcMetrics.addRpcQueueTime(queueTime);
 
     if (call.isResponseDeferred() || connDropped) {
-      // call was skipped; don't include it in processing metrics
+      // The call was skipped; don't include it in processing metrics.
+      // Will update metrics in method updateDeferredMetrics.
       return;
     }
 
@@ -666,9 +671,42 @@ public abstract class Server {
     }
   }
 
-  void updateDeferredMetrics(String name, long processingTime) {
+  /**
+   * Update rpc metrics for defered calls.
+   * @param call The Rpc Call
+   * @param name Rpc method name
+   */
+  void updateDeferredMetrics(Call call, String name) {
+    long completionTimeNanos = Time.monotonicNowNanos();
+    long arrivalTimeNanos = call.timestampNanos;
+
+    ProcessingDetails details = call.getProcessingDetails();
+    long waitTime =
+        details.get(Timing.LOCKWAIT, rpcMetrics.getMetricsTimeUnit());
+    long responseTime =
+        details.get(Timing.RESPONSE, rpcMetrics.getMetricsTimeUnit());
+    long processingTime =
+        details.get(Timing.PROCESSING, rpcMetrics.getMetricsTimeUnit());
+    rpcMetrics.addRpcLockWaitTime(waitTime);
+    rpcMetrics.addRpcProcessingTime(processingTime);
+    rpcMetrics.addRpcResponseTime(responseTime);
     rpcMetrics.addDeferredRpcProcessingTime(processingTime);
     rpcDetailedMetrics.addDeferredProcessingTime(name, processingTime);
+    // don't include lock wait for detailed metrics.
+    processingTime -= waitTime;
+    rpcDetailedMetrics.addProcessingTime(name, processingTime);
+
+    // Overall processing time is from arrival to completion.
+    long overallProcessingTime = rpcMetrics.getMetricsTimeUnit()
+        .convert(completionTimeNanos - arrivalTimeNanos, TimeUnit.NANOSECONDS);
+    rpcDetailedMetrics.addOverallProcessingTime(name, overallProcessingTime);
+    callQueue.addResponseTime(name, call, details);
+    if (isLogSlowRPC()) {
+      logSlowRpcCalls(name, call, details);
+    }
+    if (details.getReturnStatus() == RpcStatusProto.SUCCESS) {
+      rpcMetrics.incrRpcCallSuccesses();
+    }
   }
 
   /**
@@ -961,12 +999,14 @@ public abstract class Server {
     final int callId;            // the client's call id
     final int retryCount;        // the retry count of the call
     private final long timestampNanos; // time the call was received
+    protected long startHandleTimestampNanos; // time the call was run
     long responseTimestampNanos; // time the call was served
     private AtomicInteger responseWaitCount = new AtomicInteger(1);
     final RPC.RpcKind rpcKind;
     final byte[] clientId;
     private final Span span; // the trace span on the server side
     private final CallerContext callerContext; // the call context
+    private  final byte[] authHeader; // the auth header
     private boolean deferredResponse = false;
     private int priorityLevel;
     // the priority level assigned by scheduler, 0 by default
@@ -998,6 +1038,11 @@ public abstract class Server {
 
     Call(int id, int retryCount, RPC.RpcKind kind, byte[] clientId,
         Span span, CallerContext callerContext) {
+      this(id, retryCount, kind, clientId, span, callerContext, null);
+    }
+
+    Call(int id, int retryCount, RPC.RpcKind kind, byte[] clientId,
+        Span span, CallerContext callerContext, byte[] authHeader) {
       this.callId = id;
       this.retryCount = retryCount;
       this.timestampNanos = Time.monotonicNowNanos();
@@ -1006,6 +1051,7 @@ public abstract class Server {
       this.clientId = clientId;
       this.span = span;
       this.callerContext = callerContext;
+      this.authHeader = authHeader;
       this.clientStateId = Long.MIN_VALUE;
       this.isCallCoordinated = false;
     }
@@ -1088,7 +1134,10 @@ public abstract class Server {
       int count = responseWaitCount.decrementAndGet();
       assert count >= 0 : "response has already been sent";
       if (count == 0) {
+        long startNanos = Time.monotonicNowNanos();
         doResponse(null);
+        getProcessingDetails().set(Timing.RESPONSE,
+            Time.monotonicNowNanos() - startNanos, TimeUnit.NANOSECONDS);
       }
     }
 
@@ -1162,6 +1211,15 @@ public abstract class Server {
     public long getTimestampNanos() {
       return timestampNanos;
     }
+
+
+    public long getStartHandleTimestampNanos() {
+      return startHandleTimestampNanos;
+    }
+
+    public void setStartHandleTimestampNanos(long startHandleTimestampNanos) {
+      this.startHandleTimestampNanos = startHandleTimestampNanos;
+    }
   }
 
   /** A RPC extended call queued for handling. */
@@ -1194,7 +1252,14 @@ public abstract class Server {
     RpcCall(Connection connection, int id, int retryCount,
         Writable param, RPC.RpcKind kind, byte[] clientId,
         Span span, CallerContext context) {
-      super(id, retryCount, kind, clientId, span, context);
+      this(connection, id, retryCount, param, kind, clientId,
+          span, context, new byte[0]);
+    }
+
+    RpcCall(Connection connection, int id, int retryCount,
+        Writable param, RPC.RpcKind kind, byte[] clientId,
+        Span span, CallerContext context, byte[] authHeader) {
+      super(id, retryCount, kind, clientId, span, context, authHeader);
       this.connection = connection;
       this.rpcRequest = param;
     }
@@ -1238,6 +1303,7 @@ public abstract class Server {
       }
 
       long startNanos = Time.monotonicNowNanos();
+      this.setStartHandleTimestampNanos(startNanos);
       Writable value = null;
       ResponseParams responseParams = new ResponseParams();
 
@@ -1256,14 +1322,10 @@ public abstract class Server {
         deltaNanos -= details.get(Timing.LOCKSHARED, TimeUnit.NANOSECONDS);
         deltaNanos -= details.get(Timing.LOCKEXCLUSIVE, TimeUnit.NANOSECONDS);
         details.set(Timing.LOCKFREE, deltaNanos, TimeUnit.NANOSECONDS);
-        startNanos = Time.monotonicNowNanos();
 
         setResponseFields(value, responseParams);
         sendResponse();
-
         details.setReturnStatus(responseParams.returnStatus);
-        deltaNanos = Time.monotonicNowNanos() - startNanos;
-        details.set(Timing.RESPONSE, deltaNanos, TimeUnit.NANOSECONDS);
       } else {
         LOG.debug("Deferring response for callId: {}", this.callId);
       }
@@ -1330,6 +1392,7 @@ public abstract class Server {
      * Send a deferred response, ignoring errors.
      */
     private void sendDeferedResponse() {
+      long startNanos = Time.monotonicNowNanos();
       try {
         connection.sendResponse(this);
       } catch (Exception e) {
@@ -1341,6 +1404,8 @@ public abstract class Server {
             .currentThread().getName() + ", CallId="
             + callId + ", hostname=" + getHostAddress());
       }
+      getProcessingDetails().set(Timing.RESPONSE,
+          Time.monotonicNowNanos() - startNanos, TimeUnit.NANOSECONDS);
     }
 
     @Override
@@ -1407,7 +1472,7 @@ public abstract class Server {
   }
 
   /** Listens on the socket. Creates jobs for the handler threads*/
-  private class Listener extends Thread {
+  private class Listener extends SubjectInheritingThread {
     
     private ServerSocketChannel acceptChannel = null; //the accept channel
     private Selector selector = null; //the selector that we use for the server
@@ -1456,7 +1521,7 @@ public abstract class Server {
       this.isOnAuxiliaryPort = true;
     }
     
-    private class Reader extends Thread {
+    private class Reader extends SubjectInheritingThread {
       final private BlockingQueue<Connection> pendingConnections;
       private final Selector readSelector;
 
@@ -1469,7 +1534,7 @@ public abstract class Server {
       }
       
       @Override
-      public void run() {
+      public void work() {
         LOG.info("Starting " + Thread.currentThread().getName());
         try {
           doRunLoop();
@@ -1548,7 +1613,7 @@ public abstract class Server {
     }
 
     @Override
-    public void run() {
+    public void work() {
       LOG.info(Thread.currentThread().getName() + ": starting");
       SERVER.set(Server.this);
       connectionManager.startIdleScan();
@@ -1696,7 +1761,7 @@ public abstract class Server {
   }
 
   // Sends responses of RPC back to clients.
-  private class Responder extends Thread {
+  private class Responder extends SubjectInheritingThread {
     private final Selector writeSelector;
     private int pending;         // connections waiting to register
 
@@ -1708,7 +1773,7 @@ public abstract class Server {
     }
 
     @Override
-    public void run() {
+    public void work() {
       LOG.info(Thread.currentThread().getName() + ": starting");
       SERVER.set(Server.this);
       try {
@@ -2140,6 +2205,10 @@ public abstract class Server {
 
     public Server getServer() {
       return Server.this;
+    }
+
+    public Configuration getConf() {
+      return Server.this.getConf();
     }
 
     /* Return true if the connection has no outstanding rpc */
@@ -2604,7 +2673,8 @@ public abstract class Server {
       RpcSaslProto negotiateMessage = negotiateResponse;
       // accelerate token negotiation by sending initial challenge
       // in the negotiation response
-      if (enabledAuthMethods.contains(AuthMethod.TOKEN)) {
+      if (enabledAuthMethods.contains(AuthMethod.TOKEN)
+          && SaslMechanismFactory.isDigestMechanism(AuthMethod.TOKEN.getMechanismName())) {
         saslServer = createSaslServer(AuthMethod.TOKEN);
         byte[] challenge = saslServer.evaluateResponse(new byte[0]);
         RpcSaslProto.Builder negotiateBuilder =
@@ -2921,51 +2991,61 @@ public abstract class Server {
                 .build();
       }
 
-      RpcCall call = new RpcCall(this, header.getCallId(),
-          header.getRetryCount(), rpcRequest,
-          ProtoUtil.convert(header.getRpcKind()),
-          header.getClientId().toByteArray(), span, callerContext);
-
-      // Save the priority level assignment by the scheduler
-      call.setPriorityLevel(callQueue.getPriorityLevel(call));
-      call.markCallCoordinated(false);
-      if(alignmentContext != null && call.rpcRequest != null &&
-          (call.rpcRequest instanceof ProtobufRpcEngine2.RpcProtobufRequest)) {
-        // if call.rpcRequest is not RpcProtobufRequest, will skip the following
-        // step and treat the call as uncoordinated. As currently only certain
-        // ClientProtocol methods request made through RPC protobuf needs to be
-        // coordinated.
-        String methodName;
-        String protoName;
-        ProtobufRpcEngine2.RpcProtobufRequest req =
-            (ProtobufRpcEngine2.RpcProtobufRequest) call.rpcRequest;
-        try {
-          methodName = req.getRequestHeader().getMethodName();
-          protoName = req.getRequestHeader().getDeclaringClassProtocolName();
-          if (alignmentContext.isCoordinatedCall(protoName, methodName)) {
-            call.markCallCoordinated(true);
-            long stateId;
-            stateId = alignmentContext.receiveRequestState(
-                header, getMaxIdleTime());
-            call.setClientStateId(stateId);
-            if (header.hasRouterFederatedState()) {
-              call.setFederatedNamespaceState(header.getRouterFederatedState());
-            }
-          }
-        } catch (IOException ioe) {
-          throw new RpcServerException("Processing RPC request caught ", ioe);
-        }
-      }
-
+      // Set AuthorizationContext for this thread if present
+      byte[] authHeader = null;
       try {
-        internalQueueCall(call);
-      } catch (RpcServerException rse) {
-        throw rse;
-      } catch (IOException ioe) {
-        throw new FatalRpcServerException(
-            RpcErrorCodeProto.ERROR_RPC_SERVER, ioe);
+        if (header.hasAuthorizationHeader()) {
+          authHeader = header.getAuthorizationHeader().toByteArray();
+        }
+
+        RpcCall call = new RpcCall(this, header.getCallId(),
+            header.getRetryCount(), rpcRequest,
+            ProtoUtil.convert(header.getRpcKind()),
+            header.getClientId().toByteArray(), span, callerContext, authHeader);
+
+        // Save the priority level assignment by the scheduler
+        call.setPriorityLevel(callQueue.getPriorityLevel(call));
+        call.markCallCoordinated(false);
+        if (alignmentContext != null && call.rpcRequest != null &&
+            (call.rpcRequest instanceof ProtobufRpcEngine2.RpcProtobufRequest)) {
+          // if call.rpcRequest is not RpcProtobufRequest, will skip the following
+          // step and treat the call as uncoordinated. As currently only certain
+          // ClientProtocol methods request made through RPC protobuf needs to be
+          // coordinated.
+          String methodName;
+          String protoName;
+          ProtobufRpcEngine2.RpcProtobufRequest req =
+              (ProtobufRpcEngine2.RpcProtobufRequest) call.rpcRequest;
+          try {
+            methodName = req.getRequestHeader().getMethodName();
+            protoName = req.getRequestHeader().getDeclaringClassProtocolName();
+            if (alignmentContext.isCoordinatedCall(protoName, methodName)) {
+              call.markCallCoordinated(true);
+              long stateId;
+              stateId = alignmentContext.receiveRequestState(
+                  header, getMaxIdleTime());
+              call.setClientStateId(stateId);
+              if (header.hasRouterFederatedState()) {
+                call.setFederatedNamespaceState(header.getRouterFederatedState());
+              }
+            }
+          } catch (IOException ioe) {
+            throw new RpcServerException("Processing RPC request caught ", ioe);
+          }
+        }
+
+        try {
+          internalQueueCall(call);
+        } catch (RpcServerException rse) {
+          throw rse;
+        } catch (IOException ioe) {
+          throw new FatalRpcServerException(
+              RpcErrorCodeProto.ERROR_RPC_SERVER, ioe);
+        }
+        incRpcCount();  // Increment the rpc count
+      } finally {
+        AuthorizationContext.clear();
       }
-      incRpcCount();  // Increment the rpc count
     }
 
     /**
@@ -3140,7 +3220,7 @@ public abstract class Server {
   }
 
   /** Handles queued calls . */
-  private class Handler extends Thread {
+  private class Handler extends SubjectInheritingThread {
     public Handler(int instanceNumber) {
       this.setDaemon(true);
       this.setName("IPC Server handler "+ instanceNumber +
@@ -3148,7 +3228,7 @@ public abstract class Server {
     }
 
     @Override
-    public void run() {
+    public void work() {
       LOG.debug("{}: starting", Thread.currentThread().getName());
       SERVER.set(Server.this);
       while (running) {
@@ -3191,6 +3271,7 @@ public abstract class Server {
           }
           // always update the current call context
           CallerContext.setCurrent(call.callerContext);
+          AuthorizationContext.setCurrentAuthorizationHeader(call.authHeader);
           UserGroupInformation remoteUser = call.getRemoteUser();
           connDropped = !call.isOpen();
           if (remoteUser != null) {

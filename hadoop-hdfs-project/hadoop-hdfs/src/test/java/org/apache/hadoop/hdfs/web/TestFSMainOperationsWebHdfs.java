@@ -17,9 +17,12 @@
  */
 package org.apache.hadoop.hdfs.web;
 
-import static org.mockito.Mockito.spy;
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.fail;
 import static org.mockito.Mockito.doReturn;
+import static org.mockito.Mockito.spy;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -159,9 +162,7 @@ public class TestFSMainOperationsWebHdfs extends FSMainOperationsBaseTest {
     AppendTestUtil.checkFullFile(fSys, file, newLength, data, file.toString());
 
     ContentSummary cs = fSys.getContentSummary(dir);
-    assertEquals(cs.getSpaceConsumed(),
-        newLength * repl,
-        "Bad disk space usage");
+    assertEquals(cs.getSpaceConsumed(), newLength * repl, "Bad disk space usage");
     assertTrue(fSys.delete(dir, true), "Deleted");
   }
 

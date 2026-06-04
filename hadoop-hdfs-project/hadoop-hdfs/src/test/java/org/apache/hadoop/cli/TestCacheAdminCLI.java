@@ -18,6 +18,8 @@
 
 package org.apache.hadoop.cli;
 
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -42,7 +44,6 @@ import org.apache.hadoop.security.authorize.PolicyProvider;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-
 import org.xml.sax.SAXException;
 
 public class TestCacheAdminCLI extends CLITestHelper {
@@ -71,8 +72,7 @@ public class TestCacheAdminCLI extends CLITestHelper {
     username = System.getProperty("user.name");
 
     fs = dfsCluster.getFileSystem();
-    assertTrue(fs instanceof DistributedFileSystem,
-               "Not a HDFS: "+fs.getUri());
+    assertTrue(fs instanceof DistributedFileSystem, "Not a HDFS: " + fs.getUri());
   }
 
   @AfterEach

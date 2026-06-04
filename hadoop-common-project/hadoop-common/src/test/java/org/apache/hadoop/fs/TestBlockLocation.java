@@ -21,8 +21,6 @@ import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 
-import java.util.concurrent.TimeUnit;
-
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.Timeout;
 
@@ -74,7 +72,7 @@ public class TestBlockLocation {
    * Call all the constructors and verify the delegation is working properly
    */
   @Test
-  @Timeout(value=5000, unit=TimeUnit.MILLISECONDS)
+  @Timeout(value = 5)
   public void testBlockLocationConstructors() throws Exception {
     //
     BlockLocation loc;
@@ -96,7 +94,7 @@ public class TestBlockLocation {
    * Call each of the setters and verify
    */
   @Test
-  @Timeout(value=5000, unit=TimeUnit.MILLISECONDS)
+  @Timeout(value = 5)
   public void testBlockLocationSetters() throws Exception {
     BlockLocation loc;
     loc = new BlockLocation();

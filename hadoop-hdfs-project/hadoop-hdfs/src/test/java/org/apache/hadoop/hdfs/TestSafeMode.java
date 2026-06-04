@@ -20,7 +20,10 @@ package org.apache.hadoop.hdfs;
 
 import static org.apache.hadoop.test.MetricsAsserts.getLongCounter;
 import static org.apache.hadoop.test.MetricsAsserts.getMetrics;
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.fail;
 
 import java.io.IOException;
 import java.security.PrivilegedExceptionAction;
@@ -132,8 +135,8 @@ public class TestSafeMode {
     cluster.waitActive();
     dfs = cluster.getFileSystem();
     
-    assertTrue(dfs.setSafeMode(SafeModeAction.GET), 
-               "No datanode is started. Should be in SafeMode");
+    assertTrue(dfs.setSafeMode(SafeModeAction.GET),
+        "No datanode is started. Should be in SafeMode");
     
     // manually set safemode.
     dfs.setSafeMode(SafeModeAction.ENTER);
@@ -147,10 +150,8 @@ public class TestSafeMode {
       Thread.sleep(2000);
     } catch (InterruptedException ignored) {}
 
-    assertTrue(dfs.setSafeMode(SafeModeAction.GET),
-        "should still be in SafeMode");
-    assertFalse(dfs.setSafeMode(SafeModeAction.LEAVE), 
-        "should not be in SafeMode");
+    assertTrue(dfs.setSafeMode(SafeModeAction.GET), "should still be in SafeMode");
+    assertFalse(dfs.setSafeMode(SafeModeAction.LEAVE), "should not be in SafeMode");
   }
 
   /**
@@ -158,7 +159,7 @@ public class TestSafeMode {
    * the NameNode doesn't enter the "safemode extension" period.
    */
   @Test
-  @Timeout(value = 45000, unit = TimeUnit.MILLISECONDS)
+  @Timeout(value = 45)
   public void testNoExtensionIfNoBlocks() throws IOException {
     cluster.getConfiguration(0).setInt(
         DFSConfigKeys.DFS_NAMENODE_SAFEMODE_EXTENSION_KEY, 60000);
@@ -174,7 +175,7 @@ public class TestSafeMode {
    * before it is ready to exit safemode (HDFS-1476)
    */
   @Test
-  @Timeout(value = 45000, unit = TimeUnit.MILLISECONDS)
+  @Timeout(value = 45)
   public void testInitializeReplQueuesEarly() throws Exception {
     LOG.info("Starting testInitializeReplQueuesEarly");
     // Spray the blocks around the cluster when we add DNs instead of
@@ -203,13 +204,13 @@ public class TestSafeMode {
     
     String status = nn.getNamesystem().getSafemode();
     assertEquals("Safe mode is ON. The reported blocks 0 needs additional "
-        + "14 blocks to reach the threshold 0.9990 of total blocks 15."
-        + NEWLINE + "The minimum number of live datanodes is not required. "
-        + "Safe mode will be turned off automatically once the thresholds have "
-        + "been reached.", status);
+            + "14 blocks to reach the threshold 0.9990 of total blocks 15." + NEWLINE
+            + "The minimum number of live datanodes is not required. "
+            + "Safe mode will be turned off automatically once the thresholds have "
+            + "been reached.",
+        status);
     assertFalse(NameNodeAdapter.safeModeInitializedReplQueues(nn),
-        "Mis-replicated block queues should not be initialized " +
-        "until threshold is crossed");
+        "Mis-replicated block queues should not be initialized " + "until threshold is crossed");
     
     LOG.info("Restarting one DataNode");
     cluster.restartDataNode(dnprops.remove(0));
@@ -311,8 +312,7 @@ public class TestSafeMode {
   public void testSafeModeExceptionText() throws Exception {
     final Path file1 = new Path("/file1");
     DFSTestUtil.createFile(fs, file1, 1024, (short)1, 0);
-    assertTrue(dfs.setSafeMode(SafeModeAction.ENTER),
-        "Could not enter SM");
+    assertTrue(dfs.setSafeMode(SafeModeAction.ENTER), "Could not enter SM");
     try {
       FSRun fsRun = new FSRun() {
         @Override
@@ -342,8 +342,7 @@ public class TestSafeMode {
 
     assertFalse(dfs.setSafeMode(SafeModeAction.GET));
     DFSTestUtil.createFile(fs, file1, 1024, (short)1, 0);
-    assertTrue(dfs.setSafeMode(SafeModeAction.ENTER), 
-        "Could not enter SM");
+    assertTrue(dfs.setSafeMode(SafeModeAction.ENTER), "Could not enter SM");
 
     runFsFun("Set quota while in SM", new FSRun() { 
       @Override
@@ -512,9 +511,9 @@ public class TestSafeMode {
 
     String tipMsg = cluster.getNamesystem().getSafemode();
     assertTrue(tipMsg.contains("The number of live datanodes 0 needs an additional " +
-                      "1 live datanodes to reach the minimum number 1." +
-                      NEWLINE + "Safe mode will be turned off automatically"),
-      "Safemode tip message doesn't look right: " + tipMsg);
+            "1 live datanodes to reach the minimum number 1." +
+            NEWLINE + "Safe mode will be turned off automatically"),
+        "Safemode tip message doesn't look right: " + tipMsg);
 
     // Start a datanode
     cluster.startDataNodes(conf, 1, true, null, null);
@@ -558,7 +557,7 @@ public class TestSafeMode {
       DFSTestUtil.createFile(fs, file1, 1000, (short)1, 0);
       DFSTestUtil.createFile(fs, file2, 2000, (short)1, 0);
       checkGetBlockLocationsWorks(fs, file1);
-      
+
       NameNode namenode = cluster.getNameNode();
 
       // manually set safemode.
@@ -568,8 +567,6 @@ public class TestSafeMode {
       checkGetBlockLocationsWorks(fs, file1);
       dfs.setSafeMode(SafeModeAction.LEAVE);
       assertFalse(namenode.isInSafeMode(), "should not be in SafeMode");
-      
-      
       // Now 2nd part of the tests where there aren't block locations
       cluster.shutdownDataNodes();
       cluster.shutdownNameNode(0);
@@ -581,9 +578,9 @@ public class TestSafeMode {
       System.out.println("Restarted cluster with just the NameNode");
       
       namenode = cluster.getNameNode();
-      
-      assertTrue(namenode.isInSafeMode(), 
-                 "No datanode is started. Should be in SafeMode");
+
+      assertTrue(namenode.isInSafeMode(),
+          "No datanode is started. Should be in SafeMode");
       FileStatus stat = fs.getFileStatus(file1);
       try {
         fs.getFileBlockLocations(stat, 0, 1000);
@@ -592,7 +589,7 @@ public class TestSafeMode {
         // as expected 
       } catch (RemoteException re) {
         if (!re.getClassName().equals(SafeModeException.class.getName()))
-          assertTrue(false, "Should have got safemode exception");   
+            assertTrue(false, "Should have got safemode exception");
       }
 
 

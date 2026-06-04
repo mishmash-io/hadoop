@@ -38,9 +38,7 @@ import org.apache.hadoop.hdfs.protocol.LocatedBlocks;
 import org.apache.hadoop.hdfs.server.datanode.SimulatedFSDataset;
 import org.apache.hadoop.hdfs.server.protocol.DatanodeStorage;
 import org.apache.hadoop.util.Time;
-
 import org.junit.jupiter.api.Test;
-
 
 /**
  * This class tests the replication and injection of blocks of a DFS file for simulated storage.

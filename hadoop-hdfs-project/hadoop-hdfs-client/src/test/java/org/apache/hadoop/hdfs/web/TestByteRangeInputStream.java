@@ -17,7 +17,9 @@
  */
 package org.apache.hadoop.hdfs.web;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.fail;
 import static org.mockito.ArgumentMatchers.anyBoolean;
 import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.Mockito.CALLS_REAL_METHODS;
@@ -36,6 +38,7 @@ import org.apache.hadoop.thirdparty.com.google.common.net.HttpHeaders;
 import org.junit.jupiter.api.Test;
 import org.apache.hadoop.hdfs.web.ByteRangeInputStream.InputStreamAndFileLength;
 import org.apache.hadoop.test.Whitebox;
+import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 
 public class TestByteRangeInputStream {
@@ -86,16 +89,12 @@ public class TestByteRangeInputStream {
     bris.read();
 
     assertEquals(0, bris.startPos, "Initial call made incorrectly (offset check)");
-    assertEquals(1,
-        bris.getPos(),
-        "getPos should return 1 after reading one byte");
+    assertEquals(1, bris.getPos(), "getPos should return 1 after reading one byte");
     verify(oMock, times(1)).connect(0, false);
 
     bris.read();
 
-    assertEquals(2,
-        bris.getPos(),
-        "getPos should return 2 after reading two bytes");
+    assertEquals(2, bris.getPos(), "getPos should return 2 after reading two bytes");
     // No additional connections should have been made (no seek)
     verify(oMock, times(1)).connect(0, false);
 
@@ -104,9 +103,9 @@ public class TestByteRangeInputStream {
     bris.seek(100);
     bris.read();
 
-    assertEquals(100, bris.startPos, "Seek to 100 bytes made incorrectly (offset Check)");
-    assertEquals(101,
-        bris.getPos(),
+    assertEquals(100, bris.startPos,
+        "Seek to 100 bytes made incorrectly (offset Check)");
+    assertEquals(101, bris.getPos(),
         "getPos should return 101 after reading one byte");
     verify(rMock, times(1)).connect(100, true);
 
@@ -129,8 +128,7 @@ public class TestByteRangeInputStream {
       bris.read();
       fail("Exception should be thrown when content-length is not given");
     } catch (IOException e) {
-      assertTrue(e.getMessage().startsWith(HttpHeaders.CONTENT_LENGTH +
-                                    " is missing: "),
+      assertTrue(e.getMessage().startsWith(HttpHeaders.CONTENT_LENGTH + " is missing: "),
           "Incorrect response message: " + e.getMessage());
     }
     bris.close();
@@ -221,19 +219,16 @@ public class TestByteRangeInputStream {
             ByteRangeInputStream.StreamStatus.SEEK);
 
 
-    assertEquals(65535, bris.available(), "Before read or seek, available should be same as filelength");
+    assertEquals(65535, bris.available(),
+        "Before read or seek, available should be same as filelength");
     verify(bris, times(1)).openInputStream(Mockito.anyLong());
 
     bris.seek(10);
-    assertEquals(65525,
-            bris.available(),
-            "Seek 10 bytes, available should return filelength - 10");
+    assertEquals(65525, bris.available(), "Seek 10 bytes, available should return filelength - 10");
 
     //no more bytes available
     bris.seek(65535);
-    assertEquals(0,
-            bris.available(),
-            "Seek till end of file, available should return 0 bytes");
+    assertEquals(0, bris.available(), "Seek till end of file, available should return 0 bytes");
 
     //test reads, seek back to 0 and start reading
     bris.seek(0);
@@ -241,12 +236,14 @@ public class TestByteRangeInputStream {
     assertEquals(65534, bris.available(), "Read 1 byte, available must return  filelength - 1");
 
     bris.read();
-    assertEquals(65533, bris.available(), "Read another 1 byte, available must return  filelength - 2");
+    assertEquals(65533, bris.available(),
+        "Read another 1 byte, available must return  filelength - 2");
 
     //seek and read
     bris.seek(100);
     bris.read();
-    assertEquals(65434, bris.available(), "Seek to offset 100 and read 1 byte, available should return filelength - 101");
+    assertEquals(65434, bris.available(),
+        "Seek to offset 100 and read 1 byte, available should return filelength - 101");
     bris.close();
   }
 
@@ -279,8 +276,7 @@ public class TestByteRangeInputStream {
       bris.available();
       fail("Exception should be thrown when stream is closed");
     }catch(IOException e){
-      assertTrue(e.getMessage().equals("Stream closed"),
-              "Exception when stream is closed");
+      assertTrue(e.getMessage().equals("Stream closed"), "Exception when stream is closed");
     }
   }
 

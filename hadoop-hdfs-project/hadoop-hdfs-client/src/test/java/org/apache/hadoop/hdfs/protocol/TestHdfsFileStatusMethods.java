@@ -31,6 +31,8 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import org.apache.hadoop.fs.FileStatus;
 import org.junit.jupiter.api.Test;
 
+import org.junit.jupiter.api.Test;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /**
@@ -52,8 +54,8 @@ public class TestHdfsFileStatusMethods {
     assertTrue(fsM.removeAll(hfsM));
     // verify that FileStatus is a subset of HdfsFileStatus
     assertEquals(Collections.emptySet(), fsM, fsM.stream()
-            .map(MethodSignature::toString)
-            .collect(joining("\n")));
+        .map(MethodSignature::toString)
+        .collect(joining("\n")));
   }
 
   /** Map non-static, declared methods for this class to signatures. */

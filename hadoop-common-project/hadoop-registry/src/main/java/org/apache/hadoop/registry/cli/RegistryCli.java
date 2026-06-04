@@ -41,7 +41,7 @@ import org.apache.hadoop.security.AccessControlException;
 import org.apache.hadoop.service.ServiceOperations;
 import org.apache.hadoop.util.ExitUtil;
 import org.apache.hadoop.util.Tool;
-import org.apache.hadoop.util.ToolRunner;
+import org.apache.hadoop.util.cli.ToolRunner;
 import org.apache.hadoop.registry.client.api.BindFlags;
 import org.apache.hadoop.registry.client.api.RegistryOperations;
 import org.apache.hadoop.registry.client.api.RegistryOperationsFactory;

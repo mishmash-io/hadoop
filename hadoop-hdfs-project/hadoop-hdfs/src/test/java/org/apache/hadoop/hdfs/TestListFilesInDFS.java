@@ -19,7 +19,6 @@ package org.apache.hadoop.hdfs;
 
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.fs.TestListFiles;
-
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 

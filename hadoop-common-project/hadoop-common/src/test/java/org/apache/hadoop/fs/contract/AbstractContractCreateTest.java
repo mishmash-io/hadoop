@@ -304,11 +304,11 @@ public abstract class AbstractContractCreateTest extends
     String statusDetails = status.toString();
     assertTrue(status.getBlockSize() >= minValue,
         "File status block size too low:  " + statusDetails
-            + " min value: " + minValue);
+        + " min value: " + minValue);
     long defaultBlockSize = fs.getDefaultBlockSize(path);
     assertTrue(defaultBlockSize >= minValue,
         "fs.getDefaultBlockSize(" + path + ") size " +
-            defaultBlockSize + " is below the minimum of " + minValue);
+        defaultBlockSize + " is below the minimum of " + minValue);
   }
 
   @Test

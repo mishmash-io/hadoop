@@ -24,9 +24,15 @@ import org.apache.hadoop.hdfs.protocol.SystemErasureCodingPolicies;
 import org.apache.hadoop.hdfs.server.protocol.OutlierMetrics;
 import org.apache.hadoop.hdfs.server.protocol.SlowDiskReports;
 
-import static org.hamcrest.CoreMatchers.is;
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.junit.jupiter.api.Assertions.*;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.jupiter.api.Assertions.assertArrayEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertSame;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -111,7 +117,6 @@ import org.apache.hadoop.security.token.Token;
 import org.apache.hadoop.test.GenericTestUtils;
 import org.apache.hadoop.util.DataChecksum;
 import org.apache.hadoop.util.Lists;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
 import org.apache.hadoop.thirdparty.com.google.common.base.Joiner;
@@ -201,9 +206,9 @@ public class TestPBHelper {
   }
 
   void compare(DatanodeStorage dns1, DatanodeStorage dns2) {
-    assertThat(dns2.getStorageID(), is(dns1.getStorageID()));
-    assertThat(dns2.getState(), is(dns1.getState()));
-    assertThat(dns2.getStorageType(), is(dns1.getStorageType()));
+    assertThat(dns2.getStorageID()).isEqualTo(dns1.getStorageID());
+    assertThat(dns2.getState()).isEqualTo(dns1.getState());
+    assertThat(dns2.getStorageType()).isEqualTo(dns1.getStorageType());
   }
 
   @Test
@@ -720,7 +725,7 @@ public class TestPBHelper {
     AclEntry[] actual = Lists.newArrayList(
         PBHelperClient.convertAclEntry(PBHelperClient.convertAclEntryProto(Lists
             .newArrayList(e1, e2, e3)))).toArray(new AclEntry[0]);
-    Assertions.assertArrayEquals(expected, actual);
+    assertArrayEquals(expected, actual);
   }
 
   @Test
@@ -730,7 +735,7 @@ public class TestPBHelper {
         .setType(AclEntryType.OTHER).build();
     AclStatus s = new AclStatus.Builder().owner("foo").group("bar").addEntry(e)
         .build();
-    Assertions.assertEquals(s, PBHelperClient.convert(PBHelperClient.convert(s)));
+    assertEquals(s, PBHelperClient.convert(PBHelperClient.convert(s)));
   }
   
   @Test
@@ -815,16 +820,13 @@ public class TestPBHelper {
             "peer3", outlierMetrics3));
     SlowPeerReports slowPeersConverted1 = PBHelper.convertSlowPeerInfo(
         PBHelper.convertSlowPeerInfo(slowPeers));
-    assertTrue(
-        slowPeersConverted1.equals(slowPeers),
-        "Expected map:" + slowPeers + ", got map:" +
-            slowPeersConverted1.getSlowPeers());
+    assertTrue(slowPeersConverted1.equals(slowPeers),
+        "Expected map:" + slowPeers + ", got map:" + slowPeersConverted1.getSlowPeers());
 
     // Test with an empty map.
     SlowPeerReports slowPeersConverted2 = PBHelper.convertSlowPeerInfo(
         PBHelper.convertSlowPeerInfo(SlowPeerReports.EMPTY_REPORT));
-    assertTrue(
-        slowPeersConverted2.equals(SlowPeerReports.EMPTY_REPORT),
+    assertTrue(slowPeersConverted2.equals(SlowPeerReports.EMPTY_REPORT),
         "Expected empty map:" + ", got map:" + slowPeersConverted2);
   }
 
@@ -841,16 +843,13 @@ public class TestPBHelper {
                 SlowDiskReports.DiskOp.WRITE, 1.3)));
     SlowDiskReports slowDisksConverted1 = PBHelper.convertSlowDiskInfo(
         PBHelper.convertSlowDiskInfo(slowDisks));
-    assertTrue(
-        slowDisksConverted1.equals(slowDisks),
-        "Expected map:" + slowDisks + ", got map:" +
-            slowDisksConverted1.getSlowDisks());
+    assertTrue(slowDisksConverted1.equals(slowDisks),
+        "Expected map:" + slowDisks + ", got map:" + slowDisksConverted1.getSlowDisks());
 
     // Test with an empty map
     SlowDiskReports slowDisksConverted2 = PBHelper.convertSlowDiskInfo(
         PBHelper.convertSlowDiskInfo(SlowDiskReports.EMPTY_REPORT));
-    assertTrue(
-        slowDisksConverted2.equals(SlowDiskReports.EMPTY_REPORT),
+    assertTrue(slowDisksConverted2.equals(SlowDiskReports.EMPTY_REPORT),
         "Expected empty map:" + ", got map:" + slowDisksConverted2);
   }
 
@@ -924,11 +923,10 @@ public class TestPBHelper {
         DataChecksum.Type.valueOf(DFSConfigKeys.DFS_CHECKSUM_TYPE_DEFAULT).id));
     HdfsProtos.FsServerDefaultsProto proto = b.build();
 
-    assertFalse(proto.hasKeyProviderUri(),
-        "KeyProvider uri is not supported");
+    assertFalse(proto.hasKeyProviderUri(), "KeyProvider uri is not supported");
     FsServerDefaults fsServerDefaults = PBHelperClient.convert(proto);
-    Assertions.assertNotNull(fsServerDefaults, "FsServerDefaults is null");
-    Assertions.assertNull(fsServerDefaults.getKeyProviderUri(),
+    assertNotNull(fsServerDefaults, "FsServerDefaults is null");
+    assertNull(fsServerDefaults.getKeyProviderUri(),
         "KeyProviderUri should be null");
   }
 
@@ -946,11 +944,9 @@ public class TestPBHelper {
       // Convert proto back to an object and check for equality.
       AddErasureCodingPolicyResponse convertedResponse = PBHelperClient
           .convertAddErasureCodingPolicyResponse(proto);
-      assertEquals(response.getPolicy(),
-          convertedResponse.getPolicy(),
+      assertEquals(response.getPolicy(), convertedResponse.getPolicy(),
           "Converted policy not equal");
-      assertEquals(response.isSucceed(),
-          convertedResponse.isSucceed(),
+      assertEquals(response.isSucceed(), convertedResponse.isSucceed(),
           "Converted policy not equal");
     }
 
@@ -963,11 +959,9 @@ public class TestPBHelper {
     // Convert proto back to an object and check for equality.
     AddErasureCodingPolicyResponse convertedResponse = PBHelperClient
         .convertAddErasureCodingPolicyResponse(proto);
-    assertEquals(response.getPolicy(),
-        convertedResponse.getPolicy(),
+    assertEquals(response.getPolicy(), convertedResponse.getPolicy(),
         "Converted policy not equal");
-    assertEquals(response.getErrorMsg(),
-        convertedResponse.getErrorMsg(),
+    assertEquals(response.getErrorMsg(), convertedResponse.getErrorMsg(),
         "Converted policy not equal");
   }
 
@@ -1004,7 +998,7 @@ public class TestPBHelper {
   }
 
   @Test
-  public void testErasureCodingPolicyMissingId() {
+  public void testErasureCodingPolicyMissingId() throws Exception {
     assertThrows(UninitializedMessageException.class, () -> {
       HdfsProtos.ErasureCodingPolicyProto.Builder builder =
           HdfsProtos.ErasureCodingPolicyProto.newBuilder();

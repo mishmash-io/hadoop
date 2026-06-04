@@ -29,10 +29,10 @@ import org.apache.hadoop.hdfs.protocol.ExtendedBlock;
 import org.apache.hadoop.hdfs.tools.DFSck;
 import org.apache.hadoop.test.GenericTestUtils;
 import org.apache.hadoop.test.Whitebox;
-import org.apache.hadoop.util.cli.ToolRunner;
-import org.junit.jupiter.api.Assertions;
+import org.apache.hadoop.util.ToolRunner;
+import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.Timeout;
-import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.ParameterizedClass;
 import org.junit.jupiter.params.provider.MethodSource;
 
 import java.io.DataOutput;
@@ -44,12 +44,20 @@ import java.nio.ByteBuffer;
 import java.util.Collection;
 import java.util.concurrent.TimeUnit;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertArrayEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.fail;
 
 /**
  * Test {@link BlockInfoStriped}.
  */
-@Timeout(value=300000, unit=TimeUnit.MILLISECONDS)
+@ParameterizedClass(name="{index}: {0}")
+@MethodSource("policies")
+@Timeout(300)
 public class TestBlockInfoStriped {
   private static final long BASE_ID = -1600;
   private final Block baseBlock = new Block(BASE_ID);
@@ -91,38 +99,38 @@ public class TestBlockInfoStriped {
     int i = 0;
     for (; i < storageInfos.length; i += 2) {
       info.addStorage(storageInfos[i], blocks[i]);
-      Assertions.assertEquals(i/2 + 1, info.numNodes());
+      assertEquals(i / 2 + 1, info.numNodes());
     }
     i /= 2;
     for (int j = 1; j < storageInfos.length; j += 2) {
-      Assertions.assertTrue(info.addStorage(storageInfos[j], blocks[j]));
-      Assertions.assertEquals(i + (j+1)/2, info.numNodes());
+      assertTrue(info.addStorage(storageInfos[j], blocks[j]));
+      assertEquals(i + (j + 1) / 2, info.numNodes());
     }
 
     // check
     byte[] indices = (byte[]) Whitebox.getInternalState(info, "indices");
-    Assertions.assertEquals(totalBlocks, info.getCapacity());
-    Assertions.assertEquals(totalBlocks, indices.length);
+    assertEquals(totalBlocks, info.getCapacity());
+    assertEquals(totalBlocks, indices.length);
     i = 0;
     for (DatanodeStorageInfo storage : storageInfos) {
       int index = info.findStorageInfo(storage);
-      Assertions.assertEquals(i++, index);
-      Assertions.assertEquals(index, indices[index]);
+      assertEquals(i++, index);
+      assertEquals(index, indices[index]);
     }
 
     // the same block is reported from the same storage twice
     i = 0;
     for (DatanodeStorageInfo storage : storageInfos) {
-      Assertions.assertTrue(info.addStorage(storage, blocks[i++]));
+      assertTrue(info.addStorage(storage, blocks[i++]));
     }
-    Assertions.assertEquals(totalBlocks, info.getCapacity());
-    Assertions.assertEquals(totalBlocks, info.numNodes());
-    Assertions.assertEquals(totalBlocks, indices.length);
+    assertEquals(totalBlocks, info.getCapacity());
+    assertEquals(totalBlocks, info.numNodes());
+    assertEquals(totalBlocks, indices.length);
     i = 0;
     for (DatanodeStorageInfo storage : storageInfos) {
       int index = info.findStorageInfo(storage);
-      Assertions.assertEquals(i++, index);
-      Assertions.assertEquals(index, indices[index]);
+      assertEquals(i++, index);
+      assertEquals(index, indices[index]);
     }
 
     // the same block is reported from another storage
@@ -131,15 +139,15 @@ public class TestBlockInfoStriped {
     // only add the second half of info2
     for (i = totalBlocks; i < storageInfos2.length; i++) {
       info.addStorage(storageInfos2[i], blocks[i % totalBlocks]);
-      Assertions.assertEquals(i + 1, info.getCapacity());
-      Assertions.assertEquals(i + 1, info.numNodes());
+      assertEquals(i + 1, info.getCapacity());
+      assertEquals(i + 1, info.numNodes());
       indices = (byte[]) Whitebox.getInternalState(info, "indices");
-      Assertions.assertEquals(i + 1, indices.length);
+      assertEquals(i + 1, indices.length);
     }
     for (i = totalBlocks; i < storageInfos2.length; i++) {
       int index = info.findStorageInfo(storageInfos2[i]);
-      Assertions.assertEquals(i++, index);
-      Assertions.assertEquals(index - totalBlocks, indices[index]);
+      assertEquals(i++, index);
+      assertEquals(index - totalBlocks, indices[index]);
     }
   }
 
@@ -160,17 +168,17 @@ public class TestBlockInfoStriped {
     info.removeStorage(storages[2]);
 
     // check
-    Assertions.assertEquals(totalBlocks, info.getCapacity());
-    Assertions.assertEquals(totalBlocks - 2, info.numNodes());
+    assertEquals(totalBlocks, info.getCapacity());
+    assertEquals(totalBlocks - 2, info.numNodes());
     byte[] indices = (byte[]) Whitebox.getInternalState(info, "indices");
     for (int i = 0; i < storages.length; i++) {
       int index = info.findStorageInfo(storages[i]);
       if (i != 0 && i != 2) {
-        Assertions.assertEquals(i, index);
-        Assertions.assertEquals(index, indices[index]);
+        assertEquals(i, index);
+        assertEquals(index, indices[index]);
       } else {
-        Assertions.assertEquals(-1, index);
-        Assertions.assertEquals(-1, indices[i]);
+        assertEquals(-1, index);
+        assertEquals(-1, indices[i]);
       }
     }
 
@@ -181,17 +189,17 @@ public class TestBlockInfoStriped {
       info.addStorage(storages2[i], blocks[i % totalBlocks]);
     }
     // now we should have 8 storages
-    Assertions.assertEquals(totalBlocks * 2 - 2, info.numNodes());
-    Assertions.assertEquals(totalBlocks * 2 - 2, info.getCapacity());
+    assertEquals(totalBlocks * 2 - 2, info.numNodes());
+    assertEquals(totalBlocks * 2 - 2, info.getCapacity());
     indices = (byte[]) Whitebox.getInternalState(info, "indices");
-    Assertions.assertEquals(totalBlocks * 2 - 2, indices.length);
+    assertEquals(totalBlocks * 2 - 2, indices.length);
     int j = totalBlocks;
     for (int i = totalBlocks; i < storages2.length; i++) {
       int index = info.findStorageInfo(storages2[i]);
       if (i == totalBlocks || i == totalBlocks + 2) {
-        Assertions.assertEquals(i - totalBlocks, index);
+        assertEquals(i - totalBlocks, index);
       } else {
-        Assertions.assertEquals(j++, index);
+        assertEquals(j++, index);
       }
     }
 
@@ -200,22 +208,22 @@ public class TestBlockInfoStriped {
       info.removeStorage(storages2[i + totalBlocks]);
     }
     // now we should have 3 storages
-    Assertions.assertEquals(totalBlocks - 2, info.numNodes());
-    Assertions.assertEquals(totalBlocks * 2 - 2, info.getCapacity());
+    assertEquals(totalBlocks - 2, info.numNodes());
+    assertEquals(totalBlocks * 2 - 2, info.getCapacity());
     indices = (byte[]) Whitebox.getInternalState(info, "indices");
-    Assertions.assertEquals(totalBlocks * 2 - 2, indices.length);
+    assertEquals(totalBlocks * 2 - 2, indices.length);
     for (int i = 0; i < totalBlocks; i++) {
       if (i == 0 || i == 2) {
         int index = info.findStorageInfo(storages2[i + totalBlocks]);
-        Assertions.assertEquals(-1, index);
+        assertEquals(-1, index);
       } else {
         int index = info.findStorageInfo(storages[i]);
-        Assertions.assertEquals(i, index);
+        assertEquals(i, index);
       }
     }
     for (int i = totalBlocks; i < totalBlocks * 2 - 2; i++) {
-      Assertions.assertEquals(-1, indices[i]);
-      Assertions.assertNull(info.getDatanode(i));
+      assertEquals(-1, indices[i]);
+      assertNull(info.getDatanode(i));
     }
   }
 
@@ -249,8 +257,8 @@ public class TestBlockInfoStriped {
       bInfo.removeStorage(dnStorageInfo[1]);
       ByteArrayOutputStream bStream = new ByteArrayOutputStream();
       PrintStream out = new PrintStream(bStream, true);
-      assertEquals(0, ToolRunner.run(new DFSck(conf, out), new String[] {
-          new Path("/ecDir/ecFile").toString(), "-blockId", id }));
+      assertEquals(0, ToolRunner.run(new DFSck(conf, out),
+          new String[]{new Path("/ecDir/ecFile").toString(), "-blockId", id}));
       assertFalse(out.toString().contains("null"));
     }
   }
@@ -279,10 +287,8 @@ public class TestBlockInfoStriped {
     assertArrayEquals(byteBuffer.array(), byteStream.toByteArray());
   }
 
-  @MethodSource("policies")
-  @ParameterizedTest(name = "{index}: {0}")
-  public void testAddStorageWithReplicatedBlock(ErasureCodingPolicy policy) {
-    initTestBlockInfoStriped(policy);
+  @Test
+  public void testAddStorageWithReplicatedBlock() {
     assertThrows(IllegalArgumentException.class, () -> {
       DatanodeStorageInfo storage = DFSTestUtil.createDatanodeStorageInfo(
           "storageID", "127.0.0.1");
@@ -291,10 +297,8 @@ public class TestBlockInfoStriped {
     });
   }
 
-  @MethodSource("policies")
-  @ParameterizedTest(name = "{index}: {0}")
-  public void testAddStorageWithDifferentBlockGroup(ErasureCodingPolicy policy) {
-    initTestBlockInfoStriped(policy);
+  @Test
+  public void testAddStorageWithDifferentBlockGroup() {
     assertThrows(IllegalArgumentException.class, () -> {
       DatanodeStorageInfo storage = DFSTestUtil.createDatanodeStorageInfo(
           "storageID", "127.0.0.1");

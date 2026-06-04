@@ -21,6 +21,8 @@ import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hdfs.protocol.DatanodeInfo.DatanodeInfoBuilder;
 import org.apache.hadoop.test.GenericTestUtils;
 
+import org.junit.jupiter.api.Test;
+
 import org.slf4j.Logger;
 
 import org.junit.jupiter.api.Test;

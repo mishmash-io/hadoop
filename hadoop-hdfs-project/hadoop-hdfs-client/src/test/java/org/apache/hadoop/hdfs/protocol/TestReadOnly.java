@@ -96,8 +96,8 @@ public class TestReadOnly {
       // with the same name. The assumption is that all these methods should
       // share the same annotation.
       if (m.getName().equals(methodName)) {
-        assertEquals(m.isAnnotationPresent(ReadOnly.class), expected, "Expected ReadOnly for method '" + methodName +
-            "' to be " + expected);
+        assertEquals(m.isAnnotationPresent(ReadOnly.class), expected,
+            "Expected ReadOnly for method '" + methodName + "' to be " + expected);
         return;
       }
     }

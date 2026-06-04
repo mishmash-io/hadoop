@@ -18,11 +18,9 @@
 package org.apache.hadoop.hdfs.server.namenode;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-
 import java.util.Arrays;
 
 import org.apache.hadoop.hdfs.DFSUtil;
-
 import org.junit.jupiter.api.Test;
 
 /**

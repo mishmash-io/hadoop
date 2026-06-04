@@ -30,18 +30,18 @@ import javax.naming.ServiceUnavailableException;
 
 import org.apache.hadoop.util.Time;
 
-import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.Timeout;
-import org.opentest4j.TestAbortedException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import static org.apache.hadoop.test.PlatformAssumptions.assumeNotWindows;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.fail;
+import static org.junit.jupiter.api.Assumptions.assumeTrue;
 
 /**
  * Test host name and IP resolution and caching.
@@ -107,7 +107,7 @@ public class TestDNS {
   @Test
   public void testNullInterface() throws Exception {
     String host = DNS.getDefaultHost(null);  // should work.
-    Assertions.assertThat(host).isEqualTo(DNS.getDefaultHost(DEFAULT));
+    assertThat(host).isEqualTo(DNS.getDefaultHost(DEFAULT));
     try {
       String ip = DNS.getDefaultIP(null);
       fail("Expected a NullPointerException, got " + ip);
@@ -123,7 +123,7 @@ public class TestDNS {
   @Test
   public void testNullDnsServer() throws Exception {
     String host = DNS.getDefaultHost(getLoopbackInterface(), null);
-    Assertions.assertThat(host)
+    assertThat(host)
         .isEqualTo(DNS.getDefaultHost(getLoopbackInterface()));
   }
 
@@ -134,7 +134,7 @@ public class TestDNS {
   @Test
   public void testDefaultDnsServer() throws Exception {
     String host = DNS.getDefaultHost(getLoopbackInterface(), DEFAULT);
-    Assertions.assertThat(host)
+    assertThat(host)
         .isEqualTo(DNS.getDefaultHost(getLoopbackInterface()));
   }
 
@@ -182,7 +182,7 @@ public class TestDNS {
                 + " Loopback=" + localhost.isLoopbackAddress()
                 + " Linklocal=" + localhost.isLinkLocalAddress());
       }
-      throw new TestAbortedException(e.getMessage(), e);
+      assumeTrue(false, e.getMessage());
     }
   }
 
@@ -201,7 +201,7 @@ public class TestDNS {
    * @throws Exception
    */
   @Test
-  @Timeout(value=60000, unit=TimeUnit.MILLISECONDS)
+  @Timeout(value = 60)
   public void testLookupWithHostsFallback() throws Exception {
     assumeNotWindows();
     final String oldHostname = DNS.getCachedHostname();
@@ -211,7 +211,7 @@ public class TestDNS {
           getLoopbackInterface(), INVALID_DNS_SERVER, true);
 
       // Expect to get back something other than the cached host name.
-      Assertions.assertThat(hostname).isNotEqualTo(DUMMY_HOSTNAME);
+      assertThat(hostname).isNotEqualTo(DUMMY_HOSTNAME);
     } finally {
       // Restore DNS#cachedHostname for subsequent tests.
       DNS.setCachedHostname(oldHostname);
@@ -225,7 +225,7 @@ public class TestDNS {
    * @throws Exception
    */
   @Test
-  @Timeout(value=60000, unit=TimeUnit.MILLISECONDS)
+  @Timeout(value = 60)
   public void testLookupWithoutHostsFallback() throws Exception {
     final String oldHostname = DNS.getCachedHostname();
     try {
@@ -235,7 +235,7 @@ public class TestDNS {
 
       // Expect to get back the cached host name since there was no hosts
       // file lookup.
-      Assertions.assertThat(hostname).isEqualTo(DUMMY_HOSTNAME);
+      assertThat(hostname).isEqualTo(DUMMY_HOSTNAME);
     } finally {
       // Restore DNS#cachedHostname for subsequent tests.
       DNS.setCachedHostname(oldHostname);

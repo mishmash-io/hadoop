@@ -27,7 +27,9 @@ import java.util.EnumSet;
 import java.util.Base64;
 import java.util.concurrent.atomic.AtomicLong;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.EnumSource;
 import software.amazon.awssdk.awscore.AwsRequest;
 import software.amazon.awssdk.awscore.AwsRequestOverrideConfiguration;
 import software.amazon.awssdk.core.SdkRequest;
@@ -87,7 +89,7 @@ public class TestRequestFactory extends AbstractHadoopTestBase {
         .withBucket("bucket")
         .withEncryptionSecrets(
             new EncryptionSecrets(S3AEncryptionMethods.SSE_KMS,
-                "kms:key"))
+                "kms:key", ""))
         .build();
     createFactoryObjects(factory);
   }
@@ -178,8 +180,7 @@ public class TestRequestFactory extends AbstractHadoopTestBase {
     String id = "1";
     a(factory.newAbortMultipartUploadRequestBuilder(path, id));
     a(factory.newCompleteMultipartUploadRequestBuilder(path, id,
-        new ArrayList<>(), new PutObjectOptions(true,
-            "some class",
+        new ArrayList<>(), new PutObjectOptions("some class",
             Collections.emptyMap(),
             EnumSet.noneOf(WriteObjectFlags.class),
             "")));
@@ -195,9 +196,7 @@ public class TestRequestFactory extends AbstractHadoopTestBase {
     a(factory.newListObjectsV2RequestBuilder(path, "/", 1));
     a(factory.newMultipartUploadRequestBuilder(path, null));
     a(factory.newPutObjectRequestBuilder(path,
-        PutObjectOptions.keepingDirs(), -1, true));
-    a(factory.newPutObjectRequestBuilder(path,
-        PutObjectOptions.deletingDirs(), 1024, false));
+        defaultOptions(), -1, true));
   }
 
   /**
@@ -281,7 +280,7 @@ public class TestRequestFactory extends AbstractHadoopTestBase {
 
     // A simple PUT
     final PutObjectRequest put = factory.newPutObjectRequestBuilder(path,
-        PutObjectOptions.defaultOptions(), 1024, false).build();
+        defaultOptions(), 1024, false).build();
     assertApiTimeouts(partDuration, put);
 
     // multipart part
@@ -292,27 +291,9 @@ public class TestRequestFactory extends AbstractHadoopTestBase {
 
   }
 
-  @Test
-  public void testRequestFactoryWithChecksumAlgorithmCRC32() throws IOException {
-    testRequestFactoryWithChecksumAlgorithm(ChecksumAlgorithm.CRC32);
-  }
-
-  @Test
-  public void testRequestFactoryWithChecksumAlgorithmCRC32C() throws IOException {
-    testRequestFactoryWithChecksumAlgorithm(ChecksumAlgorithm.CRC32_C);
-  }
-
-  @Test
-  public void testRequestFactoryWithChecksumAlgorithmSHA1() throws IOException {
-    testRequestFactoryWithChecksumAlgorithm(ChecksumAlgorithm.SHA1);
-  }
-
-  @Test
-  public void testRequestFactoryWithChecksumAlgorithmSHA256() throws IOException {
-    testRequestFactoryWithChecksumAlgorithm(ChecksumAlgorithm.SHA256);
-  }
-
-  private void testRequestFactoryWithChecksumAlgorithm(ChecksumAlgorithm checksumAlgorithm)
+  @ParameterizedTest
+  @EnumSource(value = ChecksumAlgorithm.class, names = {"CRC32", "CRC32_C", "SHA1", "SHA256"})
+  public void testRequestFactoryWithChecksumAlgorithm(ChecksumAlgorithm checksumAlgorithm)
       throws IOException {
     String path = "path";
     String path2 = "path2";
@@ -329,7 +310,7 @@ public class TestRequestFactory extends AbstractHadoopTestBase {
     Assertions.assertThat(copyObjectRequest.checksumAlgorithm()).isEqualTo(checksumAlgorithm);
 
     final PutObjectRequest putObjectRequest = factory.newPutObjectRequestBuilder(path,
-        PutObjectOptions.keepingDirs(), 1024, false).build();
+        PutObjectOptions.defaultOptions(), 1024, false).build();
     Assertions.assertThat(putObjectRequest.checksumAlgorithm()).isEqualTo(checksumAlgorithm);
 
     final CreateMultipartUploadRequest multipartUploadRequest =
@@ -348,7 +329,7 @@ public class TestRequestFactory extends AbstractHadoopTestBase {
         .encodeToString(encryptionKey);
     final String encryptionKeyMd5 = Md5Utils.md5AsBase64(encryptionKey);
     final EncryptionSecrets encryptionSecrets = new EncryptionSecrets(S3AEncryptionMethods.SSE_C,
-        encryptionKeyBase64);
+        encryptionKeyBase64, null);
     RequestFactory factory = RequestFactoryImpl.builder()
         .withBucket("bucket")
         .withChecksumAlgorithm(ChecksumAlgorithm.CRC32_C)
@@ -356,7 +337,7 @@ public class TestRequestFactory extends AbstractHadoopTestBase {
         .build();
     createFactoryObjects(factory);
 
-    PutObjectOptions putObjectOptions = new PutObjectOptions(true,
+    PutObjectOptions putObjectOptions = new PutObjectOptions(
             null,
             null,
             EnumSet.noneOf(WriteObjectFlags.class),

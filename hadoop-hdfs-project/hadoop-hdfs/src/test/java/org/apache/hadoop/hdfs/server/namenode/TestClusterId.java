@@ -18,7 +18,10 @@
 package org.apache.hadoop.hdfs.server.namenode;
 
 import static org.apache.hadoop.hdfs.DFSConfigKeys.DFS_NAMENODE_NAME_DIR_KEY;
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.fail;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
@@ -111,7 +114,7 @@ public class TestClusterId {
     NameNode.format(config);
     // see if cluster id not empty.
     String cid = getClusterId(config);
-    assertTrue((cid != null && !cid.equals("")), "Didn't get new ClusterId" );
+    assertTrue((cid != null && !cid.equals("")), "Didn't get new ClusterId");
 
     // 2. successful format with given clusterid
     StartupOption.FORMAT.setClusterId("mycluster");
@@ -328,9 +331,7 @@ public class TestClusterId {
       NameNode.createNameNode(argv, config);
       fail("createNameNode() did not call System.exit()");
     } catch (ExitException e) {
-      assertEquals(1,
-          e.status,
-          "Format should have been aborted with exit code 1");
+      assertEquals(1, e.status, "Format should have been aborted with exit code 1");
     }
 
     // check if the version file does not exists.

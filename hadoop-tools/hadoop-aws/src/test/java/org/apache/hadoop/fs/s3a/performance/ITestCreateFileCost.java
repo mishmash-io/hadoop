@@ -24,9 +24,9 @@ import java.util.Collection;
 import java.util.concurrent.atomic.AtomicLong;
 
 import org.assertj.core.api.Assertions;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.junit.runners.Parameterized;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedClass;
+import org.junit.jupiter.params.provider.MethodSource;
 
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FSDataOutputStream;
@@ -64,7 +64,8 @@ import static org.apache.hadoop.test.LambdaTestUtils.intercept;
  * with the FS_S3A_CREATE_PERFORMANCE option.
  */
 @SuppressWarnings("resource")
-@RunWith(Parameterized.class)
+@ParameterizedClass(name="performance-{0}")
+@MethodSource("params")
 public class ITestCreateFileCost extends AbstractS3ACostTest {
 
   /**
@@ -72,7 +73,6 @@ public class ITestCreateFileCost extends AbstractS3ACostTest {
    * options.
    * @return a list of test parameters.
    */
-  @Parameterized.Parameters
   public static Collection<Object[]> params() {
     return Arrays.asList(new Object[][]{
         {false},
@@ -86,12 +86,10 @@ public class ITestCreateFileCost extends AbstractS3ACostTest {
   private final boolean createPerformance;
 
   /**
-   * Create with markers kept, always.
+   * Create.
+   * @param createPerformance use the performance flag
    */
   public ITestCreateFileCost(final boolean createPerformance) {
-    // keep markers to permit assertions that create performance
-    // always skips marker deletion.
-    super(false);
     this.createPerformance = createPerformance;
   }
 

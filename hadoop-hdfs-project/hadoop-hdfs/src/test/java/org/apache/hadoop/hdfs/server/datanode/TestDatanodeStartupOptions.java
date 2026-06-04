@@ -25,10 +25,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.Timeout;
 
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.core.Is.is;
-
-import java.util.concurrent.TimeUnit;
+import static org.assertj.core.api.Assertions.assertThat;
 
 /**
  * This test verifies DataNode command line processing.
@@ -61,10 +58,10 @@ public class TestDatanodeStartupOptions {
 
     boolean returnValue = DataNode.parseArguments(args, conf);
     StartupOption option = DataNode.getStartupOption(conf);
-    assertThat(returnValue, is(expectSuccess));
+    assertThat(returnValue).isEqualTo(expectSuccess);
 
     if (expectSuccess) {
-      assertThat(option, is(expectedOption));
+      assertThat(option).isEqualTo(expectedOption);
     }
   }
 
@@ -81,7 +78,7 @@ public class TestDatanodeStartupOptions {
    * A few options that should all parse successfully.
    */
   @Test
-  @Timeout(value = 60000, unit = TimeUnit.MILLISECONDS)
+  @Timeout(value = 60)
   public void testStartupSuccess() {
     checkExpected(true, StartupOption.REGULAR, conf);
     checkExpected(true, StartupOption.REGULAR, conf, "-regular");
@@ -93,7 +90,7 @@ public class TestDatanodeStartupOptions {
    * A few options that should all fail to parse.
    */
   @Test
-  @Timeout(value = 60000, unit = TimeUnit.MILLISECONDS)
+  @Timeout(value = 60)
   public void testStartupFailure() {
     checkExpected(false, StartupOption.REGULAR, conf, "unknownoption");
     checkExpected(false, StartupOption.REGULAR, conf, "-regular -rollback");

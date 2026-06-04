@@ -33,6 +33,7 @@ import org.apache.hadoop.hdfs.protocol.CacheDirectiveInfo;
 import org.apache.hadoop.hdfs.protocol.CachePoolEntry;
 import org.apache.hadoop.hdfs.protocol.CachePoolInfo;
 import org.apache.hadoop.hdfs.protocol.HdfsConstants;
+import org.apache.hadoop.hdfs.protocol.LocatedBlock;
 import org.apache.hadoop.hdfs.server.protocol.DatanodeStorageReport;
 import org.apache.hadoop.hdfs.server.protocol.NamenodeProtocols;
 import org.apache.hadoop.ipc.RPC;
@@ -45,15 +46,13 @@ import org.apache.hadoop.test.GenericTestUtils.LogCapturer;
 import java.io.IOException;
 import java.security.PrivilegedExceptionAction;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertFalse;
-
 import org.junit.jupiter.api.AfterEach;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-
 import static org.apache.hadoop.hdfs.DFSConfigKeys.DFS_NAMENODE_DELEGATION_TOKEN_ALWAYS_USE_KEY;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.fail;
 import org.mockito.Mockito;
 
@@ -255,7 +254,7 @@ public class TestAuditLoggerWithCommands {
       fail("The operation should have failed with IOException");
     } catch (IOException e) {
     }
-    assertTrue(length+1 == auditlog.getOutput().split("\n").length,
+    assertTrue(length + 1 == auditlog.getOutput().split("\n").length,
         "Unexpected log!");
   }
 
@@ -553,8 +552,7 @@ public class TestAuditLoggerWithCommands {
       fail("The operation should have failed with IOException");
     } catch (IOException e){
     }
-    assertTrue(length == auditlog.getOutput().split("\n").length,
-        "Unexpected log!");
+    assertTrue(length == auditlog.getOutput().split("\n").length, "Unexpected log!");
   }
 
   @Test
@@ -1221,6 +1219,25 @@ public class TestAuditLoggerWithCommands {
     verifyAuditLogs(aceDeletePattern);
   }
 
+  @Test
+  public void testReportBadBlocks() throws IOException {
+    String auditLogString =
+            ".*allowed=true.*cmd=reportBadBlocks.*";
+    FSNamesystem fsNamesystem = spy(cluster.getNamesystem());
+    when(fsNamesystem.isExternalInvocation()).thenReturn(true);
+    Server.Call call = spy(new Server.Call(
+            1, 1, null, null, RPC.RpcKind.RPC_BUILTIN, new byte[] {1, 2, 3}));
+    when(call.getRemoteUser()).thenReturn(
+            UserGroupInformation.createRemoteUser(System.getProperty("user.name")));
+    Server.getCurCall().set(call);
+    try {
+      cluster.getNameNodeRpc().reportBadBlocks(new LocatedBlock[]{});
+      verifyAuditLogs(auditLogString);
+    } catch (Exception e) {
+      fail(" The operation threw an exception" + e);
+    }
+  }
+
   private void verifyAuditRestoreFailedStorageACE(
       FSNamesystem fsNamesystem, String arg) throws Exception {
     String operationName = fsNamesystem.getFailedStorageCommand(arg);
@@ -1229,7 +1246,8 @@ public class TestAuditLoggerWithCommands {
       fail(
           "RestoreFailedStorage should have thrown AccessControlException!");
     } catch (IOException ace) {
-      assertEquals(ace.getClass(), AccessControlException.class, "Unexpected Exception!");
+      assertEquals(ace.getClass(), AccessControlException.class,
+          "Unexpected Exception!");
       String auditLogString =
           ".*allowed=false.*cmd=" + operationName + ".*";
       verifyAuditLogs(auditLogString);
@@ -1284,7 +1302,8 @@ public class TestAuditLoggerWithCommands {
     int length = auditlog.getOutput().split(System.lineSeparator()).length;
     String lastAudit = auditlog.getOutput()
         .split(System.lineSeparator())[length - 1];
-    assertTrue(lastAudit.matches(pattern), "Unexpected log!");
+    assertTrue(lastAudit.matches(pattern),
+        "Unexpected log!");
     return length;
   }
 

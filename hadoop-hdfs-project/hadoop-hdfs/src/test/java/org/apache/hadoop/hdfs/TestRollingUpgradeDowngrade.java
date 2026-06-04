@@ -43,14 +43,13 @@ public class TestRollingUpgradeDowngrade {
    * @throws Exception
    */
   @Test
-  @Timeout(value = 300000, unit = TimeUnit.MILLISECONDS)
-  public void testDowngrade() {
-    assertThrows(IllegalArgumentException.class, () -> {
+  @Timeout(value = 300)
+  public void testDowngrade() throws Exception {
+    Assertions.assertThrows(IllegalArgumentException.class, () -> {
       final Configuration conf = new HdfsConfiguration();
       MiniQJMHACluster cluster = null;
       final Path foo = new Path("/foo");
       final Path bar = new Path("/bar");
-
       try {
         cluster = new MiniQJMHACluster.Builder(conf).build();
         MiniDFSCluster dfsCluster = cluster.getDfsCluster();
@@ -98,8 +97,8 @@ public class TestRollingUpgradeDowngrade {
    * because it has been obsolete.
    */
   @Test
-  public void testRejectNewFsImage() {
-    assertThrows(IllegalArgumentException.class, () -> {
+  public void testRejectNewFsImage() throws IOException {
+    Assertions.assertThrows(IllegalArgumentException.class, () -> {
       final Configuration conf = new Configuration();
       MiniDFSCluster cluster = null;
       try {

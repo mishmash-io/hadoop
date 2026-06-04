@@ -19,6 +19,7 @@ package org.apache.hadoop.crypto.key.kms.server;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 import java.io.IOException;
@@ -32,7 +33,6 @@ import jakarta.servlet.http.HttpServletResponse;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.mockito.Mockito;
 
 /**
  * Test for {@link KMSMDCFilter}.
@@ -51,8 +51,8 @@ public class TestKMSMDCFilter {
   @BeforeEach
   public void setUp() throws IOException {
     filter = new KMSMDCFilter();
-    httpRequest = Mockito.mock(HttpServletRequest.class);
-    httpResponse = Mockito.mock(HttpServletResponse.class);
+    httpRequest = mock(HttpServletRequest.class);
+    httpResponse = mock(HttpServletResponse.class);
     KMSMDCFilter.setContext(null, null, null, null);
   }
 
@@ -67,8 +67,7 @@ public class TestKMSMDCFilter {
       public void doFilter(ServletRequest request, ServletResponse response)
           throws IOException, ServletException {
         assertEquals(REMOTE_ADDRESS,
-            KMSMDCFilter.getRemoteClientAddress(),
-            "filter.remoteClientAddress");
+            KMSMDCFilter.getRemoteClientAddress(), "filter.remoteClientAddress");
         assertEquals(METHOD, KMSMDCFilter.getMethod(), "filter.method");
         assertEquals(URL, KMSMDCFilter.getURL(), "filter.url");
       }

@@ -18,10 +18,17 @@
 package org.apache.hadoop.fs;
 
 import java.io.IOException;
-import java.util.concurrent.TimeUnit;
-
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.any;
+import static org.mockito.Mockito.atMost;
+import static org.mockito.Mockito.atLeast;
+import static org.mockito.Mockito.doAnswer;
+import static org.mockito.Mockito.doReturn;
+import static org.mockito.Mockito.doThrow;
+import static org.mockito.Mockito.eq;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.verify;
 
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.DelegationTokenRenewer.Renewable;
@@ -182,7 +189,7 @@ public class TestDelegationTokenRenewer {
   }
   
   @Test
-  @Timeout(value=4000, unit=TimeUnit.MILLISECONDS)
+  @Timeout(value = 4)
   public void testMultipleTokensDoNotDeadlock() throws IOException,
       InterruptedException {
     Configuration conf = mock(Configuration.class);

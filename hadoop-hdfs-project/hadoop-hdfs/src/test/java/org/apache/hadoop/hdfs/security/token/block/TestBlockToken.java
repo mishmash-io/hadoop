@@ -19,7 +19,12 @@
 package org.apache.hadoop.hdfs.security.token.block;
 
 import static org.apache.hadoop.fs.CommonConfigurationKeysPublic.HADOOP_SECURITY_AUTHENTICATION;
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertArrayEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.fail;
+import static org.junit.jupiter.api.Assumptions.assumeTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.mock;
@@ -86,6 +91,8 @@ import org.apache.hadoop.security.token.Token;
 import org.apache.hadoop.security.token.TokenIdentifier;
 import org.apache.hadoop.test.GenericTestUtils;
 import org.apache.hadoop.util.Time;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.mockito.invocation.InvocationOnMock;
 import org.mockito.stubbing.Answer;
 
@@ -371,7 +378,7 @@ public class TestBlockToken {
     conf.set(HADOOP_SECURITY_AUTHENTICATION, "kerberos");
     UserGroupInformation.setConfiguration(conf);
 
-    Assumptions.assumeTrue(FD_DIR.exists());
+    assumeTrue(FD_DIR.exists());
     BlockTokenSecretManager sm = new BlockTokenSecretManager(
         blockKeyUpdateInterval, blockTokenLifetime, 0, 1, "fake-pool", null,
         enableProtobuf);
@@ -462,7 +469,7 @@ public class TestBlockToken {
       bpMgr.addBlockPool(bpid, slaveHandler);
 
       ExportedBlockKeys keys = masterHandler.exportKeys();
-      bpMgr.addKeys(bpid, keys);
+      bpMgr.addKeys(bpid, keys, true);
       String[] storageIds = new String[] {"DS-9001"};
       tokenGenerationAndVerification(masterHandler, bpMgr.get(bpid),
           new StorageType[]{StorageType.DEFAULT}, storageIds);
@@ -475,7 +482,7 @@ public class TestBlockToken {
       tokenGenerationAndVerification(masterHandler, bpMgr.get(bpid), null,
           null);
       keys = masterHandler.exportKeys();
-      bpMgr.addKeys(bpid, keys);
+      bpMgr.addKeys(bpid, keys, true);
       tokenGenerationAndVerification(masterHandler, bpMgr.get(bpid),
           new StorageType[]{StorageType.DEFAULT}, new String[]{"DS-9001"});
       tokenGenerationAndVerification(masterHandler, bpMgr.get(bpid), null,
@@ -529,7 +536,7 @@ public class TestBlockToken {
       }
       Token<BlockTokenIdentifier> token = locatedBlocks.getLastLocatedBlock()
           .getBlockToken();
-      Assertions.assertEquals(BlockTokenIdentifier.KIND_NAME, token.getKind());
+      assertEquals(BlockTokenIdentifier.KIND_NAME, token.getKind());
       out.close();
     } finally {
       cluster.shutdown();
@@ -861,10 +868,9 @@ public class TestBlockToken {
       int rangeStart = nnIdx * interval;
       for(int i = 0; i < interval * 3; i++) {
         int serialNo = sm.getSerialNoForTesting();
-        assertTrue(
-            serialNo >= rangeStart && serialNo < (rangeStart + interval),
-                "serialNo " + serialNo + " is not in the designated range: [" +
-                rangeStart + ", " + (rangeStart + interval) + ")");
+        assertTrue(serialNo >= rangeStart && serialNo < (rangeStart + interval),
+            "serialNo " + serialNo + " is not in the designated range: [" + rangeStart
+                + ", " + (rangeStart + interval) + ")");
         sm.updateKeys();
       }
     }

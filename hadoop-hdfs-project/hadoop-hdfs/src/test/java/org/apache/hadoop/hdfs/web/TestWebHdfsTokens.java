@@ -36,7 +36,14 @@ import static org.apache.hadoop.hdfs.DFSConfigKeys.DFS_NAMENODE_KERBEROS_PRINCIP
 import static org.apache.hadoop.hdfs.DFSConfigKeys.DFS_NAMENODE_KEYTAB_FILE_KEY;
 import static org.apache.hadoop.hdfs.DFSConfigKeys.DFS_WEB_AUTHENTICATION_KERBEROS_PRINCIPAL_KEY;
 import static org.apache.hadoop.hdfs.DFSConfigKeys.IGNORE_SECURE_PORTS_FOR_TESTING_KEY;
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNotSame;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertSame;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.fail;
 import static org.mockito.Mockito.*;
 
 import java.io.File;
@@ -75,7 +82,10 @@ import org.apache.hadoop.security.token.SecretManager.InvalidToken;
 import org.apache.hadoop.test.GenericTestUtils;
 import org.apache.hadoop.test.Whitebox;
 import org.apache.hadoop.security.token.Token;
-import org.junit.jupiter.api.*;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.Timeout;
 
 public class TestWebHdfsTokens {
   private static final String PREFIX = "hadoop.http.authentication.";
@@ -184,7 +194,7 @@ public class TestWebHdfsTokens {
   }
 
   @Test
-  @Timeout(value = 5000, unit = TimeUnit.MILLISECONDS)
+  @Timeout(value = 5)
   public void testTokenForNonTokenOp() throws IOException {
     initEnv();
     WebHdfsFileSystem fs = spyWebhdfsInSecureSetup();
@@ -206,21 +216,21 @@ public class TestWebHdfsTokens {
   }
 
   @Test
-  @Timeout(value = 5000, unit = TimeUnit.MILLISECONDS)
+  @Timeout(value = 5)
   public void testNoTokenForGetToken() throws IOException {
     initEnv();
     checkNoTokenForOperation(GetOpParam.Op.GETDELEGATIONTOKEN);
   }
 
   @Test
-  @Timeout(value = 5000, unit = TimeUnit.MILLISECONDS)
+  @Timeout(value = 5)
   public void testNoTokenForRenewToken() throws IOException {
     initEnv();
     checkNoTokenForOperation(PutOpParam.Op.RENEWDELEGATIONTOKEN);
   }
 
   @Test
-  @Timeout(value = 5000, unit = TimeUnit.MILLISECONDS)
+  @Timeout(value = 5)
   public void testNoTokenForCancelToken() throws IOException {
     initEnv();
     checkNoTokenForOperation(PutOpParam.Op.CANCELDELEGATIONTOKEN);
@@ -239,7 +249,7 @@ public class TestWebHdfsTokens {
   }
 
   @Test
-  @Timeout(value = 10000, unit = TimeUnit.MILLISECONDS)
+  @Timeout(value = 10)
   public void testGetOpRequireAuth() {
     for (HttpOpParam.Op op : GetOpParam.Op.values()) {
       boolean expect = (op == GetOpParam.Op.GETDELEGATIONTOKEN);
@@ -248,7 +258,7 @@ public class TestWebHdfsTokens {
   }
 
   @Test
-  @Timeout(value = 10000, unit = TimeUnit.MILLISECONDS)
+  @Timeout(value = 10)
   public void testPutOpRequireAuth() {
     for (HttpOpParam.Op op : PutOpParam.Op.values()) {
       boolean expect = (op == PutOpParam.Op.RENEWDELEGATIONTOKEN || op == PutOpParam.Op.CANCELDELEGATIONTOKEN);
@@ -257,7 +267,7 @@ public class TestWebHdfsTokens {
   }
 
   @Test
-  @Timeout(value = 10000, unit = TimeUnit.MILLISECONDS)
+  @Timeout(value = 10)
   public void testPostOpRequireAuth() {
     for (HttpOpParam.Op op : PostOpParam.Op.values()) {
       assertFalse(op.getRequireAuth());
@@ -265,7 +275,7 @@ public class TestWebHdfsTokens {
   }
 
   @Test
-  @Timeout(value = 10000, unit = TimeUnit.MILLISECONDS)
+  @Timeout(value = 10)
   public void testDeleteOpRequireAuth() {
     for (HttpOpParam.Op op : DeleteOpParam.Op.values()) {
       assertFalse(op.getRequireAuth());
@@ -343,7 +353,7 @@ public class TestWebHdfsTokens {
       };
       Whitebox.setInternalState(fs, "connectionFactory", factory);
       Token<?> token1 = fs.getDelegationToken();
-      Assertions.assertEquals(new Text("bar"), token1.getKind());
+      assertEquals(new Text("bar"), token1.getKind());
 
       final HttpOpParam.Op op = GetOpParam.Op.GETDELEGATIONTOKEN;
       Token<DelegationTokenIdentifier> token2 =
@@ -356,8 +366,8 @@ public class TestWebHdfsTokens {
             }
           }.run();
 
-      Assertions.assertEquals(new Text("bar"), token2.getKind());
-      Assertions.assertEquals(new Text("foo"), token2.getService());
+      assertEquals(new Text("bar"), token2.getKind());
+      assertEquals(new Text("foo"), token2.getService());
     } finally {
       if (cluster != null) {
         cluster.shutdown();
@@ -380,14 +390,14 @@ public class TestWebHdfsTokens {
       });
 
     // verify token ops don't get a token
-    Assertions.assertNull(fs.getRenewToken());
+    assertNull(fs.getRenewToken());
     Token<?> token = fs.getDelegationToken(null);
     fs.renewDelegationToken(token);
     fs.cancelDelegationToken(token);
     verify(fs, never()).getDelegationToken();
     verify(fs, never()).replaceExpiredDelegationToken();
     verify(fs, never()).setDelegationToken(any());
-    Assertions.assertNull(fs.getRenewToken());
+    assertNull(fs.getRenewToken());
     reset(fs);
 
     // verify first non-token op gets a token
@@ -398,9 +408,9 @@ public class TestWebHdfsTokens {
     verify(fs, times(1)).getDelegationToken(any());
     verify(fs, times(1)).setDelegationToken(any());
     token = fs.getRenewToken();
-    Assertions.assertNotNull(token);      
-    Assertions.assertEquals(testUser, getTokenOwner(token));
-    Assertions.assertEquals(fs.getTokenKind(), token.getKind());
+    assertNotNull(token);
+    assertEquals(testUser, getTokenOwner(token));
+    assertEquals(fs.getTokenKind(), token.getKind());
     reset(fs);
 
     // verify prior token is reused
@@ -410,9 +420,9 @@ public class TestWebHdfsTokens {
     verify(fs, never()).getDelegationToken(anyString());
     verify(fs, never()).setDelegationToken(any());
     Token<?> token2 = fs.getRenewToken();
-    Assertions.assertNotNull(token2);
-    Assertions.assertEquals(fs.getTokenKind(), token.getKind());
-    Assertions.assertSame(token, token2);
+    assertNotNull(token2);
+    assertEquals(fs.getTokenKind(), token.getKind());
+    assertSame(token, token2);
     reset(fs);
 
     // verify renew of expired token fails w/o getting a new token
@@ -420,37 +430,37 @@ public class TestWebHdfsTokens {
     fs.cancelDelegationToken(token);
     try {
       fs.renewDelegationToken(token);
-      Assertions.fail("should have failed");
+      fail("should have failed");
     } catch (InvalidToken it) {
     } catch (Exception ex) {
-      Assertions.fail("wrong exception:"+ex);
+      fail("wrong exception:"+ex);
     }
     verify(fs, never()).getDelegationToken();
     verify(fs, never()).replaceExpiredDelegationToken();
     verify(fs, never()).getDelegationToken(anyString());
     verify(fs, never()).setDelegationToken(any());
     token2 = fs.getRenewToken();
-    Assertions.assertNotNull(token2);
-    Assertions.assertEquals(fs.getTokenKind(), token.getKind());
-    Assertions.assertSame(token, token2);
+    assertNotNull(token2);
+    assertEquals(fs.getTokenKind(), token.getKind());
+    assertSame(token, token2);
     reset(fs);
 
     // verify cancel of expired token fails w/o getting a new token
     try {
       fs.cancelDelegationToken(token);
-      Assertions.fail("should have failed");
+      fail("should have failed");
     } catch (InvalidToken it) {
     } catch (Exception ex) {
-      Assertions.fail("wrong exception:"+ex);
+      fail("wrong exception:"+ex);
     }
     verify(fs, never()).getDelegationToken();
     verify(fs, never()).replaceExpiredDelegationToken();
     verify(fs, never()).getDelegationToken(anyString());
     verify(fs, never()).setDelegationToken(any());
     token2 = fs.getRenewToken();
-    Assertions.assertNotNull(token2);
-    Assertions.assertEquals(fs.getTokenKind(), token.getKind());
-    Assertions.assertSame(token, token2);
+    assertNotNull(token2);
+    assertEquals(fs.getTokenKind(), token.getKind());
+    assertSame(token, token2);
     reset(fs);
 
     // verify an expired token is replaced with a new token
@@ -462,10 +472,10 @@ public class TestWebHdfsTokens {
     verify(fs, times(1)).getDelegationToken(null);
     verify(fs, times(1)).setDelegationToken(any());
     token2 = fs.getRenewToken();
-    Assertions.assertNotNull(token2);
-    Assertions.assertNotSame(token, token2);
-    Assertions.assertEquals(fs.getTokenKind(), token.getKind());
-    Assertions.assertEquals(testUser, getTokenOwner(token2));
+    assertNotNull(token2);
+    assertNotSame(token, token2);
+    assertEquals(fs.getTokenKind(), token.getKind());
+    assertEquals(testUser, getTokenOwner(token2));
     reset(fs);
 
     // verify with open because it's a little different in how it
@@ -479,10 +489,10 @@ public class TestWebHdfsTokens {
     verify(fs, times(1)).getDelegationToken(null);
     verify(fs, times(1)).setDelegationToken(any());
     token2 = fs.getRenewToken();
-    Assertions.assertNotNull(token2);
-    Assertions.assertNotSame(token, token2);
-    Assertions.assertEquals(fs.getTokenKind(), token.getKind());
-    Assertions.assertEquals(testUser, getTokenOwner(token2));
+    assertNotNull(token2);
+    assertNotSame(token, token2);
+    assertEquals(fs.getTokenKind(), token.getKind());
+    assertEquals(testUser, getTokenOwner(token2));
     reset(fs);
 
     // verify fs close cancels the token
@@ -502,16 +512,16 @@ public class TestWebHdfsTokens {
         return spy((WebHdfsFileSystem) FileSystem.newInstance(uri, clusterConf));
       }
     });
-    Assertions.assertNull(fs.getRenewToken());
+    assertNull(fs.getRenewToken());
     fs.getFileStatus(new Path("/"));
     verify(fs, times(1)).getDelegationToken();
     verify(fs, never()).replaceExpiredDelegationToken();
     verify(fs, never()).getDelegationToken(anyString());
     verify(fs, times(1)).setDelegationToken(eq(token));
     token2 = fs.getRenewToken();
-    Assertions.assertNotNull(token2);
-    Assertions.assertEquals(fs.getTokenKind(), token.getKind());
-    Assertions.assertSame(token, token2);
+    assertNotNull(token2);
+    assertEquals(fs.getTokenKind(), token.getKind());
+    assertSame(token, token2);
     reset(fs);
 
     // verify it reuses the prior ugi token
@@ -521,9 +531,9 @@ public class TestWebHdfsTokens {
     verify(fs, never()).getDelegationToken(anyString());
     verify(fs, never()).setDelegationToken(any());
     token2 = fs.getRenewToken();
-    Assertions.assertNotNull(token2);
-    Assertions.assertEquals(fs.getTokenKind(), token.getKind());
-    Assertions.assertSame(token, token2);
+    assertNotNull(token2);
+    assertEquals(fs.getTokenKind(), token.getKind());
+    assertSame(token, token2);
     reset(fs);
 
     // verify an expired ugi token is not replaced with a new token if the
@@ -532,19 +542,19 @@ public class TestWebHdfsTokens {
     for (int i=0; i<2; i++) {
       try {
         fs.getFileStatus(new Path("/"));
-        Assertions.fail("didn't fail");
+        fail("didn't fail");
       } catch (InvalidToken it) {
       } catch (Exception ex) {
-        Assertions.fail("wrong exception:"+ex);
+        fail("wrong exception:"+ex);
       }
       verify(fs, times(1)).getDelegationToken();
       verify(fs, times(1)).replaceExpiredDelegationToken();
       verify(fs, never()).getDelegationToken(anyString());
       verify(fs, never()).setDelegationToken(any());
       token2 = fs.getRenewToken();
-      Assertions.assertNotNull(token2);
-      Assertions.assertEquals(fs.getTokenKind(), token.getKind());
-      Assertions.assertSame(token, token2);
+      assertNotNull(token2);
+      assertEquals(fs.getTokenKind(), token.getKind());
+      assertSame(token, token2);
       reset(fs);
     }
     
@@ -559,9 +569,9 @@ public class TestWebHdfsTokens {
     verify(fs, never()).getDelegationToken(anyString());
     verify(fs, times(1)).setDelegationToken(eq(token));
     token2 = fs.getRenewToken();
-    Assertions.assertNotNull(token2);
-    Assertions.assertEquals(fs.getTokenKind(), token.getKind());
-    Assertions.assertSame(token, token2);
+    assertNotNull(token2);
+    assertEquals(fs.getTokenKind(), token.getKind());
+    assertSame(token, token2);
     reset(fs);
 
     // verify fs close does NOT cancel the ugi token

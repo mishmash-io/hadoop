@@ -34,9 +34,10 @@ import org.apache.hadoop.fs.s3a.WriteOperationHelper;
 import org.apache.hadoop.fs.s3a.api.RequestFactory;
 import org.apache.hadoop.fs.statistics.IOStatistics;
 import org.apache.hadoop.fs.store.audit.AuditSpan;
+import org.apache.hadoop.test.tags.ScaleTest;
 import org.apache.hadoop.util.functional.RemoteIterators;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.assertj.core.api.Assertions;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -52,8 +53,6 @@ import java.util.concurrent.Executors;
 import software.amazon.awssdk.services.s3.model.PutObjectRequest;
 import software.amazon.awssdk.services.s3.model.PutObjectResponse;
 
-import static org.apache.hadoop.fs.s3a.Constants.DIRECTORY_MARKER_POLICY;
-import static org.apache.hadoop.fs.s3a.Constants.DIRECTORY_MARKER_POLICY_KEEP;
 import static org.apache.hadoop.fs.s3a.Statistic.*;
 import static org.apache.hadoop.fs.s3a.S3ATestUtils.*;
 import static org.apache.hadoop.fs.contract.ContractTestUtils.*;
@@ -70,6 +69,7 @@ import static org.apache.hadoop.fs.statistics.StoreStatisticNames.OBJECT_LIST_RE
 /**
  * Test the performance of listing files/directories.
  */
+@ScaleTest
 public class ITestS3ADirectoryPerformance extends S3AScaleTestBase {
   private static final Logger LOG = LoggerFactory.getLogger(
       ITestS3ADirectoryPerformance.class);
@@ -126,9 +126,9 @@ public class ITestS3ADirectoryPerformance extends S3AScaleTestBase {
           listContinueRequests,
           listStatusCalls,
           getFileStatusCalls);
-      assertEquals("Files found in listFiles(recursive=true) " +
-              " created=" + created + " listed=" + treewalkResults,
-          created.getFileCount(), treewalkResults.getFileCount());
+      assertEquals(created.getFileCount(), treewalkResults.getFileCount(),
+          "Files found in listFiles(recursive=true) " +
+          " created=" + created + " listed=" + treewalkResults);
 
       describe("Listing files via listFiles(recursive=true)");
       // listFiles() does the recursion internally
@@ -138,9 +138,9 @@ public class ITestS3ADirectoryPerformance extends S3AScaleTestBase {
           fs.listFiles(listDir, true));
 
       listFilesRecursiveTimer.end("listFiles(recursive=true) of %s", created);
-      assertEquals("Files found in listFiles(recursive=true) " +
-          " created=" + created  + " listed=" + listFilesResults,
-          created.getFileCount(), listFilesResults.getFileCount());
+      assertEquals(created.getFileCount(), listFilesResults.getFileCount(),
+          "Files found in listFiles(recursive=true) " +
+          " created=" + created  + " listed=" + listFilesResults);
 
       // only two list operations should have taken place
       print(LOG,
@@ -149,7 +149,7 @@ public class ITestS3ADirectoryPerformance extends S3AScaleTestBase {
           listContinueRequests,
           listStatusCalls,
           getFileStatusCalls);
-      assertEquals(listRequests.toString(), 1, listRequests.diff());
+      assertEquals(1, listRequests.diff(), listRequests.toString());
       reset(metadataRequests,
           listRequests,
           listContinueRequests,
@@ -172,21 +172,21 @@ public class ITestS3ADirectoryPerformance extends S3AScaleTestBase {
           listContinueRequests,
           listStatusCalls,
           getFileStatusCalls);
-      assertEquals(listRequests.toString(), 2, listRequests.diff());
+      assertEquals(2, listRequests.diff(), listRequests.toString());
       reset(metadataRequests,
           listRequests,
           listContinueRequests,
           listStatusCalls,
           getFileStatusCalls);
 
-      assertTrue("Root directory count should be > test path",
-          rootPathSummary.getDirectoryCount() > testPathSummary.getDirectoryCount());
-      assertTrue("Root file count should be >= to test path",
-          rootPathSummary.getFileCount() >= testPathSummary.getFileCount());
-      assertEquals("Incorrect directory count", created.getDirCount() + 1,
-          testPathSummary.getDirectoryCount());
-      assertEquals("Incorrect file count", created.getFileCount(),
-          testPathSummary.getFileCount());
+      assertTrue(rootPathSummary.getDirectoryCount() > testPathSummary.getDirectoryCount(),
+          "Root directory count should be > test path");
+      assertTrue(rootPathSummary.getFileCount() >= testPathSummary.getFileCount(),
+          "Root file count should be >= to test path");
+      assertEquals(created.getDirCount() + 1,
+          testPathSummary.getDirectoryCount(), "Incorrect directory count");
+      assertEquals(created.getFileCount(),
+          testPathSummary.getFileCount(), "Incorrect file count");
 
     } finally {
       describe("deletion");
@@ -227,11 +227,6 @@ public class ITestS3ADirectoryPerformance extends S3AScaleTestBase {
     final Configuration conf =
             getConfigurationWithConfiguredBatchSize(batchSize);
 
-    removeBaseAndBucketOverrides(conf,
-        DIRECTORY_MARKER_POLICY);
-    // force directory markers = keep to save delete requests on every
-    // file created.
-    conf.set(DIRECTORY_MARKER_POLICY, DIRECTORY_MARKER_POLICY_KEEP);
     S3AFileSystem fs = (S3AFileSystem) FileSystem.get(dir.toUri(), conf);
 
     final List<String> originalListOfFiles = new ArrayList<>();

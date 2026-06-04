@@ -17,18 +17,17 @@
  */
 package org.apache.hadoop.io.erasurecode;
 
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.Timeout;
+
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
 
 import java.util.HashMap;
 import java.util.Map;
 import java.util.TreeMap;
-import java.util.concurrent.TimeUnit;
 
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.Timeout;
-
-@Timeout(value=30000, unit=TimeUnit.MILLISECONDS)
+@Timeout(300)
 public class TestECSchema {
 
   @Test

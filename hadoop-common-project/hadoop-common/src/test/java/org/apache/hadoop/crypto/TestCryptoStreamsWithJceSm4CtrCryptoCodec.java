@@ -21,6 +21,7 @@ import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.junit.jupiter.api.BeforeAll;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.CommonConfigurationKeysPublic;
+import org.junit.jupiter.api.BeforeAll;
 
 import static org.apache.hadoop.fs.CommonConfigurationKeysPublic.
     HADOOP_SECURITY_CRYPTO_CIPHER_SUITE_KEY;

@@ -21,7 +21,9 @@ package org.apache.hadoop.hdfs.server.namenode;
 import static org.apache.hadoop.hdfs.server.namenode.NNStorage.getFinalizedEditsFileName;
 import static org.apache.hadoop.hdfs.server.namenode.NNStorage.getImageFileName;
 import static org.apache.hadoop.hdfs.server.namenode.NNStorage.getInProgressEditsFileName;
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.spy;
@@ -202,12 +204,12 @@ public class TestStorageRestore {
         "Should not have any image in an edits-only directory");
 
     // Should have finalized logs in the directory that didn't fail
-    assertTrue(new File(path1, "current/" + getFinalizedEditsFileName(1,4)).exists(),
+    assertTrue(new File(path1, "current/" + getFinalizedEditsFileName(1, 4)).exists(),
         "Should have finalized logs in the directory that didn't fail");
     // Should not have finalized logs in the failed directories
-    assertFalse(new File(path2, "current/" + getFinalizedEditsFileName(1,4)).exists(),
+    assertFalse(new File(path2, "current/" + getFinalizedEditsFileName(1, 4)).exists(),
         "Should not have finalized logs in the failed directories");
-    assertFalse(new File(path3, "current/" + getFinalizedEditsFileName(1,4)).exists(),
+    assertFalse(new File(path3, "current/" + getFinalizedEditsFileName(1, 4)).exists(),
         "Should not have finalized logs in the failed directories");
     
     // The new log segment should be in all of the directories.

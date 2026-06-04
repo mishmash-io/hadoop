@@ -78,7 +78,7 @@ public class TestSnapshottableDirListing {
    * Test listing all the snapshottable directories
    */
   @Test
-  @Timeout(value = 60000, unit = TimeUnit.MILLISECONDS)
+  @Timeout(value = 60)
   public void testListSnapshottableDir() throws Exception {
     cluster.getNamesystem().getSnapshotManager().setAllowNestedSnapshots(true);
 
@@ -177,7 +177,7 @@ public class TestSnapshottableDirListing {
    * that are owned by the user are listed.
    */
   @Test
-  @Timeout(value = 60000, unit = TimeUnit.MILLISECONDS)
+  @Timeout(value = 60)
   public void testListWithDifferentUser() throws Exception {
     cluster.getNamesystem().getSnapshotManager().setAllowNestedSnapshots(true);
 

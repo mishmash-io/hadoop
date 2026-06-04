@@ -58,8 +58,11 @@ import static org.apache.hadoop.fs.CommonConfigurationKeysPublic.IPC_CLIENT_CONN
 import static org.apache.hadoop.fs.FileSystem.TRASH_PREFIX;
 
 import org.apache.hadoop.test.LambdaTestUtils;
-import org.junit.jupiter.api.*;
-
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
 
 import org.slf4j.Logger;
@@ -403,11 +406,9 @@ public class TestViewFileSystemHdfs extends ViewFileSystemBaseTest {
       for (final URI testUri : testUris) {
         final FileSystem fs = FileSystem.get(testUri, conf);
         fs.setTimes(testFile, 1L, 1L);
-        assertEquals(1L,
-            fs.getFileStatus(testFile).getModificationTime(),
+        assertEquals(1L, fs.getFileStatus(testFile).getModificationTime(),
             testUri + "Set mtime failed!");
-        assertEquals(expectedMtime,
-            nfly.getFileStatus(testFile).getModificationTime(),
+        assertEquals(expectedMtime, nfly.getFileStatus(testFile).getModificationTime(),
             "nfly file status wrong");
         FSDataInputStream fsDis2 = null;
         try {
@@ -415,8 +416,7 @@ public class TestViewFileSystemHdfs extends ViewFileSystemBaseTest {
           assertEquals(testString, fsDis2.readUTF(), "Wrong file content");
           // repair is done, now trying via normal fs
           //
-          assertEquals(expectedMtime,
-              fs.getFileStatus(testFile).getModificationTime(),
+          assertEquals(expectedMtime, fs.getFileStatus(testFile).getModificationTime(),
               "Repair most recent failed!");
         } finally {
           IOUtils.cleanupWithLogger(LOG, fsDis2);

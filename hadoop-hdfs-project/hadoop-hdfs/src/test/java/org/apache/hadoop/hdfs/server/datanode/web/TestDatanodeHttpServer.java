@@ -31,16 +31,20 @@ import org.apache.hadoop.fs.FileUtil;
 import org.apache.hadoop.hdfs.DFSConfigKeys;
 import org.apache.hadoop.hdfs.web.URLConnectionFactory;
 import org.apache.hadoop.http.HttpConfig;
+import org.apache.hadoop.http.HttpConfig.Policy;
 import org.apache.hadoop.net.NetUtils;
 import org.apache.hadoop.security.ssl.KeyStoreTestUtil;
 import org.apache.hadoop.test.GenericTestUtils;
 import org.junit.jupiter.api.AfterAll;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.ParameterizedClass;
 import org.junit.jupiter.params.provider.MethodSource;
 
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
+@ParameterizedClass
+@MethodSource("policy")
 public class TestDatanodeHttpServer {
   private static final String BASEDIR = GenericTestUtils
       .getTempPath(TestDatanodeHttpServer.class.getSimpleName());
@@ -53,6 +57,13 @@ public class TestDatanodeHttpServer {
     Object[][] params = new Object[][] {{HttpConfig.Policy.HTTP_ONLY},
         {HttpConfig.Policy.HTTPS_ONLY}, {HttpConfig.Policy.HTTP_AND_HTTPS}};
     return Arrays.asList(params);
+  }
+
+  private final HttpConfig.Policy policy;
+
+  public TestDatanodeHttpServer(Policy policy) {
+    super();
+    this.policy = policy;
   }
 
   @BeforeAll
@@ -78,10 +89,8 @@ public class TestDatanodeHttpServer {
     KeyStoreTestUtil.cleanupSSLConfig(keystoresDir, sslConfDir);
   }
 
-  @ParameterizedTest
-  @MethodSource("policy")
   @Test
-  public void testHttpPolicy(HttpConfig.Policy policy) throws Exception {
+  public void testHttpPolicy() throws Exception {
     conf.set(DFSConfigKeys.DFS_HTTP_POLICY_KEY, policy.name());
     conf.set(DFSConfigKeys.DFS_DATANODE_HTTP_ADDRESS_KEY, "localhost:0");
     conf.set(DFSConfigKeys.DFS_DATANODE_HTTPS_ADDRESS_KEY, "localhost:0");
@@ -91,14 +100,14 @@ public class TestDatanodeHttpServer {
       server = new DatanodeHttpServer(conf, null, null);
       server.start();
 
-      Assertions.assertTrue(implies(policy.isHttpEnabled(),
+      assertTrue(implies(policy.isHttpEnabled(),
           canAccess("http", server.getHttpAddress())));
-      Assertions.assertTrue(implies(!policy.isHttpEnabled(),
+      assertTrue(implies(!policy.isHttpEnabled(),
           server.getHttpAddress() == null));
 
-      Assertions.assertTrue(implies(policy.isHttpsEnabled(),
+      assertTrue(implies(policy.isHttpsEnabled(),
           canAccess("https", server.getHttpsAddress())));
-      Assertions.assertTrue(implies(!policy.isHttpsEnabled(),
+      assertTrue(implies(!policy.isHttpsEnabled(),
           server.getHttpsAddress() == null));
 
     } finally {
@@ -116,7 +125,7 @@ public class TestDatanodeHttpServer {
       URL url = new URL(scheme + "://" + NetUtils.getHostPortString(addr));
       URLConnection conn = connectionFactory.openConnection(url);
       conn.connect();
-      Assertions.assertTrue(conn instanceof java.net.HttpURLConnection);
+      assertTrue(conn instanceof java.net.HttpURLConnection);
       java.net.HttpURLConnection httpConn = (java.net.HttpURLConnection) conn;
       if (httpConn.getResponseCode() != 200) {
         return false;

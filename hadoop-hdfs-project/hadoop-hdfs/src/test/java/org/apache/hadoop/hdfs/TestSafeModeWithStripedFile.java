@@ -36,9 +36,11 @@ import java.io.IOException;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
-@Timeout(value=300000, unit=TimeUnit.MILLISECONDS)
+@Timeout(300)
 public class TestSafeModeWithStripedFile {
 
   private ErasureCodingPolicy ecPolicy;

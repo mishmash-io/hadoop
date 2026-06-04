@@ -24,7 +24,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import org.assertj.core.api.Assertions;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.hadoop.fs.azurebfs.oauth2.AccessTokenProvider;
@@ -34,19 +34,15 @@ import org.apache.hadoop.fs.azurebfs.oauth2.MsiTokenProvider;
 import org.apache.hadoop.fs.azurebfs.services.ExponentialRetryPolicy;
 
 import static org.apache.hadoop.fs.azurebfs.constants.AbfsHttpConstants.HTTP_TOO_MANY_REQUESTS;
-import static org.apache.hadoop.fs.azurebfs.constants.FileSystemConfigurations.DEFAULT_AZURE_OAUTH_TOKEN_FETCH_RETRY_MAX_ATTEMPTS;
-import static org.junit.Assume.assumeThat;
-import static org.hamcrest.CoreMatchers.is;
-import static org.hamcrest.CoreMatchers.not;
-import static org.hamcrest.Matchers.isEmptyOrNullString;
-import static org.hamcrest.Matchers.isEmptyString;
-
 import static org.apache.hadoop.fs.azurebfs.constants.AuthConfigurations.DEFAULT_FS_AZURE_ACCOUNT_OAUTH_MSI_AUTHORITY;
 import static org.apache.hadoop.fs.azurebfs.constants.AuthConfigurations.DEFAULT_FS_AZURE_ACCOUNT_OAUTH_MSI_ENDPOINT;
 import static org.apache.hadoop.fs.azurebfs.constants.ConfigurationKeys.FS_AZURE_ACCOUNT_OAUTH_CLIENT_ID;
 import static org.apache.hadoop.fs.azurebfs.constants.ConfigurationKeys.FS_AZURE_ACCOUNT_OAUTH_MSI_AUTHORITY;
 import static org.apache.hadoop.fs.azurebfs.constants.ConfigurationKeys.FS_AZURE_ACCOUNT_OAUTH_MSI_ENDPOINT;
 import static org.apache.hadoop.fs.azurebfs.constants.ConfigurationKeys.FS_AZURE_ACCOUNT_OAUTH_MSI_TENANT;
+import static org.apache.hadoop.fs.azurebfs.constants.FileSystemConfigurations.DEFAULT_AZURE_OAUTH_TOKEN_FETCH_RETRY_MAX_ATTEMPTS;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assumptions.assumeThat;
 
 /**
  * Test MsiTokenProvider.
@@ -61,14 +57,14 @@ public final class ITestAbfsMsiTokenProvider
   @Test
   public void test() throws IOException {
     AbfsConfiguration conf = getConfiguration();
-    assumeThat(conf.get(FS_AZURE_ACCOUNT_OAUTH_MSI_ENDPOINT),
-        not(isEmptyOrNullString()));
-    assumeThat(conf.get(FS_AZURE_ACCOUNT_OAUTH_MSI_TENANT),
-        not(isEmptyOrNullString()));
-    assumeThat(conf.get(FS_AZURE_ACCOUNT_OAUTH_CLIENT_ID),
-        not(isEmptyOrNullString()));
-    assumeThat(conf.get(FS_AZURE_ACCOUNT_OAUTH_MSI_AUTHORITY),
-        not(isEmptyOrNullString()));
+    assumeThat(conf.get(FS_AZURE_ACCOUNT_OAUTH_MSI_ENDPOINT))
+        .isNotNull().isNotEmpty();
+    assumeThat(conf.get(FS_AZURE_ACCOUNT_OAUTH_MSI_TENANT))
+        .isNotNull().isNotEmpty();
+    assumeThat(conf.get(FS_AZURE_ACCOUNT_OAUTH_CLIENT_ID))
+        .isNotNull().isNotEmpty();
+    assumeThat(conf.get(FS_AZURE_ACCOUNT_OAUTH_MSI_AUTHORITY))
+        .isNotNull().isNotEmpty();
 
     String tenantGuid = conf
         .getPasswordString(FS_AZURE_ACCOUNT_OAUTH_MSI_TENANT);
@@ -84,8 +80,8 @@ public final class ITestAbfsMsiTokenProvider
 
     AzureADToken token = null;
     token = tokenProvider.getToken();
-    assertThat(token.getAccessToken(), not(isEmptyString()));
-    assertThat(token.getExpiry().after(new Date()), is(true));
+    assertThat(token.getAccessToken()).isNotEmpty();
+    assertThat(token.getExpiry().after(new Date())).isEqualTo(true);
   }
 
   private String getTrimmedPasswordString(AbfsConfiguration conf, String key,
@@ -151,7 +147,7 @@ public final class ITestAbfsMsiTokenProvider
     // Trigger token acquisition
     AzureADToken token = tokenProvider.getToken();
     // Assertions
-    assertEquals("fake-token", token.getAccessToken());
+    assertThat(token.getAccessToken()).isEqualTo("fake-token");
     // If the status code doesn't qualify for retry shouldRetry returns false and the loop ends.
     // It being called multiple times verifies that the retry was done for the throttling status code 429.
     Assertions.assertThat(attemptCounter.get())

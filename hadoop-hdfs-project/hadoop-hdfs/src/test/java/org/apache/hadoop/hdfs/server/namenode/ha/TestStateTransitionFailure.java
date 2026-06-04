@@ -27,7 +27,6 @@ import org.apache.hadoop.fs.CommonConfigurationKeys;
 import org.apache.hadoop.hdfs.MiniDFSCluster;
 import org.apache.hadoop.hdfs.MiniDFSNNTopology;
 import org.apache.hadoop.util.ExitUtil.ExitException;
-
 import org.junit.jupiter.api.Test;
 
 /**

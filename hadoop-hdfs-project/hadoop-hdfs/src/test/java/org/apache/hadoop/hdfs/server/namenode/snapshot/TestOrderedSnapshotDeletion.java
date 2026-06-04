@@ -28,7 +28,10 @@ import org.apache.hadoop.hdfs.MiniDFSCluster;
 import org.apache.hadoop.hdfs.XAttrHelper;
 import org.apache.hadoop.hdfs.server.namenode.INode;
 import org.apache.hadoop.hdfs.server.namenode.XAttrFeature;
-import org.junit.jupiter.api.*;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.Timeout;
 
 import java.io.IOException;
 import java.util.Arrays;
@@ -38,6 +41,10 @@ import java.util.concurrent.TimeUnit;
 
 import static org.apache.hadoop.hdfs.server.common.HdfsServerConstants.XATTR_SNAPSHOT_DELETED;
 import static org.apache.hadoop.hdfs.server.namenode.snapshot.SnapshotManager.DFS_NAMENODE_SNAPSHOT_DELETION_ORDERED;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /**
@@ -69,7 +76,7 @@ public class TestOrderedSnapshotDeletion {
   }
 
   @Test
-  @Timeout(value = 60000, unit = TimeUnit.MILLISECONDS)
+  @Timeout(value = 60)
   public void testOrderedSnapshotDeletion() throws Exception {
     DistributedFileSystem hdfs = cluster.getFileSystem();
     hdfs.mkdirs(snapshottableDir);
@@ -105,28 +112,27 @@ public class TestOrderedSnapshotDeletion {
     final Path snapPathNew =
         SnapshotTestHelper.getSnapshotRoot(snapshottableDir, snapName);
     // Check if the path exists
-    Assertions.assertNotNull(cluster.getFileSystem().getFileStatus(snapPathNew));
+    assertNotNull(cluster.getFileSystem().getFileStatus(snapPathNew));
 
     // Check xAttr for snapshotRoot
     final INode inode = cluster.getNamesystem().getFSDirectory()
         .getINode(snapPathNew.toString());
     final XAttrFeature f = inode.getXAttrFeature();
     final XAttr xAttr = f.getXAttr(XATTR_SNAPSHOT_DELETED);
-    Assertions.assertNotNull(xAttr);
-    Assertions.assertEquals(XATTR_SNAPSHOT_DELETED.substring("system.".length()),
-        xAttr.getName());
-    Assertions.assertEquals(XAttr.NameSpace.SYSTEM, xAttr.getNameSpace());
-    Assertions.assertNull(xAttr.getValue());
+    assertNotNull(xAttr);
+    assertEquals(XATTR_SNAPSHOT_DELETED.substring("system.".length()), xAttr.getName());
+    assertEquals(XAttr.NameSpace.SYSTEM, xAttr.getNameSpace());
+    assertNull(xAttr.getValue());
 
     // Check inode
-    Assertions.assertTrue(inode instanceof Snapshot.Root);
-    Assertions.assertTrue(((Snapshot.Root) inode).isMarkedAsDeleted());
+    assertTrue(inode instanceof Snapshot.Root);
+    assertTrue(((Snapshot.Root) inode).isMarkedAsDeleted());
   }
 
   static void assertNotMarkedAsDeleted(Path snapshotRoot,
       MiniDFSCluster cluster) throws IOException {
     // Check if the path exists
-    Assertions.assertNotNull(cluster.getFileSystem().getFileStatus(snapshotRoot));
+    assertNotNull(cluster.getFileSystem().getFileStatus(snapshotRoot));
 
     // Check xAttr for snapshotRoot
     final INode inode = cluster.getNamesystem().getFSDirectory()
@@ -134,12 +140,12 @@ public class TestOrderedSnapshotDeletion {
     final XAttrFeature f = inode.getXAttrFeature();
     if (f != null) {
       final XAttr xAttr = f.getXAttr(XATTR_SNAPSHOT_DELETED);
-      Assertions.assertNull(xAttr);
+      assertNull(xAttr);
     }
 
     // Check inode
-    Assertions.assertTrue(inode instanceof Snapshot.Root);
-    Assertions.assertFalse(((Snapshot.Root)inode).isMarkedAsDeleted());
+    assertTrue(inode instanceof Snapshot.Root);
+    assertFalse(((Snapshot.Root) inode).isMarkedAsDeleted());
   }
 
   void assertXAttrSet(String snapshot,
@@ -166,7 +172,7 @@ public class TestOrderedSnapshotDeletion {
   }
 
   @Test
-  @Timeout(value = 60000, unit = TimeUnit.MILLISECONDS)
+  @Timeout(value = 60)
   public void testSnapshotXattrPersistence() throws Exception {
     DistributedFileSystem hdfs = cluster.getFileSystem();
     hdfs.mkdirs(snapshottableDir);
@@ -186,7 +192,7 @@ public class TestOrderedSnapshotDeletion {
   }
 
   @Test
-  @Timeout(value = 60000, unit = TimeUnit.MILLISECONDS)
+  @Timeout(value = 60)
   public void testSnapshotXattrWithSaveNameSpace() throws Exception {
     DistributedFileSystem hdfs = cluster.getFileSystem();
     hdfs.mkdirs(snapshottableDir);
@@ -208,7 +214,7 @@ public class TestOrderedSnapshotDeletion {
   }
 
   @Test
-  @Timeout(value = 6000000, unit = TimeUnit.MILLISECONDS)
+  @Timeout(value = 6000)
   public void testOrderedDeletionWithRestart() throws Exception {
     DistributedFileSystem hdfs = cluster.getFileSystem();
     hdfs.mkdirs(snapshottableDir);
@@ -229,7 +235,7 @@ public class TestOrderedSnapshotDeletion {
   }
 
   @Test
-  @Timeout(value = 60000, unit = TimeUnit.MILLISECONDS)
+  @Timeout(value = 60)
   public void testSnapshotXattrWithDisablingXattr() throws Exception {
     DistributedFileSystem hdfs = cluster.getFileSystem();
     hdfs.mkdirs(snapshottableDir);
@@ -259,7 +265,7 @@ public class TestOrderedSnapshotDeletion {
   }
 
   @Test
-  @Timeout(value = 60000, unit = TimeUnit.MILLISECONDS)
+  @Timeout(value = 60)
   public void testSnapshotXAttrWithPreExistingXattrs() throws Exception {
     DistributedFileSystem hdfs = cluster.getFileSystem();
     hdfs.mkdirs(snapshottableDir);

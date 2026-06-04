@@ -24,6 +24,7 @@ import static org.junit.jupiter.api.Assertions.fail;
 import java.io.IOException;
 import java.util.concurrent.atomic.AtomicInteger;
 
+import org.junit.jupiter.api.Test;
 import org.apache.hadoop.test.MultithreadedTestUtil.TestContext;
 import org.apache.hadoop.test.MultithreadedTestUtil.TestingThread;
 import org.apache.hadoop.test.MultithreadedTestUtil.RepeatingTestThread;
@@ -58,8 +59,7 @@ public class TestMultithreadedTestUtil {
     assertEquals(3, threadsRun.get());
     // Test shouldn't have waited the full 30 seconds, since
     // the threads exited faster than that.
-    assertTrue(et - st < 5000,
-        "Test took " + (et - st) + "ms");
+    assertTrue(et - st < 5000, "Test took " + (et - st) + "ms");
   }
 
   @Test
@@ -83,8 +83,7 @@ public class TestMultithreadedTestUtil {
     long et = Time.now();
     // Test shouldn't have waited the full 30 seconds, since
     // the thread throws faster than that
-    assertTrue(et - st < 5000,
-        "Test took " + (et - st) + "ms");
+    assertTrue(et - st < 5000, "Test took " + (et - st) + "ms");
   }
 
   @Test
@@ -108,8 +107,7 @@ public class TestMultithreadedTestUtil {
     long et = Time.now();
     // Test shouldn't have waited the full 30 seconds, since
     // the thread throws faster than that
-    assertTrue(et - st < 5000,
-        "Test took " + (et - st) + "ms");
+    assertTrue(et - st < 5000, "Test took " + (et - st) + "ms");
   }
 
   @Test

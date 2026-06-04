@@ -18,7 +18,10 @@
 
 package org.apache.hadoop.metrics2.lib;
 
-import static org.mockito.Mockito.*;
+import org.junit.jupiter.api.Test;
+import static org.junit.jupiter.api.Assertions.assertSame;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.mockito.Mockito.verify;
 import org.apache.hadoop.metrics2.MetricsCollector;
 import org.apache.hadoop.metrics2.MetricsException;
 import org.apache.hadoop.metrics2.MetricsRecordBuilder;
@@ -81,10 +84,10 @@ public class TestMetricsAnnotations {
     @Metric Integer i0;
   }
 
-  @Test public void testBadFields() {
-    assertThrows(MetricsException.class, () -> {
-      MetricsAnnotations.makeSource(new BadMetrics());
-    });
+  @Test
+  public void testBadFields() {
+    assertThrows(MetricsException.class, () ->
+        MetricsAnnotations.makeSource(new BadMetrics()));
   }
 
   static class MyMetrics2 {
@@ -117,9 +120,8 @@ public class TestMetricsAnnotations {
 
   @Test
   public void testBadMethodWithArgs() {
-    assertThrows(IllegalArgumentException.class, () -> {
-      MetricsAnnotations.makeSource(new BadMetrics2());
-    });
+    assertThrows(IllegalArgumentException.class,
+        ()-> MetricsAnnotations.makeSource(new BadMetrics2()));
   }
 
   static class BadMetrics3 {
@@ -128,9 +130,8 @@ public class TestMetricsAnnotations {
 
   @Test
   public void testBadMethodReturnType() {
-    assertThrows(MetricsException.class, () -> {
-      MetricsAnnotations.makeSource(new BadMetrics3());
-    });
+    assertThrows(MetricsException.class,
+        ()-> MetricsAnnotations.makeSource(new BadMetrics3()));
   }
 
   @Metrics(about="My metrics", context="foo")
@@ -199,19 +200,19 @@ public class TestMetricsAnnotations {
     }
   }
 
-  @Test public void testBadHybrid() {
-    assertThrows(MetricsException.class, () -> {
-      MetricsAnnotations.makeSource(new BadHybridMetrics());
-    });
+  @Test
+  public void testBadHybrid() {
+    assertThrows(MetricsException.class,
+        ()-> MetricsAnnotations.makeSource(new BadHybridMetrics()));
   }
 
   static class EmptyMetrics {
     int foo;
   }
 
-  @Test public void testEmptyMetrics() {
-    assertThrows(MetricsException.class, () -> {
-      MetricsAnnotations.makeSource(new EmptyMetrics());
-    });
+  @Test
+  public void testEmptyMetrics() {
+    assertThrows(MetricsException.class, ()->
+        MetricsAnnotations.makeSource(new EmptyMetrics()));
   }
 }

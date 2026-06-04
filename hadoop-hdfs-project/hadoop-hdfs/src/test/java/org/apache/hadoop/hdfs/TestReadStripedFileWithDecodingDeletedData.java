@@ -36,7 +36,7 @@ import static org.apache.hadoop.hdfs.ReadStripedFileWithDecodingHelper.tearDownC
  * Test online recovery with files with deleted blocks. This test is
  * parameterized.
  */
-@Timeout(value=300000, unit=TimeUnit.MILLISECONDS)
+@Timeout(300)
 public class TestReadStripedFileWithDecodingDeletedData {
   static final Logger LOG =
       LoggerFactory.getLogger(TestReadStripedFileWithDecodingDeletedData.class);
@@ -63,22 +63,22 @@ public class TestReadStripedFileWithDecodingDeletedData {
   private int dataDelNum;
   private int parityDelNum;
 
-  public void initTestReadStripedFileWithDecodingDeletedData(int fileLength, int
-      dataDelNum, int parityDelNum) {
-    this.fileLength = fileLength;
-    this.dataDelNum = dataDelNum;
-    this.parityDelNum = parityDelNum;
+  public void initTestReadStripedFileWithDecodingDeletedData(int pFileLength, int
+      pDataDelNum, int pParityDelNum) {
+    this.fileLength = pFileLength;
+    this.dataDelNum = pDataDelNum;
+    this.parityDelNum = pParityDelNum;
   }
 
   /**
    * Delete tolerable number of block before reading.
    * Verify the decoding works correctly.
    */
-  @MethodSource("getParameters")
   @ParameterizedTest
-  public void testReadCorruptedDataByDeleting(int fileLength, int
-      dataDelNum, int parityDelNum) throws IOException {
-    initTestReadStripedFileWithDecodingDeletedData(fileLength, dataDelNum, parityDelNum);
+  @MethodSource("getParameters")
+  public void testReadCorruptedDataByDeleting(int pFileLength, int
+      pDataDelNum, int pParityDelNum) throws IOException {
+    initTestReadStripedFileWithDecodingDeletedData(pFileLength, pDataDelNum, pParityDelNum);
     String src = "/deleted_" + dataDelNum + "_" + parityDelNum;
     ReadStripedFileWithDecodingHelper.testReadWithBlockCorrupted(cluster,
         dfs, src, fileLength, dataDelNum, parityDelNum, true);

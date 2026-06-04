@@ -27,6 +27,8 @@ import java.util.Arrays;
 import org.apache.hadoop.io.Text;
 import org.junit.jupiter.api.Test;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+
 public class TestLineReader {
 
   /**

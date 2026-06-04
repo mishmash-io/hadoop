@@ -41,7 +41,7 @@ public class TestSwitchMapping extends Assertions {
   public void testStandaloneClassesAssumedMultiswitch() throws Throwable {
     DNSToSwitchMapping mapping = new StandaloneSwitchMapping();
     assertFalse(AbstractDNSToSwitchMapping.isMappingSingleSwitch(mapping),
-                "Expected to be multi switch " + mapping);
+        "Expected to be multi switch " + mapping);
   }
 
 
@@ -56,7 +56,7 @@ public class TestSwitchMapping extends Assertions {
     CachedDNSToSwitchMapping mapping =
         new CachedDNSToSwitchMapping(new StandaloneSwitchMapping());
     assertFalse(mapping.isSingleSwitch(),
-                "Expected to be multi switch " + mapping);
+        "Expected to be multi switch " + mapping);
   }
 
 
@@ -74,11 +74,11 @@ public class TestSwitchMapping extends Assertions {
              scriptname);
     ScriptBasedMapping scriptMapping = new ScriptBasedMapping(conf);
     assertTrue(scriptMapping.toString().contains(scriptname),
-               "Did not find " + scriptname + " in " + scriptMapping);
+        "Did not find " + scriptname + " in " + scriptMapping);
     CachedDNSToSwitchMapping mapping =
         new CachedDNSToSwitchMapping(scriptMapping);
     assertTrue(mapping.toString().contains(scriptname),
-               "Did not find " + scriptname + " in " + mapping);
+        "Did not find " + scriptname + " in " + mapping);
   }
 
   /**
@@ -92,13 +92,11 @@ public class TestSwitchMapping extends Assertions {
     Configuration conf = new Configuration();
     ScriptBasedMapping scriptMapping = new ScriptBasedMapping(conf);
     assertTrue(scriptMapping.toString().contains(ScriptBasedMapping.NO_SCRIPT),
-               "Did not find " + ScriptBasedMapping.NO_SCRIPT
-                   + " in " + scriptMapping);
+        "Did not find " + ScriptBasedMapping.NO_SCRIPT + " in " + scriptMapping);
     CachedDNSToSwitchMapping mapping =
         new CachedDNSToSwitchMapping(scriptMapping);
     assertTrue(mapping.toString().contains(ScriptBasedMapping.NO_SCRIPT),
-               "Did not find " + ScriptBasedMapping.NO_SCRIPT
-                   + " in " + mapping);
+        "Did not find " + ScriptBasedMapping.NO_SCRIPT + " in " + mapping);
   }
 
   @Test

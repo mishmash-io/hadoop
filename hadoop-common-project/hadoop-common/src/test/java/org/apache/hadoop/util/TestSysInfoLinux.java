@@ -29,6 +29,9 @@ import java.util.Random;
 import org.apache.hadoop.test.GenericTestUtils;
 import org.junit.jupiter.api.Test;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+
 /**
  * A JUnit test to test {@link SysInfoLinux}
  * Create the fake /proc/ information and verify the parsing and calculation

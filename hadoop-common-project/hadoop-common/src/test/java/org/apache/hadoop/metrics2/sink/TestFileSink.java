@@ -41,6 +41,7 @@ import org.apache.hadoop.metrics2.lib.MutableGaugeInt;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.Timeout;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public class TestFileSink {
   
@@ -85,7 +86,7 @@ public class TestFileSink {
   }
   
   @Test
-  @Timeout(value=6000, unit=TimeUnit.MILLISECONDS) 
+  @Timeout(value = 6)
   public void testFileSink() throws IOException {
     outFile = getTestTempFile("test-file-sink-", ".out");
     final String outPath = outFile.getAbsolutePath();  

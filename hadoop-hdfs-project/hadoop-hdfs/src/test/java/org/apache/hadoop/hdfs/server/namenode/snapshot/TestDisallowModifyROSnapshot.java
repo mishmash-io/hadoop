@@ -17,8 +17,9 @@
  */
 package org.apache.hadoop.hdfs.server.namenode.snapshot;
 
-import static org.junit.jupiter.api.Assertions.*;
-
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.fail;
 import java.util.ArrayList;
 import java.util.concurrent.TimeUnit;
 
@@ -84,28 +85,31 @@ public class TestDisallowModifyROSnapshot {
   }
 
   @Test
-  @Timeout(value = 60000, unit = TimeUnit.MILLISECONDS)
-  public void testSetReplication() {
-    assertThrows(SnapshotAccessControlException.class, () ->
-      fs.setReplication(objInSnapshot, (short) 1));
+  @Timeout(value = 60)
+  public void testSetReplication() throws Exception {
+    assertThrows(SnapshotAccessControlException.class, () -> {
+      fs.setReplication(objInSnapshot, (short) 1);
+    });
   }
 
   @Test
-  @Timeout(value = 60000, unit = TimeUnit.MILLISECONDS)
-  public void testSetPermission() {
-    assertThrows(SnapshotAccessControlException.class, () ->
-      fs.setPermission(objInSnapshot, new FsPermission("777")));
+  @Timeout(value = 60)
+  public void testSetPermission() throws Exception {
+    assertThrows(SnapshotAccessControlException.class, () -> {
+      fs.setPermission(objInSnapshot, new FsPermission("777"));
+    });
   }
 
   @Test
-  @Timeout(value = 60000, unit = TimeUnit.MILLISECONDS)
-  public void testSetOwner() {
-    assertThrows(SnapshotAccessControlException.class, () ->
-      fs.setOwner(objInSnapshot, "username", "groupname"));
+  @Timeout(value = 60)
+  public void testSetOwner() throws Exception {
+    assertThrows(SnapshotAccessControlException.class, () -> {
+      fs.setOwner(objInSnapshot, "username", "groupname");
+    });
   }
 
   @Test
-  @Timeout(value = 60000, unit = TimeUnit.MILLISECONDS)
+  @Timeout(value = 60)
   public void testRename() throws Exception {
     try {
       fs.rename(objInSnapshot, new Path("/invalid/path"));
@@ -124,29 +128,32 @@ public class TestDisallowModifyROSnapshot {
   }
 
   @Test
-  @Timeout(value = 60000, unit = TimeUnit.MILLISECONDS)
-  public void testDelete() {
-    assertThrows(SnapshotAccessControlException.class, () ->
-      fs.delete(objInSnapshot, true));
+  @Timeout(value = 60)
+  public void testDelete() throws Exception {
+    assertThrows(SnapshotAccessControlException.class, () -> {
+      fs.delete(objInSnapshot, true);
+    });
   }
 
   @Test
-  @Timeout(value = 60000, unit = TimeUnit.MILLISECONDS)
-  public void testQuota() {
-    assertThrows(SnapshotAccessControlException.class, () ->
-      fs.setQuota(objInSnapshot, 100, 100));
+  @Timeout(value = 60)
+  public void testQuota() throws Exception {
+    assertThrows(SnapshotAccessControlException.class, () -> {
+      fs.setQuota(objInSnapshot, 100, 100);
+    });
   }
 
   @Test
-  @Timeout(value = 60000, unit = TimeUnit.MILLISECONDS)
-  public void testSetTime() {
-    assertThrows(SnapshotAccessControlException.class, () ->
-      fs.setTimes(objInSnapshot, 100, 100));
+  @Timeout(value = 60)
+  public void testSetTime() throws Exception {
+    assertThrows(SnapshotAccessControlException.class, () -> {
+      fs.setTimes(objInSnapshot, 100, 100);
+    });
   }
 
   @Test
-  @Timeout(value = 60000, unit = TimeUnit.MILLISECONDS)
-  public void testCreate() {
+  @Timeout(value = 60)
+  public void testCreate() throws Exception {
     assertThrows(SnapshotAccessControlException.class, () -> {
       @SuppressWarnings("deprecation")
       DFSClient dfsclient = new DFSClient(conf);
@@ -155,22 +162,24 @@ public class TestDisallowModifyROSnapshot {
   }
 
   @Test
-  @Timeout(value = 60000, unit = TimeUnit.MILLISECONDS)
-  public void testAppend() {
-    assertThrows(SnapshotAccessControlException.class, () ->
-      fs.append(objInSnapshot, 65535, null));
+  @Timeout(value = 60)
+  public void testAppend() throws Exception {
+    assertThrows(SnapshotAccessControlException.class, () -> {
+      fs.append(objInSnapshot, 65535, null);
+    });
   }
 
   @Test
-  @Timeout(value = 60000, unit = TimeUnit.MILLISECONDS)
-  public void testMkdir() {
-    assertThrows(SnapshotAccessControlException.class, () ->
-      fs.mkdirs(objInSnapshot, new FsPermission("777")));
+  @Timeout(value = 60)
+  public void testMkdir() throws Exception {
+    assertThrows(SnapshotAccessControlException.class, () -> {
+      fs.mkdirs(objInSnapshot, new FsPermission("777"));
+    });
   }
 
   @Test
-  @Timeout(value = 60000, unit = TimeUnit.MILLISECONDS)
-  public void testCreateSymlink() {
+  @Timeout(value = 60)
+  public void testCreateSymlink() throws Exception {
     assertThrows(SnapshotAccessControlException.class, () -> {
       @SuppressWarnings("deprecation")
       DFSClient dfsclient = new DFSClient(conf);

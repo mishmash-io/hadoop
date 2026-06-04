@@ -32,9 +32,17 @@ import java.util.Map;
 
 import org.apache.hadoop.test.GenericTestUtils;
 import org.apache.hadoop.util.HostsFileReader.HostDetails;
+
+import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.fail;
 
 /*
  * Test for HostsFileReader.java
@@ -399,19 +407,18 @@ public class TestHostsFileReader {
         "Details: no. of excluded hosts");
     assertEquals(0, details.getIncludedHosts().size(),
         "Details: no. of included hosts");
-    assertNull(hfp.getLazyLoadedHostDetails(),
-        "Lazy host details should be null");
+    assertNull(hfp.getLazyLoadedHostDetails(), "Lazy host details should be null");
   }
 
   @Test
   public void testFinishRefreshWithoutLazyRefresh() throws IOException {
-    FileWriter efw = new FileWriter(excludesFile);
-    FileWriter ifw = new FileWriter(includesFile);
-    efw.close();
-    ifw.close();
-
-    HostsFileReader hfp = new HostsFileReader(includesFile, excludesFile);
     assertThrows(IllegalStateException.class, () -> {
+      FileWriter efw = new FileWriter(excludesFile);
+      FileWriter ifw = new FileWriter(includesFile);
+      efw.close();
+      ifw.close();
+
+      HostsFileReader hfp = new HostsFileReader(includesFile, excludesFile);
       hfp.finishRefresh();
     });
   }

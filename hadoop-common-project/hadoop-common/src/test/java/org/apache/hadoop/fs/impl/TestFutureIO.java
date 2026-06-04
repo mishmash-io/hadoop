@@ -21,6 +21,9 @@ package org.apache.hadoop.fs.impl;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.atomic.AtomicInteger;
 
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+
 import org.apache.hadoop.test.HadoopTestBase;
 import org.apache.hadoop.util.LambdaUtils;
 import org.junit.jupiter.api.BeforeEach;

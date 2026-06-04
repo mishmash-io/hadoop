@@ -49,8 +49,8 @@ public abstract class AbstractContractDeleteTest extends
     assertPathDoesNotExist("leftover", path);
     ContractTestUtils.rejectRootOperation(path);
     assertFalse(getFileSystem().delete(path, true),
-                "Returned true attempting to recursively delete"
-                + " a nonexistent path " + path);
+        "Returned true attempting to recursively delete"
+        + " a nonexistent path " + path);
   }
 
   @Test
@@ -59,8 +59,8 @@ public abstract class AbstractContractDeleteTest extends
     assertPathDoesNotExist("leftover", path);
     ContractTestUtils.rejectRootOperation(path);
     assertFalse(getFileSystem().delete(path, false),
-                "Returned true attempting to non recursively delete"
-                + " a nonexistent path " + path);
+        "Returned true attempting to non recursively delete"
+        + " a nonexistent path " + path);
   }
 
   @Test

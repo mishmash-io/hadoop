@@ -56,7 +56,7 @@ import static org.apache.hadoop.hdfs.ReadStripedFileWithDecodingHelper.findFirst
 import static org.apache.hadoop.hdfs.ReadStripedFileWithDecodingHelper.initializeCluster;
 import static org.apache.hadoop.hdfs.ReadStripedFileWithDecodingHelper.tearDownCluster;
 
-@Timeout(value=300000, unit=TimeUnit.MILLISECONDS)
+@Timeout(300)
 public class TestReadStripedFileWithDecoding {
   private static final Logger LOG =
       LoggerFactory.getLogger(TestReadStripedFileWithDecoding.class);
@@ -270,8 +270,10 @@ public class TestReadStripedFileWithDecoding {
         }
       }
 
-      GenericTestUtils.waitFor(() -> bm.containsInvalidateBlock(
-            blks[0].getLocations()[0], b) || dnd.containsInvalidateBlock(b), 250, 60000);
+      GenericTestUtils.waitFor(() -> {
+        return bm.containsInvalidateBlock(
+            blks[0].getLocations()[0], b) || dnd.containsInvalidateBlock(b);
+      }, 250, 60000);
       Assertions.assertTrue(bm.containsInvalidateBlock(
           blks[0].getLocations()[0], b) || dnd.containsInvalidateBlock(b));
 

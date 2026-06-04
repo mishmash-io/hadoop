@@ -46,13 +46,18 @@ import org.junit.jupiter.api.TestInfo;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import static org.junit.jupiter.api.Assertions.assertArrayEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
 public class TestCredentialProviderFactory {
   public static final Logger LOG =
       LoggerFactory.getLogger(TestCredentialProviderFactory.class);
 
   @BeforeEach
-  public void announce(TestInfo info) {
-    LOG.info("Running test " + info.getDisplayName());
+  public void announce(TestInfo testInfo) {
+    LOG.info("Running test " + testInfo.getDisplayName());
   }
 
   private static char[] chars = { 'a', 'b', 'c', 'd', 'e', 'f', 'g',
@@ -88,7 +93,7 @@ public class TestCredentialProviderFactory {
     try {
       List<CredentialProvider> providers = 
           CredentialProviderFactory.getProviders(conf);
-      fail("should throw!");
+      assertTrue(false, "should throw!");
     } catch (IOException e) {
       assertEquals("No CredentialProviderFactory for unknown:/// in " +
           CredentialProviderFactory.CREDENTIAL_PROVIDER_PATH,
@@ -103,7 +108,7 @@ public class TestCredentialProviderFactory {
     try {
       List<CredentialProvider> providers = 
           CredentialProviderFactory.getProviders(conf);
-      fail("should throw!");
+      assertTrue(false, "should throw!");
     } catch (IOException e) {
       assertEquals("Bad configuration of " +
           CredentialProviderFactory.CREDENTIAL_PROVIDER_PATH +
@@ -112,7 +117,7 @@ public class TestCredentialProviderFactory {
   }
 
   private static char[] generatePassword(int length) {
-    StringBuffer sb = new StringBuffer();
+    StringBuilder sb = new StringBuilder();
     Random r = new Random();
     for (int i = 0; i < length; i++) {
       sb.append(chars[r.nextInt(chars.length)]);
@@ -141,14 +146,14 @@ public class TestCredentialProviderFactory {
     // try recreating pass
     try {
       provider.createCredentialEntry("pass", passwd);
-      fail("should throw");
+      assertTrue(false, "should throw");
     } catch (IOException e) {
       assertEquals("Credential pass already exists in " + ourUrl, e.getMessage());
     }
     provider.deleteCredentialEntry("pass");
     try {
       provider.deleteCredentialEntry("pass");
-      fail("should throw");
+      assertTrue(false, "should throw");
     } catch (IOException e) {
       assertEquals("Credential pass does not exist in " + ourUrl, e.getMessage());
     }
@@ -279,7 +284,6 @@ public class TestCredentialProviderFactory {
     FileSystem fs = path.getFileSystem(conf);
     FileStatus s = fs.getFileStatus(path);
     assertEquals("rwxrwxrwx", s.getPermission().toString(),
-        "Permissions should have been retained from the preexisting " +
-        "keystore.");
+        "Permissions should have been retained from the preexisting keystore.");
   }
 }

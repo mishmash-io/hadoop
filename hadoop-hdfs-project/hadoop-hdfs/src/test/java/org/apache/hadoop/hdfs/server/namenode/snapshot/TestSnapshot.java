@@ -17,7 +17,12 @@
  */
 package org.apache.hadoop.hdfs.server.namenode.snapshot;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.fail;
 
 import java.io.File;
 import java.io.IOException;
@@ -297,7 +302,7 @@ public class TestSnapshot {
    * with snapshots
    */
   @Test
-  @Timeout(value = 60000, unit = TimeUnit.MILLISECONDS)
+  @Timeout(value = 60)
   public void testUpdateDirectory() throws Exception {
     Path dir = new Path("/dir");
     Path sub = new Path(dir, "sub");
@@ -352,7 +357,7 @@ public class TestSnapshot {
    * Creating snapshots for a directory that is not snapshottable must fail.
    */
   @Test
-  @Timeout(value = 60000, unit = TimeUnit.MILLISECONDS)
+  @Timeout(value = 60)
   public void testSnapshottableDirectory() throws Exception {
     Path dir = new Path("/TestSnapshot/sub");
     Path file0 = new Path(dir, "file0");
@@ -452,7 +457,7 @@ public class TestSnapshot {
   }
 
   @Test
-  @Timeout(value = 60000, unit = TimeUnit.MILLISECONDS)
+  @Timeout(value = 60)
   public void testSnapshotMtime() throws Exception {
     Path dir = new Path("/dir");
     Path sub = new Path(dir, "sub");
@@ -469,7 +474,7 @@ public class TestSnapshot {
   }
 
   @Test
-  @Timeout(value = 60000, unit = TimeUnit.MILLISECONDS)
+  @Timeout(value = 60)
   public void testRenameSnapshotMtime() throws Exception {
     Path dir = new Path("/dir");
     Path sub = new Path(dir, "sub");
@@ -490,7 +495,7 @@ public class TestSnapshot {
    * Test snapshot directory mtime after snapshot deletion.
    */
   @Test
-  @Timeout(value = 60000, unit = TimeUnit.MILLISECONDS)
+  @Timeout(value = 60)
   public void testDeletionSnapshotMtime() throws Exception {
     Path dir = new Path("/dir");
     Path sub = new Path(dir, "sub");
@@ -515,7 +520,7 @@ public class TestSnapshot {
    * paths work and the NN can load the resulting edits.
    */
   @Test
-  @Timeout(value = 60000, unit = TimeUnit.MILLISECONDS)
+  @Timeout(value = 60)
   public void testSnapshotOpsOnReservedPath() throws Exception {
     Path dir = new Path("/dir");
     Path nestedDir = new Path("/nested/dir");
@@ -547,7 +552,7 @@ public class TestSnapshot {
    * snapshots at the root level.
    */
   @Test
-  @Timeout(value = 120000, unit = TimeUnit.MILLISECONDS)
+  @Timeout(value = 120)
   public void testSnapshotOpsOnRootReservedPath() throws Exception {
     Path dir = new Path("/");
     Path sub = new Path(dir, "sub");

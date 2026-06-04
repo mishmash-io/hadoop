@@ -18,7 +18,6 @@
 package org.apache.hadoop.hdfs.server.namenode.snapshot;
 
 import static org.junit.jupiter.api.Assertions.fail;
-
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;

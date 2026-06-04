@@ -16,7 +16,6 @@
  * limitations under the License.
  */
 package org.apache.hadoop.security;
-
 import static org.junit.jupiter.api.Assertions.fail;
 import static org.junit.jupiter.api.Assumptions.assumeTrue;
 
@@ -25,6 +24,8 @@ import java.util.List;
 import org.apache.hadoop.util.NativeCodeLoader;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+
+
 
 public class TestJNIGroupsMapping {
   

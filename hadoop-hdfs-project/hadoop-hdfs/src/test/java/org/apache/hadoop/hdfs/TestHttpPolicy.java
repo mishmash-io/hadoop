@@ -22,11 +22,11 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import org.apache.hadoop.HadoopIllegalArgumentException;
 import org.apache.hadoop.conf.Configuration;
-
 import org.junit.jupiter.api.Test;
 
-public final class TestHttpPolicy {
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
+public final class TestHttpPolicy {
   @Test
   public void testInvalidPolicyValue() {
     assertThrows(HadoopIllegalArgumentException.class, () -> {

@@ -17,6 +17,7 @@
  */
 package org.apache.hadoop.hdfs.server.datanode.checker;
 
+import org.apache.hadoop.test.TestName;
 import org.apache.hadoop.thirdparty.com.google.common.util.concurrent.FutureCallback;
 import org.apache.hadoop.thirdparty.com.google.common.util.concurrent.Futures;
 import org.apache.hadoop.thirdparty.com.google.common.util.concurrent.ListenableFuture;
@@ -24,8 +25,8 @@ import org.apache.hadoop.thirdparty.com.google.common.util.concurrent.MoreExecut
 import org.apache.hadoop.util.FakeTimer;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.TestInfo;
 import org.junit.jupiter.api.Timeout;
+import org.junit.jupiter.api.extension.RegisterExtension;
 import org.slf4j.LoggerFactory;
 
 import java.lang.reflect.Method;
@@ -38,21 +39,21 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.locks.ReentrantLock;
 
-import static org.hamcrest.CoreMatchers.is;
-import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.timeout;
 import static org.mockito.Mockito.verify;
+import static org.assertj.core.api.Assertions.assertThat;
 
-@Timeout(value=300000, unit=TimeUnit.MILLISECONDS)
+@Timeout(300)
 public class TestThrottledAsyncCheckerTimeout {
   public static final org.slf4j.Logger LOG =
       LoggerFactory.getLogger(TestThrottledAsyncCheckerTimeout.class);
 
-  
-  public String testName;
+  @SuppressWarnings("checkstyle:VisibilityModifier")
+  @RegisterExtension
+  public TestName testName = new TestName();
 
   private static final long DISK_CHECK_TIMEOUT = 10;
   private ReentrantLock lock;
@@ -62,11 +63,7 @@ public class TestThrottledAsyncCheckerTimeout {
   }
 
   @BeforeEach
-  public void initializeLock(TestInfo testInfo) {
-    Optional<Method> testMethod = testInfo.getTestMethod();
-    if (testMethod.isPresent()) {
-      this.testName = testMethod.get().getName();
-    }
+  public void initializeLock() {
     lock = new ReentrantLock();
   }
 
@@ -115,8 +112,8 @@ public class TestThrottledAsyncCheckerTimeout {
 
     lock.unlock();
 
-    assertThat(numCallbackInvocationsFailure.get(), is(1L));
-    assertThat(numCallbackInvocationsSuccess.get(), is(0L));
+    assertThat(numCallbackInvocationsFailure.get()).isEqualTo(1L);
+    assertThat(numCallbackInvocationsSuccess.get()).isEqualTo(0L);
     assertTrue(throwable[0] instanceof TimeoutException);
   }
 

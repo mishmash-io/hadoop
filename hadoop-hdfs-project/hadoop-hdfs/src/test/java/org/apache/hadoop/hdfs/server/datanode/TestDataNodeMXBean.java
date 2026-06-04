@@ -43,13 +43,13 @@ import org.apache.hadoop.hdfs.protocol.datatransfer.sasl.SaslDataTransferTestCas
 import org.apache.hadoop.hdfs.server.namenode.NameNode;
 import org.apache.hadoop.security.UserGroupInformation;
 import org.apache.hadoop.test.GenericTestUtils;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.eclipse.jetty.util.ajax.JSON;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
-
 /**
  * Class for testing {@link DataNodeMXBean} implementation
  */
@@ -65,7 +65,7 @@ public class TestDataNodeMXBean extends SaslDataTransferTestCase {
 
     try {
       List<DataNode> datanodes = cluster.getDataNodes();
-      Assertions.assertEquals(datanodes.size(), 1);
+      assertEquals(datanodes.size(), 1);
       DataNode datanode = datanodes.get(0);
 
       MBeanServer mbs = ManagementFactory.getPlatformMBeanServer(); 
@@ -73,54 +73,54 @@ public class TestDataNodeMXBean extends SaslDataTransferTestCase {
           "Hadoop:service=DataNode,name=DataNodeInfo");
       // get attribute "ClusterId"
       String clusterId = (String) mbs.getAttribute(mxbeanName, "ClusterId");
-      Assertions.assertEquals(datanode.getClusterId(), clusterId);
+      assertEquals(datanode.getClusterId(), clusterId);
       // get attribute "Version"
       String version = (String)mbs.getAttribute(mxbeanName, "Version");
-      Assertions.assertEquals(datanode.getVersion(),version);
+      assertEquals(datanode.getVersion(), version);
       // get attribute "DNStartedTimeInMillis"
       long startTime = (long) mbs.getAttribute(mxbeanName, "DNStartedTimeInMillis");
-      Assertions.assertTrue(startTime > 0, "Datanode start time should not be 0");
-      Assertions.assertEquals(datanode.getDNStartedTimeInMillis(), startTime);
+      assertTrue(startTime > 0, "Datanode start time should not be 0");
+      assertEquals(datanode.getDNStartedTimeInMillis(), startTime);
       // get attribute "SotfwareVersion"
       String softwareVersion =
           (String)mbs.getAttribute(mxbeanName, "SoftwareVersion");
-      Assertions.assertEquals(datanode.getSoftwareVersion(),softwareVersion);
-      Assertions.assertEquals(version, softwareVersion
+      assertEquals(datanode.getSoftwareVersion(), softwareVersion);
+      assertEquals(version, softwareVersion
           + ", r" + datanode.getRevision());
       // get attribute "RpcPort"
       String rpcPort = (String)mbs.getAttribute(mxbeanName, "RpcPort");
-      Assertions.assertEquals(datanode.getRpcPort(),rpcPort);
+      assertEquals(datanode.getRpcPort(), rpcPort);
       // get attribute "HttpPort"
       String httpPort = (String)mbs.getAttribute(mxbeanName, "HttpPort");
-      Assertions.assertNotNull(httpPort);
-      Assertions.assertEquals(datanode.getHttpPort(),httpPort);
+      assertNotNull(httpPort);
+      assertEquals(datanode.getHttpPort(), httpPort);
       // get attribute "NamenodeAddresses"
       String namenodeAddresses = (String)mbs.getAttribute(mxbeanName, 
           "NamenodeAddresses");
-      Assertions.assertEquals(datanode.getNamenodeAddresses(),namenodeAddresses);
+      assertEquals(datanode.getNamenodeAddresses(), namenodeAddresses);
       // get attribute "getDatanodeHostname"
       String datanodeHostname = (String)mbs.getAttribute(mxbeanName,
           "DatanodeHostname");
-      Assertions.assertEquals(datanode.getDatanodeHostname(),datanodeHostname);
+      assertEquals(datanode.getDatanodeHostname(), datanodeHostname);
       // get attribute "getVolumeInfo"
       String volumeInfo = (String)mbs.getAttribute(mxbeanName, "VolumeInfo");
-      Assertions.assertEquals(replaceDigits(datanode.getVolumeInfo()),
+      assertEquals(replaceDigits(datanode.getVolumeInfo()),
           replaceDigits(volumeInfo));
       // Ensure mxbean's XceiverCount is same as the DataNode's
       // live value.
       int xceiverCount = (Integer)mbs.getAttribute(mxbeanName,
           "XceiverCount");
-      Assertions.assertEquals(datanode.getXceiverCount(), xceiverCount);
+      assertEquals(datanode.getXceiverCount(), xceiverCount);
       // Ensure mxbean's XmitsInProgress is same as the DataNode's
       // live value.
       int xmitsInProgress =
           (Integer) mbs.getAttribute(mxbeanName, "XmitsInProgress");
-      Assertions.assertEquals(datanode.getXmitsInProgress(), xmitsInProgress);
+      assertEquals(datanode.getXmitsInProgress(), xmitsInProgress);
       String bpActorInfo = (String)mbs.getAttribute(mxbeanName,
           "BPServiceActorInfo");
-      Assertions.assertEquals(datanode.getBPServiceActorInfo(), bpActorInfo);
+      assertEquals(datanode.getBPServiceActorInfo(), bpActorInfo);
       String slowDisks = (String)mbs.getAttribute(mxbeanName, "SlowDisks");
-      Assertions.assertEquals(datanode.getSlowDisks(), slowDisks);
+      assertEquals(datanode.getSlowDisks(), slowDisks);
     } finally {
       if (cluster != null) {
         cluster.shutdown();
@@ -137,7 +137,7 @@ public class TestDataNodeMXBean extends SaslDataTransferTestCase {
     try (MiniDFSCluster cluster =
                  new MiniDFSCluster.Builder(simpleConf).build()) {
       List<DataNode> datanodes = cluster.getDataNodes();
-      Assertions.assertEquals(datanodes.size(), 1);
+      assertEquals(datanodes.size(), 1);
       DataNode datanode = datanodes.get(0);
 
       MBeanServer mbs = ManagementFactory.getPlatformMBeanServer();
@@ -146,15 +146,15 @@ public class TestDataNodeMXBean extends SaslDataTransferTestCase {
 
       boolean securityEnabled = (boolean) mbs.getAttribute(mxbeanName,
               "SecurityEnabled");
-      Assertions.assertFalse(securityEnabled);
-      Assertions.assertEquals(datanode.isSecurityEnabled(), securityEnabled);
+      assertFalse(securityEnabled);
+      assertEquals(datanode.isSecurityEnabled(), securityEnabled);
     }
 
     // get attribute "SecurityEnabled" with secure configuration
     try (MiniDFSCluster cluster =
                  new MiniDFSCluster.Builder(secureConf).build()) {
       List<DataNode> datanodes = cluster.getDataNodes();
-      Assertions.assertEquals(datanodes.size(), 1);
+      assertEquals(datanodes.size(), 1);
       DataNode datanode = datanodes.get(0);
 
       MBeanServer mbs = ManagementFactory.getPlatformMBeanServer();
@@ -163,8 +163,8 @@ public class TestDataNodeMXBean extends SaslDataTransferTestCase {
 
       boolean securityEnabled = (boolean) mbs.getAttribute(mxbeanName,
               "SecurityEnabled");
-      Assertions.assertTrue(securityEnabled);
-      Assertions.assertEquals(datanode.isSecurityEnabled(), securityEnabled);
+      assertTrue(securityEnabled);
+      assertEquals(datanode.isSecurityEnabled(), securityEnabled);
     }
 
     // setting back the authentication method
@@ -193,7 +193,7 @@ public class TestDataNodeMXBean extends SaslDataTransferTestCase {
           "Hadoop:service=DataNode,name=DataNodeInfo");
       String bpActorInfo = (String)mbs.getAttribute(mxbeanName,
           "BPServiceActorInfo");
-      Assertions.assertEquals(dn.getBPServiceActorInfo(), bpActorInfo);
+      assertEquals(dn.getBPServiceActorInfo(), bpActorInfo);
       LOG.info("bpActorInfo is " + bpActorInfo);
       TypeReference<ArrayList<Map<String, String>>> typeRef
           = new TypeReference<ArrayList<Map<String, String>>>() {};
@@ -210,9 +210,7 @@ public class TestDataNodeMXBean extends SaslDataTransferTestCase {
       LOG.info("maxBlockReportSize is " + maxBlockReportSize);
       assertTrue(maxBlockReportSize > 0,
           "maxBlockReportSize should be greater than zero");
-      assertEquals(confMaxDataLength,
-          maxDataLength,
-          "maxDataLength should be exactly "
+      assertEquals(confMaxDataLength, maxDataLength, "maxDataLength should be exactly "
           + "the same value of ipc.maximum.data.length");
     }
   }
@@ -281,7 +279,7 @@ public class TestDataNodeMXBean extends SaslDataTransferTestCase {
 
     try {
       List<DataNode> datanodes = cluster.getDataNodes();
-      Assertions.assertEquals(datanodes.size(), 1);
+      assertEquals(datanodes.size(), 1);
       DataNode datanode = datanodes.get(0);
       String slowDiskPath = "test/data1/slowVolume";
       datanode.getDiskMetrics().addSlowDiskForTesting(slowDiskPath, null);
@@ -291,8 +289,8 @@ public class TestDataNodeMXBean extends SaslDataTransferTestCase {
           "Hadoop:service=DataNode,name=DataNodeInfo");
 
       String slowDisks = (String)mbs.getAttribute(mxbeanName, "SlowDisks");
-      Assertions.assertEquals(datanode.getSlowDisks(), slowDisks);
-      Assertions.assertTrue(slowDisks.contains(slowDiskPath));
+      assertEquals(datanode.getSlowDisks(), slowDisks);
+      assertTrue(slowDisks.contains(slowDiskPath));
     } finally {
       if (cluster != null) {cluster.shutdown();}
     }
@@ -364,10 +362,10 @@ public class TestDataNodeMXBean extends SaslDataTransferTestCase {
     long lastHeartbeatSent2 =
         Long.parseLong(bpServiceActorInfo2.get(lastHeartbeat));
 
-    Assertions.assertTrue(lastHeartbeatSent1 < 5L,
-        lastHeartbeat + " for first bp service actor is higher than 5s");
-    Assertions.assertTrue(lastHeartbeatSent2 < 5L,
-        lastHeartbeat + " for second bp service actor is higher than 5s");
+    assertTrue(lastHeartbeatSent1 < 5L, lastHeartbeat
+        + " for first bp service actor is higher than 5s");
+    assertTrue(lastHeartbeatSent2 < 5L, lastHeartbeat
+        + " for second bp service actor is higher than 5s");
   }
 
 }

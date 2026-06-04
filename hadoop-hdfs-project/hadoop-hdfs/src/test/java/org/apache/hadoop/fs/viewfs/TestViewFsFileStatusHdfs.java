@@ -16,6 +16,13 @@
  * limitations under the License.
  */
 package org.apache.hadoop.fs.viewfs;
+
+
+/**
+ * The FileStatus is being serialized in MR as jobs are submitted.
+ * Since viewfs has overlayed ViewFsFileStatus, we ran into
+ * serialization problems. THis test is test the fix.
+ */
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 
@@ -102,12 +109,11 @@ public class TestViewFsFileStatusHdfs {
     FileChecksum otherHdfsFileCheckSum = fHdfs.getFileChecksum(
       new Path(someFile+"other"));
     // Checksums of the same file (got through HDFS and ViewFS should be same)
-    assertEquals(viewFSCheckSum,
-      hdfsCheckSum,
-      "HDFS and ViewFS checksums were not the same");
+    assertEquals(viewFSCheckSum, hdfsCheckSum,
+        "HDFS and ViewFS checksums were not the same");
     // Checksum of different files should be different.
-    assertFalse(viewFSCheckSum.equals(otherHdfsFileCheckSum), "Some other HDFS file which should not have had the same " +
-      "checksum as viewFS did!");
+    assertFalse(viewFSCheckSum.equals(otherHdfsFileCheckSum),
+        "Some other HDFS file which should not have had the same checksum as viewFS did!");
   }
 
   @AfterAll

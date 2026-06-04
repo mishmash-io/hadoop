@@ -35,11 +35,10 @@ import org.apache.hadoop.hdfs.client.HdfsAdmin;
 import org.apache.hadoop.hdfs.server.namenode.EncryptionZoneManager;
 import org.apache.hadoop.security.UserGroupInformation;
 import org.apache.hadoop.test.GenericTestUtils;
-import org.apache.hadoop.util.cli.ToolRunner;
+import org.apache.hadoop.util.ToolRunner;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-
 import org.slf4j.LoggerFactory;
 import org.slf4j.event.Level;
 
@@ -179,9 +178,9 @@ public class TestTrashWithEncryptionZones {
         // Delete /zones/zone1 should not succeed as current user is not admin
         String[] argv = new String[]{"-rm", "-r", zone1.toString()};
         int res = ToolRunner.run(shell, argv);
-        assertEquals(1, res, "Non-admin could delete an encryption zone with multiple" +
-            " users : " + zone1);
-        return null;
+            assertEquals(1, res,
+                "Non-admin could delete an encryption zone with multiple" + " users : " + zone1);
+            return null;
       }
     });
 

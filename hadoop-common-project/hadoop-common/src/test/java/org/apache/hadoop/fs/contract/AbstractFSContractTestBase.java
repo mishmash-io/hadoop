@@ -22,19 +22,19 @@ import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.test.TestName;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.TestInfo;
 import org.junit.jupiter.api.Timeout;
+import org.junit.jupiter.api.extension.RegisterExtension;
 import org.opentest4j.TestAbortedException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.net.URI;
-import java.util.concurrent.TimeUnit;
 
 import static org.apache.hadoop.fs.contract.ContractTestUtils.cleanup;
 import static org.apache.hadoop.fs.contract.ContractTestUtils.skip;
@@ -42,7 +42,7 @@ import static org.apache.hadoop.fs.contract.ContractTestUtils.skip;
 /**
  * This is the base class for all the contract tests.
  */
-@Timeout(value=180, unit=TimeUnit.SECONDS)
+@Timeout(180)
 public abstract class AbstractFSContractTestBase extends Assertions
   implements ContractOptions {
 
@@ -69,10 +69,8 @@ public abstract class AbstractFSContractTestBase extends Assertions
    */
   private Path testPath;
 
-  /**
-   * The name of the test method in execution.
-   */
-  private String methodName;
+  @RegisterExtension
+  public TestName methodName = new TestName();
 
   @BeforeAll
   public static void nameTestThread() {
@@ -158,13 +156,21 @@ public abstract class AbstractFSContractTestBase extends Assertions
   }
 
   /**
+   * Option for tests to override the default timeout value.
+   * @return the current test timeout
+   */
+  protected int getTestTimeoutMillis() {
+    return DEFAULT_TEST_TIMEOUT;
+  }
+
+
+  /**
    * Setup: create the contract then init it.
    * @param info the test info
    * @throws Exception on any failure
    */
   @BeforeEach
-  public void setup(TestInfo info) throws Exception {
-    methodName = info.getDisplayName();
+  public void setup() throws Exception {
     Thread.currentThread().setName("setup");
     LOG.debug("== Setup ==");
     contract = createContract(createConfiguration());
@@ -181,7 +187,7 @@ public abstract class AbstractFSContractTestBase extends Assertions
     //the scheme chosen. This is to avoid defaulting back to the localFS
     //which would be drastic for root FS tests
     assertEquals(contract.getScheme(), fsURI.getScheme(),
-                 "wrong filesystem of " + fsURI);
+        "wrong filesystem of " + fsURI);
     //create the test path
     testPath = getContract().getTestPath();
     mkdirs(testPath);

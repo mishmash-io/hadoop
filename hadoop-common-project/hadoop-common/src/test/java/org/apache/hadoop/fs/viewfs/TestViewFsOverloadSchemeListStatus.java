@@ -37,11 +37,15 @@ import org.apache.hadoop.fs.LocalFileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.fs.permission.FsPermission;
 import org.apache.hadoop.test.GenericTestUtils;
-import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.Timeout;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /**
  * ViewFsOverloadScheme ListStatus.
@@ -135,7 +139,7 @@ public class TestViewFsOverloadSchemeListStatus {
    * chrootedFS at it's uri's root.
    */
   @Test
-  @Timeout(value=30000, unit=TimeUnit.MILLISECONDS)
+  @Timeout(value = 30)
   public void testViewFSOverloadSchemeWithoutAnyMountLinks() throws Exception {
     Path initUri = new Path(TEST_DIR.toURI().toString(), "init");
     try (FileSystem fs = FileSystem.get(initUri.toUri(), conf)) {

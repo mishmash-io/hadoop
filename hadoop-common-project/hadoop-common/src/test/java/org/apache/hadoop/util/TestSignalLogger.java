@@ -29,12 +29,15 @@ import org.junit.jupiter.api.Timeout;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import static org.junit.jupiter.api.Assertions.fail;
+import static org.junit.jupiter.api.Assumptions.assumeTrue;
+
 public class TestSignalLogger {
   public static final Logger LOG =
       LoggerFactory.getLogger(TestSignalLogger.class);
   
   @Test
-  @Timeout(value=60000, unit=TimeUnit.MILLISECONDS)
+  @Timeout(value = 60)
   public void testInstall() throws Exception {
     assumeTrue(SystemUtils.IS_OS_UNIX);
     SignalLogger.INSTANCE.register(LOG);

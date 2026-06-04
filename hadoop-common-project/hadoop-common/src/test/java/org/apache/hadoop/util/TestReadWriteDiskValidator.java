@@ -18,6 +18,10 @@
 
 package org.apache.hadoop.util;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.fail;
+
 import org.apache.hadoop.metrics2.MetricsSource;
 import org.apache.hadoop.metrics2.MetricsSystem;
 import org.apache.hadoop.metrics2.impl.MetricsCollectorImpl;
@@ -26,10 +30,6 @@ import org.apache.hadoop.metrics2.lib.DefaultMetricsSystem;
 import org.apache.hadoop.util.DiskChecker.DiskErrorException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertTrue;
-import static org.junit.jupiter.api.Assertions.fail;
 
 import java.io.File;
 import java.nio.file.Files;
@@ -63,14 +63,12 @@ public class TestReadWriteDiskValidator {
 
     ReadWriteDiskValidatorMetrics metric =
         ReadWriteDiskValidatorMetrics.getMetric(testDir.toString());
-    assertEquals(metric.getFileReadQuantiles()[0].getEstimator().getCount(),
-        count,
+    assertEquals(metric.getFileReadQuantiles()[0].getEstimator().getCount(), count,
         "The count number of estimator in MutableQuantiles"
         + "metrics of file read is not right");
 
     assertEquals(metric.getFileWriteQuantiles()[0].getEstimator().getCount(),
-        count,
-        "The count number of estimator in MutableQuantiles"
+        count, "The count number of estimator in MutableQuantiles"
         + "metrics of file write is not right");
 
     MetricsSource source = ms.getSource(

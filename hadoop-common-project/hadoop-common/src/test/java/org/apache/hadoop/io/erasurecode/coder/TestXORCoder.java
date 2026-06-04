@@ -17,7 +17,9 @@
  */
 package org.apache.hadoop.io.erasurecode.coder;
 
-import java.util.concurrent.TimeUnit;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.Timeout;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -26,7 +28,7 @@ import org.junit.jupiter.api.Timeout;
 /**
  * Test XOR encoding and decoding.
  */
-@Timeout(value=30000, unit=TimeUnit.MILLISECONDS)
+@Timeout(300)
 public class TestXORCoder extends TestErasureCoderBase {
 
   @BeforeEach

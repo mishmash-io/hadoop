@@ -18,6 +18,7 @@
 package org.apache.hadoop.hdfs;
 
 import static org.junit.jupiter.api.Assertions.fail;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.io.IOException;
 
@@ -26,7 +27,6 @@ import org.apache.hadoop.fs.FSDataOutputStream;
 import org.apache.hadoop.fs.FileChecksum;
 import org.apache.hadoop.fs.Path;
 import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -69,7 +69,7 @@ public class TestGetFileChecksum {
 
     for (int i = 0; i < appendRounds + 1; i++) {
       FileChecksum checksum = dfs.getFileChecksum(foo, appendLength * (i+1));
-      Assertions.assertTrue(checksum.equals(fc[i]));
+      assertTrue(checksum.equals(fc[i]));
     }
   }
 
@@ -82,8 +82,8 @@ public class TestGetFileChecksum {
       fail("getFileChecksum should fail for files "
           + "with blocks under construction");
     } catch (IOException ie) {
-      Assertions.assertTrue(ie.getMessage().contains(
-          "Fail to get checksum, since file /testFile "
+      assertTrue(ie.getMessage()
+          .contains("Fail to get checksum, since file /testFile "
               + "is under construction."));
     }
   }

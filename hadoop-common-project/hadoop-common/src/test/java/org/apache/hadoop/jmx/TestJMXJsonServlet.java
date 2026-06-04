@@ -38,13 +38,15 @@ public class TestJMXJsonServlet extends HttpServerFunctionalTest {
   private static HttpServer2 server;
   private static URL baseUrl;
 
-  @BeforeAll public static void setup() throws Exception {
+  @BeforeAll
+  public static void setup() throws Exception {
     server = createTestServer();
     server.start();
     baseUrl = getServerURL(server);
   }
   
-  @AfterAll public static void cleanup() throws Exception {
+  @AfterAll
+  public static void cleanup() throws Exception {
     server.stop();
   }
   

@@ -17,7 +17,10 @@
  */
 package org.apache.hadoop.hdfs.server.blockmanagement;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
 
@@ -33,7 +36,6 @@ import org.apache.hadoop.hdfs.StripedFileTestUtil;
 import org.apache.hadoop.hdfs.protocol.Block;
 import org.apache.hadoop.hdfs.protocol.BlockType;
 import org.apache.hadoop.hdfs.server.blockmanagement.CorruptReplicasMap.Reason;
-
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 
@@ -81,10 +83,11 @@ public class TestCorruptReplicaInfo {
       long expectedReplicaCount, long expectedStripedBlockCount) {
     long totalExpectedCorruptBlocks = expectedReplicaCount +
         expectedStripedBlockCount;
-    assertEquals(totalExpectedCorruptBlocks, corruptReplicasMap.size(), "Unexpected total corrupt blocks count!");
-    assertEquals(expectedReplicaCount, corruptReplicasMap.getCorruptBlocks(), "Unexpected replica blocks count!");
-    assertEquals(expectedStripedBlockCount,
-        corruptReplicasMap.getCorruptECBlockGroups(),
+    assertEquals(totalExpectedCorruptBlocks, corruptReplicasMap.size(),
+        "Unexpected total corrupt blocks count!");
+    assertEquals(expectedReplicaCount, corruptReplicasMap.getCorruptBlocks(),
+        "Unexpected replica blocks count!");
+    assertEquals(expectedStripedBlockCount, corruptReplicasMap.getCorruptECBlockGroups(),
         "Unexpected striped blocks count!");
   }
   
@@ -98,9 +101,12 @@ public class TestCorruptReplicaInfo {
     assertTrue(!bim.isLegacyBlock(new Block(-1)));
 
     // Make sure initial values are returned correctly
-    assertEquals(0, crm.size(), "Total number of corrupt blocks must initially be 0!");
-    assertEquals(0, crm.getCorruptBlocks(), "Number of corrupt replicas must initially be 0!");
-    assertEquals(0, crm.getCorruptECBlockGroups(), "Number of corrupt striped block groups must initially be 0!");
+    assertEquals(0, crm.size(),
+        "Total number of corrupt blocks must initially be 0!");
+    assertEquals(0, crm.getCorruptBlocks(),
+        "Number of corrupt replicas must initially be 0!");
+    assertEquals(0, crm.getCorruptECBlockGroups(),
+        "Number of corrupt striped block groups must initially be 0!");
     assertNull(crm.getCorruptBlockIdsForTesting(bim, BlockType.CONTIGUOUS, -1, null),
         "Param n cannot be less than 0");
     assertNull(crm.getCorruptBlockIdsForTesting(bim, BlockType.CONTIGUOUS, 101, null),
@@ -158,7 +164,8 @@ public class TestCorruptReplicaInfo {
       addToCorruptReplicasMap(crm, getStripedBlock(blockId), dn1);
     }
 
-    assertEquals(2 * blockCount, crm.size(), "Number of corrupt blocks not returning correctly");
+    assertEquals(2 * blockCount, crm.size(),
+        "Number of corrupt blocks not returning correctly");
     assertTrue(Arrays.equals(Arrays.copyOfRange(replicaIds, 0, 5),
             crm.getCorruptBlockIdsForTesting(
                 bim, BlockType.CONTIGUOUS, 5, null)),

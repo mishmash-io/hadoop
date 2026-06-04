@@ -178,7 +178,7 @@ public abstract class CryptoStreamsTestBase {
   
   /** Test crypto reading with different buffer size. */
   @Test
-  @Timeout(value=120000, unit=TimeUnit.MILLISECONDS)
+  @Timeout(value = 120)
   public void testRead() throws Exception {
     OutputStream out = getOutputStream(defaultBufferSize);
     writeData(out);
@@ -210,7 +210,7 @@ public abstract class CryptoStreamsTestBase {
   
   /** Test crypto writing with different buffer size. */
   @Test
-  @Timeout(value=120000, unit=TimeUnit.MILLISECONDS)
+  @Timeout(value = 120)
   public void testWrite() throws Exception {
     // Default buffer size
     writeCheck(defaultBufferSize);
@@ -230,7 +230,7 @@ public abstract class CryptoStreamsTestBase {
 
   /** Test crypto with different IV. */
   @Test
-  @Timeout(value=120000, unit=TimeUnit.MILLISECONDS)
+  @Timeout(value = 120)
   public void testCryptoIV() throws Exception {
     byte[] iv1 = iv.clone();
     
@@ -274,7 +274,7 @@ public abstract class CryptoStreamsTestBase {
    * Test hflush/hsync of crypto output stream, and with different buffer size.
    */
   @Test
-  @Timeout(value=120000, unit=TimeUnit.MILLISECONDS)
+  @Timeout(value = 120)
   public void testSyncable() throws IOException {
     syncableCheck();
   }
@@ -343,7 +343,7 @@ public abstract class CryptoStreamsTestBase {
   
   /** Test positioned read. */
   @Test
-  @Timeout(value=120000, unit=TimeUnit.MILLISECONDS)
+  @Timeout(value = 120)
   public void testPositionedRead() throws Exception {
     try (OutputStream out = getOutputStream(defaultBufferSize)) {
       writeData(out);
@@ -372,7 +372,7 @@ public abstract class CryptoStreamsTestBase {
 
   /** Test positioned read with ByteBuffers. */
   @Test
-  @Timeout(value=120000, unit=TimeUnit.MILLISECONDS)
+  @Timeout(value = 120)
   public void testPositionedReadWithByteBuffer() throws Exception {
     try (OutputStream out = getOutputStream(defaultBufferSize)) {
       writeData(out);
@@ -402,7 +402,7 @@ public abstract class CryptoStreamsTestBase {
   
   /** Test read fully. */
   @Test
-  @Timeout(value=120000, unit=TimeUnit.MILLISECONDS)
+  @Timeout(value = 120)
   public void testReadFully() throws Exception {
     OutputStream out = getOutputStream(defaultBufferSize);
     writeData(out);
@@ -456,7 +456,7 @@ public abstract class CryptoStreamsTestBase {
 
   /** Test byte byffer read fully. */
   @Test
-  @Timeout(value=120000, unit=TimeUnit.MILLISECONDS)
+  @Timeout(value = 120)
   public void testByteBufferReadFully() throws Exception {
     OutputStream out = getOutputStream(defaultBufferSize);
     writeData(out);
@@ -511,7 +511,7 @@ public abstract class CryptoStreamsTestBase {
   
   /** Test seek to different position. */
   @Test
-  @Timeout(value=120000, unit=TimeUnit.MILLISECONDS)
+  @Timeout(value = 120)
   public void testSeek() throws Exception {
     OutputStream out = getOutputStream(defaultBufferSize);
     writeData(out);
@@ -565,7 +565,7 @@ public abstract class CryptoStreamsTestBase {
   
   /** Test get position. */
   @Test
-  @Timeout(value=120000, unit=TimeUnit.MILLISECONDS)
+  @Timeout(value = 120)
   public void testGetPos() throws Exception {
     OutputStream out = getOutputStream(defaultBufferSize);
     writeData(out);
@@ -582,7 +582,7 @@ public abstract class CryptoStreamsTestBase {
   }
   
   @Test
-  @Timeout(value=120000, unit=TimeUnit.MILLISECONDS)
+  @Timeout(value = 120)
   public void testAvailable() throws Exception {
     OutputStream out = getOutputStream(defaultBufferSize);
     writeData(out);
@@ -600,7 +600,7 @@ public abstract class CryptoStreamsTestBase {
   
   /** Test skip. */
   @Test
-  @Timeout(value=120000, unit=TimeUnit.MILLISECONDS)
+  @Timeout(value = 120)
   public void testSkip() throws Exception {
     OutputStream out = getOutputStream(defaultBufferSize);
     writeData(out);
@@ -678,7 +678,7 @@ public abstract class CryptoStreamsTestBase {
   
   /** Test byte buffer read with different buffer size. */
   @Test
-  @Timeout(value=120000, unit=TimeUnit.MILLISECONDS)
+  @Timeout(value = 120)
   public void testByteBufferRead() throws Exception {
     try (OutputStream out = getOutputStream(defaultBufferSize)) {
       writeData(out);
@@ -735,7 +735,7 @@ public abstract class CryptoStreamsTestBase {
 
   /** Test byte buffer pread with different buffer size. */
   @Test
-  @Timeout(value=120000, unit=TimeUnit.MILLISECONDS)
+  @Timeout(value = 120)
   public void testByteBufferPread() throws Exception {
     try (OutputStream out = getOutputStream(defaultBufferSize)) {
       writeData(out);
@@ -782,7 +782,7 @@ public abstract class CryptoStreamsTestBase {
   }
   
   @Test
-  @Timeout(value=120000, unit=TimeUnit.MILLISECONDS)
+  @Timeout(value = 120)
   public void testCombinedOp() throws Exception {
     OutputStream out = getOutputStream(defaultBufferSize);
     writeData(out);
@@ -871,7 +871,7 @@ public abstract class CryptoStreamsTestBase {
   }
   
   @Test
-  @Timeout(value=120000, unit=TimeUnit.MILLISECONDS)
+  @Timeout(value = 120)
   public void testSeekToNewSource() throws Exception {
     OutputStream out = getOutputStream(defaultBufferSize);
     writeData(out);
@@ -940,7 +940,7 @@ public abstract class CryptoStreamsTestBase {
   }
   
   @Test
-  @Timeout(value=120000, unit=TimeUnit.MILLISECONDS)
+  @Timeout(value = 120)
   public void testHasEnhancedByteBufferAccess() throws Exception {
     OutputStream out = getOutputStream(defaultBufferSize);
     writeData(out);
@@ -981,7 +981,7 @@ public abstract class CryptoStreamsTestBase {
 
   /** Test unbuffer. */
   @Test
-  @Timeout(value=120000, unit=TimeUnit.MILLISECONDS)
+  @Timeout(value = 120)
   public void testUnbuffer() throws Exception {
     OutputStream out = getOutputStream(smallBufferSize);
     writeData(out);

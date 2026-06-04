@@ -21,8 +21,9 @@ package org.apache.hadoop.util.dynamic;
 
 import java.util.concurrent.Callable;
 
-import org.apache.hadoop.test.AbstractHadoopTestBase;
 import org.junit.jupiter.api.Test;
+
+import org.apache.hadoop.test.AbstractHadoopTestBase;
 
 import static org.apache.hadoop.test.LambdaTestUtils.intercept;
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -107,14 +108,12 @@ public class TestDynMethods extends AbstractHadoopTestBase {
         .buildChecked();
 
     assertEquals("abcde",
-        cat.invokeChecked(
-            new Concatenator(),
-            (Object) new String[]{"a", "b", "c", "d", "e"}),
+        cat.invokeChecked(new Concatenator(), (Object) new String[]{"a", "b", "c", "d", "e"}),
         "Should use the varargs version");
 
     assertEquals("abcde",
         cat.bind(new Concatenator())
-            .invokeChecked((Object) new String[]{"a", "b", "c", "d", "e"}),
+        .invokeChecked((Object) new String[]{"a", "b", "c", "d", "e"}),
         "Should use the varargs version");
   }
 
@@ -184,8 +183,7 @@ public class TestDynMethods extends AbstractHadoopTestBase {
         .hiddenImpl(Concatenator.class, String.class)
         .buildChecked();
 
-    assertNotNull(changeSep,
-        "Should find hidden method with hiddenImpl");
+    assertNotNull(changeSep, "Should find hidden method with hiddenImpl");
 
     changeSep.invokeChecked(obj, "/");
 
@@ -240,9 +238,8 @@ public class TestDynMethods extends AbstractHadoopTestBase {
         .impl(Concatenator.class, String[].class)
         .buildStaticChecked();
 
-    assertEquals(
-        "abcde", staticCat.invokeChecked(
-            (Object) new String[]{"a", "b", "c", "d", "e"}),
+    assertEquals("abcde", staticCat.invokeChecked(
+        (Object) new String[]{"a", "b", "c", "d", "e"}),
         "Should call varargs static method cat(String...)");
   }
 
@@ -273,8 +270,7 @@ public class TestDynMethods extends AbstractHadoopTestBase {
         "Should find constructor implementation");
     assertTrue(newConcatenator.isStatic(),
         "Constructor should be a static method");
-    assertFalse(newConcatenator.isNoop(),
-        "Constructor should not be NOOP");
+    assertFalse(newConcatenator.isNoop(), "Constructor should not be NOOP");
 
     // constructors cannot be bound
     intercept(IllegalStateException.class, () ->
@@ -310,17 +306,12 @@ public class TestDynMethods extends AbstractHadoopTestBase {
         .orNoop()
         .buildChecked();
 
-    assertTrue(noop.isNoop(),
-        "No implementation found, should return NOOP");
+    assertTrue(noop.isNoop(), "No implementation found, should return NOOP");
     assertNull(noop.invoke(new Concatenator(), "a"),
         "NOOP should always return null");
-    assertNull(noop.invoke(null, "a"),
-        "NOOP can be called with null");
-    assertNull(noop.bind(new Concatenator()).invoke("a"),
-        "NOOP can be bound");
-    assertNull(noop.bind(null).invoke("a"),
-        "NOOP can be bound to null");
-    assertNull(noop.asStatic().invoke("a"),
-        "NOOP can be static");
+    assertNull(noop.invoke(null, "a"), "NOOP can be called with null");
+    assertNull(noop.bind(new Concatenator()).invoke("a"), "NOOP can be bound");
+    assertNull(noop.bind(null).invoke("a"), "NOOP can be bound to null");
+    assertNull(noop.asStatic().invoke("a"), "NOOP can be static");
   }
 }

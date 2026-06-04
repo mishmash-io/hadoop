@@ -50,12 +50,11 @@ import org.apache.hadoop.security.token.TokenIdentifier;
 import org.apache.hadoop.security.token.delegation.web.DelegationTokenIdentifier;
 import org.apache.hadoop.test.GenericTestUtils;
 import org.apache.hadoop.util.Time;
-import org.apache.hc.core5.net.URIBuilder;
+import org.apache.http.client.utils.URIBuilder;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.Timeout;
-import org.mockito.Mockito;
 import org.slf4j.event.Level;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -97,18 +96,20 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import static org.apache.hadoop.fs.CommonConfigurationKeysPublic.HADOOP_SECURITY_KEY_PROVIDER_PATH;
+
 import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNotSame;
+import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.fail;
+import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
-@Timeout(value=180000, unit=TimeUnit.MILLISECONDS)
+@Timeout(180)
 public class TestKMS {
   private static final Logger LOG = LoggerFactory.getLogger(TestKMS.class);
 
@@ -165,7 +166,7 @@ public class TestKMS {
       if (kmsUrl == null || kmsUrl.size() == 0) {
         return null;
       }
-      StringBuffer sb = new StringBuffer();
+      StringBuilder sb = new StringBuilder();
 
       for (int i = 0; i < kmsUrl.size(); i++) {
         sb.append(KMSClientProvider.SCHEME_NAME + "://" +
@@ -581,9 +582,9 @@ public class TestKMS {
   @Test
   public void testStartStopHttpPseudo() throws Exception {
     // Make sure bogus errors don't get emitted.
+    // Jersey2 does not have a method similar to AbstractWadlGeneratorGrammarGenerator.
     GenericTestUtils.LogCapturer logs =
-        GenericTestUtils.LogCapturer.captureLogs(LoggerFactory.getLogger(
-            "com.sun.jersey.server.wadl.generators.AbstractWadlGeneratorGrammarGenerator"));
+        GenericTestUtils.LogCapturer.captureLogs(LOG);
     try {
       testStartStop(false, false);
     } finally {
@@ -610,7 +611,7 @@ public class TestKMS {
   }
 
   @Test
-  @Timeout(value=30000, unit=TimeUnit.MILLISECONDS)
+  @Timeout(value = 30)
   public void testSpecialKeyNames() throws Exception {
     final String specialKey = "key %^[\n{]}|\"<>\\";
     Configuration conf = new Configuration();
@@ -953,7 +954,7 @@ public class TestKMS {
             (LoadingCache<String, LinkedBlockingQueue<EncryptedKeyVersion>>)
                  FieldUtils.getField(ValueQueue.class, "keyQueues", true).get(vq);
 
-        EncryptedKeyVersion mockEKV = Mockito.mock(EncryptedKeyVersion.class);
+        EncryptedKeyVersion mockEKV = mock(EncryptedKeyVersion.class);
         when(mockEKV.getEncryptionKeyName()).thenReturn(keyName);
         when(mockEKV.getEncryptionKeyVersionName()).thenReturn(mockVersionName);
 
@@ -965,22 +966,22 @@ public class TestKMS {
         KeyProvider.KeyVersion kv0 = kmscp.createKey(keyName, options);
         assertNotNull(kv0.getVersionName());
 
-        assertEquals("Default key version name is incorrect.", "k1@0",
-            kmscp.generateEncryptedKey(keyName).getEncryptionKeyVersionName());
+        assertEquals("k1@0", kmscp.generateEncryptedKey(keyName).getEncryptionKeyVersionName(),
+            "Default key version name is incorrect.");
 
         kmscp.invalidateCache(keyName);
         kq.get(keyName).put(mockEKV);
-        assertEquals("Key version incorrect after invalidating cache + putting"
-                + " mock key.", mockVersionName,
-            kmscp.generateEncryptedKey(keyName).getEncryptionKeyVersionName());
+        assertEquals(mockVersionName,
+            kmscp.generateEncryptedKey(keyName).getEncryptionKeyVersionName(),
+            "Key version incorrect after invalidating cache + putting"
+            + " mock key.");
 
         // test new version is returned after invalidation.
         for (int i = 0; i < 100; ++i) {
           kq.get(keyName).put(mockEKV);
           kmscp.invalidateCache(keyName);
-          assertEquals("Cache invalidation guarantee failed.", "k1@0",
-              kmscp.generateEncryptedKey(keyName)
-                  .getEncryptionKeyVersionName());
+          assertEquals("k1@0", kmscp.generateEncryptedKey(keyName)
+              .getEncryptionKeyVersionName(), "Cache invalidation guarantee failed.");
         }
         return null;
       }
@@ -1633,38 +1634,38 @@ public class TestKMS {
 
         final KeyVersion currKv =
             doAs("GET", new PrivilegedExceptionAction<KeyVersion>() {
-          @Override
-          public KeyVersion run() throws Exception {
-            KeyProvider kp = createProvider(uri, conf);
-            try {
-              kp.getKeyVersion("k1@0");
-              KeyVersion kv = kp.getCurrentKey("k1");
-              return kv;
-            } catch (Exception ex) {
-              fail(ex.toString());
-            }
-            return null;
-          }
-        });
+              @Override
+              public KeyVersion run() throws Exception {
+                KeyProvider kp = createProvider(uri, conf);
+                try {
+                  kp.getKeyVersion("k1@0");
+                  KeyVersion kv = kp.getCurrentKey("k1");
+                  return kv;
+                } catch (Exception ex) {
+                    fail(ex.toString());
+                }
+                return null;
+              }
+            });
 
         final EncryptedKeyVersion encKv =
             doAs("GENERATE_EEK",
                 new PrivilegedExceptionAction<EncryptedKeyVersion>() {
-          @Override
-          public EncryptedKeyVersion run() throws Exception {
-            KeyProvider kp = createProvider(uri, conf);
-            try {
-              KeyProviderCryptoExtension kpCE = KeyProviderCryptoExtension.
-                      createKeyProviderCryptoExtension(kp);
-              EncryptedKeyVersion ek1 =
-                  kpCE.generateEncryptedKey(currKv.getName());
-              return ek1;
-            } catch (Exception ex) {
-              fail(ex.toString());
-            }
-            return null;
-          }
-        });
+                @Override
+                public EncryptedKeyVersion run() throws Exception {
+                  KeyProvider kp = createProvider(uri, conf);
+                  try {
+                    KeyProviderCryptoExtension kpCE = KeyProviderCryptoExtension.
+                            createKeyProviderCryptoExtension(kp);
+                    EncryptedKeyVersion ek1 =
+                        kpCE.generateEncryptedKey(currKv.getName());
+                    return ek1;
+                  } catch (Exception ex) {
+                    fail(ex.toString());
+                  }
+                  return null;
+                }
+            });
 
         doAs("GENERATE_EEK", new PrivilegedExceptionAction<Void>() {
           @Override
@@ -1993,7 +1994,7 @@ public class TestKMS {
     } catch (SocketTimeoutException e) {
       caughtTimeout = true;
     } catch (IOException e) {
-      fail("Caught unexpected exception" + e.toString());
+      assertTrue(false, "Caught unexpected exception" + e.toString());
     }
 
     caughtTimeout = false;
@@ -2004,7 +2005,7 @@ public class TestKMS {
     } catch (SocketTimeoutException e) {
       caughtTimeout = true;
     } catch (IOException e) {
-      fail("Caught unexpected exception" + e.toString());
+      assertTrue(false, "Caught unexpected exception" + e.toString());
     }
 
     caughtTimeout = false;
@@ -2017,7 +2018,7 @@ public class TestKMS {
     } catch (SocketTimeoutException e) {
       caughtTimeout = true;
     } catch (IOException e) {
-      fail("Caught unexpected exception" + e.toString());
+      assertTrue(false, "Caught unexpected exception" + e.toString());
     }
 
     assertTrue(caughtTimeout);
@@ -2193,10 +2194,8 @@ public class TestKMS {
 
   private Text getTokenService(KeyProvider provider) {
     assertTrue((provider instanceof LoadBalancingKMSClientProvider),
-        "KeyProvider should be an instance of " +
-        "LoadBalancingKMSClientProvider");
-    assertEquals(1,
-        ((LoadBalancingKMSClientProvider)provider).getProviders().length,
+        "KeyProvider should be an instance of " + "LoadBalancingKMSClientProvider");
+    assertEquals(1, ((LoadBalancingKMSClientProvider)provider).getProviders().length,
         "Num client providers should be 1");
     final Text tokenService = new Text(
         (((LoadBalancingKMSClientProvider)provider).getProviders()[0])

@@ -548,7 +548,7 @@ public class CommitOperations extends AbstractStoreOperation
 
       statistics.commitCreated();
       uploadId = writeOperations.initiateMultiPartUpload(destKey,
-          PutObjectOptions.keepingDirs());
+          PutObjectOptions.defaultOptions());
       long length = localFile.length();
 
       SinglePendingCommit commitData = new SinglePendingCommit();

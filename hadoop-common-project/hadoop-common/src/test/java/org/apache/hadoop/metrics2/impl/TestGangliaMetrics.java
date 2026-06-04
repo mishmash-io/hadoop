@@ -19,7 +19,7 @@
 package org.apache.hadoop.metrics2.impl;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.fail;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.io.IOException;
 import java.net.DatagramPacket;
@@ -45,6 +45,7 @@ import org.apache.hadoop.metrics2.sink.ganglia.GangliaSink30;
 import org.apache.hadoop.metrics2.sink.ganglia.GangliaSink31;
 import org.junit.jupiter.api.Test;
 import org.apache.hadoop.metrics2.sink.ganglia.GangliaMetricsTestHelper;
+import org.junit.jupiter.api.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -168,12 +169,11 @@ public class TestGangliaMetrics {
 
     for (int index = 0; index < foundMetrics.length; index++) {
       if (!foundMetrics[index]) {
-        fail("Missing metrics: " + expectedMetrics[index]);
+        assertTrue(false, "Missing metrics: " + expectedMetrics[index]);
       }
     }
 
-    assertEquals(expectedCount, bytearrlist.size(),
-        "Mismatch in record count: ");
+    assertEquals(expectedCount, bytearrlist.size(), "Mismatch in record count: ");
   }
 
   @SuppressWarnings("unused")

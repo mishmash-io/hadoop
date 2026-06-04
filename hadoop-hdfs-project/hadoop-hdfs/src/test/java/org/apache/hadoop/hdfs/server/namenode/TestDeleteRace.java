@@ -54,12 +54,13 @@ import org.apache.hadoop.hdfs.server.blockmanagement.DatanodeStorageInfo;
 import org.apache.hadoop.hdfs.server.datanode.DataNode;
 import org.apache.hadoop.hdfs.server.datanode.InternalDataNodeTestUtils;
 import org.apache.hadoop.hdfs.server.namenode.snapshot.SnapshotTestHelper;
+import org.apache.hadoop.hdfs.util.RwLockMode;
 import org.apache.hadoop.io.IOUtils;
 import org.apache.hadoop.net.Node;
 import org.apache.hadoop.test.GenericTestUtils;
 import org.apache.hadoop.test.GenericTestUtils.DelayAnswer;
 import org.apache.hadoop.test.Whitebox;
-import org.junit.jupiter.api.Assertions;
+import org.apache.hadoop.util.concurrent.SubjectInheritingThread;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.Timeout;
 import org.mockito.Mockito;
@@ -67,15 +68,16 @@ import org.mockito.Mockito;
 import static org.apache.hadoop.hdfs.DFSConfigKeys.DFS_LEASE_HARDLIMIT_KEY;
 import static org.apache.hadoop.hdfs.DFSConfigKeys.DFS_NAMENODE_LEASE_RECHECK_INTERVAL_MS_KEY;
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNotEquals;
+import static org.junit.jupiter.api.Assertions.fail;
 import static org.mockito.ArgumentMatchers.any;
+import static org.junit.jupiter.api.Assertions.assertNotEquals;
 
 /**
  * Test race between delete and other operations.  For now only addBlock()
  * is tested since all others are acquiring FSNamesystem lock for the 
  * whole duration.
  */
-@Timeout(value=180000, unit=TimeUnit.MILLISECONDS)
+@Timeout(60 * 3)
 public class TestDeleteRace {
   private static final int BLOCK_SIZE = 4096;
   private static final Logger LOG = LoggerFactory.getLogger(TestDeleteRace.class);
@@ -108,14 +110,14 @@ public class TestDeleteRace {
             "/"), "s1");
       }
 
-      Thread deleteThread = new DeleteThread(fs, filePath);
+      SubjectInheritingThread deleteThread = new DeleteThread(fs, filePath);
       deleteThread.start();
 
       try {
         // write data and syn to make sure a block is allocated.
         out.write(new byte[32], 0, 32);
         out.hsync();
-        Assertions.fail("Should have failed.");
+        fail("Should have failed.");
       } catch (FileNotFoundException e) {
         GenericTestUtils.assertExceptionContains(filePath.getName(), e);
       }
@@ -148,7 +150,7 @@ public class TestDeleteRace {
     }
   }
 
-  private class DeleteThread extends Thread {
+  private class DeleteThread extends SubjectInheritingThread {
     private FileSystem fs;
     private Path path;
 
@@ -158,7 +160,7 @@ public class TestDeleteRace {
     }
 
     @Override
-    public void run() {
+    public void work() {
       try {
         Thread.sleep(1000);
         LOG.info("Deleting" + path);
@@ -177,7 +179,7 @@ public class TestDeleteRace {
     }
   }
 
-  private class RenameThread extends Thread {
+  private class RenameThread extends SubjectInheritingThread {
     private FileSystem fs;
     private Path from;
     private Path to;
@@ -189,7 +191,7 @@ public class TestDeleteRace {
     }
 
     @Override
-    public void run() {
+    public void work() {
       try {
         Thread.sleep(1000);
         LOG.info("Renaming " + from + " to " + to);
@@ -359,14 +361,14 @@ public class TestDeleteRace {
   }
 
   @Test
-  @Timeout(value = 600000, unit = TimeUnit.MILLISECONDS)
+  @Timeout(value = 600)
   public void testDeleteAndCommitBlockSynchonizationRaceNoSnapshot()
       throws Exception {
     testDeleteAndCommitBlockSynchronizationRace(false);
   }
 
   @Test
-  @Timeout(value = 600000, unit = TimeUnit.MILLISECONDS)
+  @Timeout(value = 600)
   public void testDeleteAndCommitBlockSynchronizationRaceHasSnapshot()
       throws Exception {
     testDeleteAndCommitBlockSynchronizationRace(true);
@@ -429,7 +431,7 @@ public class TestDeleteRace {
   }
 
   @Test
-  @Timeout(value = 20000, unit = TimeUnit.MILLISECONDS)
+  @Timeout(value = 20)
   public void testOpenRenameRace() throws Exception {
     Configuration config = new Configuration();
     config.setLong(DFSConfigKeys.DFS_NAMENODE_ACCESSTIME_PRECISION_KEY, 1);
@@ -456,14 +458,14 @@ public class TestDeleteRace {
       // 6.release writeLock, it's fair lock so open thread gets read lock.
       // 7.open thread unlocks, rename gets write lock and does rename.
       // 8.rename thread unlocks, open thread gets write lock and update time.
-      Thread open = new Thread(() -> {
+      Thread open = new SubjectInheritingThread(() -> {
         try {
           openSem.release();
           fsn.getBlockLocations("foo", src, 0, 5);
         } catch (IOException e) {
         }
       });
-      Thread rename = new Thread(() -> {
+      Thread rename = new SubjectInheritingThread(() -> {
         try {
           openSem.acquire();
           renameSem.release();
@@ -472,7 +474,7 @@ public class TestDeleteRace {
         } catch (InterruptedException e) {
         }
       });
-      fsn.writeLock();
+      fsn.writeLock(RwLockMode.GLOBAL);
       open.start();
       openSem.acquire();
       Thread.yield();
@@ -480,7 +482,7 @@ public class TestDeleteRace {
       rename.start();
       renameSem.acquire();
       Thread.yield();
-      fsn.writeUnlock();
+      fsn.writeUnlock(RwLockMode.GLOBAL, "testOpenRenameRace");
 
       // wait open and rename threads finish.
       open.join();

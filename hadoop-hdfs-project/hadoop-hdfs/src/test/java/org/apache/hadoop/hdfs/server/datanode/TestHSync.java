@@ -39,7 +39,6 @@ import org.apache.hadoop.io.SequenceFile;
 import org.apache.hadoop.io.SequenceFile.CompressionType;
 import org.apache.hadoop.io.SequenceFile.Writer;
 import org.apache.hadoop.io.compress.DefaultCodec;
-
 import org.junit.jupiter.api.Test;
 
 public class TestHSync {

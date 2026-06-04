@@ -70,11 +70,8 @@ public class TestPrometheusMetricsSink {
     //THEN
     String writtenMetrics = stream.toString(UTF_8.name());
     System.out.println(writtenMetrics);
-    assertTrue(
-        writtenMetrics.contains(
-            "test_metrics_num_bucket_create_fails{context=\"dfs\""),
-        "The expected metric line is missing from prometheus metrics output"
-    );
+    assertTrue(writtenMetrics.contains("test_metrics_num_bucket_create_fails{context=\"dfs\""),
+        "The expected metric line is missing from prometheus metrics output");
 
     metrics.unregisterSource("TestMetrics");
     metrics.stop();
@@ -111,16 +108,12 @@ public class TestPrometheusMetricsSink {
     //THEN
     String writtenMetrics = stream.toString(UTF_8.name());
     System.out.println(writtenMetrics);
-    assertTrue(
-        writtenMetrics.contains(
-            "test_metrics_num_bucket_create_fails{context=\"dfs\",testtag=\"testTagValue1\""),
-        "The expected first metric line is missing from prometheus metrics output"
-    );
-    assertTrue(
-        writtenMetrics.contains(
-            "test_metrics_num_bucket_create_fails{context=\"dfs\",testtag=\"testTagValue2\""),
-        "The expected second metric line is missing from prometheus metrics output"
-    );
+    assertTrue(writtenMetrics.contains(
+        "test_metrics_num_bucket_create_fails{context=\"dfs\",testtag=\"testTagValue1\""),
+        "The expected first metric line is missing from prometheus metrics output");
+    assertTrue(writtenMetrics.contains(
+        "test_metrics_num_bucket_create_fails{context=\"dfs\",testtag=\"testTagValue2\""),
+        "The expected second metric line is missing from prometheus metrics output");
 
     metrics.unregisterSource("TestMetrics1");
     metrics.unregisterSource("TestMetrics2");
@@ -162,16 +155,12 @@ public class TestPrometheusMetricsSink {
     //THEN
     String writtenMetrics = stream.toString(UTF_8.name());
     System.out.println(writtenMetrics);
-    assertFalse(
-        writtenMetrics.contains(
-            "test_metrics_num_bucket_create_fails{context=\"dfs\",testtag=\"testTagValue1\""),
-        "The first metric should not exist after flushing"
-    );
-    assertTrue(
-        writtenMetrics.contains(
-            "test_metrics_num_bucket_create_fails{context=\"dfs\",testtag=\"testTagValue2\""),
-        "The expected metric line is missing from prometheus metrics output"
-    );
+    assertFalse(writtenMetrics.contains(
+        "test_metrics_num_bucket_create_fails{context=\"dfs\",testtag=\"testTagValue1\""),
+        "The first metric should not exist after flushing");
+    assertTrue(writtenMetrics.contains(
+        "test_metrics_num_bucket_create_fails{context=\"dfs\",testtag=\"testTagValue2\""),
+        "The expected metric line is missing from prometheus metrics output");
 
     metrics.unregisterSource("TestMetrics");
     metrics.stop();

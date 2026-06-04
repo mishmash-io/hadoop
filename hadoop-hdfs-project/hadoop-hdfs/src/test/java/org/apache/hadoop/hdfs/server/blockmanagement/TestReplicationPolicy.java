@@ -18,11 +18,18 @@
 package org.apache.hadoop.hdfs.server.blockmanagement;
 
 import static org.apache.hadoop.hdfs.DFSConfigKeys.DFS_NAMENODE_REDUNDANCY_CONSIDERLOADBYSTORAGETYPE_KEY;
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -36,7 +43,6 @@ import java.util.Set;
 import java.util.concurrent.ConcurrentLinkedDeque;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.ThreadLocalRandom;
-import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicLong;
 
 import org.apache.hadoop.conf.Configuration;
@@ -47,6 +53,7 @@ import org.apache.hadoop.hdfs.DFSConfigKeys;
 import org.apache.hadoop.hdfs.DFSTestUtil;
 import org.apache.hadoop.hdfs.DFSUtil;
 import org.apache.hadoop.hdfs.HdfsConfiguration;
+import org.apache.hadoop.test.LogCapturingAppender;
 import org.apache.hadoop.hdfs.MiniDFSCluster;
 import org.apache.hadoop.hdfs.TestBlockStoragePolicy;
 import org.apache.hadoop.hdfs.protocol.Block;
@@ -64,15 +71,19 @@ import org.apache.hadoop.hdfs.server.namenode.INodeFile;
 import org.apache.hadoop.hdfs.server.namenode.Namesystem;
 import org.apache.hadoop.hdfs.server.namenode.TestINodeFile;
 import org.apache.hadoop.hdfs.server.protocol.DatanodeStorage;
+import org.apache.hadoop.hdfs.util.RwLockMode;
 import org.apache.hadoop.net.Node;
-import org.apache.hadoop.test.LogCapturingAppender;
 import org.apache.hadoop.util.ReflectionUtils;
-import org.apache.logging.log4j.Level;
-import org.apache.logging.log4j.core.LogEvent;
+import org.apache.log4j.Level;
+import org.apache.log4j.Logger;
+import org.apache.log4j.spi.LoggingEvent;
+import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.Timeout;
-import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.ParameterizedClass;
 import org.junit.jupiter.params.provider.MethodSource;
 
+@MethodSource("data")
+@ParameterizedClass
 public class TestReplicationPolicy extends BaseReplicationPolicyTest {
 
   private static final String filename = "/dummyfile.txt";
@@ -80,6 +91,10 @@ public class TestReplicationPolicy extends BaseReplicationPolicyTest {
   private static final long staleInterval =
       DFSConfigKeys.DFS_NAMENODE_STALE_DATANODE_INTERVAL_DEFAULT;
   private static AtomicLong mockINodeId = new AtomicLong(0);
+
+  public TestReplicationPolicy(String blockPlacementPolicyClassName) {
+    this.blockPlacementPolicy = blockPlacementPolicyClassName;
+  }
 
   public static Iterable<Object[]> data() {
     return Arrays.asList(new Object[][] {
@@ -131,10 +146,8 @@ public class TestReplicationPolicy extends BaseReplicationPolicyTest {
    * Test whether the remaining space per storage is individually
    * considered.
    */
-  @MethodSource("data")
-  @ParameterizedTest
-  public void testChooseNodeWithMultipleStorages1(String blockPlacementPolicyClassName) throws Exception {
-    setupCluster(blockPlacementPolicyClassName);
+  @Test
+  public void testChooseNodeWithMultipleStorages1() throws Exception {
     updateHeartbeatWithUsage(dataNodes[5],
         2* HdfsServerConstants.MIN_BLOCKS_FOR_WRITE*BLOCK_SIZE, 0L,
         (2*HdfsServerConstants.MIN_BLOCKS_FOR_WRITE*BLOCK_SIZE)/3, 0L,
@@ -157,10 +170,8 @@ public class TestReplicationPolicy extends BaseReplicationPolicyTest {
    * Test whether all storages on the datanode are considered while
    * choosing target to place block.
    */
-  @MethodSource("data")
-  @ParameterizedTest
-  public void testChooseNodeWithMultipleStorages2(String blockPlacementPolicyClassName) throws Exception {
-    setupCluster(blockPlacementPolicyClassName);
+  @Test
+  public void testChooseNodeWithMultipleStorages2() throws Exception {
     updateHeartbeatWithUsage(dataNodes[5],
         2* HdfsServerConstants.MIN_BLOCKS_FOR_WRITE*BLOCK_SIZE, 0L,
         (2*HdfsServerConstants.MIN_BLOCKS_FOR_WRITE*BLOCK_SIZE)/3, 0L,
@@ -188,10 +199,8 @@ public class TestReplicationPolicy extends BaseReplicationPolicyTest {
    * the 1st is on dataNodes[0] and the 2nd is on a different rack.
    * @throws Exception
    */
-  @MethodSource("data")
-  @ParameterizedTest
-  public void testChooseTarget1(String blockPlacementPolicyClassName) throws Exception {
-    setupCluster(blockPlacementPolicyClassName);
+  @Test
+  public void testChooseTarget1() throws Exception {
     updateHeartbeatWithUsage(dataNodes[0],
         2* HdfsServerConstants.MIN_BLOCKS_FOR_WRITE*BLOCK_SIZE, 0L,
         HdfsServerConstants.MIN_BLOCKS_FOR_WRITE*BLOCK_SIZE, 0L,
@@ -234,10 +243,8 @@ public class TestReplicationPolicy extends BaseReplicationPolicyTest {
    * should be placed on a third rack.
    * @throws Exception
    */
-  @MethodSource("data")
-  @ParameterizedTest
-  public void testChooseTarget2(String blockPlacementPolicyClassName) throws Exception {
-    setupCluster(blockPlacementPolicyClassName); 
+  @Test
+  public void testChooseTarget2() throws Exception { 
     Set<Node> excludedNodes;
     DatanodeStorageInfo[] targets;
     List<DatanodeStorageInfo> chosenNodes = new ArrayList<>();
@@ -310,10 +317,8 @@ public class TestReplicationPolicy extends BaseReplicationPolicyTest {
    * and the rest should be placed on the third rack.
    * @throws Exception
    */
-  @MethodSource("data")
-  @ParameterizedTest
-  public void testChooseTarget3(String blockPlacementPolicyClassName) throws Exception {
-    setupCluster(blockPlacementPolicyClassName);
+  @Test
+  public void testChooseTarget3() throws Exception {
     // make data node 0 to be not qualified to choose
     updateHeartbeatWithUsage(dataNodes[0],
         2* HdfsServerConstants.MIN_BLOCKS_FOR_WRITE*BLOCK_SIZE, 0L,
@@ -351,7 +356,7 @@ public class TestReplicationPolicy extends BaseReplicationPolicyTest {
 
     resetHeartbeatForStorages();
   }
-
+  
   /**
    * In this testcase, client is dataNodes[0], but none of the nodes on rack 1
    * is qualified to be chosen. So the 1st replica should be placed on either
@@ -360,10 +365,8 @@ public class TestReplicationPolicy extends BaseReplicationPolicyTest {
    * the 3rd replica should be placed on the same rack as the 1st replica,
    * @throws Exception
    */
-  @MethodSource("data")
-  @ParameterizedTest
-  public void testChoooseTarget4(String blockPlacementPolicyClassName) throws Exception {
-    setupCluster(blockPlacementPolicyClassName);
+  @Test
+  public void testChoooseTarget4() throws Exception {
     // make data node 0 & 1 to be not qualified to choose: not enough disk space
     for(int i=0; i<2; i++) {
       updateHeartbeatWithUsage(dataNodes[i],
@@ -403,10 +406,8 @@ public class TestReplicationPolicy extends BaseReplicationPolicyTest {
    * the 3rd replica should be placed on the same rack as the 2nd replica,
    * @throws Exception
    */
-  @MethodSource("data")
-  @ParameterizedTest
-  public void testChooseTarget5(String blockPlacementPolicyClassName) throws Exception {
-    setupCluster(blockPlacementPolicyClassName);
+  @Test
+  public void testChooseTarget5() throws Exception {
     DatanodeDescriptor writerDesc =
       DFSTestUtil.getDatanodeDescriptor("7.7.7.7", "/d2/r4");
 
@@ -432,10 +433,8 @@ public class TestReplicationPolicy extends BaseReplicationPolicyTest {
    * one rack is actually available.
    * @throws Exception
    */
-  @MethodSource("data")
-  @ParameterizedTest
-  public void testChooseTarget6(String blockPlacementPolicyClassName) throws Exception {
-    setupCluster(blockPlacementPolicyClassName);
+  @Test
+  public void testChooseTarget6() throws Exception {
     DatanodeStorageInfo storage = DFSTestUtil.createDatanodeStorageInfo(
         "DS-xxxx", "7.7.7.7", "/d2/r3", "host7");
     DatanodeDescriptor newDn = storage.getDatanodeDescriptor();
@@ -484,37 +483,33 @@ public class TestReplicationPolicy extends BaseReplicationPolicyTest {
    * check the result, with stale node avoidance on the write path enabled.
    * @throws Exception
    */
-  @MethodSource("data")
-  @ParameterizedTest
-  public void testChooseTargetWithMoreThanAvailableNodesWithStaleness(String blockPlacementPolicyClassName)
+  @Test
+  public void testChooseTargetWithMoreThanAvailableNodesWithStaleness()
       throws Exception {
-    setupCluster(blockPlacementPolicyClassName);
     try {
       namenode.getNamesystem().getBlockManager().getDatanodeManager()
         .setNumStaleNodes(dataNodes.length);
-      testChooseTargetWithMoreThanAvailableNodes(blockPlacementPolicyClassName);
+      testChooseTargetWithMoreThanAvailableNodes();
     } finally {
       namenode.getNamesystem().getBlockManager().getDatanodeManager()
         .setNumStaleNodes(0);
     }
   }
-
+  
   /**
    * In this testcase, it tries to choose more targets than available nodes and
    * check the result. 
    * @throws Exception
    */
-  @MethodSource("data")
-  @ParameterizedTest
-  public void testChooseTargetWithMoreThanAvailableNodes(String blockPlacementPolicyClassName) throws Exception {
-    setupCluster(blockPlacementPolicyClassName);
+  @Test
+  public void testChooseTargetWithMoreThanAvailableNodes() throws Exception {
     // make data node 0 & 1 to be not qualified to choose: not enough disk space
     for(int i=0; i<2; i++) {
       updateHeartbeatWithUsage(dataNodes[i],
           2* HdfsServerConstants.MIN_BLOCKS_FOR_WRITE*BLOCK_SIZE, 0L,
           (HdfsServerConstants.MIN_BLOCKS_FOR_WRITE-1)*BLOCK_SIZE, 0L, 0L, 0L, 0, 0);
     }
-    
+
     final Deque<LogEvent> log = new ConcurrentLinkedDeque<>();
     LogCapturingAppender.collectEvents(null, log);
 
@@ -524,13 +519,15 @@ public class TestReplicationPolicy extends BaseReplicationPolicyTest {
       DatanodeStorageInfo[] targets = chooseTarget(dataNodes.length);
       assertEquals(targets.length, dataNodes.length - 2);
 
+      final List<LoggingEvent> log = appender.getLog();
+      assertNotNull(log);
       assertFalse(log.size() == 0);
-      final LogEvent lastLogEntry = log.peekLast();
-
-      assertTrue(Level.WARN.isMoreSpecificThan(lastLogEntry.getLevel()));
+      final LoggingEvent lastLogEntry = log.get(log.size() - 1);
+    
+      assertTrue(Level.WARN.isGreaterOrEqual(lastLogEntry.getLevel()));
       // Suppose to place replicas on each node but two data nodes are not
       // available for placing replica, so here we expect a short of 2
-      assertTrue((lastLogEntry.getMessage().getFormattedMessage()).contains("in need of 2"));
+      assertTrue(((String)lastLogEntry.getMessage()).contains("in need of 2"));
 
       resetHeartbeatForStorages();
     } finally {
@@ -562,10 +559,8 @@ public class TestReplicationPolicy extends BaseReplicationPolicyTest {
     return false;
   }
 
-  @MethodSource("data")
-  @ParameterizedTest
-  public void testChooseTargetWithStaleNodes(String blockPlacementPolicyClassName) throws Exception {
-    setupCluster(blockPlacementPolicyClassName);
+  @Test
+  public void testChooseTargetWithStaleNodes() throws Exception {
     // Set dataNodes[0] as stale
     DFSTestUtil.resetLastUpdatesWithOffset(dataNodes[0], -(staleInterval + 1));
     namenode.getNamesystem().getBlockManager()
@@ -600,10 +595,8 @@ public class TestReplicationPolicy extends BaseReplicationPolicyTest {
    * 
    * @throws Exception
    */
-  @MethodSource("data")
-  @ParameterizedTest
-  public void testChooseTargetWithHalfStaleNodes(String blockPlacementPolicyClassName) throws Exception {
-    setupCluster(blockPlacementPolicyClassName);
+  @Test
+  public void testChooseTargetWithHalfStaleNodes() throws Exception {
     // Set dataNodes[0], dataNodes[1], and dataNodes[2] as stale
     for (int i = 0; i < 3; i++) {
       DFSTestUtil
@@ -645,10 +638,8 @@ public class TestReplicationPolicy extends BaseReplicationPolicyTest {
       .getDatanodeManager().getHeartbeatManager().heartbeatCheck();
   }
 
-  @MethodSource("data")
-  @ParameterizedTest
-  public void testChooseTargetWithMoreThanHalfStaleNodes(String blockPlacementPolicyClassName) throws Exception {
-    setupCluster(blockPlacementPolicyClassName);
+  @Test
+  public void testChooseTargetWithMoreThanHalfStaleNodes() throws Exception {
     HdfsConfiguration conf = new HdfsConfiguration();
     conf.setBoolean(
         DFSConfigKeys.DFS_NAMENODE_AVOID_STALE_DATANODE_FOR_WRITE_KEY, true);
@@ -746,7 +737,7 @@ public class TestReplicationPolicy extends BaseReplicationPolicyTest {
       miniCluster.shutdown();
     }
   }
-
+  
   /**
    * This testcase tests re-replication, when dataNodes[0] is already chosen.
    * So the 1st replica can be placed on random rack. 
@@ -754,10 +745,8 @@ public class TestReplicationPolicy extends BaseReplicationPolicyTest {
    * the 1st replica. The 3rd replica can be placed randomly.
    * @throws Exception
    */
-  @MethodSource("data")
-  @ParameterizedTest
-  public void testRereplicate1(String blockPlacementPolicyClassName) throws Exception {
-    setupCluster(blockPlacementPolicyClassName);
+  @Test
+  public void testRereplicate1() throws Exception {
     List<DatanodeStorageInfo> chosenNodes = new ArrayList<>();
     chosenNodes.add(storages[0]);
     DatanodeStorageInfo[] targets;
@@ -787,10 +776,8 @@ public class TestReplicationPolicy extends BaseReplicationPolicyTest {
    * the rest replicas can be placed randomly,
    * @throws Exception
    */
-  @MethodSource("data")
-  @ParameterizedTest
-  public void testRereplicate2(String blockPlacementPolicyClassName) throws Exception {
-    setupCluster(blockPlacementPolicyClassName);
+  @Test
+  public void testRereplicate2() throws Exception {
     List<DatanodeStorageInfo> chosenNodes = new ArrayList<>();
     chosenNodes.add(storages[0]);
     chosenNodes.add(storages[1]);
@@ -816,10 +803,8 @@ public class TestReplicationPolicy extends BaseReplicationPolicyTest {
    * the rest replicas can be placed randomly,
    * @throws Exception
    */
-  @MethodSource("data")
-  @ParameterizedTest
-  public void testRereplicate3(String blockPlacementPolicyClassName) throws Exception {
-    setupCluster(blockPlacementPolicyClassName);
+  @Test
+  public void testRereplicate3() throws Exception {
     List<DatanodeStorageInfo> chosenNodes = new ArrayList<>();
     chosenNodes.add(storages[0]);
     chosenNodes.add(storages[2]);
@@ -863,11 +848,9 @@ public class TestReplicationPolicy extends BaseReplicationPolicyTest {
    * Test for the high priority blocks are processed before the low priority
    * blocks.
    */
-  @MethodSource("data")
-  @ParameterizedTest
-  @Timeout(value = 60000, unit = TimeUnit.MILLISECONDS)
-  public void testReplicationWithPriority(String blockPlacementPolicyClassName) throws Exception {
-    setupCluster(blockPlacementPolicyClassName);
+  @Test
+  @Timeout(value = 60)
+  public void testReplicationWithPriority() throws Exception {
     int DFS_NAMENODE_REPLICATION_INTERVAL = 1000;
     int HIGH_PRIORITY = 0;
     Configuration conf = new Configuration();
@@ -903,14 +886,12 @@ public class TestReplicationPolicy extends BaseReplicationPolicyTest {
       cluster.shutdown();
     }
   }
-
+  
   /**
    * Test for the ChooseLowRedundancyBlocks are processed based on priority
    */
-  @MethodSource("data")
-  @ParameterizedTest
-  public void testChooseLowRedundancyBlocks(String blockPlacementPolicyClassName) throws Exception {
-    setupCluster(blockPlacementPolicyClassName);
+  @Test
+  public void testChooseLowRedundancyBlocks() throws Exception {
     LowRedundancyBlocks lowRedundancyBlocks = new LowRedundancyBlocks();
 
     for (int i = 0; i < 5; i++) {
@@ -970,21 +951,20 @@ public class TestReplicationPolicy extends BaseReplicationPolicyTest {
       List<List<BlockInfo>> chosenBlocks, int... expectedSizes) {
     int i = 0;
     for(; i < chosenBlocks.size(); i++) {
-      assertEquals(expectedSizes[i], chosenBlocks.get(i).size(), "Not returned the expected number for i=" + i);
+      assertEquals(expectedSizes[i], chosenBlocks.get(i).size(),
+          "Not returned the expected number for i=" + i);
     }
     for(; i < expectedSizes.length; i++) {
       assertEquals(0, expectedSizes[i], "Expected size is non-zero for i=" + i);
     }
   }
-
+  
   /**
    * Test for the chooseReplicaToDelete are processed based on 
    * block locality and free space
    */
-  @MethodSource("data")
-  @ParameterizedTest
-  public void testChooseReplicaToDelete(String blockPlacementPolicyClassName) throws Exception {
-    setupCluster(blockPlacementPolicyClassName);
+  @Test
+  public void testChooseReplicaToDelete() throws Exception {
     List<DatanodeStorageInfo> replicaList = new ArrayList<>();
     final Map<String, List<DatanodeStorageInfo>> rackMap
         = new HashMap<String, List<DatanodeStorageInfo>>();
@@ -1048,10 +1028,8 @@ public class TestReplicationPolicy extends BaseReplicationPolicyTest {
    * Test for the chooseReplicaToDelete are processed based on
    * EC and STRIPED Policy.
    */
-  @MethodSource("data")
-  @ParameterizedTest
-  public void testStripedChooseReplicaToDelete(String blockPlacementPolicyClassName) throws Exception {
-    setupCluster(blockPlacementPolicyClassName);
+  @Test
+  public void testStripedChooseReplicaToDelete() throws Exception {
     List<DatanodeStorageInfo> replicaList = new ArrayList<>();
     List<DatanodeStorageInfo> candidate = new ArrayList<>();
     final Map<String, List<DatanodeStorageInfo>> rackMap
@@ -1112,10 +1090,8 @@ public class TestReplicationPolicy extends BaseReplicationPolicyTest {
     return sum;
   }
 
-  @MethodSource("data")
-  @ParameterizedTest
-  public void testChooseReplicasToDelete(String blockPlacementPolicyClassName) throws Exception {
-    setupCluster(blockPlacementPolicyClassName);
+  @Test
+  public void testChooseReplicasToDelete() throws Exception {
     Collection<DatanodeStorageInfo> nonExcess = new ArrayList<>();
     nonExcess.add(storages[0]);
     nonExcess.add(storages[1]);
@@ -1230,13 +1206,11 @@ public class TestReplicationPolicy extends BaseReplicationPolicyTest {
     assertEquals(0, excessReplicas.size());
   }
 
-  @MethodSource("data")
-  @ParameterizedTest
-  public void testUseDelHint(String blockPlacementPolicyClassName) throws Exception {
-    setupCluster(blockPlacementPolicyClassName);
+ @Test
+  public void testUseDelHint() throws Exception {
     List<StorageType> excessTypes = new ArrayList<>();
     excessTypes.add(StorageType.ARCHIVE);
-    BlockPlacementPolicyDefault policyDefault =
+   BlockPlacementPolicyDefault policyDefault =
        (BlockPlacementPolicyDefault) replicator;
     // no delHint
     assertFalse(policyDefault.useDelHint(null, null, null, null, null));
@@ -1264,10 +1238,8 @@ public class TestReplicationPolicy extends BaseReplicationPolicyTest {
         exactlyOne, excessTypes));
   }
 
-  @MethodSource("data")
-  @ParameterizedTest
-  public void testIsMovable(String blockPlacementPolicyClassName) throws Exception {
-    setupCluster(blockPlacementPolicyClassName);
+  @Test
+  public void testIsMovable() throws Exception {
     List<DatanodeInfo> candidates = new ArrayList<>();
 
     // after the move, the number of racks remains 2.
@@ -1307,75 +1279,66 @@ public class TestReplicationPolicy extends BaseReplicationPolicyTest {
    * DFSUtil.getInvalidateWorkPctPerIteration() is positive, 
    * and whether an IllegalArgumentException will be thrown 
    * when 0.0f is retrieved
- * @throws Exception 
    */
-  @MethodSource("data")
-  @ParameterizedTest
-  public void testGetInvalidateWorkPctPerIteration(String blockPlacementPolicyClassName) throws Exception {
-    setupCluster(blockPlacementPolicyClassName);
+  @Test
+  public void testGetInvalidateWorkPctPerIteration() {
+    Configuration conf = new Configuration();
+    float blocksInvalidateWorkPct = DFSUtil
+        .getInvalidateWorkPctPerIteration(conf);
+    assertTrue(blocksInvalidateWorkPct > 0);
+
+    conf.set(DFSConfigKeys.DFS_NAMENODE_INVALIDATE_WORK_PCT_PER_ITERATION,
+        "0.5f");
+    blocksInvalidateWorkPct = DFSUtil.getInvalidateWorkPctPerIteration(conf);
+    assertEquals(blocksInvalidateWorkPct, 0.5f, blocksInvalidateWorkPct * 1e-7);
+    
+    conf.set(DFSConfigKeys.
+        DFS_NAMENODE_INVALIDATE_WORK_PCT_PER_ITERATION, "1.0f");
+    blocksInvalidateWorkPct = DFSUtil.getInvalidateWorkPctPerIteration(conf);
+    assertEquals(blocksInvalidateWorkPct, 1.0f, blocksInvalidateWorkPct * 1e-7);
+    
+    conf.set(DFSConfigKeys.
+        DFS_NAMENODE_INVALIDATE_WORK_PCT_PER_ITERATION, "0.0f");
     assertThrows(IllegalArgumentException.class, () -> {
-      Configuration conf = new Configuration();
-      float blocksInvalidateWorkPct = DFSUtil
-          .getInvalidateWorkPctPerIteration(conf);
-      assertTrue(blocksInvalidateWorkPct > 0);
-
-      conf.set(DFSConfigKeys.DFS_NAMENODE_INVALIDATE_WORK_PCT_PER_ITERATION,
-          "0.5f");
-      blocksInvalidateWorkPct = DFSUtil.getInvalidateWorkPctPerIteration(conf);
-      assertEquals(blocksInvalidateWorkPct, 0.5f, blocksInvalidateWorkPct * 1e-7);
-
-      conf.set(DFSConfigKeys.
-          DFS_NAMENODE_INVALIDATE_WORK_PCT_PER_ITERATION, "1.0f");
-      blocksInvalidateWorkPct = DFSUtil.getInvalidateWorkPctPerIteration(conf);
-      assertEquals(blocksInvalidateWorkPct, 1.0f, blocksInvalidateWorkPct * 1e-7);
-
-      conf.set(DFSConfigKeys.
-          DFS_NAMENODE_INVALIDATE_WORK_PCT_PER_ITERATION, "0.0f");
-      blocksInvalidateWorkPct = DFSUtil.getInvalidateWorkPctPerIteration(conf);
+      DFSUtil.getInvalidateWorkPctPerIteration(conf);
     });
   }
-
+  
   /**
    * This testcase tests whether an IllegalArgumentException 
    * will be thrown when a negative value is retrieved by 
    * DFSUtil#getInvalidateWorkPctPerIteration
- * @throws Exception 
    */
-  @MethodSource("data")
-  @ParameterizedTest
-  public void testGetInvalidateWorkPctPerIteration_NegativeValue(String blockPlacementPolicyClassName) throws Exception {
-    setupCluster(blockPlacementPolicyClassName);
+  @Test
+  public void testGetInvalidateWorkPctPerIteration_NegativeValue() {
+    Configuration conf = new Configuration();
+    float blocksInvalidateWorkPct = DFSUtil
+        .getInvalidateWorkPctPerIteration(conf);
+    assertTrue(blocksInvalidateWorkPct > 0);
+    
+    conf.set(DFSConfigKeys.
+        DFS_NAMENODE_INVALIDATE_WORK_PCT_PER_ITERATION, "-0.5f");
     assertThrows(IllegalArgumentException.class, () -> {
-      Configuration conf = new Configuration();
-      float blocksInvalidateWorkPct = DFSUtil
-          .getInvalidateWorkPctPerIteration(conf);
-      assertTrue(blocksInvalidateWorkPct > 0);
-
-      conf.set(DFSConfigKeys.
-          DFS_NAMENODE_INVALIDATE_WORK_PCT_PER_ITERATION, "-0.5f");
-      blocksInvalidateWorkPct = DFSUtil.getInvalidateWorkPctPerIteration(conf);
+      DFSUtil.getInvalidateWorkPctPerIteration(conf);
     });
   }
-
+  
   /**
    * This testcase tests whether an IllegalArgumentException 
    * will be thrown when a value greater than 1 is retrieved by 
    * DFSUtil#getInvalidateWorkPctPerIteration
- * @throws Exception 
    */
-  @MethodSource("data")
-  @ParameterizedTest
-  public void testGetInvalidateWorkPctPerIteration_GreaterThanOne(String blockPlacementPolicyClassName) throws Exception {
-    setupCluster(blockPlacementPolicyClassName);
+  @Test
+  public void testGetInvalidateWorkPctPerIteration_GreaterThanOne() {
+    Configuration conf = new Configuration();
+    float blocksInvalidateWorkPct = DFSUtil
+        .getInvalidateWorkPctPerIteration(conf);
+    assertTrue(blocksInvalidateWorkPct > 0);
+    
+    conf.set(DFSConfigKeys.
+        DFS_NAMENODE_INVALIDATE_WORK_PCT_PER_ITERATION, "1.5f");
     assertThrows(IllegalArgumentException.class, () -> {
-      Configuration conf = new Configuration();
-      float blocksInvalidateWorkPct = DFSUtil
-          .getInvalidateWorkPctPerIteration(conf);
-      assertTrue(blocksInvalidateWorkPct > 0);
-
-      conf.set(DFSConfigKeys.
-          DFS_NAMENODE_INVALIDATE_WORK_PCT_PER_ITERATION, "1.5f");
-      blocksInvalidateWorkPct = DFSUtil.getInvalidateWorkPctPerIteration(conf);
+      DFSUtil.getInvalidateWorkPctPerIteration(conf);
     });
   }
 
@@ -1384,33 +1347,28 @@ public class TestReplicationPolicy extends BaseReplicationPolicyTest {
    * DFSUtil.getReplWorkMultiplier() is positive,
    * and whether an IllegalArgumentException will be thrown 
    * when a non-positive value is retrieved
- * @throws Exception 
    */
-  @MethodSource("data")
-  @ParameterizedTest
-  public void testGetReplWorkMultiplier(String blockPlacementPolicyClassName) throws Exception {
-    setupCluster(blockPlacementPolicyClassName);
+  @Test
+  public void testGetReplWorkMultiplier() {
+    Configuration conf = new Configuration();
+    int blocksReplWorkMultiplier = DFSUtil.getReplWorkMultiplier(conf);
+    assertTrue(blocksReplWorkMultiplier > 0);
+
+    conf.set(DFSConfigKeys.
+        DFS_NAMENODE_REPLICATION_WORK_MULTIPLIER_PER_ITERATION,"3");
+    blocksReplWorkMultiplier = DFSUtil.getReplWorkMultiplier(conf);
+    assertEquals(blocksReplWorkMultiplier, 3);
+    
+    conf.set(DFSConfigKeys.
+        DFS_NAMENODE_REPLICATION_WORK_MULTIPLIER_PER_ITERATION,"-1");
     assertThrows(IllegalArgumentException.class, () -> {
-      Configuration conf = new Configuration();
-      int blocksReplWorkMultiplier = DFSUtil.getReplWorkMultiplier(conf);
-      assertTrue(blocksReplWorkMultiplier > 0);
-
-      conf.set(DFSConfigKeys.
-          DFS_NAMENODE_REPLICATION_WORK_MULTIPLIER_PER_ITERATION, "3");
-      blocksReplWorkMultiplier = DFSUtil.getReplWorkMultiplier(conf);
-      assertEquals(blocksReplWorkMultiplier, 3);
-
-      conf.set(DFSConfigKeys.
-          DFS_NAMENODE_REPLICATION_WORK_MULTIPLIER_PER_ITERATION, "-1");
-      blocksReplWorkMultiplier = DFSUtil.getReplWorkMultiplier(conf);
+      DFSUtil.getReplWorkMultiplier(conf);
     });
   }
 
-  @MethodSource("data")
-  @ParameterizedTest
-  @Timeout(value = 60000, unit = TimeUnit.MILLISECONDS)
-  public void testUpdateDoesNotCauseSkippedReplication(String blockPlacementPolicyClassName) throws Exception {
-    setupCluster(blockPlacementPolicyClassName);
+  @Test
+  @Timeout(value = 60)
+  public void testUpdateDoesNotCauseSkippedReplication() {
     LowRedundancyBlocks lowRedundancyBlocks = new LowRedundancyBlocks();
 
     BlockInfo block1 = genBlockInfo(ThreadLocalRandom.current().nextLong());
@@ -1453,15 +1411,19 @@ public class TestReplicationPolicy extends BaseReplicationPolicyTest {
     assertTheChosenBlocks(chosenBlocks, 0, 0, 1, 0, 0);
   }
 
-  @MethodSource("data")
-  @ParameterizedTest
-  @Timeout(value = 60000, unit = TimeUnit.MILLISECONDS)
-  public void testAddStoredBlockDoesNotCauseSkippedReplication(String blockPlacementPolicyClassName)
-      throws Exception {
-    setupCluster(blockPlacementPolicyClassName);
+  @Test
+  @Timeout(value = 60)
+  public void testAddStoredBlockDoesNotCauseSkippedReplication()
+      throws IOException {
     FSNamesystem mockNS = mock(FSNamesystem.class);
     when(mockNS.hasWriteLock()).thenReturn(true);
     when(mockNS.hasReadLock()).thenReturn(true);
+    when(mockNS.hasWriteLock(RwLockMode.GLOBAL)).thenReturn(true);
+    when(mockNS.hasReadLock(RwLockMode.GLOBAL)).thenReturn(true);
+    when(mockNS.hasWriteLock(RwLockMode.BM)).thenReturn(true);
+    when(mockNS.hasReadLock(RwLockMode.BM)).thenReturn(true);
+    when(mockNS.hasWriteLock(RwLockMode.FS)).thenReturn(true);
+    when(mockNS.hasReadLock(RwLockMode.FS)).thenReturn(true);
     BlockManager bm = new BlockManager(mockNS, false, new HdfsConfiguration());
     LowRedundancyBlocks lowRedundancyBlocks = bm.neededReconstruction;
 
@@ -1505,14 +1467,14 @@ public class TestReplicationPolicy extends BaseReplicationPolicyTest {
     assertTheChosenBlocks(chosenBlocks, 1, 0, 0, 0, 0);
   }
 
-  @MethodSource("data")
-  @ParameterizedTest
-  @Timeout(value = 60000, unit = TimeUnit.MILLISECONDS)
-  public void testConvertLastBlockToUnderConstructionDoesNotCauseSkippedReplication(String blockPlacementPolicyClassName)
-      throws Exception {
-    setupCluster(blockPlacementPolicyClassName);
+  @Test
+  @Timeout(value = 60)
+  public void
+      testConvertLastBlockToUnderConstructionDoesNotCauseSkippedReplication()
+          throws IOException {
     Namesystem mockNS = mock(Namesystem.class);
     when(mockNS.hasWriteLock()).thenReturn(true);
+    when(mockNS.hasWriteLock(RwLockMode.BM)).thenReturn(true);
 
     BlockManager bm = new BlockManager(mockNS, false, new HdfsConfiguration());
     LowRedundancyBlocks lowRedundancyBlocks = bm.neededReconstruction;
@@ -1580,12 +1542,10 @@ public class TestReplicationPolicy extends BaseReplicationPolicyTest {
     assertTheChosenBlocks(chosenBlocks, 1, 0, 0, 0, 0);
   }
 
-  @MethodSource("data")
-  @ParameterizedTest
-  @Timeout(value = 60000, unit = TimeUnit.MILLISECONDS)
-  public void testupdateNeededReplicationsDoesNotCauseSkippedReplication(String blockPlacementPolicyClassName)
-      throws Exception {
-    setupCluster(blockPlacementPolicyClassName);
+  @Test
+  @Timeout(value = 60)
+  public void testupdateNeededReplicationsDoesNotCauseSkippedReplication()
+      throws IOException {
     Namesystem mockNS = mock(Namesystem.class);
     when(mockNS.hasReadLock()).thenReturn(true);
 
@@ -1627,10 +1587,8 @@ public class TestReplicationPolicy extends BaseReplicationPolicyTest {
    *
    * @throws Exception
    */
-  @MethodSource("data")
-  @ParameterizedTest
-  public void testChooseExcessReplicaApartFromFavoredNodes(String blockPlacementPolicyClassName) throws Exception {
-    setupCluster(blockPlacementPolicyClassName);
+  @Test
+  public void testChooseExcessReplicaApartFromFavoredNodes() throws Exception {
     DatanodeStorageInfo[] targets;
     List<DatanodeDescriptor> expectedTargets =
         new ArrayList<DatanodeDescriptor>();
@@ -1651,10 +1609,8 @@ public class TestReplicationPolicy extends BaseReplicationPolicyTest {
     }
   }
 
-  @MethodSource("data")
-  @ParameterizedTest
-  public void testChooseFromFavoredNodesWhenPreferLocalSetToFalse(String blockPlacementPolicyClassName) throws Exception {
-    setupCluster(blockPlacementPolicyClassName);
+  @Test
+  public void testChooseFromFavoredNodesWhenPreferLocalSetToFalse() {
     ((BlockPlacementPolicyDefault) replicator).setPreferLocalNode(false);
     try {
       DatanodeStorageInfo[] targets;
@@ -1691,10 +1647,8 @@ public class TestReplicationPolicy extends BaseReplicationPolicyTest {
         TestBlockStoragePolicy.DEFAULT_STORAGE_POLICY, flags);
   }
 
-  @MethodSource("data")
-  @ParameterizedTest
-  public void testAvoidLocalWrite(String blockPlacementPolicyClassName) throws Exception {
-    setupCluster(blockPlacementPolicyClassName);
+  @Test
+  public void testAvoidLocalWrite() throws IOException {
     DatanodeDescriptor writer = dataNodes[2];
     EnumSet<AddBlockFlag> flags = EnumSet.of(AddBlockFlag.NO_LOCAL_WRITE);
     DatanodeStorageInfo[] targets;
@@ -1704,10 +1658,8 @@ public class TestReplicationPolicy extends BaseReplicationPolicyTest {
     }
   }
 
-  @MethodSource("data")
-  @ParameterizedTest
-  public void testAvoidLocalWriteNoEnoughNodes(String blockPlacementPolicyClassName) throws Exception {
-    setupCluster(blockPlacementPolicyClassName);
+  @Test
+  public void testAvoidLocalWriteNoEnoughNodes() throws IOException {
     DatanodeDescriptor writer = dataNodes[2];
     EnumSet<AddBlockFlag> flags = EnumSet.of(AddBlockFlag.NO_LOCAL_WRITE);
     DatanodeStorageInfo[] targets;
@@ -1722,10 +1674,8 @@ public class TestReplicationPolicy extends BaseReplicationPolicyTest {
     assertTrue(found);
   }
 
-  @MethodSource("data")
-  @ParameterizedTest
-  public void testMaxLoad(String blockPlacementPolicyClassName) throws Exception {
-    setupCluster(blockPlacementPolicyClassName);
+  @Test
+  public void testMaxLoad() {
     FSClusterStats statistics = mock(FSClusterStats.class);
     DatanodeDescriptor node = mock(DatanodeDescriptor.class);
 
@@ -1779,10 +1729,8 @@ public class TestReplicationPolicy extends BaseReplicationPolicyTest {
     assertFalse(bppd.excludeNodeByLoad(node));
   }
 
-  @MethodSource("data")
-  @ParameterizedTest
-  public void testChosenFailureForStorageType(String blockPlacementPolicyClassName) throws Exception {
-    setupCluster(blockPlacementPolicyClassName);
+  @Test
+  public void testChosenFailureForStorageType() {
     final Collection<String> log = new ConcurrentLinkedQueue<>();
     LogCapturingAppender.collectMessages(null, log);
 
@@ -1792,19 +1740,15 @@ public class TestReplicationPolicy extends BaseReplicationPolicyTest {
           BLOCK_SIZE, TestBlockStoragePolicy.POLICY_SUITE.getPolicy(
               HdfsConstants.StoragePolicy.COLD.value()), null);
       assertEquals(0, targets.length);
-      long numLines = log.stream()
-          .filter(m -> m != null && m.contains("NO_REQUIRED_STORAGE_TYPE"))
-          .count();
-      assertNotEquals(0, numLines);
+      assertNotEquals(0,
+          appender.countLinesWithMessage("NO_REQUIRED_STORAGE_TYPE"));
     } finally {
       LogCapturingAppender.stop(null);
     }
   }
 
-  @MethodSource("data")
-  @ParameterizedTest
-  public void testReduceChooseTimesIfNOStaleNode(String blockPlacementPolicyClassName) throws Exception {
-    setupCluster(blockPlacementPolicyClassName);
+  @Test
+  public void testReduceChooseTimesIfNOStaleNode() {
     for(int i = 0; i < 6; i++) {
       updateHeartbeatWithUsage(dataNodes[i],
           2 * HdfsServerConstants.MIN_BLOCKS_FOR_WRITE * BLOCK_SIZE, 0L,
@@ -1815,10 +1759,8 @@ public class TestReplicationPolicy extends BaseReplicationPolicyTest {
     resetHeartbeatForStorages();
   }
 
-  @MethodSource("data")
-  @ParameterizedTest
-  public void testChosenFailureForNotEnoughStorageSpace(String blockPlacementPolicyClassName) throws Exception {
-    setupCluster(blockPlacementPolicyClassName);
+  @Test
+  public void testChosenFailureForNotEnoughStorageSpace() {
     final Collection<String> log = new ConcurrentLinkedQueue<>();
     LogCapturingAppender.collectMessages(null, log);
 
@@ -1826,18 +1768,16 @@ public class TestReplicationPolicy extends BaseReplicationPolicyTest {
       // Set all datanode storage remaining space is 1 * BLOCK_SIZE.
       for(int i = 0; i < dataNodes.length; i++) {
         updateHeartbeatWithUsage(dataNodes[i], BLOCK_SIZE, 0L, BLOCK_SIZE,
-          0L, 0L, 0L, 0, 0);
+            0L, 0L, 0L, 0, 0);
       }
 
       // Set chooseStorage4Block required the minimum number of blocks is 2.
       replicator.setMinBlocksForWrite(2);
       DatanodeStorageInfo[] targets = chooseTarget(1, dataNodes[1],
-        new ArrayList<DatanodeStorageInfo>(), null);
+          new ArrayList<DatanodeStorageInfo>(), null);
       assertEquals(0, targets.length);
-      long numLines = log.stream()
-          .filter(m -> m != null && m.contains("NOT_ENOUGH_STORAGE_SPACE"))
-          .count();
-      assertNotEquals(0, numLines);
+      assertNotEquals(0,
+          appender.countLinesWithMessage("NOT_ENOUGH_STORAGE_SPACE"));
 
       resetHeartbeatForStorages();
     } finally {

@@ -35,8 +35,8 @@ import org.apache.hadoop.net.NetworkTopology;
 import org.apache.hadoop.net.Node;
 import org.apache.hadoop.test.GenericTestUtils;
 import org.apache.hadoop.test.PathUtils;
-
 import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
 import org.slf4j.event.Level;
 
 abstract public class BaseReplicationPolicyTest {
@@ -68,7 +68,8 @@ abstract public class BaseReplicationPolicyTest {
 
   abstract DatanodeDescriptor[] getDatanodeDescriptors(Configuration conf);
 
-  public void setupCluster(final String blockPlacementPolicy) throws Exception {
+  @BeforeEach
+  public void setupCluster() throws Exception {
     Configuration conf = new HdfsConfiguration();
     dataNodes = getDatanodeDescriptors(conf);
 

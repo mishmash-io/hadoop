@@ -30,9 +30,10 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
 
+import org.junit.jupiter.api.Test;
+
 import org.apache.hadoop.test.HadoopTestBase;
 import org.apache.hadoop.util.IntrusiveCollection.Element;
-import org.junit.jupiter.api.Test;
 
 public class TestIntrusiveCollection extends HadoopTestBase {
   static class SimpleElement implements IntrusiveCollection.Element {
@@ -180,8 +181,7 @@ public class TestIntrusiveCollection extends HadoopTestBase {
     Iterator<SimpleElement> iterator = intrusiveCollection.iterator();
 
     assertEquals(elem1, iterator.next(), "First element returned is incorrect");
-    assertEquals(elem2, iterator.next(),
-        "Second element returned is incorrect");
+    assertEquals(elem2, iterator.next(), "Second element returned is incorrect");
     assertEquals(elem3, iterator.next(), "Third element returned is incorrect");
     assertFalse(iterator.hasNext(), "Iterator should not have next element");
   }

@@ -33,7 +33,6 @@ import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.fs.shell.FsShell;
 import org.apache.hadoop.hdfs.protocol.ClientProtocol;
 import org.apache.hadoop.hdfs.server.datanode.SimulatedFSDataset;
-
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.Timeout;
 
@@ -48,7 +47,7 @@ public class TestSetrepIncreasing {
     conf.set(DFSConfigKeys.DFS_NAMENODE_RECONSTRUCTION_PENDING_TIMEOUT_SEC_KEY, Integer.toString(2));
     MiniDFSCluster cluster = new MiniDFSCluster.Builder(conf).numDataNodes(10).build();
     FileSystem fs = cluster.getFileSystem();
-    assertTrue(fs instanceof DistributedFileSystem, "Not a HDFS: "+fs.getUri());
+    assertTrue(fs instanceof DistributedFileSystem, "Not a HDFS: " + fs.getUri());
 
     try {
       Path root = TestDFSShell.mkdir(fs, 
@@ -82,13 +81,13 @@ public class TestSetrepIncreasing {
   }
 
   @Test
-  @Timeout(value = 120000, unit = TimeUnit.MILLISECONDS)
+  @Timeout(value = 120)
   public void testSetrepIncreasing() throws IOException {
     setrep(3, 7, false);
   }
 
   @Test
-  @Timeout(value = 120000, unit = TimeUnit.MILLISECONDS)
+  @Timeout(value = 120)
   public void testSetrepIncreasingSimulatedStorage() throws IOException {
     setrep(3, 7, true);
   }

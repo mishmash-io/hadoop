@@ -17,6 +17,7 @@
  */
 package org.apache.hadoop.hdfs.server.namenode.ha;
 
+import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import java.io.IOException;
@@ -35,7 +36,10 @@ import org.apache.hadoop.hdfs.HAUtil;
 import org.apache.hadoop.hdfs.MiniDFSCluster;
 import org.apache.hadoop.hdfs.MiniDFSNNTopology;
 import org.apache.hadoop.hdfs.server.namenode.NameNode;
-import org.junit.jupiter.api.*;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.Timeout;
 
 /**
  * Tests interaction of XAttrs with HA failover.
@@ -88,7 +92,7 @@ public class TestXAttrsWithHA {
    * Test that xattrs are properly tracked by the standby
    */
   @Test
-  @Timeout(value = 60000, unit = TimeUnit.MILLISECONDS)
+  @Timeout(value = 60)
   public void testXAttrsTrackedOnStandby() throws Exception {
     fs.create(path).close();
     fs.setXAttr(path, name1, value1, EnumSet.of(XAttrSetFlag.CREATE));
@@ -104,9 +108,9 @@ public class TestXAttrsWithHA {
     cluster.transitionToActive(1);
     
     Map<String, byte[]> xattrs = fs.getXAttrs(path);
-    Assertions.assertEquals(xattrs.size(), 2);
-    Assertions.assertArrayEquals(value1, xattrs.get(name1));
-    Assertions.assertArrayEquals(value2, xattrs.get(name2));
+    assertEquals(xattrs.size(), 2);
+    assertArrayEquals(value1, xattrs.get(name1));
+    assertArrayEquals(value2, xattrs.get(name2));
     
     fs.delete(path, true);
   }

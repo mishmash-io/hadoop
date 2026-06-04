@@ -37,8 +37,8 @@ import org.apache.hadoop.io.compress.zlib.BuiltInZlibDeflater;
 import org.apache.hadoop.io.compress.zlib.ZlibCompressor;
 import org.apache.hadoop.io.compress.zlib.ZlibFactory;
 import org.apache.hadoop.util.NativeCodeLoader;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.apache.log4j.Logger;
+
 import org.apache.hadoop.thirdparty.com.google.common.base.Joiner;
 import org.apache.hadoop.thirdparty.com.google.common.collect.ImmutableList;
 import org.apache.hadoop.thirdparty.com.google.common.collect.ImmutableMap;
@@ -326,8 +326,7 @@ public class CompressDecompressTester<T extends Compressor, E extends Decompress
           buf = bytesOut.toByteArray();
           int emSize = emptySize.get(compressor.getClass());
           assertEquals(emSize, buf.length,
-              joiner.join(name, "empty stream compressed output size != "
-                  + emSize));
+              joiner.join(name, "empty stream compressed output size != " + emSize));
           // use compressed output as input for decompression
           bytesIn = new ByteArrayInputStream(buf);
           // create decompression stream
@@ -335,8 +334,7 @@ public class CompressDecompressTester<T extends Compressor, E extends Decompress
               decompressor, 1024);
           // no byte is available because stream was closed
           assertEquals(-1,
-              blockDecompressorStream.read(),
-              joiner.join(name, " return value is not -1"));
+              blockDecompressorStream.read(), joiner.join(name, " return value is not -1"));
         } catch (IOException e) {
           fail(joiner.join(name, e.getMessage()));
         } finally {

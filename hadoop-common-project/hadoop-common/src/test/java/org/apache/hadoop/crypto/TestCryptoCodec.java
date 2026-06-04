@@ -22,10 +22,9 @@ import static org.apache.hadoop.fs.CommonConfigurationKeysPublic.
 import static org.apache.hadoop.fs.CommonConfigurationKeysPublic.
     HADOOP_SECURITY_CRYPTO_CODEC_CLASSES_SM4_CTR_NOPADDING_KEY;
 import static org.apache.hadoop.fs.CommonConfigurationKeysPublic.
-        HADOOP_SECURITY_CRYPTO_JCE_PROVIDER_KEY;
+    HADOOP_SECURITY_CRYPTO_JCE_PROVIDER_KEY;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assumptions.assumeTrue;
 
@@ -48,6 +47,9 @@ import org.apache.hadoop.io.RandomDatum;
 import org.apache.hadoop.test.GenericTestUtils;
 import org.apache.hadoop.util.NativeCodeLoader;
 import org.apache.hadoop.util.ReflectionUtils;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.Timeout;
 
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.junit.jupiter.api.BeforeEach;
@@ -84,14 +86,14 @@ public class TestCryptoCodec {
   }
 
   @Test
-  @Timeout(value=120000, unit=TimeUnit.MILLISECONDS)
+  @Timeout(value = 120)
   public void testJceAesCtrCryptoCodec() throws Exception {
     GenericTestUtils.assumeInNativeProfile();
     if (!NativeCodeLoader.buildSupportsOpenssl()) {
       LOG.warn("Skipping test since openSSL library not loaded");
       assumeTrue(false);
     }
-    assertNull(OpensslCipher.getLoadingFailureReason());
+    assertEquals(null, OpensslCipher.getLoadingFailureReason());
     cryptoCodecTest(conf, seed, 0,
         jceAesCodecClass, jceAesCodecClass, iv);
     cryptoCodecTest(conf, seed, count,
@@ -109,7 +111,7 @@ public class TestCryptoCodec {
   }
 
   @Test
-  @Timeout(value=120000, unit=TimeUnit.MILLISECONDS)
+  @Timeout(value = 120)
   public void testJceSm4CtrCryptoCodec() throws Exception {
     conf.set(HADOOP_SECURITY_CRYPTO_CIPHER_SUITE_KEY, "SM4/CTR/NoPadding");
     conf.set(HADOOP_SECURITY_CRYPTO_CODEC_CLASSES_SM4_CTR_NOPADDING_KEY,
@@ -129,14 +131,14 @@ public class TestCryptoCodec {
   }
   
   @Test
-  @Timeout(value=120000, unit=TimeUnit.MILLISECONDS)
+  @Timeout(value = 120)
   public void testOpensslAesCtrCryptoCodec() throws Exception {
     GenericTestUtils.assumeInNativeProfile();
     if (!NativeCodeLoader.buildSupportsOpenssl()) {
       LOG.warn("Skipping test since openSSL library not loaded");
       assumeTrue(false);
     }
-    assertNull(OpensslCipher.getLoadingFailureReason());
+    assertEquals(null, OpensslCipher.getLoadingFailureReason());
     cryptoCodecTest(conf, seed, 0,
         opensslAesCodecClass, opensslAesCodecClass, iv);
     cryptoCodecTest(conf, seed, count,
@@ -154,7 +156,7 @@ public class TestCryptoCodec {
   }
 
   @Test
-  @Timeout(value=120000, unit=TimeUnit.MILLISECONDS)
+  @Timeout(value = 120)
   public void testOpensslSm4CtrCryptoCodec() throws Exception {
     GenericTestUtils.assumeInNativeProfile();
     if (!NativeCodeLoader.buildSupportsOpenssl()) {
@@ -163,8 +165,8 @@ public class TestCryptoCodec {
     }
     assumeTrue(OpensslCipher.isSupported(CipherSuite.SM4_CTR_NOPADDING));
     conf.set(HADOOP_SECURITY_CRYPTO_JCE_PROVIDER_KEY,
-            BouncyCastleProvider.PROVIDER_NAME);
-    assertNull(OpensslCipher.getLoadingFailureReason());
+        BouncyCastleProvider.PROVIDER_NAME);
+    assertEquals(null, OpensslCipher.getLoadingFailureReason());
     cryptoCodecTest(conf, seed, 0,
         opensslSm4CodecClass, opensslSm4CodecClass, iv);
     cryptoCodecTest(conf, seed, count,
@@ -251,7 +253,7 @@ public class TestCryptoCodec {
       k2.readFields(dataIn);
       v2.readFields(dataIn);
       assertTrue(k1.equals(k2) && v1.equals(v2),
-                 "original and encrypted-then-decrypted-output not equal");
+          "original and encrypted-then-decrypted-output not equal");
       
       // original and encrypted-then-decrypted-output have the same hashCode
       Map<RandomDatum, String> m = new HashMap<RandomDatum, String>();
@@ -276,7 +278,7 @@ public class TestCryptoCodec {
     do {
       expected = originalIn.read();
       assertEquals(expected, in.read(),
-        "Decrypted stream read by byte does not match");
+          "Decrypted stream read by byte does not match");
     } while (expected != -1);
     
     // Seek to a certain position and decrypt
@@ -295,7 +297,7 @@ public class TestCryptoCodec {
     do {
       expected = originalInput.read();
       assertEquals(expected, in.read(),
-        "Decrypted stream read by byte does not match");
+          "Decrypted stream read by byte does not match");
     } while (expected != -1);
 
     LOG.info("SUCCESS! Completed checking " + count + " records");
@@ -329,7 +331,7 @@ public class TestCryptoCodec {
    * Regression test for IV calculation, see HADOOP-11343
    */
   @Test
-  @Timeout(value=120000, unit=TimeUnit.MILLISECONDS)
+  @Timeout(value = 120)
   public void testCalculateIV() throws Exception {
     JceAesCtrCryptoCodec codec = new JceAesCtrCryptoCodec();
     codec.setConf(conf);
@@ -377,7 +379,7 @@ public class TestCryptoCodec {
     BigInteger iv = new BigInteger(1, IV);
     BigInteger ref = calculateRef(initIV, counter);
 
-    assertTrue(iv.equals(ref), "Calculated IV don't match with the reference");
+    assertEquals(iv, ref, "Calculated IV don't match with the reference");
   }
 
   private static BigInteger calculateRef(byte[] initIV, long counter) {

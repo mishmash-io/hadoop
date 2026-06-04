@@ -27,7 +27,6 @@ import org.apache.hadoop.hdfs.protocol.OpenFilesIterator.OpenFilesType;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.slf4j.event.Level;
@@ -39,7 +38,10 @@ import java.util.EnumSet;
 import java.util.List;
 import java.util.Random;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.fail;
 
 /**
  * Tests append on erasure coded file.
@@ -141,7 +143,6 @@ public class TestStripedFileAppend {
 
     RemoteIterator<OpenFileEntry> listOpenFiles = dfs
         .listOpenFiles(EnumSet.copyOf(types), file.toString());
-    assertFalse(listOpenFiles.hasNext(),
-        "No file should be open after append failure");
+    assertFalse(listOpenFiles.hasNext(), "No file should be open after append failure");
   }
 }

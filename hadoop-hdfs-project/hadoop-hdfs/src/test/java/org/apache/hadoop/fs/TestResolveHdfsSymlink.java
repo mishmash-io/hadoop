@@ -22,6 +22,9 @@ import static org.junit.jupiter.api.Assertions.fail;
 
 import java.io.File;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.fail;
+
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.EnumSet;
@@ -40,7 +43,6 @@ import org.apache.hadoop.security.token.Token;
 import org.apache.hadoop.security.token.delegation.AbstractDelegationTokenIdentifier;
 import org.apache.hadoop.test.GenericTestUtils;
 import org.junit.jupiter.api.AfterAll;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
@@ -100,11 +102,11 @@ public class TestResolveHdfsSymlink {
 
     Set<AbstractFileSystem> afsList = fcHdfs
         .resolveAbstractFileSystems(alphaHdfsPathViaLink);
-    Assertions.assertEquals(2, afsList.size());
+    assertEquals(2, afsList.size());
     for (AbstractFileSystem afs : afsList) {
       if ((!afs.equals(fcHdfs.getDefaultFileSystem()))
           && (!afs.equals(fcLocal.getDefaultFileSystem()))) {
-        Assertions.fail("Failed to resolve AFS correctly");
+        fail("Failed to resolve AFS correctly");
       }
     }
   }

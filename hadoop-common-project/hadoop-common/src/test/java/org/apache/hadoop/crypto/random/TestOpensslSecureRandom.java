@@ -26,7 +26,7 @@ import org.junit.jupiter.api.Timeout;
 public class TestOpensslSecureRandom {
   
   @Test
-  @Timeout(value=120000, unit=TimeUnit.MILLISECONDS)
+  @Timeout(value = 120)
   public void testRandomBytes() throws Exception {
     OpensslSecureRandom random = new OpensslSecureRandom();
     
@@ -60,7 +60,7 @@ public class TestOpensslSecureRandom {
    * constant value.
    */
   @Test
-  @Timeout(value=120000, unit=TimeUnit.MILLISECONDS)
+  @Timeout(value = 120)
   public void testRandomInt() throws Exception {
     OpensslSecureRandom random = new OpensslSecureRandom();
     
@@ -76,7 +76,7 @@ public class TestOpensslSecureRandom {
    * constant value.
    */
   @Test
-  @Timeout(value=120000, unit=TimeUnit.MILLISECONDS)
+  @Timeout(value = 120)
   public void testRandomLong() throws Exception {
     OpensslSecureRandom random = new OpensslSecureRandom();
     
@@ -92,7 +92,7 @@ public class TestOpensslSecureRandom {
    * constant value.
    */
   @Test
-  @Timeout(value=120000, unit=TimeUnit.MILLISECONDS)
+  @Timeout(value = 120)
   public void testRandomFloat() throws Exception {
     OpensslSecureRandom random = new OpensslSecureRandom();
     
@@ -108,7 +108,7 @@ public class TestOpensslSecureRandom {
    * constant value.
    */
   @Test
-  @Timeout(value=120000, unit=TimeUnit.MILLISECONDS)
+  @Timeout(value = 120)
   public void testRandomDouble() throws Exception {
     OpensslSecureRandom random = new OpensslSecureRandom();
     

@@ -36,7 +36,6 @@ import org.apache.hadoop.util.Lists;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -59,7 +58,12 @@ import static org.apache.hadoop.fs.permission.FsAction.ALL;
 import static org.apache.hadoop.fs.permission.FsAction.NONE;
 import static org.apache.hadoop.fs.permission.FsAction.READ_EXECUTE;
 import static org.apache.hadoop.hdfs.server.namenode.AclTestHelpers.aclEntry;
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertArrayEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.fail;
 
 /**
  * Test after enable Erasure Coding on cluster, exercise Java API make sure they
@@ -253,8 +257,7 @@ public class TestErasureCodingExerciseAPIs {
     AclStatus as = fs.getAclStatus(p);
 
     for (AclEntry entry : aclSpec) {
-      assertTrue(as.getEntries().contains(entry),
-          String.format("as: %s, entry: %s", as, entry));
+      assertTrue(as.getEntries().contains(entry), String.format("as: %s, entry: %s", as, entry));
     }
     List<AclEntry> maclSpec = Lists.newArrayList(
         aclEntry(ACCESS, USER, "bar", READ_EXECUTE),
@@ -263,8 +266,7 @@ public class TestErasureCodingExerciseAPIs {
 
     as = fs.getAclStatus(p);
     for (AclEntry entry : maclSpec) {
-      assertTrue(as.getEntries().contains(entry),
-          String.format("as: %s, entry: %s", as, entry));
+      assertTrue(as.getEntries().contains(entry), String.format("as: %s, entry: %s", as, entry));
     }
 
     fs.removeAclEntries(p, maclSpec);

@@ -21,11 +21,18 @@ package org.apache.hadoop.metrics2.impl;
 import java.util.ConcurrentModificationException;
 import java.util.concurrent.CountDownLatch;
 
+import org.apache.hadoop.util.concurrent.SubjectInheritingThread;
 import org.junit.jupiter.api.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import static org.mockito.Mockito.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertSame;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.fail;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
 
 import static org.apache.hadoop.metrics2.impl.SinkQueue.*;
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -77,8 +84,8 @@ public class TestSinkQueue {
     final SinkQueue<Integer> q = new SinkQueue<Integer>(2);
     final Runnable trigger = mock(Runnable.class);
     // try consuming emtpy equeue and blocking
-    Thread t = new Thread() {
-      @Override public void run() {
+    SubjectInheritingThread t = new SubjectInheritingThread() {
+      @Override public void work() {
         try {
           assertEquals(1, (int) q.dequeue(), "element");
           q.consume(new Consumer<Integer>() {
@@ -253,8 +260,8 @@ public class TestSinkQueue {
       q.enqueue(i);
     }
     final CountDownLatch barrier = new CountDownLatch(1);
-    Thread t = new Thread() {
-      @Override public void run() {
+    SubjectInheritingThread t = new SubjectInheritingThread() {
+      @Override public void work() {
         try {
           Thread.sleep(10); // causes failure without barrier
           q.consume(new Consumer<Integer>() {

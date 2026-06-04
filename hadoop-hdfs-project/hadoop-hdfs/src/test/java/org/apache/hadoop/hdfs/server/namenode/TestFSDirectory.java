@@ -51,7 +51,10 @@ import org.junit.jupiter.api.Timeout;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertArrayEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.fail;
 
 /**
  * Test {@link FSDirectory}, the in-memory namespace tree.
@@ -134,8 +137,7 @@ public class TestFSDirectory {
       line = line.trim();
       if (!line.isEmpty() && !line.contains("snapshot")) {
         assertTrue(line.startsWith(INodeDirectory.DUMPTREE_LAST_ITEM)
-                || line.startsWith(INodeDirectory.DUMPTREE_EXCEPT_LAST_ITEM),
-            "line=" + line
+            || line.startsWith(INodeDirectory.DUMPTREE_EXCEPT_LAST_ITEM), "line=" + line
         );
         checkClassName(line);
       }
@@ -233,10 +235,8 @@ public class TestFSDirectory {
    */
   private static void verifyXAttrsPresent(List<XAttr> newXAttrs,
       final int num) {
-    assertEquals(num,
-        newXAttrs.size(),
-        "Unexpected number of XAttrs after multiset");
-    for (int i=0; i<num; i++) {
+    assertEquals(num, newXAttrs.size(), "Unexpected number of XAttrs after multiset");
+    for (int i = 0; i < num; i++) {
       XAttr search = generatedXAttrs.get(i);
       assertTrue(newXAttrs.contains(search),
           "Did not find set XAttr " + search + " + after multiset");
@@ -260,7 +260,7 @@ public class TestFSDirectory {
    * Test setting and removing multiple xattrs via single operations
    */
   @Test
-  @Timeout(value = 300000, unit = TimeUnit.MILLISECONDS)
+  @Timeout(value = 300)
   public void testXAttrMultiSetRemove() throws Exception {
     List<XAttr> existingXAttrs = Lists.newArrayListWithCapacity(0);
 
@@ -308,14 +308,15 @@ public class TestFSDirectory {
       List<XAttr> newXAttrs = FSDirXAttrOp.filterINodeXAttrs(existingXAttrs,
                                                              toRemove,
                                                              removedXAttrs);
-      assertEquals(expectedNumToRemove, removedXAttrs.size(), "Unexpected number of removed XAttrs");
+      assertEquals(expectedNumToRemove, removedXAttrs.size(),
+          "Unexpected number of removed XAttrs");
       verifyXAttrsPresent(newXAttrs, numExpectedXAttrs);
       existingXAttrs = newXAttrs;
     }
   }
 
   @Test
-  @Timeout(value = 300000, unit = TimeUnit.MILLISECONDS)
+  @Timeout(value = 300)
   public void testXAttrMultiAddRemoveErrors() throws Exception {
 
     // Test that the same XAttr can not be multiset twice
@@ -376,8 +377,9 @@ public class TestFSDirectory {
     newXAttrs = FSDirXAttrOp.setINodeXAttrs(fsdir, existingXAttrs, toAdd,
                                             EnumSet.of(XAttrSetFlag.REPLACE));
     assertEquals(3, newXAttrs.size(), "Unexpected number of new XAttrs");
-    for (int i=0; i<3; i++) {
-      assertArrayEquals(new byte[] {(byte)(i*2)}, newXAttrs.get(i).getValue(), "Unexpected XAttr value");
+    for (int i = 0; i < 3; i++) {
+      assertArrayEquals(new byte[]{(byte) (i * 2)}, newXAttrs.get(i).getValue(),
+          "Unexpected XAttr value");
     }
     existingXAttrs = newXAttrs;
 

@@ -17,12 +17,14 @@
  */
 package org.apache.hadoop.hdfs.server.namenode;
 
+import org.junit.jupiter.api.Test;
+
 import java.util.HashSet;
 
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import java.util.Set;
 
-import org.junit.jupiter.api.Test;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public class TestNameNodeConfiguration {
 
@@ -33,8 +35,8 @@ public class TestNameNodeConfiguration {
   public void testNameNodeSpecificKeys() {
     Set<String> keySet = new HashSet<>();
     for (String key : NameNode.NAMENODE_SPECIFIC_KEYS) {
-      assertTrue(keySet.add(key), "Duplicate key: " + key
-          + " in NameNode.NAMENODE_SPECIFIC_KEYS.");
+      assertTrue(keySet.add(key),
+          "Duplicate key: " + key + " in NameNode.NAMENODE_SPECIFIC_KEYS.");
     }
   }
 }

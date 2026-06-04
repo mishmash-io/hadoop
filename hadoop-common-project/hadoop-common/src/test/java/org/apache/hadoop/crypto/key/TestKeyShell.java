@@ -35,6 +35,10 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
 public class TestKeyShell {
   private final ByteArrayOutputStream outContent = new ByteArrayOutputStream();
   private final ByteArrayOutputStream errContent = new ByteArrayOutputStream();
@@ -115,7 +119,7 @@ public class TestKeyShell {
     rc = ks.run(args1);
     assertEquals(0, rc);
     assertTrue(outContent.toString().contains(keyName + " has been " +
-            "successfully created"));
+        "successfully created"));
     assertTrue(outContent.toString()
         .contains(ProviderUtils.NO_PASSWORD_WARN));
     assertTrue(outContent.toString()

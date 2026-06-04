@@ -35,7 +35,6 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.Timeout;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -50,7 +49,10 @@ import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /**
  * Testing random FileSystem operations with random Snapshot operations.
@@ -202,7 +204,7 @@ public class TestRandomOpsWithSnapshots {
    * Random file system operations with snapshot operations in between.
    */
   @Test
-  @Timeout(value = 900000, unit = TimeUnit.MILLISECONDS)
+  @Timeout(value = 900)
   public void testRandomOperationsWithSnapshots()
       throws IOException, InterruptedException, TimeoutException {
     // Set
@@ -381,7 +383,8 @@ public class TestRandomOpsWithSnapshots {
                 TESTDIRSTRING, WITNESSDIRSTRING));
           }
           hdfs.rename(oldDir, newDir, Options.Rename.OVERWRITE);
-          assertTrue(hdfs.exists(newDir), "Target directory exists");
+          assertTrue(hdfs.exists(newDir),
+              "Target directory exists");
           assertFalse(hdfs.exists(oldDir),
               "Source directory does not exist");
 
@@ -640,7 +643,8 @@ public class TestRandomOpsWithSnapshots {
       }
       filename += "file" + i;
       createFile(filename, fileLength, true);
-      assertTrue(hdfs.exists(new Path(filename)), "Test file created");
+      assertTrue(hdfs.exists(new Path(filename)),
+          "Test file created");
       LOG.info("createFiles, file: " + filename + "was created");
 
       String witnessFile =

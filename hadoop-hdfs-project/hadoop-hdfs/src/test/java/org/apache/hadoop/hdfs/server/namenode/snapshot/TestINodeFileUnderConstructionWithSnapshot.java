@@ -17,7 +17,9 @@
  */
 package org.apache.hadoop.hdfs.server.namenode.snapshot;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.io.IOException;
 import java.util.EnumSet;
@@ -46,6 +48,7 @@ import org.apache.hadoop.hdfs.server.namenode.INodeDirectory;
 import org.apache.hadoop.hdfs.server.namenode.INodeFile;
 import org.apache.hadoop.hdfs.server.namenode.NameNodeAdapter;
 import org.apache.hadoop.hdfs.server.namenode.snapshot.DirectoryWithSnapshotFeature.DirectoryDiff;
+import org.apache.hadoop.hdfs.util.RwLockMode;
 import org.apache.hadoop.test.GenericTestUtils;
 import org.slf4j.event.Level;
 import org.junit.jupiter.api.AfterEach;
@@ -99,7 +102,7 @@ public class TestINodeFileUnderConstructionWithSnapshot {
    * Test snapshot after file appending
    */
   @Test
-  @Timeout(value = 60000, unit = TimeUnit.MILLISECONDS)
+  @Timeout(value = 60)
   public void testSnapshotAfterAppending() throws Exception {
     Path file = new Path(dir, "file");
     // 1. create snapshot --> create file --> append
@@ -125,7 +128,7 @@ public class TestINodeFileUnderConstructionWithSnapshot {
     
     // check corresponding inodes
     fileNode = (INodeFile) fsdir.getINode(file.toString());
-    assertEquals(REPLICATION - 1,  fileNode.getFileReplication());
+    assertEquals(REPLICATION - 1, fileNode.getFileReplication());
     assertEquals(BLOCKSIZE * 4, fileNode.computeFileSize());
   }
   
@@ -144,7 +147,7 @@ public class TestINodeFileUnderConstructionWithSnapshot {
    * {@link FSDataOutputStream} instance closes.
    */
   @Test
-  @Timeout(value = 60000, unit = TimeUnit.MILLISECONDS)
+  @Timeout(value = 60)
   public void testSnapshotWhileAppending() throws Exception {
     Path file = new Path(dir, "file");
     DFSTestUtil.createFile(hdfs, file, BLOCKSIZE, REPLICATION, seed);
@@ -299,10 +302,10 @@ public class TestINodeFileUnderConstructionWithSnapshot {
       hdfs.delete(foo, true);
       Thread.sleep(1000);
       try {
-        fsn.writeLock();
+        fsn.writeLock(RwLockMode.GLOBAL);
         NameNodeAdapter.getLeaseManager(fsn).runLeaseChecks();
       } finally {
-        fsn.writeUnlock();
+        fsn.writeUnlock(RwLockMode.GLOBAL, "testLease");
       }
     } finally {
       NameNodeAdapter.setLeasePeriod(fsn, HdfsConstants.LEASE_SOFTLIMIT_PERIOD,

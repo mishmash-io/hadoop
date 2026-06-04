@@ -22,15 +22,11 @@ import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.fs.SafeModeAction;
 import org.apache.hadoop.hdfs.protocol.HdfsFileStatus;
 import org.apache.hadoop.test.GenericTestUtils;
+import org.junit.jupiter.api.Test;
 
 import java.io.IOException;
 
-import org.junit.jupiter.api.Test;
-
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.core.Is.is;
-import static org.hamcrest.core.IsNot.not;
-
+import static org.assertj.core.api.Assertions.assertThat;
 
 public class TestLazyPersistPolicy extends LazyPersistTestCase {
   @Test
@@ -43,7 +39,7 @@ public class TestLazyPersistPolicy extends LazyPersistTestCase {
     // Stat the file and check that the LAZY_PERSIST policy is not
     // returned back.
     HdfsFileStatus status = client.getFileInfo(path.toString());
-    assertThat(status.getStoragePolicy(), not(LAZY_PERSIST_POLICY_ID));
+    assertThat(status.getStoragePolicy()).isNotEqualTo(LAZY_PERSIST_POLICY_ID);
   }
 
   @Test
@@ -55,7 +51,7 @@ public class TestLazyPersistPolicy extends LazyPersistTestCase {
     makeTestFile(path, 0, true);
     // Stat the file and check that the lazyPersist flag is returned back.
     HdfsFileStatus status = client.getFileInfo(path.toString());
-    assertThat(status.getStoragePolicy(), is(LAZY_PERSIST_POLICY_ID));
+    assertThat(status.getStoragePolicy()).isEqualTo(LAZY_PERSIST_POLICY_ID);
   }
 
   @Test
@@ -69,7 +65,7 @@ public class TestLazyPersistPolicy extends LazyPersistTestCase {
 
     // Stat the file and check that the lazyPersist flag is returned back.
     HdfsFileStatus status = client.getFileInfo(path.toString());
-    assertThat(status.getStoragePolicy(), is(LAZY_PERSIST_POLICY_ID));
+    assertThat(status.getStoragePolicy()).isEqualTo(LAZY_PERSIST_POLICY_ID);
   }
 
   @Test
@@ -87,6 +83,6 @@ public class TestLazyPersistPolicy extends LazyPersistTestCase {
 
     // Stat the file and check that the lazyPersist flag is returned back.
     HdfsFileStatus status = client.getFileInfo(path.toString());
-    assertThat(status.getStoragePolicy(), is(LAZY_PERSIST_POLICY_ID));
+    assertThat(status.getStoragePolicy()).isEqualTo(LAZY_PERSIST_POLICY_ID);
   }
 }

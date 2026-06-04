@@ -24,10 +24,8 @@ import java.io.IOException;
 import java.util.List;
 import java.util.Map;
 
-import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-
+import org.junit.jupiter.api.BeforeEach;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
@@ -38,6 +36,8 @@ import org.apache.hadoop.hdfs.HdfsConfiguration;
 import org.apache.hadoop.hdfs.MiniDFSCluster;
 
 import org.apache.hadoop.test.GenericTestUtils;
+
+import static org.junit.jupiter.api.Assertions.fail;
 
 /**
  * Regression test for HDFS-3597, SecondaryNameNode upgrade -- when a 2NN
@@ -115,7 +115,7 @@ public class TestSecondaryNameNodeUpgrade {
   public void testChangeNsIDFails() throws IOException {
     try {
       doIt(ImmutableMap.of("namespaceID", "2"));
-      Assertions.fail("Should throw InconsistentFSStateException");
+      fail("Should throw InconsistentFSStateException");
     } catch(IOException e) {
       GenericTestUtils.assertExceptionContains("Inconsistent checkpoint fields", e);
       System.out.println("Correctly failed with inconsistent namespaceID: " + e);

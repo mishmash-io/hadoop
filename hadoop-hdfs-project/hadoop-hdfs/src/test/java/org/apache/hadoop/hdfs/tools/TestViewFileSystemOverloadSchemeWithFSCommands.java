@@ -41,9 +41,9 @@ import org.apache.hadoop.hdfs.DistributedFileSystem;
 import org.apache.hadoop.hdfs.MiniDFSCluster;
 import org.apache.hadoop.test.PathUtils;
 import org.apache.hadoop.util.Lists;
-import org.apache.hadoop.util.cli.ToolRunner;
+import org.apache.hadoop.util.ToolRunner;
+
 import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -85,7 +85,7 @@ public class TestViewFileSystemOverloadSchemeWithFSCommands {
     defaultFSURI =
         URI.create(conf.get(CommonConfigurationKeys.FS_DEFAULT_NAME_KEY));
     localTargetDir = new File(TEST_ROOT_DIR, "/root/");
-    Assertions.assertEquals(HDFS_SCHEME, defaultFSURI.getScheme()); // hdfs scheme.
+    assertEquals(HDFS_SCHEME, defaultFSURI.getScheme()); // hdfs scheme.
   }
 
   @AfterEach

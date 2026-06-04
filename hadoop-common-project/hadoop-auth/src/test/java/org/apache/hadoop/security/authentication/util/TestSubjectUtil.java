@@ -36,12 +36,12 @@ public class TestSubjectUtil {
       System.getProperty("java.specification.version").split("\\.")[0]));
 
   @Test
-  public void testHasCallAs() {
+  void testHasCallAs() {
     assertEquals(JAVA_SPEC_VER > 17, SubjectUtil.HAS_CALL_AS);
   }
 
   @Test
-  public void testDoAsPrivilegedActionExceptionPropagation() {
+  void testDoAsPrivilegedActionExceptionPropagation() {
     // in Java 12 onwards, always throw the original exception thrown by action;
     // in lower Java versions, throw a PrivilegedActionException that wraps the
     // original exception when action throws a checked exception
@@ -138,7 +138,7 @@ public class TestSubjectUtil {
   }
 
   @Test
-  public void testDoAsPrivilegedExceptionActionExceptionPropagation() {
+  void testDoAsPrivilegedExceptionActionExceptionPropagation() {
     // throw PrivilegedActionException that wraps the original exception when action throws
     // a checked exception
     Throwable e = assertThrows(PrivilegedActionException.class, () ->
@@ -219,7 +219,7 @@ public class TestSubjectUtil {
   }
 
   @Test
-  public void testCallAsExceptionPropagation() {
+  void testCallAsExceptionPropagation() {
     // always throw a CompletionException that wraps the original exception, when action throw
     // a checked or runtime exception
     Throwable e = assertThrows(CompletionException.class, () ->
@@ -325,7 +325,7 @@ public class TestSubjectUtil {
   }
 
   @Test
-  public void testSneakyThrow() {
+  void testSneakyThrow() {
     IOException e = assertThrows(IOException.class, this::throwCheckedException);
     assertEquals("Dummy IOException", e.getMessage());
   }

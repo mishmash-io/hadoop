@@ -13,9 +13,10 @@
  */
 package org.apache.hadoop.security.authentication.util.server;
 
-import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNull;
+
 import org.junit.jupiter.api.Test;
 
 public class TestRolloverSignerSecretProvider {

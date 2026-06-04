@@ -17,7 +17,9 @@
  */
 package org.apache.hadoop.hdfs;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.fail;
 
 import java.io.IOException;
 import java.util.UUID;
@@ -26,6 +28,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.CommonConfigurationKeys;
+import org.apache.hadoop.fs.FSDataOutputStream;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.fs.TestTrash;
@@ -141,11 +144,9 @@ public class TestHDFSTrash {
     Path u1t = u1Trash.getCurrentTrashDir(user1Tmp);
     assertTrue(u1Trash.moveToTrash(user1Tmp),
         String.format("Failed to move %s to trash", user1Tmp));
-    assertTrue(
-        fs.delete(u1t, true),
-        String.format(
-            "%s should be allowed to remove its own trash directory %s",
-            user1.getUserName(), u1t));
+    assertTrue(fs.delete(u1t, true), String.format(
+        "%s should be allowed to remove its own trash directory %s",
+        user1.getUserName(), u1t));
     assertFalse(fs.exists(u1t));
 
     // login as user2, move something to trash
@@ -178,7 +179,7 @@ public class TestHDFSTrash {
       FileSystem fileSystem, Configuration config) throws IOException {
     // generate an unique path per instance
     UUID trashId = UUID.randomUUID();
-    StringBuffer sb = new StringBuffer()
+    StringBuilder sb = new StringBuilder()
         .append(ugi.getUserName())
         .append("-")
         .append(trashId.toString());
@@ -187,5 +188,27 @@ public class TestHDFSTrash {
     Mockito.when(spyUserFs.getTrashRoot(Mockito.any()))
         .thenReturn(userTrashRoot);
     return new Trash(spyUserFs, config);
+  }
+
+
+  @Test
+  public void testDeleteToTrashWhenInodeNameDuplicate() throws Exception {
+    Configuration testConf = new Configuration(conf);
+    testConf.set(CommonConfigurationKeys.FS_TRASH_INTERVAL_KEY, "600");
+
+    Path file = new Path(TEST_ROOT, "subdir0");
+    Path dir = new Path(TEST_ROOT, "subdir0/subdir1/subdir2");
+
+    fs = DFSTestUtil.login(fs, testConf, user1);
+
+    FSDataOutputStream out = fs.create(file);
+    out.writeBytes("This is a file");
+    out.close();
+
+    Trash trash = new Trash(testConf);
+    assertTrue(trash.moveToTrash(file));
+
+    fs.mkdirs(dir);
+    assertTrue(trash.moveToTrash(dir));
   }
 }

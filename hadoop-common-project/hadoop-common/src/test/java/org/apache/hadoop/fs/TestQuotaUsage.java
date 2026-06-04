@@ -44,12 +44,10 @@ public class TestQuotaUsage {
         fileAndDirectoryCount(fileAndDirCount).quota(quota).
         spaceConsumed(spaceConsumed).spaceQuota(spaceQuota).build();
     assertEquals(fileAndDirCount,
-        quotaUsage.getFileAndDirectoryCount(),
-        "getFileAndDirectoryCount");
+        quotaUsage.getFileAndDirectoryCount(), "getFileAndDirectoryCount");
     assertEquals(quota, quotaUsage.getQuota(), "getQuota");
     assertEquals(spaceConsumed,
-        quotaUsage.getSpaceConsumed(),
-        "getSpaceConsumed");
+        quotaUsage.getSpaceConsumed(), "getSpaceConsumed");
     assertEquals(spaceQuota, quotaUsage.getSpaceQuota(), "getSpaceQuota");
   }
 
@@ -62,12 +60,10 @@ public class TestQuotaUsage {
         fileAndDirectoryCount(fileAndDirCount).
         spaceConsumed(spaceConsumed).build();
     assertEquals(fileAndDirCount,
-        quotaUsage.getFileAndDirectoryCount(),
-        "getFileAndDirectoryCount");
+        quotaUsage.getFileAndDirectoryCount(), "getFileAndDirectoryCount");
     assertEquals(-1, quotaUsage.getQuota(), "getQuota");
     assertEquals(spaceConsumed,
-        quotaUsage.getSpaceConsumed(),
-        "getSpaceConsumed");
+        quotaUsage.getSpaceConsumed(), "getSpaceConsumed");
     assertEquals(-1, quotaUsage.getSpaceQuota(), "getSpaceQuota");
   }
 

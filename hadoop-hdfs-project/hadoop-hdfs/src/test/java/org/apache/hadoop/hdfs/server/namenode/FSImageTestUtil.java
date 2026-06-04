@@ -17,7 +17,9 @@
  */
 package org.apache.hadoop.hdfs.server.namenode;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.fail;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
@@ -512,6 +514,23 @@ public abstract class FSImageTestUtil {
       for (long checkpointTxId : txids) {
         File image = new File(nameDir,
                               NNStorage.getImageFileName(checkpointTxId));
+        assertTrue(image.length() > 0, "Expected non-empty " + image);
+      }
+    }
+  }
+
+  public static void assertNNHasRollbackCheckpoints(MiniDFSCluster cluster,
+      int nnIdx, List<Integer> txids) {
+
+    for (File nameDir : getNameNodeCurrentDirs(cluster, nnIdx)) {
+      LOG.info("examining name dir with files: {}",
+                   Joiner.on(",").join(nameDir.listFiles()));
+      // Should have fsimage_N for the three checkpoints
+      LOG.info("Examining storage dir {} with contents: {}", nameDir,
+                   StringUtils.join(nameDir.listFiles(), ", "));
+      for (long checkpointTxId : txids) {
+        File image = new File(nameDir,
+            NNStorage.getRollbackImageFileName(checkpointTxId));
         assertTrue(image.length() > 0, "Expected non-empty " + image);
       }
     }

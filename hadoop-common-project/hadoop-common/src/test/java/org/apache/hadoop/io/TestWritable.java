@@ -33,6 +33,12 @@ import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.util.ReflectionUtils;
 import org.junit.jupiter.api.Test;
 
+import org.junit.jupiter.api.Test;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /** Unit tests for Writable. */
 public class TestWritable {
@@ -207,8 +213,7 @@ private static final String TEST_WRITABLE_CONFIG_VALUE = TEST_CONFIG_VALUE;
     final String SHOULD_MATCH = "Result should be 0, should match the writables";
     assertTrue(writable1.compareTo(writable1) == 0, SHOULD_MATCH);
     assertTrue(WritableComparator.get(ShortWritable.class)
-        .compare(writable1, writable3) == 0,
-        SHOULD_MATCH);
+        .compare(writable1, writable3) == 0, SHOULD_MATCH);
   }
 
   /**

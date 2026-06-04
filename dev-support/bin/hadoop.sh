@@ -377,6 +377,7 @@ function personality_modules
     ;;
     mvninstall)
       extra="-DskipTests"
+      needflags=true
       if [[ "${repostatus}" = branch || "${BUILDMODE}" = full ]]; then
         ordering=.
       fi
@@ -387,6 +388,11 @@ function personality_modules
       fi
     ;;
     unit)
+      if [[ "$IS_WINDOWS" && "$IS_WINDOWS" == 1 && (-z "$IS_NIGHTLY_BUILD" || "$IS_NIGHTLY_BUILD" == 0) ]]; then
+        echo "Won't run unit tests for Windows in pre-commit CI"
+        return
+      fi
+
       extra="-Dsurefire.rerunFailingTestsCount=2"
       if [[ "${BUILDMODE}" = full ]]; then
         ordering=mvnsrc

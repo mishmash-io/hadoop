@@ -17,6 +17,7 @@
  */
 package org.apache.hadoop.hdfs;
 
+import org.junit.jupiter.api.Timeout;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.slf4j.event.Level;
@@ -36,7 +37,6 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.Timeout;
 
 import java.io.IOException;
 import java.nio.ByteBuffer;
@@ -44,7 +44,7 @@ import java.util.Arrays;
 import java.util.Random;
 import java.util.concurrent.TimeUnit;
 
-@Timeout(value=300000, unit=TimeUnit.MILLISECONDS)
+@Timeout(300)
 public class TestWriteReadStripedFile {
   public static final Logger LOG =
       LoggerFactory.getLogger(TestWriteReadStripedFile.class);
@@ -322,8 +322,7 @@ public class TestWriteReadStripedFile {
       fs.concat(target, srcs);
       Assertions.fail("non-ec file shouldn't concat with ec file");
     } catch (RemoteException e){
-      Assertions.assertTrue(e.getMessage()
-          .contains("have different erasure coding policy"));
+      Assertions.assertTrue(e.getMessage().contains("have different erasure coding policy"));
     }
   }
 }

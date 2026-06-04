@@ -17,6 +17,8 @@
  */
 package org.apache.hadoop.fs;
 
+import org.junit.jupiter.api.BeforeAll;
+
 import java.io.IOException;
 
 import org.junit.jupiter.api.BeforeAll;

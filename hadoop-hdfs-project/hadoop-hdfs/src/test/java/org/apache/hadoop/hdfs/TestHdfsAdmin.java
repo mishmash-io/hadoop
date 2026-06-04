@@ -17,7 +17,12 @@
  */
 package org.apache.hadoop.hdfs;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.io.File;
 import java.io.IOException;
@@ -45,7 +50,10 @@ import org.apache.hadoop.hdfs.protocol.OpenFilesIterator;
 import org.apache.hadoop.hdfs.protocol.OpenFilesIterator.OpenFilesType;
 import org.apache.hadoop.hdfs.server.blockmanagement.BlockStoragePolicySuite;
 import org.apache.hadoop.util.Sets;
-import org.junit.jupiter.api.*;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.Timeout;
 
 public class TestHdfsAdmin {
   
@@ -113,7 +121,7 @@ public class TestHdfsAdmin {
    * Make sure that a non-HDFS URI throws a helpful error.
    */
   @Test
-  public void testHdfsAdminWithBadUri() {
+  public void testHdfsAdminWithBadUri() throws IOException, URISyntaxException {
     assertThrows(IllegalArgumentException.class, () -> {
       new HdfsAdmin(new URI("file:///bad-scheme"), conf);
     });
@@ -180,9 +188,9 @@ public class TestHdfsAdmin {
       policyNamesSet2.add(policy.getName());
     }
     // Ensure that we got the same set of policies in both cases.
-    Assertions.assertTrue(
+    assertTrue(
         Sets.difference(policyNamesSet1, policyNamesSet2).isEmpty());
-    Assertions.assertTrue(
+    assertTrue(
         Sets.difference(policyNamesSet2, policyNamesSet1).isEmpty());
   }
 
@@ -198,7 +206,7 @@ public class TestHdfsAdmin {
   @Test
   public void testGetKeyProvider() throws IOException {
     HdfsAdmin hdfsAdmin = new HdfsAdmin(FileSystem.getDefaultUri(conf), conf);
-    Assertions.assertNull(hdfsAdmin.getKeyProvider(),
+    assertNull(hdfsAdmin.getKeyProvider(),
         "should return null for an non-encrypted cluster");
 
     shutDownCluster();
@@ -211,12 +219,12 @@ public class TestHdfsAdmin {
     cluster.waitActive();
     hdfsAdmin = new HdfsAdmin(FileSystem.getDefaultUri(conf), conf);
 
-    Assertions.assertNotNull(hdfsAdmin.getKeyProvider(),
+    assertNotNull(hdfsAdmin.getKeyProvider(),
         "should not return null for an encrypted cluster");
   }
 
   @Test
-  @Timeout(value = 120000L, unit = TimeUnit.MILLISECONDS)
+  @Timeout(120)
   public void testListOpenFiles() throws IOException {
     HashSet<Path> closedFileSet = new HashSet<>();
     HashMap<Path, FSDataOutputStream> openFileMap = new HashMap<>();

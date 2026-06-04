@@ -33,7 +33,6 @@ import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.TestInfo;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -93,9 +92,8 @@ public abstract class AbstractContractMultipartUploaderTest extends
 
     final FileSystem fs = getFileSystem();
     Path testPath = getContract().getTestPath();
-    assumeTrue(
-        fs.hasPathCapability(testPath,
-            CommonPathCapabilities.FS_MULTIPART_UPLOADER),
+    assumeTrue(fs.hasPathCapability(testPath,
+        CommonPathCapabilities.FS_MULTIPART_UPLOADER),
         "Multipart uploader is not supported");
     uploader0 = fs.createMultipartUploader(testPath).build();
     uploader1 = fs.createMultipartUploader(testPath).build();
@@ -103,6 +101,7 @@ public abstract class AbstractContractMultipartUploaderTest extends
 
   @AfterEach
   @Override
+  @AfterEach
   public void teardown() throws Exception {
     MultipartUploader uploader = getUploader(1);
     if (uploader != null) {
@@ -270,10 +269,8 @@ public abstract class AbstractContractMultipartUploaderTest extends
     } else {
       // otherwise, the same or other uploader can try again.
       PathHandle fd2 = complete(completer, uploadHandle, file, partHandles);
-      assertArrayEquals(
-          fd.toByteArray(),
-          fd2.toByteArray(),
-          "Path handles differ");
+      assertArrayEquals(fd.toByteArray(),
+          fd2.toByteArray(), "Path handles differ");
     }
   }
 

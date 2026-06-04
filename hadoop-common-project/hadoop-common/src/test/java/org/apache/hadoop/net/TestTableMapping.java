@@ -33,6 +33,9 @@ import java.util.concurrent.TimeUnit;
 
 import org.apache.hadoop.conf.Configuration;
 
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.Timeout;
+
 public class TestTableMapping {
   private String hostName1 = "1.2.3.4";
   private String hostName2 = "5.6.7.8";
@@ -163,7 +166,7 @@ public class TestTableMapping {
 
 
   @Test
-  @Timeout(value=60000, unit=TimeUnit.MILLISECONDS)
+  @Timeout(value = 60)
   public void testBadFile() throws IOException {
     File mapFile = File.createTempFile(getClass().getSimpleName() +
         ".testBadFile", ".txt");

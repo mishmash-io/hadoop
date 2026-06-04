@@ -26,6 +26,8 @@ import java.util.Map;
 
 import org.apache.hadoop.fs.CommonConfigurationKeys;
 import org.junit.jupiter.api.Test;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public class TestDeprecatedKeys {
  

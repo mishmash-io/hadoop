@@ -17,6 +17,8 @@
 
 package org.apache.hadoop.metrics2.util;
 
+import org.junit.jupiter.api.Test;
+
 import javax.management.MBeanServer;
 import javax.management.ObjectName;
 
@@ -27,6 +29,8 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import java.lang.management.ManagementFactory;
 import java.util.HashMap;
 import java.util.Map;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 /**
  * Test MXBean addition of key/value pairs to registered MBeans.

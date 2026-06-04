@@ -28,7 +28,6 @@ import org.apache.hadoop.hdfs.DFSConfigKeys;
 import org.apache.hadoop.hdfs.HdfsConfiguration;
 import org.apache.hadoop.hdfs.MiniDFSCluster;
 import org.apache.hadoop.hdfs.server.datanode.fsdataset.FsDatasetSpi;
-
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.Timeout;
 
@@ -72,7 +71,7 @@ public class TestDataNodeInitStorage {
 
 
   @Test
-  @Timeout(value = 60000, unit = TimeUnit.MILLISECONDS)
+  @Timeout(value = 60)
   public void testDataNodeInitStorage() throws Throwable {
     // Create configuration to use SimulatedFsDatasetVerifier#Factory.
     Configuration conf = new HdfsConfiguration();

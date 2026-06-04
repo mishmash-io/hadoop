@@ -27,6 +27,11 @@ import org.apache.hadoop.util.FakeTimer;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
 /**
  * Tests for {@link LogThrottlingHelper}.
  */
@@ -96,9 +101,9 @@ public class TestLogThrottlingHelper {
 
   @Test
   public void testLoggingWithInconsistentValues() {
-    assertTrue(helper.record(1, 2).shouldLog());
-    helper.record(1, 2);
     assertThrows(IllegalArgumentException.class, () -> {
+      assertTrue(helper.record(1, 2).shouldLog());
+      helper.record(1, 2);
       helper.record(1, 2, 3);
     });
   }

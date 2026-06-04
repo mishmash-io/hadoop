@@ -26,6 +26,8 @@ import org.apache.hadoop.hdfs.DFSConfigKeys;
 import org.apache.hadoop.hdfs.HdfsConfiguration;
 import org.apache.hadoop.hdfs.MiniDFSCluster;
 import org.apache.hadoop.test.GenericTestUtils;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.Timeout;
 
 import java.io.File;
 
@@ -36,7 +38,9 @@ import java.net.InetSocketAddress;
 import java.util.ArrayList;
 import java.util.concurrent.TimeUnit;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public class TestDataNodeUUID {
 
@@ -71,7 +75,7 @@ public class TestDataNodeUUID {
   }
 
   @Test
-  @Timeout(value = 10000, unit = TimeUnit.MILLISECONDS)
+  @Timeout(value = 10)
   public void testUUIDRegeneration() throws Exception {
     File baseDir = GenericTestUtils.getTestDir();
     File disk1 = new File(baseDir, "disk1");
@@ -99,18 +103,16 @@ public class TestDataNodeUUID {
       // on the second disk
       MiniDFSCluster.DataNodeProperties dn = cluster.stopDataNode(0);
       FileUtils.deleteDirectory(disk2);
-      assertTrue(disk2.mkdirs(),
-              "Failed to recreate the data directory: " + disk2);
+      assertTrue(disk2.mkdirs(), "Failed to recreate the data directory: " + disk2);
 
       // Restart and check if the UUID changed
-      assertTrue(cluster.restartDataNode(dn),
-              "DataNode failed to start up: " + dn);
+      assertTrue(cluster.restartDataNode(dn), "DataNode failed to start up: " + dn);
       // We need to wait until the DN has completed registration
       while (!cluster.getDataNodes().get(0).isDatanodeFullyStarted()) {
         Thread.sleep(50);
       }
-      assertEquals(
-              originalUUID, cluster.getDataNodes().get(0).getDatanodeUuid(), "DN generated a new UUID despite disk1 having it intact");
+      assertEquals(originalUUID, cluster.getDataNodes().get(0).getDatanodeUuid(),
+          "DN generated a new UUID despite disk1 having it intact");
     } finally {
       if (cluster != null) {
         cluster.shutdown();

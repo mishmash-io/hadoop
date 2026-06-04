@@ -39,17 +39,18 @@ import org.apache.hadoop.hdfs.server.protocol.SlowPeerReports;
 import org.apache.hadoop.hdfs.server.protocol.StorageBlockReport;
 import org.apache.hadoop.hdfs.server.protocol.StorageReport;
 import org.apache.hadoop.test.GenericTestUtils.DelayAnswer;
-
-import java.util.ArrayList;
-
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.Timeout;
 
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Random;
 import java.util.concurrent.*;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.spy;
@@ -135,8 +136,7 @@ public class TestBlockReportLease {
       // Get result, it will not null if process successfully
       DatanodeCommand datanodeCommand = sendBRfuturea.get();
       assertTrue(datanodeCommand instanceof FinalizeCommand);
-      assertEquals(poolId, ((FinalizeCommand)datanodeCommand)
-          .getBlockPoolId());
+      assertEquals(poolId, ((FinalizeCommand) datanodeCommand).getBlockPoolId());
     }
   }
 
@@ -201,8 +201,7 @@ public class TestBlockReportLease {
         exception = e;
       }
       assertNotNull(exception);
-      assertEquals(InvalidBlockReportLeaseException.class,
-          exception.getCause().getClass());
+      assertEquals(InvalidBlockReportLeaseException.class, exception.getCause().getClass());
     }
   }
 
@@ -271,7 +270,7 @@ public class TestBlockReportLease {
   }
 
   @Test
-  @Timeout(value = 360000, unit = TimeUnit.MILLISECONDS)
+  @Timeout(value = 360)
   public void testFirstIncompleteBlockReport() throws Exception {
     HdfsConfiguration conf = new HdfsConfiguration();
     Random rand = new Random();
@@ -312,54 +311,59 @@ public class TestBlockReportLease {
           any(BlockListAsLongs.class));
       ExecutorService pool = Executors.newFixedThreadPool(1);
 
+      ExecutorService pool = Executors.newFixedThreadPool(1);
       // Trigger sendBlockReport.
       BlockReportContext brContext = new BlockReportContext(1, 0,
           rand.nextLong(), hbResponse.getFullBlockReportLeaseId());
       // Build every storage with 100 blocks for sending report.
-      DatanodeStorage[] datanodeStorages
-          = new DatanodeStorage[storages.length];
       for (int i = 0; i < storages.length; i++) {
-        datanodeStorages[i] = storages[i].getStorage();
-      }
+        DatanodeStorage s = storages[i].getStorage();
+        StorageBlockReport[] reports = createReports(new DatanodeStorage[]{s}, 100);
+        DatanodeStorageInfo target = Arrays.stream(datanodeDescriptor.getStorageInfos())
+            .filter(info -> info.getStorageID().equals(s.getStorageID()))
+            .findFirst()
+            .get();
+        int before = target.getBlockReportCount();
 
-      for (int i = 0; i < storages.length; i++) {
-        Future<DatanodeCommand> prFuture;
-        
-        if(i == 0) {
-          prFuture = pool.submit(() -> {
-            StorageBlockReport[] reports = createReports(datanodeStorages, 100);
-
-            // The first multiple send once, simulating the failure of the first report,
-            // only send successfully once.
-            rpcServer.blockReport(dnRegistration, poolId, reports, brContext);
-              
-            // Send blockReport.
-            return rpcServer.blockReport(dnRegistration, poolId, reports, brContext);
-          });
-        } else {
-          prFuture = pool.submit(() -> {
-            StorageBlockReport[] reports = createReports(datanodeStorages, 100);
-
-            // Send blockReport.
-            return rpcServer.blockReport(dnRegistration, poolId, reports, brContext);
-          });
+        Future<DatanodeCommand> f1 = null;
+        // The first multiple send once, simulating the failure of the first report,
+        // only send successfully once.
+        if (i == 0) {
+          f1 = pool.submit(() ->
+              rpcServer.blockReport(dnRegistration, poolId, reports, brContext));
+          delayer.waitForCall();
+          delayer.proceed();
+          f1.get();
         }
-        
+
+        HeartbeatResponse hbResponse2 = rpcServer.sendHeartbeat(
+            dnRegistration, storages, 0, 0, 0, 0, 0, null, true,
+            SlowPeerReports.EMPTY_REPORT, SlowDiskReports.EMPTY_REPORT);
+
+        BlockReportContext brContext2 = new BlockReportContext(
+            1, 0, rand.nextLong(), hbResponse2.getFullBlockReportLeaseId());
+        // Send blockReport.
+        Future<DatanodeCommand> f2 = pool.submit(() ->
+            rpcServer.blockReport(dnRegistration, poolId, reports, brContext2));
+
         // Wait until BlockManager calls processReport.
         delayer.waitForCall();
 
         // Allow blockreport to proceed.
         delayer.proceed();
 
+        DatanodeCommand datanodeCommand = f2.get();
         // Get result, it will not null if process successfully.
         DatanodeCommand datanodeCommand = prFuture.get();
         assertTrue(datanodeCommand instanceof FinalizeCommand);
-        assertEquals(poolId, ((FinalizeCommand)datanodeCommand)
+        assertEquals(poolId, ((FinalizeCommand) datanodeCommand)
             .getBlockPoolId());
         if(i == 0){
-          assertEquals(2, datanodeDescriptor.getStorageInfos()[i].getBlockReportCount());
-        }else{
-          assertEquals(1, datanodeDescriptor.getStorageInfos()[i].getBlockReportCount());
+          assertEquals(2,
+              target.getBlockReportCount() - before);
+        } else {
+          assertEquals(1,
+              target.getBlockReportCount() - before);
         }
       }
     }

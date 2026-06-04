@@ -21,7 +21,13 @@ package org.apache.hadoop.fs;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
-import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.any;
+import static org.mockito.Mockito.eq;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.reset;
 
 import java.io.IOException;
 import java.lang.reflect.Method;
@@ -181,8 +187,7 @@ public class TestFilterFileSystem {
         }
       }
     }
-    assertTrue(errors <= 0,
-        (errors + " methods were not overridden correctly - see" +
+    assertTrue(errors <= 0, (errors + " methods were not overridden correctly - see" +
         " log"));
   }
   
@@ -302,11 +307,8 @@ public class TestFilterFileSystem {
     try (FilterFileSystem flfs = new FilterLocalFileSystem()) {
       flfs.initialize(URI.create("filter:/"), conf);
       Path src = new Path("/src");
-      assertFalse(
-          flfs.hasPathCapability(src,
-              CommonPathCapabilities.FS_MULTIPART_UPLOADER),
-          "hasPathCapability(FS_MULTIPART_UPLOADER) should have failed for "
-              + flfs);
+      assertFalse(flfs.hasPathCapability(src, CommonPathCapabilities.FS_MULTIPART_UPLOADER),
+          "hasPathCapability(FS_MULTIPART_UPLOADER) should have failed for " + flfs);
     }
   }
 

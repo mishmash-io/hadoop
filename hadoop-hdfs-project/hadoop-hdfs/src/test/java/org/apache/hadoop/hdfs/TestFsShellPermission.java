@@ -36,7 +36,6 @@ import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.fs.permission.FsPermission;
 import org.apache.hadoop.fs.shell.FsShell;
 import org.apache.hadoop.security.UserGroupInformation;
-
 import org.junit.jupiter.api.Test;
 
 /**

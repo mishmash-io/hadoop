@@ -39,9 +39,14 @@ import org.apache.hadoop.fs.CommonConfigurationKeys;
 import org.apache.hadoop.net.NetUtils;
 import org.apache.hadoop.net.SocksSocketFactory;
 import org.apache.hadoop.net.StandardSocketFactory;
+import org.apache.hadoop.util.concurrent.SubjectInheritingThread;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.Timeout;
+import static org.junit.jupiter.api.Assertions.assertSame;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.fail;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertFalse;
@@ -64,7 +69,7 @@ public class TestSocketFactory {
   private void startTestServer() throws Exception {
     // start simple tcp server.
     serverRunnable = new ServerRunnable();
-    serverThread = new Thread(serverRunnable);
+    serverThread = new SubjectInheritingThread(serverRunnable);
     serverThread.start();
     final long timeout = System.currentTimeMillis() + START_STOP_TIMEOUT_SEC * 1000;
     while (!serverRunnable.isReady()) {
@@ -134,7 +139,7 @@ public class TestSocketFactory {
    * Test SocksSocketFactory.
    */
   @Test
-  @Timeout(value=5000, unit=TimeUnit.MILLISECONDS)
+  @Timeout(value = 5)
   public void testSocksSocketFactory() throws Exception {
     startTestServer();
     testSocketFactory(new SocksSocketFactory());
@@ -144,7 +149,7 @@ public class TestSocketFactory {
    * Test StandardSocketFactory.
    */
   @Test
-  @Timeout(value=5000, unit=TimeUnit.MILLISECONDS)
+  @Timeout(value = 5)
   public void testStandardSocketFactory() throws Exception {
     startTestServer();
     testSocketFactory(new StandardSocketFactory());
@@ -181,7 +186,7 @@ public class TestSocketFactory {
    * test proxy methods
    */
   @Test
-  @Timeout(value=5000, unit=TimeUnit.MILLISECONDS)
+  @Timeout(value = 5)
   public void testProxy() throws Exception {
     SocksSocketFactory templateWithoutProxy = new SocksSocketFactory();
     Proxy proxy = new Proxy(Type.SOCKS, InetSocketAddress.createUnresolved(

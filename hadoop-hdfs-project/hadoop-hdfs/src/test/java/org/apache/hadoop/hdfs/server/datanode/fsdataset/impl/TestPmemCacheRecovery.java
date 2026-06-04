@@ -23,7 +23,10 @@ import org.apache.hadoop.hdfs.server.datanode.DataNodeFaultInjector;
 
 import static org.apache.hadoop.hdfs.DFSConfigKeys.*;
 import static org.apache.hadoop.test.MetricsAsserts.getMetrics;
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.fail;
 import static org.junit.jupiter.api.Assumptions.assumeTrue;
 
 import java.io.File;
@@ -53,8 +56,12 @@ import org.apache.hadoop.io.nativeio.NativeIO.POSIX.NoMlockCacheManipulator;
 import org.apache.hadoop.metrics2.MetricsRecordBuilder;
 import org.apache.hadoop.test.GenericTestUtils;
 import org.apache.hadoop.test.MetricsAsserts;
-import org.junit.jupiter.api.*;
-
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.Timeout;
 import org.slf4j.event.Level;
 
 import java.util.function.Supplier;
@@ -210,12 +217,12 @@ public class TestPmemCacheRecovery {
   }
 
   @Test
-  @Timeout(value = 60000, unit = TimeUnit.MILLISECONDS)
+  @Timeout(value = 60)
   public void testCacheRecovery() throws Exception {
     final int cacheBlocksNum =
         Ints.checkedCast(CACHE_AMOUNT / BLOCK_SIZE);
     BlockReaderTestUtil.enableHdfsCachingTracing();
-    Assertions.assertEquals(0, CACHE_AMOUNT % BLOCK_SIZE);
+    assertEquals(0, CACHE_AMOUNT % BLOCK_SIZE);
 
     final Path testFile = new Path("/testFile");
     final long testFileLen = cacheBlocksNum * BLOCK_SIZE;

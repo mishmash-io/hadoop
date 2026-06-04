@@ -58,8 +58,24 @@ import org.junit.jupiter.params.provider.MethodSource;
 public abstract class AbstractContractPathHandleTest
     extends AbstractFSContractTestBase {
 
+  private HandleOpt[] opts;
+  private boolean serialized;
+
   private static final byte[] B1 = dataset(TEST_FILE_LEN, 43, 255);
   private static final byte[] B2 = dataset(TEST_FILE_LEN, 44, 255);
+
+  /**
+   * Create an instance of the test from {@link #params()}.
+   * @param pTestname Name of the set of options under test
+   * @param pOpts Set of {@link HandleOpt} params under test.
+   * @param pSerialized Serialize the handle before using it.
+   */
+  public void initAbstractContractPathHandleTest(
+      String pTestname, HandleOpt[] pOpts,
+      boolean pSerialized) {
+    this.opts = pOpts;
+    this.serialized = pSerialized;
+  }
 
   /**
    * Run test against all combinations of default options. Also run each
@@ -90,9 +106,11 @@ public abstract class AbstractContractPathHandleTest
     return conf;
   }
 
-  @ParameterizedTest
   @MethodSource("params")
-  public void testIdent(String testname, HandleOpt[] opts, boolean serialized) throws IOException {
+  @ParameterizedTest
+  public void testIdent(String pTestname, HandleOpt[] pOpts,
+      boolean pSerialized) throws IOException {
+    initAbstractContractPathHandleTest(pTestname, pOpts, pSerialized);
     describe("verify simple open, no changes");
     FileStatus stat = testFile(B1);
     PathHandle fd = getHandleOrSkip(stat, opts, serialized);
@@ -103,9 +121,11 @@ public abstract class AbstractContractPathHandleTest
     }
   }
 
-  @ParameterizedTest
   @MethodSource("params")
-  public void testChanged(String testname, HandleOpt[] opts, boolean serialized) throws IOException {
+  @ParameterizedTest
+  public void testChanged(String pTestname, HandleOpt[] pOpts,
+      boolean pSerialized) throws IOException {
+    initAbstractContractPathHandleTest(pTestname, pOpts, pSerialized);
     describe("verify open(PathHandle, changed(*))");
     assumeSupportsContentCheck();
     HandleOpt.Data data = HandleOpt.getOpt(HandleOpt.Data.class, opts)
@@ -134,9 +154,11 @@ public abstract class AbstractContractPathHandleTest
     }
   }
 
-  @ParameterizedTest
   @MethodSource("params")
-  public void testMoved(String testname, HandleOpt[] opts, boolean serialized) throws IOException {
+  @ParameterizedTest
+  public void testMoved(String pTestname, HandleOpt[] pOpts,
+      boolean pSerialized) throws IOException {
+    initAbstractContractPathHandleTest(pTestname, pOpts, pSerialized);
     describe("verify open(PathHandle, moved(*))");
     assumeSupportsFileReference();
     HandleOpt.Location loc = HandleOpt.getOpt(HandleOpt.Location.class, opts)
@@ -156,9 +178,11 @@ public abstract class AbstractContractPathHandleTest
     }
   }
 
-  @ParameterizedTest
   @MethodSource("params")
-  public void testChangedAndMoved(String testname, HandleOpt[] opts, boolean serialized) throws IOException {
+  @ParameterizedTest
+  public void testChangedAndMoved(String pTestname, HandleOpt[] pOpts,
+      boolean pSerialized) throws IOException {
+    initAbstractContractPathHandleTest(pTestname, pOpts, pSerialized);
     describe("verify open(PathHandle, changed(*), moved(*))");
     assumeSupportsFileReference();
     assumeSupportsContentCheck();
@@ -242,9 +266,10 @@ public abstract class AbstractContractPathHandleTest
     return null;
   }
 
-  @ParameterizedTest
+
   @MethodSource("params")
-  public void testOpenFileApplyRead(String testname, HandleOpt[] opts, boolean serialized) throws Throwable {
+  @ParameterizedTest
+  public void testOpenFileApplyRead() throws Throwable {
     describe("use the apply sequence to read a whole file");
     CompletableFuture<Long> readAllBytes = getFileSystem()
         .openFile(
@@ -253,13 +278,14 @@ public abstract class AbstractContractPathHandleTest
         .build()
         .thenApply(ContractTestUtils::readStream);
     assertEquals(TEST_FILE_LEN,
-        (long) readAllBytes.get(),
-        "Wrong number of bytes read value");
+        (long) readAllBytes.get(), "Wrong number of bytes read value");
   }
 
-  @ParameterizedTest
   @MethodSource("params")
-  public void testOpenFileDelete(String testname, HandleOpt[] opts, boolean serialized) throws Throwable {
+  @ParameterizedTest
+  public void testOpenFileDelete(String pTestname, HandleOpt[] pOpts,
+      boolean pSerialized) throws Throwable {
+    initAbstractContractPathHandleTest(pTestname, pOpts, pSerialized);
     describe("use the apply sequence to read a whole file");
     FileStatus testFile = testFile(B1);
     PathHandle handle = getHandleOrSkip(testFile, opts, serialized);
@@ -284,9 +310,10 @@ public abstract class AbstractContractPathHandleTest
     }
   }
 
-  @ParameterizedTest
   @MethodSource("params")
-  public void testOpenFileLazyFail(String testname, HandleOpt[] opts, boolean serialized) throws Throwable {
+  @ParameterizedTest
+  public void testOpenFileLazyFail(String pTestname, HandleOpt[] pOpts,
+      boolean pSerialized) throws Throwable {
     describe("openFile fails on a misssng file in the get() and not before");
     FileStatus stat = testFile(B1);
     CompletableFuture<Long> readAllBytes = getFileSystem()
@@ -296,8 +323,7 @@ public abstract class AbstractContractPathHandleTest
         .build()
         .thenApply(ContractTestUtils::readStream);
     assertEquals(TEST_FILE_LEN,
-        (long) readAllBytes.get(),
-        "Wrong number of bytes read value");
+        (long) readAllBytes.get(), "Wrong number of bytes read value");
   }
 
 }

@@ -17,7 +17,9 @@
  */
 package org.apache.hadoop.hdfs;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.io.IOException;
 import java.util.concurrent.TimeUnit;
@@ -35,7 +37,7 @@ import org.junit.jupiter.api.Timeout;
 /**
  * This test ensures the statuses of EC files with the default policy.
  */
-@Timeout(value=300000, unit=TimeUnit.MILLISECONDS)
+@Timeout(300)
 public class TestFileStatusWithDefaultECPolicy {
   private MiniDFSCluster cluster;
   private DistributedFileSystem fs;
@@ -97,7 +99,6 @@ public class TestFileStatusWithDefaultECPolicy {
     ContractTestUtils.assertErasureCoded(fs, file);
     FileStatus status = fs.getFileStatus(file);
     assertTrue(status.toString().contains("isErasureCoded=true"),
-        file + " should have erasure coding set in " +
-            "FileStatus#toString(): " + status);
+        file + " should have erasure coding set in " + "FileStatus#toString(): " + status);
   }
 }

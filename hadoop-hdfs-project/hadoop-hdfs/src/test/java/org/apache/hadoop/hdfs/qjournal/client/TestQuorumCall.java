@@ -17,14 +17,14 @@
  */
 package org.apache.hadoop.hdfs.qjournal.client;
 
-import static org.junit.jupiter.api.Assertions.*;
-
 import java.util.Map;
 import java.util.TreeMap;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 
 import org.apache.hadoop.util.FakeTimer;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.Timeout;
 
 import org.apache.hadoop.thirdparty.com.google.common.base.Joiner;
 
@@ -34,9 +34,12 @@ import org.junit.jupiter.api.Timeout;
 import org.apache.hadoop.thirdparty.com.google.common.collect.ImmutableMap;
 import org.apache.hadoop.thirdparty.com.google.common.util.concurrent.SettableFuture;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.fail;
+
 public class TestQuorumCall {
   @Test
-  @Timeout(value = 10000, unit = TimeUnit.MILLISECONDS)
+  @Timeout(value = 10)
   public void testQuorums() throws Exception {
     Map<String, SettableFuture<String>> futures = ImmutableMap.of(
         "f1", SettableFuture.<String>create(),
@@ -71,9 +74,8 @@ public class TestQuorumCall {
       // expected
     }
   }
-
   @Test
-  @Timeout(value = 10000, unit = TimeUnit.MILLISECONDS)
+  @Timeout(value = 10)
   public void testQuorumFailsWithoutResponse() throws Exception {
     Map<String, SettableFuture<String>> futures = ImmutableMap.of(
         "f1", SettableFuture.<String>create());
@@ -91,7 +93,7 @@ public class TestQuorumCall {
   }
 
   @Test
-  @Timeout(value = 10000, unit = TimeUnit.MILLISECONDS)
+  @Timeout(value = 10)
   public void testQuorumSucceedsWithLongPause() throws Exception {
     final Map<String, SettableFuture<String>> futures = ImmutableMap.of(
         "f1", SettableFuture.<String>create());

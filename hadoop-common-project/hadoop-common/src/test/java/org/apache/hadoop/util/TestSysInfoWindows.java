@@ -18,12 +18,9 @@
 
 package org.apache.hadoop.util;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-
-import java.util.concurrent.TimeUnit;
-
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.Timeout;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 public class TestSysInfoWindows {
 
@@ -48,7 +45,7 @@ public class TestSysInfoWindows {
   }
 
   @Test
-  @Timeout(value=10000, unit=TimeUnit.MILLISECONDS)
+  @Timeout(value = 10)
   public void parseSystemInfoString() {
     SysInfoWindowsMock tester = new SysInfoWindowsMock();
     tester.setSysinfoString(
@@ -75,7 +72,7 @@ public class TestSysInfoWindows {
   }
 
   @Test
-  @Timeout(value=10000, unit=TimeUnit.MILLISECONDS)
+  @Timeout(value = 10)
   public void refreshAndCpuUsage() throws InterruptedException {
     SysInfoWindowsMock tester = new SysInfoWindowsMock();
     tester.setSysinfoString(
@@ -115,7 +112,7 @@ public class TestSysInfoWindows {
   }
 
   @Test
-  @Timeout(value=10000, unit=TimeUnit.MILLISECONDS)
+  @Timeout(value = 10)
   public void refreshAndCpuUsageMulticore() throws InterruptedException {
     // test with 12 cores
     SysInfoWindowsMock tester = new SysInfoWindowsMock();
@@ -146,7 +143,7 @@ public class TestSysInfoWindows {
   }
 
   @Test
-  @Timeout(value=10000, unit=TimeUnit.MILLISECONDS)
+  @Timeout(value = 10)
   public void errorInGetSystemInfo() {
     SysInfoWindowsMock tester = new SysInfoWindowsMock();
     // info str derived from windows shell command is null

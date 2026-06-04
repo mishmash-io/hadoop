@@ -16,7 +16,10 @@
  * limitations under the License.
  */
 package org.apache.hadoop.hdfs;
-import java.util.concurrent.TimeUnit;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
 import java.util.function.Supplier;
 import org.apache.hadoop.crypto.key.kms.KMSClientProvider;
 import org.apache.hadoop.crypto.key.kms.KMSDelegationToken;
@@ -32,7 +35,10 @@ import org.apache.hadoop.hdfs.web.WebHdfsFileSystem;
 import org.apache.hadoop.hdfs.web.WebHdfsTestUtil;
 import org.apache.hadoop.test.GenericTestUtils;
 import org.apache.hadoop.test.Whitebox;
-import org.junit.jupiter.api.*;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.Timeout;
 
 import java.io.File;
 
@@ -54,7 +60,7 @@ public class TestEncryptionZonesWithKMS extends TestEncryptionZones {
   public void setup() throws Exception {
     File kmsDir = new File("target/test-classes/" +
         UUID.randomUUID().toString());
-    Assertions.assertTrue(kmsDir.mkdirs());
+    assertTrue(kmsDir.mkdirs());
     MiniKMS.Builder miniKMSBuilder = new MiniKMS.Builder();
     miniKMS = miniKMSBuilder.setKmsConfDir(kmsDir).build();
     miniKMS.start();
@@ -80,7 +86,7 @@ public class TestEncryptionZonesWithKMS extends TestEncryptionZones {
   }
 
   @Test
-  @Timeout(value = 120000, unit = TimeUnit.MILLISECONDS)
+  @Timeout(value = 120)
   public void testCreateEZPopulatesEDEKCache() throws Exception {
     final Path zonePath = new Path("/TestEncryptionZone");
     fsWrapper.mkdir(zonePath, FsPermission.getDirDefault(), false);
@@ -91,7 +97,7 @@ public class TestEncryptionZonesWithKMS extends TestEncryptionZones {
   }
 
   @Test
-  @Timeout(value = 120000, unit = TimeUnit.MILLISECONDS)
+  @Timeout(value = 120)
   public void testDelegationToken() throws Exception {
     final String renewer = "JobTracker";
     UserGroupInformation.createRemoteUser(renewer);
@@ -99,17 +105,17 @@ public class TestEncryptionZonesWithKMS extends TestEncryptionZones {
     Credentials creds = new Credentials();
     Token<?> tokens[] = fs.addDelegationTokens(renewer, creds);
     LOG.debug("Delegation tokens: " + Arrays.asList(tokens));
-    Assertions.assertEquals(2, tokens.length);
-    Assertions.assertEquals(2, creds.numberOfTokens());
+    assertEquals(2, tokens.length);
+    assertEquals(2, creds.numberOfTokens());
     
     // If the dt exists, will not get again
     tokens = fs.addDelegationTokens(renewer, creds);
-    Assertions.assertEquals(0, tokens.length);
-    Assertions.assertEquals(2, creds.numberOfTokens());
+    assertEquals(0, tokens.length);
+    assertEquals(2, creds.numberOfTokens());
   }
 
   @Test
-  @Timeout(value = 120000, unit = TimeUnit.MILLISECONDS)
+  @Timeout(value = 120)
   public void testWarmupEDEKCacheOnStartup() throws Exception {
     Path zonePath = new Path("/TestEncryptionZone");
     fsWrapper.mkdir(zonePath, FsPermission.getDirDefault(), false);
@@ -151,9 +157,9 @@ public class TestEncryptionZonesWithKMS extends TestEncryptionZones {
     Credentials creds = new Credentials();
     final Token<?>[] tokens = webfs.addDelegationTokens("JobTracker", creds);
 
-    Assertions.assertEquals(2, tokens.length);
-    Assertions.assertEquals(KMSDelegationToken.TOKEN_KIND_STR,
+    assertEquals(2, tokens.length);
+    assertEquals(KMSDelegationToken.TOKEN_KIND_STR,
         tokens[1].getKind().toString());
-    Assertions.assertEquals(2, creds.numberOfTokens());
+    assertEquals(2, creds.numberOfTokens());
   }
 }

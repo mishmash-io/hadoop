@@ -20,8 +20,9 @@ package org.apache.hadoop.util;
 
 import java.nio.channels.ClosedChannelException;
 
-import org.apache.hadoop.test.HadoopTestBase;
 import org.junit.jupiter.api.Test;
+
+import org.apache.hadoop.test.HadoopTestBase;
 
 public class TestCloseableReferenceCount extends HadoopTestBase {
   @Test
@@ -60,32 +61,32 @@ public class TestCloseableReferenceCount extends HadoopTestBase {
 
   @Test
   public void testReferenceClosedReference() throws ClosedChannelException {
-    CloseableReferenceCount clr = new CloseableReferenceCount();
-    clr.setClosed();
-    assertFalse(clr.isOpen(), "Reference count should be closed");
     assertThrows(ClosedChannelException.class, () -> {
+      CloseableReferenceCount clr = new CloseableReferenceCount();
+      clr.setClosed();
+      assertFalse(clr.isOpen(), "Reference count should be closed");
       clr.reference();
     });
   }
 
   @Test
   public void testUnreferenceClosedReference() throws ClosedChannelException {
-    CloseableReferenceCount clr = new CloseableReferenceCount();
-    clr.reference();
-    clr.setClosed();
-    assertFalse(clr.isOpen(), "Reference count should be closed");
     assertThrows(ClosedChannelException.class, () -> {
+      CloseableReferenceCount clr = new CloseableReferenceCount();
+      clr.reference();
+      clr.setClosed();
+      assertFalse(clr.isOpen(), "Reference count should be closed");
       clr.unreferenceCheckClosed();
     });
   }
 
   @Test
   public void testDoubleClose() throws ClosedChannelException {
-    CloseableReferenceCount clr = new CloseableReferenceCount();
-    assertTrue(clr.isOpen(), "Reference count should be open");
-    clr.setClosed();
-    assertFalse(clr.isOpen(), "Reference count should be closed");
     assertThrows(ClosedChannelException.class, () -> {
+      CloseableReferenceCount clr = new CloseableReferenceCount();
+      assertTrue(clr.isOpen(), "Reference count should be open");
+      clr.setClosed();
+      assertFalse(clr.isOpen(), "Reference count should be closed");
       clr.setClosed();
     });
   }

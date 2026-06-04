@@ -38,7 +38,6 @@ import org.apache.hadoop.test.GenericTestUtils;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-
 import org.slf4j.event.Level;
 
 public class TestPipelines {
@@ -110,8 +109,8 @@ public class TestPipelines {
           cluster.getFsDatasetTestUtils(dn).fetchReplica(lb.get(0).getBlock());
 
       assertTrue(r != null, "Replica on DN " + dn + " shouldn't be null");
-      assertEquals(HdfsServerConstants.ReplicaState.RBW, r.getState(), "Should be RBW replica on " + dn
-          + " after sequence of calls append()/write()/hflush()");
+      assertEquals(HdfsServerConstants.ReplicaState.RBW, r.getState(),
+          "Should be RBW replica on " + dn + " after sequence of calls append()/write()/hflush()");
     }
     ofs.close();
   }

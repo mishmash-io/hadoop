@@ -56,10 +56,12 @@ import org.apache.hadoop.metrics2.impl.TestMetricsConfig;
 import org.apache.hadoop.metrics2.lib.MutableGaugeInt;
 import org.apache.hadoop.metrics2.lib.MutableGaugeLong;
 import org.apache.hadoop.test.GenericTestUtils;
+import org.apache.hadoop.test.TestName;
 import org.junit.jupiter.api.AfterAll;
-import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.TestInfo;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.extension.RegisterExtension;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /**
  * This class is a base class for testing the {@link RollingFileSystemSink}
@@ -78,7 +80,8 @@ public class RollingFileSystemSinkTestBase {
   /**
    * The name of the current test method.
    */
-  private String methodName;
+  @RegisterExtension
+  private TestName methodName = new TestName();
 
   /**
    * A sample metric class
@@ -138,12 +141,10 @@ public class RollingFileSystemSinkTestBase {
    * @throws IOException thrown if the create fails
    */
   @BeforeEach
-  public void createMethodDir(TestInfo info) throws IOException {
-    methodName = info.getDisplayName();
-    methodDir = new File(ROOT_TEST_DIR, methodName);
+  public void createMethodDir() throws IOException {
+    methodDir = new File(ROOT_TEST_DIR, methodName.getMethodName());
 
-    assertTrue(methodDir.mkdirs(),
-        "Test directory already exists: " + methodDir);
+    assertTrue(methodDir.mkdirs(), "Test directory already exists: " + methodDir);
   }
 
   /**
@@ -343,7 +344,7 @@ public class RollingFileSystemSinkTestBase {
          Pattern.MULTILINE);
 
     assertTrue(expectedContentPattern.matcher(contents).matches(),
-      "Sink did not produce the expected output. Actual output was: "
+        "Sink did not produce the expected output. Actual output was: "
         + contents);
   }
 
@@ -368,7 +369,7 @@ public class RollingFileSystemSinkTestBase {
          Pattern.MULTILINE);
 
     assertTrue(expectedContentPattern.matcher(contents).matches(),
-      "Sink did not produce the expected output. Actual output was: "
+        "Sink did not produce the expected output. Actual output was: "
         + contents);
   }
 
@@ -503,10 +504,10 @@ public class RollingFileSystemSinkTestBase {
     }
 
     assertTrue(expected >= count,
-      "The sink created additional unexpected log files. " + count
+        "The sink created additional unexpected log files. " + count
         + " files were created");
     assertTrue(expected <= count,
-      "The sink created too few log files. " + count + " files were "
+        "The sink created too few log files. " + count + " files were "
         + "created");
   }
 

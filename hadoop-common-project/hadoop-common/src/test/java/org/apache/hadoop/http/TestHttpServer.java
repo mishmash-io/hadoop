@@ -30,13 +30,12 @@ import org.apache.hadoop.security.ShellBasedUnixGroupsMapping;
 import org.apache.hadoop.security.UserGroupInformation;
 import org.apache.hadoop.security.authorize.AccessControlList;
 
-import org.assertj.core.api.Assertions;
+import org.eclipse.jetty.server.HttpConfiguration;
 import org.eclipse.jetty.server.ServerConnector;
 import org.eclipse.jetty.server.handler.StatisticsHandler;
 import org.eclipse.jetty.util.ajax.JSON;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 import org.slf4j.Logger;
@@ -58,6 +57,7 @@ import java.io.IOException;
 import java.io.PrintWriter;
 import java.lang.reflect.Field;
 import java.net.HttpURLConnection;
+import java.net.InetAddress;
 import java.net.URI;
 import java.net.URL;
 import java.util.Arrays;
@@ -73,6 +73,8 @@ import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.Executor;
 import java.util.concurrent.Executors;
 
+import static org.assertj.core.api.Assertions.assertThat;
+
 public class TestHttpServer extends HttpServerFunctionalTest {
   static final Logger LOG = LoggerFactory.getLogger(TestHttpServer.class);
   private static HttpServer2 server;
@@ -82,7 +84,7 @@ public class TestHttpServer extends HttpServerFunctionalTest {
   public static class EchoMapServlet extends HttpServlet {
     @SuppressWarnings("unchecked")
     @Override
-    public void doGet(HttpServletRequest request, 
+    public void doGet(HttpServletRequest request,
                       HttpServletResponse response
                       ) throws ServletException, IOException {
       response.setContentType(MediaType.TEXT_PLAIN + "; " + JettyUtils.UTF_8);
@@ -110,7 +112,7 @@ public class TestHttpServer extends HttpServerFunctionalTest {
   public static class EchoServlet extends HttpServlet {
     @SuppressWarnings("unchecked")
     @Override
-    public void doGet(HttpServletRequest request, 
+    public void doGet(HttpServletRequest request,
                       HttpServletResponse response
                       ) throws ServletException, IOException {
       response.setContentType(MediaType.TEXT_PLAIN + "; " + JettyUtils.UTF_8);
@@ -133,7 +135,7 @@ public class TestHttpServer extends HttpServerFunctionalTest {
   @SuppressWarnings("serial")
   public static class HtmlContentServlet extends HttpServlet {
     @Override
-    public void doGet(HttpServletRequest request, 
+    public void doGet(HttpServletRequest request,
                       HttpServletResponse response
                       ) throws ServletException, IOException {
       response.setContentType(MediaType.TEXT_HTML + "; " + JettyUtils.UTF_8);
@@ -143,7 +145,8 @@ public class TestHttpServer extends HttpServerFunctionalTest {
     }
   }
 
-  @BeforeAll public static void setup() throws Exception {
+  @BeforeAll
+  public static void setup() throws Exception {
     Configuration conf = new Configuration();
     conf.setInt(HttpServer2.HTTP_MAX_THREADS_KEY, MAX_THREADS);
     conf.setBoolean(
@@ -160,7 +163,8 @@ public class TestHttpServer extends HttpServerFunctionalTest {
     LOG.info("HTTP server started: "+ baseUrl);
   }
   
-  @AfterAll public static void cleanup() throws Exception {
+  @AfterAll
+  public static void cleanup() throws Exception {
     server.stop();
   }
   
@@ -182,8 +186,7 @@ public class TestHttpServer extends HttpServerFunctionalTest {
                          readOutput(new URL(baseUrl, "/echo?a=b&c=d")));
             int serverThreads = server.webServer.getThreadPool().getThreads();
             assertTrue(serverThreads <= MAX_THREADS,
-                    "More threads are started than expected, Server Threads count: "
-                    + serverThreads);
+                "More threads are started than expected, Server Threads count: " + serverThreads);
             System.out.println("Number of threads = " + serverThreads +
                 " which is less or equal than the max = " + MAX_THREADS);
           } catch (Exception e) {
@@ -281,9 +284,9 @@ public class TestHttpServer extends HttpServerFunctionalTest {
     final HttpURLConnection conn =
         (HttpURLConnection)servletUrl.openConnection();
     conn.connect();
-    Assertions.assertThat(conn.getResponseCode()).isEqualTo(200);
+    assertThat(conn.getResponseCode()).isEqualTo(200);
     final int after = metrics.responses2xx();
-    Assertions.assertThat(after).isGreaterThan(before);
+    assertThat(after).isGreaterThan(before);
   }
 
   /**
@@ -422,10 +425,10 @@ public class TestHttpServer extends HttpServerFunctionalTest {
    * will be accessed as the passed user, by sending user.name request
    * parameter.
    * 
-   * @param urlstring
-   * @param userName
-   * @return
-   * @throws IOException
+   * @param urlstring web url.
+   * @param userName userName.
+   * @return http status code.
+   * @throws IOException an I/O exception of some sort has occurred.
    */
   static int getHttpStatusCode(String urlstring, String userName)
       throws IOException {
@@ -463,7 +466,7 @@ public class TestHttpServer extends HttpServerFunctionalTest {
    * Verify the access for /logs, /stacks, /conf, and /logLevel
    * servlets, when authentication filters are set, but authorization is not
    * enabled.
-   * @throws Exception 
+   * @throws Exception if there is an error during, an exception will be thrown.
    */
   @Test
   public void testDisabledAuthorizationOfDefaultServlets() throws Exception {
@@ -499,7 +502,7 @@ public class TestHttpServer extends HttpServerFunctionalTest {
    * Verify the administrator access for /logs, /stacks, /conf, and /logLevel
    * servlets.
    * 
-   * @throws Exception
+   * @throws Exception if there is an error during, an exception will be thrown.
    */
   @Test
   public void testAuthorizationOfDefaultServlets() throws Exception {
@@ -548,7 +551,7 @@ public class TestHttpServer extends HttpServerFunctionalTest {
     RequestQuoter requestQuoter = new RequestQuoter(request);
     String[] parameterValues = requestQuoter.getParameterValues("dummy");
     assertNull(parameterValues,
-        "It should return null " + "when there are no values for the parameter");
+        "It should return null when there are no values for the parameter");
   }
 
   @Test
@@ -636,6 +639,26 @@ public class TestHttpServer extends HttpServerFunctionalTest {
     Mockito.when(acls.isUserAllowed(Mockito.<UserGroupInformation>any())).thenReturn(false);
     Mockito.when(context.getAttribute(HttpServer2.ADMINS_ACL)).thenReturn(acls);
     assertFalse(HttpServer2.isInstrumentationAccessAllowed(context, request, response));
+  }
+
+  @Test
+  public void testAddConnectors() throws Exception {
+    HttpServer2.Builder builder = new HttpServer2.Builder()
+        .setName("test").setConf(new Configuration()).setFindPort(false);
+    URI endpoint = URI.create("http://testaddress.com:8080/my-app");
+    InetAddress[] addresses = new InetAddress[2];
+    // IPv4 test address
+    addresses[0] = InetAddress.getByName("192.168.1.100");
+    // IPv6 test address
+    addresses[1] = InetAddress.getByName("fd00::1");
+    HttpConfiguration httpConfig = new HttpConfiguration();
+    final int backlogSize = 2048;
+    final int idleTimeout = 1000;
+
+    server = builder.addConnectors(
+        endpoint, addresses, server, httpConfig, backlogSize, idleTimeout);
+    //the expected value is 3: the loopback address and the two addresses
+    assertEquals(server.getListeners().toArray().length, 3);
   }
 
   @Test public void testBindAddress() throws Exception {

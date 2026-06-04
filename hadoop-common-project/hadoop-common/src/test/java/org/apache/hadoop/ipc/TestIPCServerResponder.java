@@ -44,6 +44,7 @@ import org.apache.hadoop.ipc.Client.ConnectionId;
 import org.apache.hadoop.ipc.RPC.RpcKind;
 import org.apache.hadoop.ipc.Server.Call;
 import org.apache.hadoop.net.NetUtils;
+import org.apache.hadoop.util.concurrent.SubjectInheritingThread;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.Timeout;
 import org.slf4j.Logger;
@@ -104,7 +105,7 @@ public class TestIPCServerResponder {
     }
   }
 
-  private static class Caller extends Thread {
+  private static class Caller extends SubjectInheritingThread {
 
     private Client client;
     private int count;
@@ -119,7 +120,7 @@ public class TestIPCServerResponder {
     }
 
     @Override
-    public void run() {
+    public void work() {
       for (int i = 0; i < count; i++) {
         try {
           int byteSize = RANDOM.nextInt(BYTE_COUNT);
@@ -193,7 +194,7 @@ public class TestIPCServerResponder {
   // call 5: immediate, prove handler is still free
   // call 4: sendResponse, expect it to return
   @Test
-  @Timeout(value=10000, unit=TimeUnit.MILLISECONDS)
+  @Timeout(value = 10)
   public void testDeferResponse() throws IOException, InterruptedException {
     final AtomicReference<Call> deferredCall = new AtomicReference<Call>();
     final AtomicInteger count = new AtomicInteger();
@@ -242,7 +243,7 @@ public class TestIPCServerResponder {
     } catch (TimeoutException te) {
       // ignore, expected
     } catch (Exception ex) {
-      fail("unexpected exception", ex);
+      fail("unexpected exception:"+ex);
     }
     assertFalse(future1.isDone());
     waitingCalls[0] = deferredCall.get();
@@ -267,7 +268,7 @@ public class TestIPCServerResponder {
     } catch (TimeoutException te) {
       // ignore, expected
     } catch (Exception ex) {
-      fail("unexpected exception", ex);
+      fail("unexpected exception:"+ex);
     }
     assertFalse(future2.isDone());
     waitingCalls[1] = deferredCall.get();
@@ -284,7 +285,7 @@ public class TestIPCServerResponder {
       int val = future1.get(1, TimeUnit.SECONDS);
       assertEquals(2, val);
     } catch (Exception ex) {
-      fail("unexpected exception", ex);
+      fail("unexpected exception:"+ex);
     }
 
     // make sure it's still blocked
@@ -294,7 +295,7 @@ public class TestIPCServerResponder {
     } catch (TimeoutException te) {
       // ignore, expected
     } catch (Exception ex) {
-      fail("unexpected exception", ex);
+      fail("unexpected exception:"+ex);
     }
     assertFalse(future2.isDone());
 
@@ -307,7 +308,7 @@ public class TestIPCServerResponder {
       int val = future2.get(1, TimeUnit.SECONDS);
       assertEquals(4, val);
     } catch (Exception ex) {
-      fail("unexpected exception", ex);
+      fail("unexpected exception:"+ex);
     }
 
     server.stop();

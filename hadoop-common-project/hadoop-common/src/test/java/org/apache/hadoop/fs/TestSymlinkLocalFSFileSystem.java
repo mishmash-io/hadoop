@@ -44,27 +44,27 @@ public class TestSymlinkLocalFSFileSystem extends TestSymlinkLocalFS {
       " as an error")
   @Override
   @Test
-  @Timeout(value=10000, unit=TimeUnit.MILLISECONDS)
+  @Timeout(value = 10)
   public void testMkdirExistingLink() throws IOException {}
 
   @Disabled("FileSystem#create defaults to creating parents," +
       " throwing an IOException instead of FileNotFoundException")
   @Override
   @Test
-  @Timeout(value=10000, unit=TimeUnit.MILLISECONDS)
+  @Timeout(value = 10)
   public void testCreateFileViaDanglingLinkParent() throws IOException {}
 
   @Disabled("RawLocalFileSystem does not throw an exception if the path" +
       " already exists")
   @Override
   @Test
-  @Timeout(value=10000, unit=TimeUnit.MILLISECONDS)
+  @Timeout(value = 10)
   public void testCreateFileDirExistingLink() throws IOException {}
   
   @Disabled("ChecksumFileSystem does not support append")
   @Override
   @Test
-  @Timeout(value=10000, unit=TimeUnit.MILLISECONDS)
+  @Timeout(value = 10)
   public void testAccessFileViaInterSymlinkAbsTarget() throws IOException {}
 
   @Override
@@ -75,7 +75,7 @@ public class TestSymlinkLocalFSFileSystem extends TestSymlinkLocalFS {
 
   @Override
   @Test
-  @Timeout(value=10000, unit=TimeUnit.MILLISECONDS)
+  @Timeout(value = 10)
   /** Rename a symlink to itself */
   public void testRenameSymlinkToItself() throws IOException {
     Path file = new Path(testBaseDir1(), "file");

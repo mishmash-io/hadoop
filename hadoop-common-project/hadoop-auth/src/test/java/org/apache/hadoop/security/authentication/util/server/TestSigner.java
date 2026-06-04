@@ -13,12 +13,13 @@
  */
 package org.apache.hadoop.security.authentication.util.server;
 
-import java.util.Properties;
-import jakarta.servlet.ServletContext;
-import org.apache.hadoop.security.authentication.server.AuthenticationFilter;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.junit.jupiter.api.Assertions.fail;
+
+import java.util.Properties;
+import jakarta.servlet.ServletContext;
+import org.apache.hadoop.security.authentication.server.AuthenticationFilter;
 import org.junit.jupiter.api.Test;
 
 public class TestSigner {

@@ -26,6 +26,9 @@ import org.apache.hadoop.util.Shell;
 import org.apache.hadoop.util.StringUtils;
 import org.apache.hadoop.util.XMLUtils;
 
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.fail;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.xml.sax.Attributes;
@@ -114,7 +117,7 @@ public class CLITestHelper {
     readTestConfigFile();
     
     conf = new Configuration();
-    conf.setBoolean(CommonConfigurationKeys.HADOOP_SECURITY_AUTHORIZATION, 
+    conf.setBoolean(CommonConfigurationKeys.HADOOP_SECURITY_AUTHORIZATION,
                     true);
 
     clitestDataDir = new File(TEST_CACHE_DATA_DIR).
@@ -264,9 +267,8 @@ public class CLITestHelper {
     }
 
     assertTrue(overallResults, "One of the tests failed. " +
-    		"See the Detailed results to identify " +
-    		"the command that failed");
-    
+        "See the Detailed results to identify " +
+        "the command that failed");
   }
   
   /**
@@ -312,7 +314,7 @@ public class CLITestHelper {
   
   public void testAll() {
     assertTrue(testsFromConfigFile.size() > 0,
-      "Number of tests has to be greater then zero");
+        "Number of tests has to be greater then zero");
     LOG.info("TestAll");
     // Run the tests defined in the testConf.xml config file.
     for (int index = 0; index < testsFromConfigFile.size(); index++) {

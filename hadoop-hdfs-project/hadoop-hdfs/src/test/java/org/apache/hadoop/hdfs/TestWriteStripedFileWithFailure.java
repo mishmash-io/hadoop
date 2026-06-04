@@ -17,6 +17,7 @@
  */
 package org.apache.hadoop.hdfs;
 
+import org.junit.jupiter.api.Disabled;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.apache.hadoop.conf.Configuration;
@@ -26,10 +27,8 @@ import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hdfs.protocol.ErasureCodingPolicy;
 import org.apache.hadoop.test.GenericTestUtils;
 import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.Timeout;
-
 import org.slf4j.event.Level;
 
 import java.io.IOException;
@@ -76,7 +75,7 @@ public class TestWriteStripedFileWithFailure {
   // TODO: enable this test after HDFS-8704 and HDFS-9040
   @Disabled
   @Test
-  @Timeout(value = 300000, unit = TimeUnit.MILLISECONDS)
+  @Timeout(value = 300)
   public void testWriteStripedFileWithDNFailure() throws IOException {
     for (int fileLength : fileLengths) {
       for (int dataDelNum = 1; dataDelNum <= parityBlocks; dataDelNum++) {

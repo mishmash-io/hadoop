@@ -21,8 +21,6 @@ package org.apache.hadoop.fs.contract.s3a;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.junit.Test;
-
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FSDataInputStream;
 import org.apache.hadoop.fs.FileRange;
@@ -32,6 +30,11 @@ import org.apache.hadoop.fs.contract.ContractTestUtils;
 import org.apache.hadoop.fs.s3a.S3ATestUtils;
 import org.apache.hadoop.fs.statistics.IOStatistics;
 import org.apache.hadoop.fs.statistics.StreamStatisticNames;
+import org.apache.hadoop.test.tags.IntegrationTest;
+
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedClass;
+import org.junit.jupiter.params.provider.MethodSource;
 
 import static org.apache.hadoop.fs.contract.ContractTestUtils.skip;
 import static org.apache.hadoop.fs.contract.ContractTestUtils.validateVectoredReadResult;
@@ -58,6 +61,9 @@ import static org.apache.hadoop.io.Sizes.S_32K;
  * implementation of readVectored {@link org.apache.hadoop.fs.PositionedReadable}
  * still works.
  */
+@IntegrationTest
+@ParameterizedClass(name="buffer-{0}")
+@MethodSource("params")
 public class ITestS3AContractAnalyticsStreamVectoredRead extends AbstractContractVectoredReadTest {
 
   public ITestS3AContractAnalyticsStreamVectoredRead(String bufferType) {

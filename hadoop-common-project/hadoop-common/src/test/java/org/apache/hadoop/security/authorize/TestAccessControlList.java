@@ -17,6 +17,9 @@
  */
 package org.apache.hadoop.security.authorize;
 
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
@@ -466,8 +469,7 @@ public class TestAccessControlList {
 
   private void assertUserNotAllowed(UserGroupInformation ugi,
       AccessControlList acl) {
-    assertFalse(acl.isUserAllowed(ugi),
-        "User " + ugi
+    assertFalse(acl.isUserAllowed(ugi), "User " + ugi
         + " is incorrectly granted the access-control!!");
   }
 

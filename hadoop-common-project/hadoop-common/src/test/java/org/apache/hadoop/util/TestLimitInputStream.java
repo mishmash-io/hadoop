@@ -22,8 +22,9 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.Random;
 
-import org.apache.hadoop.test.HadoopTestBase;
 import org.junit.jupiter.api.Test;
+
+import org.apache.hadoop.test.HadoopTestBase;
 
 public class TestLimitInputStream extends HadoopTestBase {
   static class RandomInputStream extends InputStream {
@@ -42,19 +43,19 @@ public class TestLimitInputStream extends HadoopTestBase {
     }
     try (LimitInputStream limitInputStream =
       new LimitInputStream(new RandomInputStream(), 4)) {
-      assertEquals(new Random(0).nextInt(), limitInputStream.read(),
-          "Incorrect byte returned");
+      assertEquals(new Random(0).nextInt(),
+          limitInputStream.read(), "Incorrect byte returned");
     }
   }
 
   @Test
   public void testResetWithoutMark() throws IOException {
-    try (LimitInputStream limitInputStream =
-      new LimitInputStream(new RandomInputStream(), 128)) {
-      assertThrows(IOException.class, () -> {
+    assertThrows(IOException.class, () -> {
+      try (LimitInputStream limitInputStream =
+          new LimitInputStream(new RandomInputStream(), 128)) {
         limitInputStream.reset();
-      });
-    }
+      }
+    });
   }
 
   @Test

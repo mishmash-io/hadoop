@@ -27,42 +27,38 @@ import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.Timeout;
 
+import static org.assertj.core.api.Assertions.assertThat;
+
 public class TestClassUtil {
 
   @Test
-  @Timeout(value=10000, unit=TimeUnit.MILLISECONDS)
+  @Timeout(value = 10)
   public void testFindContainingJar() {
     String containingJar = ClassUtil.findContainingJar(Assertions.class);
-    Assertions
-        .assertThat(containingJar)
+    assertThat(containingJar)
         .describedAs("Containing jar for %s", Assertions.class)
         .isNotNull();
     File jarFile = new File(containingJar);
-    Assertions
-        .assertThat(jarFile)
+    assertThat(jarFile)
         .describedAs("Containing jar %s", jarFile)
         .exists();
-    Assertions
-        .assertThat(jarFile.getName())
+    assertThat(jarFile.getName())
         .describedAs("Containing jar name %s", jarFile.getName())
         .matches("assertj-core.*[.]jar");
   }
 
   @Test
-  @Timeout(value=10000, unit=TimeUnit.MILLISECONDS)
+  @Timeout(value = 10)
   public void testFindContainingClass() {
     String classFileLocation = ClassUtil.findClassLocation(ViewFileSystem.class);
-    Assertions
-        .assertThat(classFileLocation)
+    assertThat(classFileLocation)
         .describedAs("Class path for %s", ViewFileSystem.class)
         .isNotNull();
     File classFile = new File(classFileLocation);
-    Assertions
-        .assertThat(classFile)
+    assertThat(classFile)
         .describedAs("Containing class file %s", classFile)
         .exists();
-    Assertions
-        .assertThat(classFile.getName())
+    assertThat(classFile.getName())
         .describedAs("Containing class file name %s", classFile.getName())
         .matches("ViewFileSystem.class");
   }

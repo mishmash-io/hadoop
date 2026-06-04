@@ -21,7 +21,12 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.fail;
-import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.eq;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoMoreInteractions;
+import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.reset;
 
 import java.io.PrintStream;
 import java.io.IOException;
@@ -38,9 +43,9 @@ import org.apache.hadoop.fs.StorageType;
 import org.apache.hadoop.fs.ContentSummary;
 import org.apache.hadoop.fs.FilterFileSystem;
 import org.apache.hadoop.fs.shell.CommandFormat.NotEnoughArgumentsException;
-import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.BeforeAll;
 
 /**
  * JUnit test class for {@link org.apache.hadoop.fs.shell.Count}
@@ -583,7 +588,7 @@ public class TestCount {
     public String toString(boolean hOption,
         boolean tOption, List<StorageType> types) {
       if (tOption) {
-        StringBuffer result = new StringBuffer();
+        StringBuilder result = new StringBuilder();
         result.append(hOption ? HUMAN : BYTES);
 
         for (StorageType type : types) {

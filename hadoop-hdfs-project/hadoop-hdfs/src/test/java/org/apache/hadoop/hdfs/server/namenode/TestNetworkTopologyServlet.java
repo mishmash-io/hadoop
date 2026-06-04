@@ -26,6 +26,7 @@ import org.apache.hadoop.hdfs.HdfsConfiguration;
 import org.apache.hadoop.hdfs.MiniDFSCluster;
 import org.apache.hadoop.io.IOUtils;
 import org.apache.hadoop.net.StaticMapping;
+import org.junit.jupiter.api.Test;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -84,8 +85,7 @@ public class TestNetworkTopologyServlet {
     assertTrue(topology.contains("/rack4"));
 
     // assert node number
-    assertEquals(topology.split("127.0.0.1").length - 1,
-        dataNodesNum);
+    assertEquals(topology.split("127.0.0.1").length - 1, dataNodesNum);
   }
 
   @Test

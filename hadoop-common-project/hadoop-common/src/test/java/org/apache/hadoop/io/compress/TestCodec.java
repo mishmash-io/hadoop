@@ -117,7 +117,7 @@ public class TestCodec {
   }
 
   @Test
-  @Timeout(value=20000, unit=TimeUnit.MILLISECONDS)
+  @Timeout(value = 20)
   public void testBZip2Codec() throws IOException {
     Configuration conf = new Configuration();
     conf.set("io.compression.codec.bzip2.library", "java-builtin");
@@ -126,7 +126,7 @@ public class TestCodec {
   }
   
   @Test
-  @Timeout(value=20000, unit=TimeUnit.MILLISECONDS)
+  @Timeout(value = 20)
   public void testBZip2NativeCodec() throws IOException {
     Configuration conf = new Configuration();
     conf.set("io.compression.codec.bzip2.library", "system-native");
@@ -220,8 +220,7 @@ public class TestCodec {
       deflateFilter.finish();
     }
     if (leasedCompressorsBefore > -1) {
-      assertEquals(
-          leasedCompressorsBefore, CodecPool.getLeasedCompressorsCount(codec),
+      assertEquals(leasedCompressorsBefore, CodecPool.getLeasedCompressorsCount(codec),
           "leased compressor not returned to the codec pool");
     }
     LOG.info("Finished compressing data");
@@ -253,7 +252,7 @@ public class TestCodec {
         k2.readFields(inflateIn);
         v2.readFields(inflateIn);
         assertTrue(k1.equals(k2) && v1.equals(v2),
-                   "original and compressed-then-decompressed-output not equal");
+            "original and compressed-then-decompressed-output not equal");
       
         // original and compressed-then-decompressed-output have the same
         // hashCode
@@ -434,7 +433,7 @@ public class TestCodec {
     byte[] outbytes = bos.toByteArray();
     // verify data were not compressed
     assertTrue(outbytes.length >= b.length,
-               "Compressed bytes contrary to configuration");
+        "Compressed bytes contrary to configuration");
   }
 
   private static void codecTestWithNOCompression (Configuration conf,
@@ -469,7 +468,7 @@ public class TestCodec {
     byte[] outbytes = bos.toByteArray();
     // verify data were not compressed
     assertTrue(outbytes.length >= b.length,
-               "Compressed bytes contrary to configuration(NO_COMPRESSION)");
+        "Compressed bytes contrary to configuration(NO_COMPRESSION)");
   }
 
   @Test
@@ -515,7 +514,7 @@ public class TestCodec {
   }
 
   @Test
-  @Timeout(value=20000, unit=TimeUnit.MILLISECONDS)
+  @Timeout(value = 20)
   public void testSequenceFileBZip2Codec() throws IOException, ClassNotFoundException,
       InstantiationException, IllegalAccessException {
     Configuration conf = new Configuration();
@@ -526,7 +525,7 @@ public class TestCodec {
   }
 
   @Test
-  @Timeout(value=20000, unit=TimeUnit.MILLISECONDS)
+  @Timeout(value = 20)
   public void testSequenceFileZStandardCodec() throws Exception {
     assumeTrue(ZStandardCodec.isNativeCodeLoaded());
     Configuration conf = new Configuration();
@@ -539,7 +538,7 @@ public class TestCodec {
   }
 
   @Test
-  @Timeout(value=20000, unit=TimeUnit.MILLISECONDS)
+  @Timeout(value = 20)
   public void testSequenceFileBZip2NativeCodec() throws IOException, 
                         ClassNotFoundException, InstantiationException, 
                         IllegalAccessException {
@@ -1065,10 +1064,9 @@ public class TestCodec {
     // Ensure that the CodecPool has a BuiltInZlibDeflater in it.
     Compressor zlibCompressor = ZlibFactory.getZlibCompressor(hadoopConf);
     assertNotNull(zlibCompressor, "zlibCompressor is null!");
-    assertTrue(
-          useNative ? zlibCompressor instanceof ZlibCompressor
-                    : zlibCompressor instanceof BuiltInZlibDeflater,
-          "ZlibFactory returned unexpected deflator");
+    assertTrue(useNative ? zlibCompressor instanceof ZlibCompressor
+        : zlibCompressor instanceof BuiltInZlibDeflater,
+        "ZlibFactory returned unexpected deflator");
 
     CodecPool.returnCompressor(zlibCompressor);
 
@@ -1076,7 +1074,7 @@ public class TestCodec {
     CompressionCodecFactory ccf = new CompressionCodecFactory(hadoopConf);
     CompressionCodec codec = ccf.getCodec(new Path("foo.gz"));
     assertTrue(codec instanceof GzipCodec,
-               "Codec for .gz file is not GzipCodec");
+        "Codec for .gz file is not GzipCodec");
 
     final String fileName = new Path(GenericTestUtils.getTempPath(
         "testGzipCodecWrite.txt.gz")).toString();
@@ -1137,19 +1135,19 @@ public class TestCodec {
     Configuration conf = new Configuration();
     ZlibFactory.setNativeZlibLoaded(false);
     assertFalse(ZlibFactory.isNativeZlibLoaded(conf),
-            "ZlibFactory is using native libs against request");
+        "ZlibFactory is using native libs against request");
 
     // This should give us a BuiltInZlibDeflater.
     Compressor zlibCompressor = ZlibFactory.getZlibCompressor(conf);
     assertNotNull(zlibCompressor, "zlibCompressor is null!");
     assertTrue(zlibCompressor instanceof BuiltInZlibDeflater,
-            "ZlibFactory returned unexpected deflator");
+        "ZlibFactory returned unexpected deflator");
     // its createOutputStream() just wraps the existing stream in a
     // java.util.zip.GZIPOutputStream.
     CompressionCodecFactory ccf = new CompressionCodecFactory(conf);
     CompressionCodec codec = ccf.getCodec(new Path("foo.gz"));
     assertTrue(codec instanceof GzipCodec,
-            "Codec for .gz file is not GzipCodec");
+        "Codec for .gz file is not GzipCodec");
 
     // make sure we don't get a null compressor
     Compressor codecCompressor = codec.createCompressor();
@@ -1187,19 +1185,19 @@ public class TestCodec {
     Configuration conf = new Configuration();
     ZlibFactory.setNativeZlibLoaded(false);
     assertFalse(ZlibFactory.isNativeZlibLoaded(conf),
-                "ZlibFactory is using native libs against request");
+        "ZlibFactory is using native libs against request");
 
     // This should give us a BuiltInZlibInflater.
     Decompressor zlibDecompressor = ZlibFactory.getZlibDecompressor(conf);
     assertNotNull(zlibDecompressor, "zlibDecompressor is null!");
     assertTrue(zlibDecompressor instanceof BuiltInZlibInflater,
-	       "ZlibFactory returned unexpected inflator");
+        "ZlibFactory returned unexpected inflator");
     // its createOutputStream() just wraps the existing stream in a
     // java.util.zip.GZIPOutputStream.
     CompressionCodecFactory ccf = new CompressionCodecFactory(conf);
     CompressionCodec codec = ccf.getCodec(new Path("foo.gz"));
     assertTrue(codec instanceof GzipCodec,
-               "Codec for .gz file is not GzipCodec");
+        "Codec for .gz file is not GzipCodec");
 
     // make sure we don't get a null decompressor
     Decompressor codecDecompressor = codec.createDecompressor();
@@ -1229,7 +1227,7 @@ public class TestCodec {
   }
 
   @Test
-  @Timeout(value=20000, unit=TimeUnit.MILLISECONDS)
+  @Timeout(value = 20)
   public void testGzipCompressorWithEmptyInput() throws IOException {
     // don't use native libs
     ZlibFactory.setNativeZlibLoaded(false);

@@ -17,6 +17,7 @@
  */
 package org.apache.hadoop.hdfs.server.namenode;
 
+import static org.junit.jupiter.api.Assertions.fail;
 import static org.apache.hadoop.hdfs.DFSConfigKeys.DFS_NAMENODE_NAME_DIR_KEY;
 import static org.junit.jupiter.api.Assertions.fail;
 
@@ -71,7 +72,7 @@ public class TestCreateEditsLog {
    * loaded successfully by a namenode.
    */
   @Test
-  @Timeout(value = 60000, unit = TimeUnit.MILLISECONDS)
+  @Timeout(value = 60)
   public void testCanLoadCreatedEditsLog() throws Exception {
     // Format namenode.
     HdfsConfiguration conf = new HdfsConfiguration();

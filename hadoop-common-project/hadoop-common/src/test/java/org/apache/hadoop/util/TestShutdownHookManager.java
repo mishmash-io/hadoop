@@ -21,6 +21,7 @@ import java.util.List;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 
+import org.junit.jupiter.api.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -102,14 +103,11 @@ public class TestShutdownHookManager {
     ShutdownHookManager.HookEntry hookEntry5 = mgr.getShutdownHooksInOrder()
         .get(0);
     assertEquals(hook5, hookEntry5.getHook());
-    assertEquals(
-        ShutdownHookManager.getShutdownTimeout(new Configuration()),
-        hookEntry5.getTimeout(),
-        "default timeout not used");
+    assertEquals(ShutdownHookManager.getShutdownTimeout(new Configuration()),
+        hookEntry5.getTimeout(), "default timeout not used");
     assertEquals(5, hookEntry5.getPriority(), "hook priority");
     // remove this to avoid a longer sleep in the test run
-    assertTrue(mgr.removeShutdownHook(hook5),
-        "failed to remove " + hook5);
+    assertTrue(mgr.removeShutdownHook(hook5), "failed to remove " + hook5);
 
 
     // now execute the hook shutdown sequence
@@ -132,8 +130,7 @@ public class TestShutdownHookManager {
 
     // check the state of some of the invoked hooks
     // hook4 was invoked first, but it timed out.
-    assertEquals(1, hook4.invokedOrder,
-        "Expected to be invoked first " + hook4);
+    assertEquals(1, hook4.invokedOrder, "Expected to be invoked first " + hook4);
     assertFalse(hook4.completed, "Expected to time out " + hook4);
 
 
@@ -161,9 +158,7 @@ public class TestShutdownHookManager {
     long shutdownTimeout = 5;
     conf.setTimeDuration(SERVICE_SHUTDOWN_TIMEOUT,
         shutdownTimeout, TimeUnit.SECONDS);
-    assertEquals(
-        shutdownTimeout,
-        ShutdownHookManager.getShutdownTimeout(conf),
+    assertEquals(shutdownTimeout, ShutdownHookManager.getShutdownTimeout(conf),
         SERVICE_SHUTDOWN_TIMEOUT);
   }
 
@@ -178,10 +173,8 @@ public class TestShutdownHookManager {
     long shutdownTimeout = 50;
     conf.setTimeDuration(SERVICE_SHUTDOWN_TIMEOUT,
         shutdownTimeout, TimeUnit.NANOSECONDS);
-    assertEquals(
-        ShutdownHookManager.TIMEOUT_MINIMUM,
-        ShutdownHookManager.getShutdownTimeout(conf),
-        SERVICE_SHUTDOWN_TIMEOUT);
+    assertEquals(ShutdownHookManager.TIMEOUT_MINIMUM,
+        ShutdownHookManager.getShutdownTimeout(conf), SERVICE_SHUTDOWN_TIMEOUT);
   }
 
   /**
@@ -228,7 +221,7 @@ public class TestShutdownHookManager {
     assertTrue(mgr.hasShutdownHook(hook1), "No hook1"); // hook1 lookup works
     assertEquals(1, mgr.getShutdownHooksInOrder().size()); // 1 hook
     assertFalse(mgr.removeShutdownHook(hook2),
-      "Delete hook2 should not be allowed");
+        "Delete hook2 should not be allowed");
     assertTrue(mgr.removeShutdownHook(hook1), "Can't delete hook1");
     assertEquals(0, mgr.getShutdownHooksInOrder().size());
   }

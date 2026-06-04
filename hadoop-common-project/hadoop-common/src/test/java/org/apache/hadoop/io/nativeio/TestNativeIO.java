@@ -56,14 +56,16 @@ import org.apache.hadoop.test.LambdaTestUtils;
 import org.apache.hadoop.test.StatUtils;
 import org.apache.hadoop.util.NativeCodeLoader;
 import org.apache.hadoop.util.Time;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.Timeout;
+import org.apache.hadoop.util.concurrent.SubjectInheritingThread;
 
 import static org.apache.hadoop.io.nativeio.NativeIO.POSIX.*;
 import static org.apache.hadoop.io.nativeio.NativeIO.POSIX.Stat.*;
 import static org.apache.hadoop.test.PlatformAssumptions.assumeNotWindows;
 import static org.apache.hadoop.test.PlatformAssumptions.assumeWindows;
+
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.Timeout;
 import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
@@ -92,7 +94,7 @@ public class TestNativeIO {
   }
 
   @Test
-  @Timeout(value=30000, unit=TimeUnit.MILLISECONDS)
+  @Timeout(value = 30)
   public void testFstat() throws Exception {
     FileOutputStream fos = new FileOutputStream(
       new File(TEST_DIR, "testfstat"));
@@ -113,8 +115,8 @@ public class TestNativeIO {
     assertEquals(expectedOwner, owner);
     assertNotNull(stat.getGroup());
     assertTrue(!stat.getGroup().isEmpty());
-    assertEquals(S_IFREG, stat.getMode() & S_IFMT,
-      "Stat mode field should indicate a regular file");
+    assertEquals(S_IFREG,
+        stat.getMode() & S_IFMT, "Stat mode field should indicate a regular file");
   }
 
   /**
@@ -124,7 +126,7 @@ public class TestNativeIO {
    * implementation of getpwuid_r.
    */
   @Test
-  @Timeout(value=30000, unit=TimeUnit.MILLISECONDS)
+  @Timeout(value = 30)
   public void testMultiThreadedFstat() throws Exception {
     assumeNotWindows();
 
@@ -135,9 +137,9 @@ public class TestNativeIO {
       new AtomicReference<Throwable>();
     List<Thread> statters = new ArrayList<Thread>();
     for (int i = 0; i < 10; i++) {
-      Thread statter = new Thread() {
+      SubjectInheritingThread statter = new SubjectInheritingThread() {
         @Override
-        public void run() {
+        public void work() {
           long et = Time.now() + 5000;
           while (Time.now() < et) {
             try {
@@ -146,7 +148,7 @@ public class TestNativeIO {
               assertNotNull(stat.getGroup());
               assertTrue(!stat.getGroup().isEmpty());
               assertEquals(S_IFREG, stat.getMode() & S_IFMT,
-                "Stat mode field should indicate a regular file");
+                  "Stat mode field should indicate a regular file");
             } catch (Throwable t) {
               thrown.set(t);
             }
@@ -168,7 +170,7 @@ public class TestNativeIO {
   }
 
   @Test
-  @Timeout(value=30000, unit=TimeUnit.MILLISECONDS)
+  @Timeout(value = 30)
   public void testFstatClosedFd() throws Exception {
     FileOutputStream fos = new FileOutputStream(
       new File(TEST_DIR, "testfstat2"));
@@ -182,7 +184,7 @@ public class TestNativeIO {
   }
 
   @Test
-  @Timeout(value=30000, unit=TimeUnit.MILLISECONDS)
+  @Timeout(value = 30)
   public void testStat() throws Exception {
     Configuration conf = new Configuration();
     FileSystem fileSystem = FileSystem.getLocal(conf).getRawFileSystem();
@@ -242,7 +244,7 @@ public class TestNativeIO {
   }
 
   @Test
-  @Timeout(value=30000, unit=TimeUnit.MILLISECONDS)
+  @Timeout(value = 30)
   public void testMultiThreadedStat() throws Exception {
     Configuration conf = new Configuration();
     FileSystem fileSystem = FileSystem.getLocal(conf).getRawFileSystem();
@@ -288,7 +290,7 @@ public class TestNativeIO {
   }
 
   @Test
-  @Timeout(value=30000, unit=TimeUnit.MILLISECONDS)
+  @Timeout(value = 30)
   public void testSetFilePointer() throws Exception {
     assumeWindows();
 
@@ -334,7 +336,7 @@ public class TestNativeIO {
   }
 
   @Test
-  @Timeout(value=30000, unit=TimeUnit.MILLISECONDS)
+  @Timeout(value = 30)
   public void testCreateFile() throws Exception {
     assumeWindows();
 
@@ -376,7 +378,7 @@ public class TestNativeIO {
 
   /** Validate access checks on Windows */
   @Test
-  @Timeout(value=30000, unit=TimeUnit.MILLISECONDS)
+  @Timeout(value = 30)
   public void testAccess() throws Exception {
     assumeWindows();
 
@@ -451,7 +453,7 @@ public class TestNativeIO {
   }
 
   @Test
-  @Timeout(value=30000, unit=TimeUnit.MILLISECONDS)
+  @Timeout(value = 30)
   public void testOpenMissingWithoutCreate() throws Exception {
     assumeNotWindows();
 
@@ -467,7 +469,7 @@ public class TestNativeIO {
   }
 
   @Test
-  @Timeout(value=30000, unit=TimeUnit.MILLISECONDS)
+  @Timeout(value = 30)
   public void testOpenWithCreate() throws Exception {
     assumeNotWindows();
 
@@ -500,7 +502,7 @@ public class TestNativeIO {
    * "Too many open files" if we leaked fds using this access pattern.
    */
   @Test
-  @Timeout(value=30000, unit=TimeUnit.MILLISECONDS)
+  @Timeout(value = 30)
   public void testFDDoesntLeak() throws IOException {
     assumeNotWindows();
 
@@ -520,7 +522,7 @@ public class TestNativeIO {
    * Test basic chmod operation
    */
   @Test
-  @Timeout(value=30000, unit=TimeUnit.MILLISECONDS)
+  @Timeout(value = 30)
   public void testChmod() throws Exception {
     assumeNotWindows();
 
@@ -532,8 +534,7 @@ public class TestNativeIO {
     }
 
     File toChmod = new File(TEST_DIR, "testChmod");
-    assertTrue(toChmod.exists() || toChmod.mkdir(),
-               "Create test subject");
+    assertTrue(toChmod.exists() || toChmod.mkdir(), "Create test subject");
     NativeIO.POSIX.chmod(toChmod.getAbsolutePath(), 0777);
     assertPermissions(toChmod, 0777);
     NativeIO.POSIX.chmod(toChmod.getAbsolutePath(), 0000);
@@ -544,7 +545,7 @@ public class TestNativeIO {
 
 
   @Test
-  @Timeout(value=30000, unit=TimeUnit.MILLISECONDS)
+  @Timeout(value = 30)
   public void testPosixFadvise() throws Exception {
     assumeNotWindows();
 
@@ -579,7 +580,7 @@ public class TestNativeIO {
   }
 
   @Test
-  @Timeout(value=30000, unit=TimeUnit.MILLISECONDS)
+  @Timeout(value = 30)
   public void testSyncFileRange() throws Exception {
     FileOutputStream fos = new FileOutputStream(
       new File(TEST_DIR, "testSyncFileRange"));
@@ -613,21 +614,21 @@ public class TestNativeIO {
   }
 
   @Test
-  @Timeout(value=30000, unit=TimeUnit.MILLISECONDS)
+  @Timeout(value = 30)
   public void testGetUserName() throws IOException {
     assumeNotWindows();
     assertFalse(NativeIO.POSIX.getUserName(0).isEmpty());
   }
 
   @Test
-  @Timeout(value=30000, unit=TimeUnit.MILLISECONDS)
+  @Timeout(value = 30)
   public void testGetGroupName() throws IOException {
     assumeNotWindows();
     assertFalse(NativeIO.POSIX.getGroupName(0).isEmpty());
   }
 
   @Test
-  @Timeout(value=30000, unit=TimeUnit.MILLISECONDS)
+  @Timeout(value = 30)
   public void testRenameTo() throws Exception {
     final File TEST_DIR = GenericTestUtils.getTestDir("renameTest") ;
     assumeTrue(TEST_DIR.mkdirs());
@@ -678,7 +679,7 @@ public class TestNativeIO {
   }
 
   @Test
-  @Timeout(value=10000, unit=TimeUnit.MILLISECONDS)
+  @Timeout(value = 10)
   public void testMlock() throws Exception {
     assumeTrue(NativeIO.isAvailable());
     final File TEST_FILE = GenericTestUtils.getTestDir("testMlockFile");
@@ -726,14 +727,14 @@ public class TestNativeIO {
   }
 
   @Test
-  @Timeout(value=10000, unit=TimeUnit.MILLISECONDS)
+  @Timeout(value = 10)
   public void testGetMemlockLimit() throws Exception {
     assumeTrue(NativeIO.isAvailable());
     NativeIO.getMemlockLimit();
   }
 
   @Test
-  @Timeout(value=30000, unit=TimeUnit.MILLISECONDS)
+  @Timeout(value = 30)
   public void testCopyFileUnbuffered() throws Exception {
     final String METHOD_NAME = GenericTestUtils.getMethodName();
     File srcFile = new File(TEST_DIR, METHOD_NAME + ".src.dat");
@@ -765,7 +766,7 @@ public class TestNativeIO {
   }
 
   @Test
-  @Timeout(value=10000, unit=TimeUnit.MILLISECONDS)
+  @Timeout(value = 10)
   public void testNativePosixConsts() {
     assumeNotWindows("Native POSIX constants not required for Windows");
     assertTrue(O_RDONLY >= 0, "Native 0_RDONLY const not set");
@@ -795,26 +796,26 @@ public class TestNativeIO {
   }
 
   @Test
-  @Timeout(value=10000, unit=TimeUnit.MILLISECONDS)
+  @Timeout(value = 10)
   public void testNativeFadviseConsts() {
     assumeTrue(fadvisePossible, "Fadvise constants not supported");
     assertTrue(POSIX_FADV_NORMAL >= 0,
-      "Native POSIX_FADV_NORMAL const not set");
+        "Native POSIX_FADV_NORMAL const not set");
     assertTrue(POSIX_FADV_RANDOM >= 0,
-      "Native POSIX_FADV_RANDOM const not set");
+        "Native POSIX_FADV_RANDOM const not set");
     assertTrue(POSIX_FADV_SEQUENTIAL >= 0,
-      "Native POSIX_FADV_SEQUENTIAL const not set");
+        "Native POSIX_FADV_SEQUENTIAL const not set");
     assertTrue(POSIX_FADV_WILLNEED >= 0,
-      "Native POSIX_FADV_WILLNEED const not set");
+        "Native POSIX_FADV_WILLNEED const not set");
     assertTrue(POSIX_FADV_DONTNEED >= 0,
-      "Native POSIX_FADV_DONTNEED const not set");
+        "Native POSIX_FADV_DONTNEED const not set");
     assertTrue(POSIX_FADV_NOREUSE >= 0,
-      "Native POSIX_FADV_NOREUSE const not set");
+        "Native POSIX_FADV_NOREUSE const not set");
   }
 
 
   @Test
-  @Timeout(value=10000, unit=TimeUnit.MILLISECONDS)
+  @Timeout(value = 10)
   public void testPmemCheckParameters() {
     assumeNotWindows("Native PMDK not supported on Windows");
     // Skip testing while the build or environment does not support PMDK
@@ -846,7 +847,7 @@ public class TestNativeIO {
   }
 
   @Test
-  @Timeout(value=10000, unit=TimeUnit.MILLISECONDS)
+  @Timeout(value = 10)
   public void testPmemMapMultipleFiles() {
     assumeNotWindows("Native PMDK not supported on Windows");
     // Skip testing while the build or environment does not support PMDK
@@ -877,7 +878,7 @@ public class TestNativeIO {
   }
 
   @Test
-  @Timeout(value=10000, unit=TimeUnit.MILLISECONDS)
+  @Timeout(value = 10)
   public void testPmemMapBigFile() {
     assumeNotWindows("Native PMDK not supported on Windows");
     // Skip testing while the build or environment does not support PMDK
@@ -902,7 +903,7 @@ public class TestNativeIO {
   }
 
   @Test
-  @Timeout(value=10000, unit=TimeUnit.MILLISECONDS)
+  @Timeout(value = 10)
   public void testPmemCopy() throws IOException {
     assumeNotWindows("Native PMDK not supported on Windows");
     // Skip testing while the build or environment does not support PMDK

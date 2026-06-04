@@ -35,16 +35,15 @@ import java.util.Map;
 import java.util.Random;
 import java.util.concurrent.TimeUnit;
 
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.core.Is.is;
 import static org.junit.jupiter.api.Assertions.assertTrue;
-
+import static org.assertj.core.api.Assertions.assertThat;
 
 /**
  * Test that the {@link DataNodePeerMetrics} class is able to detect
  * outliers i.e. slow nodes via the metrics it maintains.
+ * Set a timeout for every test case.
  */
-@Timeout(value=300000, unit=TimeUnit.MILLISECONDS)
+@Timeout(300)
 public class TestDataNodeOutlierDetectionViaMetrics {
   public static final Logger LOG =
       LoggerFactory.getLogger(TestDataNodeOutlierDetectionViaMetrics.class);
@@ -97,7 +96,7 @@ public class TestDataNodeOutlierDetectionViaMetrics {
 
     final Map<String, OutlierMetrics> outliers = peerMetrics.getOutliers();
     LOG.info("Got back outlier nodes: {}", outliers);
-    assertThat(outliers.size(), is(1));
+    assertThat(outliers.size()).isEqualTo(1);
     assertTrue(outliers.containsKey(slowNodeName));
   }
 

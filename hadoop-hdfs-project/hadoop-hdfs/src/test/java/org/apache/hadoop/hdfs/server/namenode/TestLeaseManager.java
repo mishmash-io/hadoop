@@ -17,9 +17,9 @@
  */
 package org.apache.hadoop.hdfs.server.namenode;
 
-import static org.hamcrest.CoreMatchers.is;
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import org.apache.hadoop.fs.FSDataOutputStream;
 import org.apache.hadoop.fs.Path;
@@ -35,6 +35,7 @@ import org.apache.hadoop.hdfs.protocol.OpenFilesIterator;
 import org.apache.hadoop.hdfs.protocol.QuotaExceededException;
 import org.apache.hadoop.hdfs.server.blockmanagement.BlockInfo;
 import org.apache.hadoop.hdfs.server.namenode.snapshot.Snapshot;
+import org.apache.hadoop.hdfs.util.RwLockMode;
 import org.apache.hadoop.util.Lists;
 
 import org.junit.jupiter.api.Test;
@@ -51,11 +52,12 @@ import java.util.Set;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
+import static org.assertj.core.api.Assertions.assertThat;
 
-@Timeout(value=300000, unit=TimeUnit.MILLISECONDS)
+@Timeout(300)
 public class TestLeaseManager {
+
   public static long maxLockHoldToReleaseLeaseMs = 100;
 
   @Test
@@ -118,26 +120,26 @@ public class TestLeaseManager {
     LeaseManager lm = new LeaseManager(makeMockFsNameSystem());
 
     lm.addLease("holder1", 1);
-    assertThat(lm.countPath(), is(1L));
+    assertThat(lm.countPath()).isEqualTo(1L);
 
     lm.addLease("holder2", 2);
-    assertThat(lm.countPath(), is(2L));
+    assertThat(lm.countPath()).isEqualTo(2L);
     lm.addLease("holder2", 2);                   // Duplicate addition
-    assertThat(lm.countPath(), is(2L));
+    assertThat(lm.countPath()).isEqualTo(2L);
 
-    assertThat(lm.countPath(), is(2L));
+    assertThat(lm.countPath()).isEqualTo(2L);
 
     // Remove a couple of non-existing leases. countPath should not change.
     lm.removeLease("holder2", stubInodeFile(3));
     lm.removeLease("InvalidLeaseHolder", stubInodeFile(1));
-    assertThat(lm.countPath(), is(2L));
+    assertThat(lm.countPath()).isEqualTo(2L);
 
     INodeFile file = stubInodeFile(1);
     lm.reassignLease(lm.getLease(file), file, "holder2");
-    assertThat(lm.countPath(), is(2L));          // Count unchanged on reassign
+    assertThat(lm.countPath()).isEqualTo(2L); // Count unchanged on reassign
 
     lm.removeLease("holder2", stubInodeFile(2)); // Remove existing
-    assertThat(lm.countPath(), is(1L));
+    assertThat(lm.countPath()).isEqualTo(1L);
   }
 
   /**
@@ -188,7 +190,7 @@ public class TestLeaseManager {
    * {@link LeaseManager#getINodeWithLeases(INodeDirectory)}.
    */
   @Test
-  @Timeout(value = 60000, unit = TimeUnit.MILLISECONDS)
+  @Timeout(value = 60)
   public void testInodeWithLeases() throws Exception {
     FSNamesystem fsNamesystem = makeMockFsNameSystem();
     when(fsNamesystem.getMaxListOpenFilesResponses()).thenReturn(1024);
@@ -231,7 +233,7 @@ public class TestLeaseManager {
    * {@link LeaseManager#getINodeWithLeases(INodeDirectory)}.
    */
   @Test
-  @Timeout(value = 240000, unit = TimeUnit.MILLISECONDS)
+  @Timeout(value = 240)
   public void testInodeWithLeasesAtScale() throws Exception {
     FSNamesystem fsNamesystem = makeMockFsNameSystem();
     when(fsNamesystem.getMaxListOpenFilesResponses()).thenReturn(4096);
@@ -311,7 +313,7 @@ public class TestLeaseManager {
    * {@link LeaseManager#getINodeWithLeases(INodeDirectory)}.
    */
   @Test
-  @Timeout(value = 60000, unit = TimeUnit.MILLISECONDS)
+  @Timeout(value = 60)
   public void testInodeWithLeasesForAncestorDir() throws Exception {
     FSNamesystem fsNamesystem = makeMockFsNameSystem();
     FSDirectory fsDirectory = fsNamesystem.getFSDirectory();
@@ -349,8 +351,7 @@ public class TestLeaseManager {
     }
     assertEquals(pathTree.length, lm.getINodeIdWithLeases().size());
     assertEquals(pathTree.length, lm.getINodeWithLeases().size());
-    assertEquals(pathTree.length, lm.getINodeWithLeases(
-        rootInodeDirectory).size());
+    assertEquals(pathTree.length, lm.getINodeWithLeases(rootInodeDirectory).size());
 
     // reset
     lm.removeAllLeases();
@@ -369,8 +370,7 @@ public class TestLeaseManager {
       assertTrue(filesLeased.contains(leasedFileName));
     }
 
-    assertEquals(filesLeased.size(),
-        lm.getINodeWithLeases(rootInodeDirectory).size());
+    assertEquals(filesLeased.size(), lm.getINodeWithLeases(rootInodeDirectory).size());
     assertEquals(filesLeased.size() - 2,
         lm.getINodeWithLeases(pathINodeMap.get("ENG").asDirectory()).size());
     assertEquals(filesLeased.size() - 2,
@@ -383,15 +383,13 @@ public class TestLeaseManager {
         lm.getINodeWithLeases(pathINodeMap.get("n").asDirectory()).size());
 
     lm.removeLease(pathINodeMap.get("n2.log").getId());
-    assertEquals(filesLeased.size() - 1,
-        lm.getINodeWithLeases(rootInodeDirectory).size());
+    assertEquals(filesLeased.size() - 1, lm.getINodeWithLeases(rootInodeDirectory).size());
     assertEquals(filesLeased.size() - 4,
         lm.getINodeWithLeases(pathINodeMap.get("n").asDirectory()).size());
 
     lm.removeAllLeases();
     filesLeased.clear();
-    assertEquals(filesLeased.size(),
-        lm.getINodeWithLeases(rootInodeDirectory).size());
+    assertEquals(filesLeased.size(), lm.getINodeWithLeases(rootInodeDirectory).size());
 
   }
 
@@ -399,19 +397,15 @@ public class TestLeaseManager {
       LeaseManager leaseManager, INodeDirectory ancestorDirectory,
       int iNodeIdWithLeaseCount, int iNodeWithLeaseCount,
       int iNodeUnderAncestorLeaseCount) throws IOException {
-    assertEquals(iNodeIdWithLeaseCount,
-        leaseManager.getINodeIdWithLeases().size());
-    assertEquals(iNodeWithLeaseCount,
-        leaseManager.getINodeWithLeases().size());
+    assertEquals(iNodeIdWithLeaseCount, leaseManager.getINodeIdWithLeases().size());
+    assertEquals(iNodeWithLeaseCount, leaseManager.getINodeWithLeases().size());
     assertEquals(iNodeUnderAncestorLeaseCount,
         leaseManager.getINodeWithLeases(ancestorDirectory).size());
-    assertEquals(iNodeIdWithLeaseCount,
-        leaseManager.getUnderConstructionFiles(0).size());
+    assertEquals(iNodeIdWithLeaseCount, leaseManager.getUnderConstructionFiles(0).size());
     assertEquals(0,
-        (fsNamesystem.getFilesBlockingDecom(0,
-            OpenFilesIterator.FILTER_PATH_DEFAULT) == null ? 0
-                : fsNamesystem.getFilesBlockingDecom(0,
-                    OpenFilesIterator.FILTER_PATH_DEFAULT).size()));
+        (fsNamesystem.getFilesBlockingDecom(0, OpenFilesIterator.FILTER_PATH_DEFAULT) == null ? 0
+            : fsNamesystem.getFilesBlockingDecom(0, OpenFilesIterator.FILTER_PATH_DEFAULT)
+            .size()));
   }
 
   private Map<String, INode> createINodeTree(INodeDirectory parentDir,
@@ -466,6 +460,10 @@ public class TestLeaseManager {
     when(fsn.isRunning()).thenReturn(true);
     when(fsn.hasReadLock()).thenReturn(true);
     when(fsn.hasWriteLock()).thenReturn(true);
+    when(fsn.hasReadLock(RwLockMode.FS)).thenReturn(true);
+    when(fsn.hasWriteLock(RwLockMode.FS)).thenReturn(true);
+    when(fsn.hasReadLock(RwLockMode.GLOBAL)).thenReturn(true);
+    when(fsn.hasWriteLock(RwLockMode.GLOBAL)).thenReturn(true);
     when(fsn.getFSDirectory()).thenReturn(dir);
     when(fsn.getMaxLockHoldToReleaseLeaseMs()).thenReturn(maxLockHoldToReleaseLeaseMs);
     return fsn;

@@ -17,7 +17,10 @@
  */
 package org.apache.hadoop.hdfs;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.fail;
 import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.spy;
 
@@ -50,7 +53,10 @@ import org.apache.hadoop.hdfs.server.namenode.NameNodeAdapter;
 import org.apache.hadoop.io.IOUtils;
 import org.apache.hadoop.security.UserGroupInformation;
 import org.apache.hadoop.test.GenericTestUtils;
-import org.junit.jupiter.api.*;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.Timeout;
 import org.mockito.Mockito;
 import org.slf4j.event.Level;
 
@@ -219,8 +225,7 @@ public class TestLeaseRecovery2 {
     }
 
     stm.close();
-    assertEquals(cluster.getNamesystem().getBlockManager().
-        getMissingBlocksCount(), 0);
+    assertEquals(cluster.getNamesystem().getBlockManager().getMissingBlocksCount(), 0);
   }
 
   @Test
@@ -316,9 +321,9 @@ public class TestLeaseRecovery2 {
 
     // verify that file-size matches
     assertTrue(dfs.getFileStatus(filepath).getLen() == size,
-               "File should be " + size + " bytes, but is actually " +
-               " found to be " + dfs.getFileStatus(filepath).getLen() +
-               " bytes");
+        "File should be " + size + " bytes, but is actually " +
+            " found to be " + dfs.getFileStatus(filepath).getLen() +
+            " bytes");
 
     // verify that there is enough data to read.
     System.out.println("File size is good. Now validating sizes from datanodes...");
@@ -465,8 +470,8 @@ public class TestLeaseRecovery2 {
 
     // verify that file-size matches
     long fileSize = dfs.getFileStatus(filepath).getLen();
-    assertTrue(fileSize == size, "File should be " + size + " bytes, but is actually " +
-        " found to be " + fileSize + " bytes");
+    assertTrue(fileSize == size, "File should be " + size + " bytes, but is actually "
+        + " found to be " + fileSize + " bytes");
 
     // verify data
     AppendTestUtil.LOG.info("File size is good. " +
@@ -488,19 +493,19 @@ public class TestLeaseRecovery2 {
    * @throws Exception
    */
   @Test
-  @Timeout(value = 60000, unit = TimeUnit.MILLISECONDS)
+  @Timeout(value = 60)
   public void testHardLeaseRecoveryAfterNameNodeRestart() throws Exception {
     hardLeaseRecoveryRestartHelper(false, -1);
   }
 
   @Test
-  @Timeout(value = 60000, unit = TimeUnit.MILLISECONDS)
+  @Timeout(value = 60)
   public void testHardLeaseRecoveryAfterNameNodeRestart2() throws Exception {
     hardLeaseRecoveryRestartHelper(false, 1535);
   }
 
   @Test
-  @Timeout(value = 60000, unit = TimeUnit.MILLISECONDS)
+  @Timeout(value = 60)
   public void testHardLeaseRecoveryWithRenameAfterNameNodeRestart()
       throws Exception {
     hardLeaseRecoveryRestartHelper(true, -1);
@@ -527,8 +532,7 @@ public class TestLeaseRecovery2 {
     String originalLeaseHolder = NameNodeAdapter.getLeaseHolderForPath(
         cluster.getNameNode(), fileStr);
     
-    assertFalse(originalLeaseHolder.startsWith(
-        HdfsServerConstants.NAMENODE_LEASE_HOLDER),
+    assertFalse(originalLeaseHolder.startsWith(HdfsServerConstants.NAMENODE_LEASE_HOLDER),
         "original lease holder should not be the NN");
 
     // hflush file
@@ -537,7 +541,7 @@ public class TestLeaseRecovery2 {
     
     // check visible length
     final HdfsDataInputStream in = (HdfsDataInputStream)dfs.open(filePath);
-    Assertions.assertEquals(size, in.getVisibleLength());
+    assertEquals(size, in.getVisibleLength());
     in.close();
     
     if (doRename) {
@@ -625,7 +629,7 @@ public class TestLeaseRecovery2 {
   
   static void checkLease(String f, int size) {
     final String holder = NameNodeAdapter.getLeaseHolderForPath(
-        cluster.getNameNode(), f); 
+        cluster.getNameNode(), f);
     if (size == 0) {
       assertEquals(null, holder, "lease holder should null, file is closed");
     } else {

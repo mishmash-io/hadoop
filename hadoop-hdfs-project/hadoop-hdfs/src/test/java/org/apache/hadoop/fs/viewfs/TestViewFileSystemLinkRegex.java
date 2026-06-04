@@ -36,13 +36,17 @@ import org.apache.hadoop.hdfs.DFSConfigKeys;
 import org.apache.hadoop.hdfs.MiniDFSCluster;
 import org.apache.hadoop.hdfs.MiniDFSNNTopology;
 import org.apache.hadoop.test.GenericTestUtils;
-import org.junit.jupiter.api.*;
-
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import static org.apache.hadoop.fs.viewfs.RegexMountPoint.INTERCEPTOR_INTERNAL_SEP;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertSame;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /**
  * Test linkRegex node type for view file system.
@@ -154,7 +158,7 @@ public class TestViewFileSystemLinkRegex extends ViewFileSystemBaseTest {
   private void createDirWithChildren(
       FileSystem fileSystem, Path dir, List<Path> childrenFiles)
       throws IOException {
-    Assertions.assertTrue(fileSystem.mkdirs(dir));
+    assertTrue(fileSystem.mkdirs(dir));
     int index = 0;
     for (Path childFile : childrenFiles) {
       createFile(fileSystem, childFile, index, true);
@@ -221,12 +225,10 @@ public class TestViewFileSystemLinkRegex extends ViewFileSystemBaseTest {
     URI viewFsUri = new URI(
         FsConstants.VIEWFS_SCHEME, CLUSTER_NAME, "/", null, null);
     try (FileSystem vfs = FileSystem.get(viewFsUri, config)) {
-      Assertions.assertEquals(expectedResolveResult.toString(),
+      assertEquals(expectedResolveResult.toString(),
           vfs.resolvePath(dirPathBeforeMountPoint).toString());
-      Assertions.assertTrue(
-          vfs.getFileStatus(dirPathBeforeMountPoint).isDirectory());
-      Assertions.assertEquals(
-          childrenFilesCnt, vfs.listStatus(dirPathBeforeMountPoint).length);
+      assertTrue(vfs.getFileStatus(dirPathBeforeMountPoint).isDirectory());
+      assertEquals(childrenFilesCnt, vfs.listStatus(dirPathBeforeMountPoint).length);
 
       // Test Inner cache, the resolved result's filesystem should be the same.
       ViewFileSystem viewFileSystem = (ViewFileSystem) vfs;

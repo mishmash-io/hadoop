@@ -17,7 +17,10 @@
  */
 package org.apache.hadoop.hdfs.server.namenode;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.fail;
 
 import java.io.File;
 import java.io.IOException;
@@ -76,7 +79,7 @@ public class TestNameEditsConfigs {
     if (shouldHaveImages) {
       assertTrue(ins.foundImages.size() > 0, "Expect images in " + dir);
     } else {
-      assertTrue(ins.foundImages.isEmpty(), "Expect no images in " + dir);      
+      assertTrue(ins.foundImages.isEmpty(), "Expect no images in " + dir);
     }
 
     List<FileJournalManager.EditLogFile> editlogs 
@@ -444,8 +447,12 @@ public class TestNameEditsConfigs {
           replication, SEED);
       checkFile(fileSys, file1, replication);
     } finally  {
-      fileSys.close();
-      cluster.shutdown();
+      if (fileSys != null) {
+        fileSys.close();
+      }
+      if (cluster != null) {
+        cluster.shutdown();
+      }
     }
 
     // 2
@@ -603,10 +610,10 @@ public class TestNameEditsConfigs {
           DFSConfigKeys.DFS_NAMENODE_NAME_DIR_KEY + " must be trimmed ");
       assertTrue(checkpointNameDir2.exists(),
           DFSConfigKeys.DFS_NAMENODE_NAME_DIR_KEY + " must be trimmed ");
-      assertTrue(checkpointEditsDir1.exists(), DFSConfigKeys.DFS_NAMENODE_CHECKPOINT_EDITS_DIR_KEY
-          + " must be trimmed ");
-      assertTrue(checkpointEditsDir2.exists(), DFSConfigKeys.DFS_NAMENODE_CHECKPOINT_EDITS_DIR_KEY
-          + " must be trimmed ");
+      assertTrue(checkpointEditsDir1.exists(),
+          DFSConfigKeys.DFS_NAMENODE_CHECKPOINT_EDITS_DIR_KEY + " must be trimmed ");
+      assertTrue(checkpointEditsDir2.exists(),
+          DFSConfigKeys.DFS_NAMENODE_CHECKPOINT_EDITS_DIR_KEY + " must be trimmed ");
     } finally {
       secondary.shutdown();
       cluster.shutdown();

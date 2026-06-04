@@ -23,6 +23,8 @@ import org.apache.hadoop.hdfs.DFSTestUtil;
 import org.apache.hadoop.hdfs.TestBlockStoragePolicy;
 import org.apache.hadoop.hdfs.server.common.HdfsServerConstants;
 import org.apache.hadoop.hdfs.server.protocol.DatanodeStorage;
+import org.apache.hadoop.hdfs.util.RwLockMode;
+import org.junit.jupiter.api.Test;
 
 import java.util.ArrayList;
 
@@ -88,9 +90,8 @@ public class TestReplicationPolicyRatioConsiderLoadWithStorage
  * @throws Exception 
    */
   @Test
-  public void testChooseTargetWithRatioConsiderLoad() throws Exception {
-    setupCluster(BlockPlacementPolicyDefault.class.getName());
-    namenode.getNamesystem().writeLock();
+  public void testChooseTargetWithRatioConsiderLoad() {
+    namenode.getNamesystem().writeLock(RwLockMode.BM);
     try {
       // After heartbeat has been processed, the total load should be 200.
       // And average load per node should be 40. The max load should be 2 * 40;
@@ -162,7 +163,8 @@ public class TestReplicationPolicyRatioConsiderLoadWithStorage
       assertTrue(targetSet.contains(dataNodes[3]));
       assertTrue(targetSet.contains(dataNodes[4]));
     } finally {
-      namenode.getNamesystem().writeUnlock();
+      namenode.getNamesystem().writeUnlock(RwLockMode.BM,
+          "testChooseTargetWithRatioConsiderLoad");
     }
   }
 }

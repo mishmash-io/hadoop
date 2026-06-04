@@ -27,6 +27,7 @@ import org.slf4j.Logger;
 
 import org.junit.jupiter.api.Test;
 import org.slf4j.LoggerFactory;
+import org.junit.jupiter.api.Test;
 
 /**
  * This is a unit test, which tests {@link Util#stringAsURI(String)}

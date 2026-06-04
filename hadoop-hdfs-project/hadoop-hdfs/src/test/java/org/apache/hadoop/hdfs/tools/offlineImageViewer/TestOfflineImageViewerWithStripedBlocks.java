@@ -82,47 +82,47 @@ public class TestOfflineImageViewerWithStripedBlocks {
   }
 
   @Test
-  @Timeout(value = 60000, unit = TimeUnit.MILLISECONDS)
+  @Timeout(value = 60)
   public void testFileEqualToOneStripe() throws Exception {
     int numBytes = cellSize;
     testFileSize(numBytes);
   }
 
   @Test
-  @Timeout(value = 60000, unit = TimeUnit.MILLISECONDS)
+  @Timeout(value = 60)
   public void testFileLessThanOneStripe() throws Exception {
     int numBytes = cellSize - 100;
     testFileSize(numBytes);
   }
 
   @Test
-  @Timeout(value = 60000, unit = TimeUnit.MILLISECONDS)
+  @Timeout(value = 60)
   public void testFileHavingMultipleBlocks() throws Exception {
     int numBytes = blockSize * 3;
     testFileSize(numBytes);
   }
 
   @Test
-  @Timeout(value = 60000, unit = TimeUnit.MILLISECONDS)
+  @Timeout(value = 60)
   public void testFileLargerThanABlockGroup1() throws IOException {
     testFileSize(blockSize * dataBlocks + cellSize + 123);
   }
 
   @Test
-  @Timeout(value = 60000, unit = TimeUnit.MILLISECONDS)
+  @Timeout(value = 60)
   public void testFileLargerThanABlockGroup2() throws IOException {
     testFileSize(blockSize * dataBlocks * 3 + cellSize * dataBlocks + cellSize
         + 123);
   }
 
   @Test
-  @Timeout(value = 60000, unit = TimeUnit.MILLISECONDS)
+  @Timeout(value = 60)
   public void testFileFullBlockGroup() throws IOException {
     testFileSize(blockSize * dataBlocks);
   }
 
   @Test
-  @Timeout(value = 60000, unit = TimeUnit.MILLISECONDS)
+  @Timeout(value = 60)
   public void testFileMoreThanOneStripe() throws Exception {
     int numBytes = blockSize + blockSize / 2;
     testFileSize(numBytes);
@@ -165,7 +165,8 @@ public class TestOfflineImageViewerWithStripedBlocks {
       actualFileSize += blockInfo.getNumBytes();
     }
 
-    assertEquals(expectedFileSize, actualFileSize, "Wrongly computed file size contains striped blocks");
+    assertEquals(expectedFileSize, actualFileSize,
+        "Wrongly computed file size contains striped blocks");
 
     // Verify space consumed present in filestatus
     String EXPECTED_FILE_SIZE = "\"length\":"

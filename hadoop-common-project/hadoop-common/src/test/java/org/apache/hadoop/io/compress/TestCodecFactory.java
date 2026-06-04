@@ -32,6 +32,11 @@ import org.apache.hadoop.fs.Path;
 import org.junit.jupiter.api.Test;
 import org.apache.hadoop.conf.Configuration;
 
+import org.junit.jupiter.api.Test;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.fail;
+
 public class TestCodecFactory {
 
   private static class BaseCodec implements CompressionCodec {
@@ -144,8 +149,7 @@ public class TestCodecFactory {
       fail(msg + " result was null");
     } else {
       assertEquals(expected.getName(),
-              actual.getClass().getName(),
-              msg + " unexpected codec found");
+          actual.getClass().getName(), msg + " unexpected codec found");
     }
   }
 
@@ -154,9 +158,9 @@ public class TestCodecFactory {
     CompressionCodecFactory factory =
             new CompressionCodecFactory(new Configuration());
     CompressionCodec codec = factory.getCodec(new Path("/tmp/foo.bar"));
-    assertNull(codec, "default factory foo codec");
+    assertEquals(null, codec, "default factory foo codec");
     codec = factory.getCodecByClassName(BarCodec.class.getCanonicalName());
-    assertNull(codec, "default factory foo codec");
+    assertEquals(null, codec, "default factory foo codec");
     
     codec = factory.getCodec(new Path("/tmp/foo.gz"));
     checkCodec("default factory for .gz", GzipCodec.class, codec);
@@ -204,9 +208,9 @@ public class TestCodecFactory {
     factory = setClasses(new Class[0]);
     // gz, bz2, snappy, lz4 are picked up by service loader, but bar isn't
     codec = factory.getCodec(new Path("/tmp/foo.bar"));
-    assertNull(codec, "empty factory bar codec");
+    assertEquals(null, codec, "empty factory bar codec");
     codec = factory.getCodecByClassName(BarCodec.class.getCanonicalName());
-    assertNull(codec, "empty factory bar codec");
+    assertEquals(null, codec, "empty factory bar codec");
     
     codec = factory.getCodec(new Path("/tmp/foo.gz"));
     checkCodec("empty factory gz codec", GzipCodec.class, codec);

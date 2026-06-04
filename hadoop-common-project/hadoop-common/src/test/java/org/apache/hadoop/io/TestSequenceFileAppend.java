@@ -63,7 +63,7 @@ public class TestSequenceFileAppend {
   }
 
   @Test
-  @Timeout(value=30000, unit=TimeUnit.MILLISECONDS)
+  @Timeout(value = 30)
   public void testAppend() throws Exception {
 
     Path file = new Path(ROOT_PATH, "testseqappend.seq");
@@ -143,7 +143,7 @@ public class TestSequenceFileAppend {
   }
 
   @Test
-  @Timeout(value=30000, unit=TimeUnit.MILLISECONDS)
+  @Timeout(value = 30)
   public void testAppendRecordCompression() throws Exception {
     GenericTestUtils.assumeInNativeProfile();
 
@@ -178,7 +178,7 @@ public class TestSequenceFileAppend {
   }
 
   @Test
-  @Timeout(value=30000, unit=TimeUnit.MILLISECONDS)
+  @Timeout(value = 30)
   public void testAppendBlockCompression() throws Exception {
     GenericTestUtils.assumeInNativeProfile();
 
@@ -254,7 +254,7 @@ public class TestSequenceFileAppend {
   }
 
   @Test
-  @Timeout(value=30000, unit=TimeUnit.MILLISECONDS)
+  @Timeout(value = 30)
   public void testAppendNoneCompression() throws Exception {
     Path file = new Path(ROOT_PATH, "testseqappendnonecompr.seq");
     fs.delete(file, true);
@@ -322,7 +322,7 @@ public class TestSequenceFileAppend {
   }
 
   @Test
-  @Timeout(value=30000, unit=TimeUnit.MILLISECONDS)
+  @Timeout(value = 30)
   public void testAppendSort() throws Exception {
     GenericTestUtils.assumeInNativeProfile();
 

@@ -19,11 +19,11 @@
 package org.apache.hadoop.hdfs.server.datanode;
 
 import org.apache.hadoop.util.Time;
+import org.junit.jupiter.api.Timeout;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.apache.hadoop.hdfs.server.datanode.BPServiceActor.Scheduler;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.Timeout;
 
 import java.util.Arrays;
 import java.util.List;
@@ -31,18 +31,18 @@ import java.util.Random;
 import java.util.concurrent.TimeUnit;
 
 import static java.lang.Math.abs;
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.core.Is.is;
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.spy;
-
+import static org.assertj.core.api.Assertions.assertThat;
 
 /**
  * Verify the block report and heartbeat scheduling logic of BPServiceActor
  * using a few different values .
  */
-@Timeout(value=300000, unit=TimeUnit.MILLISECONDS)
+@Timeout(300)
 public class TestBpServiceActorScheduler {
   protected static final Logger LOG =
       LoggerFactory.getLogger(TestBpServiceActorScheduler.class);
@@ -68,7 +68,7 @@ public class TestBpServiceActorScheduler {
       Scheduler scheduler = makeMockScheduler(now);
       scheduler.scheduleBlockReport(0, true);
       assertTrue(scheduler.resetBlockReportTime);
-      assertThat(scheduler.getNextBlockReportTime(), is(now));
+      assertThat(scheduler.getNextBlockReportTime()).isEqualTo(now);
     }
   }
 
@@ -109,8 +109,7 @@ public class TestBpServiceActorScheduler {
       Scheduler scheduler = makeMockScheduler(now);
       scheduler.resetBlockReportTime = false;
       scheduler.scheduleNextBlockReport();
-      assertThat(scheduler.getNextBlockReportTime(),
-          is(now + BLOCK_REPORT_INTERVAL_MS));
+      assertThat(scheduler.getNextBlockReportTime()).isEqualTo(now + BLOCK_REPORT_INTERVAL_MS);
     }
   }
 
@@ -133,8 +132,8 @@ public class TestBpServiceActorScheduler {
       scheduler.scheduleNextBlockReport();
       assertTrue((scheduler.getNextBlockReportTime() - now)
           < BLOCK_REPORT_INTERVAL_MS);
-      assertEquals(0, ((scheduler.getNextBlockReportTime() - origBlockReportTime)
-          % BLOCK_REPORT_INTERVAL_MS));
+      assertEquals(0,
+          ((scheduler.getNextBlockReportTime() - origBlockReportTime) % BLOCK_REPORT_INTERVAL_MS));
     }
   }
 
@@ -194,10 +193,10 @@ public class TestBpServiceActorScheduler {
       Scheduler scheduler = makeMockScheduler(now);
       scheduler.scheduleNextLifeline(now);
       assertFalse(scheduler.isLifelineDue(now));
-      assertThat(scheduler.getLifelineWaitTime(), is(LIFELINE_INTERVAL_MS));
+      assertThat(scheduler.getLifelineWaitTime()).isEqualTo(LIFELINE_INTERVAL_MS);
       scheduler.scheduleNextLifeline(now - LIFELINE_INTERVAL_MS);
       assertTrue(scheduler.isLifelineDue(now));
-      assertThat(scheduler.getLifelineWaitTime(), is(0L));
+      assertThat(scheduler.getLifelineWaitTime()).isEqualTo(0L);
     }
   }
 

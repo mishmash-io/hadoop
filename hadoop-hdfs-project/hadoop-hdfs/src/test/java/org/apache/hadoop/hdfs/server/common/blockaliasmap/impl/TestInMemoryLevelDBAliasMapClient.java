@@ -35,7 +35,10 @@ import org.junit.jupiter.api.Test;
 
 import static org.apache.hadoop.hdfs.DFSConfigKeys.DFS_NAMENODE_SERVICE_RPC_BIND_HOST_KEY;
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertArrayEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.fail;
 
 import java.io.File;
 import java.io.IOException;
@@ -138,7 +141,7 @@ public class TestInMemoryLevelDBAliasMapClient {
     }
 
     assertArrayEquals(
-        new FileRegion[] {new FileRegion(block1, providedStorageLocation1),
+        new FileRegion[]{new FileRegion(block1, providedStorageLocation1),
             new FileRegion(block2, providedStorageLocation2)},
         actualFileRegions.toArray());
   }

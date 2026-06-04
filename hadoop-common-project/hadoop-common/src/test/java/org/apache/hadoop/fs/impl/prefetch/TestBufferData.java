@@ -26,6 +26,8 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
 
+import org.junit.jupiter.api.Test;
+
 import org.apache.hadoop.test.AbstractHadoopTestBase;
 import org.junit.jupiter.api.Test;
 

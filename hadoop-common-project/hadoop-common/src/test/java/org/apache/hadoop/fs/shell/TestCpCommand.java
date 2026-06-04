@@ -20,7 +20,12 @@ package org.apache.hadoop.fs.shell;
 import java.io.IOException;
 import java.util.LinkedList;
 import java.util.concurrent.ThreadPoolExecutor;
-import java.util.concurrent.TimeUnit;
+
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.Timeout;
 
 import org.apache.commons.lang3.RandomStringUtils;
 import org.apache.commons.lang3.RandomUtils;
@@ -113,7 +118,7 @@ public class TestCpCommand {
   }
 
   @Test
-  @Timeout(value=10000, unit=TimeUnit.MILLISECONDS)
+  @Timeout(value = 10)
   public void testCp() throws Exception {
     MultiThreadedCp copy = new MultiThreadedCp(1, DEFAULT_QUEUE_SIZE, 0);
     run(copy, new Path(dir, FROM_DIR_NAME).toString(),
@@ -122,7 +127,7 @@ public class TestCpCommand {
   }
 
   @Test
-  @Timeout(value=10000, unit=TimeUnit.MILLISECONDS)
+  @Timeout(value = 10)
   public void testCpWithThreads() {
     run(new MultiThreadedCp(5, DEFAULT_QUEUE_SIZE, numFiles), "-t", "5",
         new Path(dir, FROM_DIR_NAME).toString(),
@@ -130,7 +135,7 @@ public class TestCpCommand {
   }
 
   @Test
-  @Timeout(value=10000, unit=TimeUnit.MILLISECONDS)
+  @Timeout(value = 10)
   public void testCpWithThreadWrong() {
     run(new MultiThreadedCp(1, DEFAULT_QUEUE_SIZE, 0), "-t", "0",
         new Path(dir, FROM_DIR_NAME).toString(),
@@ -138,7 +143,7 @@ public class TestCpCommand {
   }
 
   @Test
-  @Timeout(value=10000, unit=TimeUnit.MILLISECONDS)
+  @Timeout(value = 10)
   public void testCpWithThreadsAndQueueSize() {
     int queueSize = 256;
     run(new MultiThreadedCp(5, queueSize, numFiles), "-t", "5", "-q",
@@ -148,7 +153,7 @@ public class TestCpCommand {
   }
 
   @Test
-  @Timeout(value=10000, unit=TimeUnit.MILLISECONDS)
+  @Timeout(value = 10)
   public void testCpWithThreadsAndQueueSizeWrong() {
     int queueSize = 0;
     run(new MultiThreadedCp(5, DEFAULT_QUEUE_SIZE, numFiles), "-t", "5", "-q",
@@ -158,7 +163,7 @@ public class TestCpCommand {
   }
 
   @Test
-  @Timeout(value=10000, unit=TimeUnit.MILLISECONDS)
+  @Timeout(value = 10)
   public void testCpSingleFile() throws Exception {
     Path fromDirPath = new Path(dir, FROM_DIR_NAME);
     Path subFile = new Path(fromDirPath, "file0");

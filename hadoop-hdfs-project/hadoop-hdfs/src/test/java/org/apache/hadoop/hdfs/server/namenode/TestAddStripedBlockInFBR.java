@@ -44,7 +44,7 @@ import java.util.function.Supplier;
 
 import java.io.IOException;
 
-@Timeout(value=300000, unit=TimeUnit.MILLISECONDS)
+@Timeout(300)
 public class TestAddStripedBlockInFBR {
   private final ErasureCodingPolicy ecPolicy =
       StripedFileTestUtil.getDefaultECPolicy();

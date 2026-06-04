@@ -27,6 +27,7 @@ import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.test.GenericTestUtils;
 import org.apache.hadoop.util.KMSUtil;
 import org.apache.hadoop.util.StopWatch;
+import org.apache.hadoop.util.concurrent.SubjectInheritingThread;
 import org.apache.hadoop.test.Whitebox;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -44,14 +45,14 @@ import java.util.concurrent.Future;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.TimeUnit;
 
-import static org.apache.hadoop.hdfs.DFSConfigKeys.DFS_NAMENODE_REENCRYPT_THROTTLE_LIMIT_HANDLER_RATIO_KEY;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.apache.hadoop.hdfs.DFSConfigKeys.DFS_NAMENODE_REENCRYPT_THROTTLE_LIMIT_HANDLER_RATIO_KEY;
 import static org.junit.jupiter.api.Assertions.fail;
 
 /**
  * Test class for ReencryptionHandler.
  */
-@Timeout(value=180000, unit=TimeUnit.MILLISECONDS)
+@Timeout(180)
 public class TestReencryptionHandler {
 
   protected static final org.slf4j.Logger LOG =
@@ -105,8 +106,7 @@ public class TestReencryptionHandler {
     final StopWatch sw = new StopWatch().start();
     rh.getTraverser().throttle();
     sw.stop();
-    assertTrue(sw.now(TimeUnit.MILLISECONDS) > 8000,
-        "should have throttled for at least 8 second");
+    assertTrue(sw.now(TimeUnit.MILLISECONDS) > 8000, "should have throttled for at least 8 second");
     assertTrue(sw.now(TimeUnit.MILLISECONDS) < 12000,
         "should have throttled for at most 12 second");
   }
@@ -136,8 +136,7 @@ public class TestReencryptionHandler {
     StopWatch sw = new StopWatch().start();
     rh.getTraverser().throttle();
     sw.stop();
-    assertTrue(sw.now(TimeUnit.MILLISECONDS) < 1000,
-        "should not have throttled");
+    assertTrue(sw.now(TimeUnit.MILLISECONDS) < 1000, "should not have throttled");
   }
 
   @Test
@@ -178,8 +177,8 @@ public class TestReencryptionHandler {
       zst.addTask(mock);
     }
 
-    Thread removeTaskThread = new Thread() {
-      public void run() {
+    SubjectInheritingThread removeTaskThread = new SubjectInheritingThread() {
+      public void work() {
         try {
           Thread.sleep(3000);
         } catch (InterruptedException ie) {

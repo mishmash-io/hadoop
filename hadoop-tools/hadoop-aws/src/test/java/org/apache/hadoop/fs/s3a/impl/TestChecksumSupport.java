@@ -19,7 +19,9 @@
 package org.apache.hadoop.fs.s3a.impl;
 
 import org.assertj.core.api.Assertions;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.EnumSource;
 import software.amazon.awssdk.services.s3.model.ChecksumAlgorithm;
 
 import org.apache.hadoop.conf.Configuration;
@@ -28,33 +30,13 @@ import static org.apache.hadoop.fs.s3a.Constants.CHECKSUM_ALGORITHM;
 
 public class TestChecksumSupport {
 
-  @Test
-  public void testGetSupportedChecksumAlgorithmCRC32() {
-    testGetSupportedChecksumAlgorithm(ChecksumAlgorithm.CRC32);
-  }
-
-  @Test
-  public void testGetSupportedChecksumAlgorithmCRC32C() {
-    testGetSupportedChecksumAlgorithm(ChecksumAlgorithm.CRC32_C);
-  }
-
-  @Test
-  public void testGetSupportedChecksumAlgorithmSHA1() {
-    testGetSupportedChecksumAlgorithm(ChecksumAlgorithm.SHA1);
-  }
-
-  @Test
-  public void testGetSupportedChecksumAlgorithmSHA256() {
-    testGetSupportedChecksumAlgorithm(ChecksumAlgorithm.SHA256);
-  }
-
-  /**
-   * Assert that a checksum algorithm string resolves to a value.
-   * @param checksumAlgorithm expected value
-   */
-  private static void testGetSupportedChecksumAlgorithm(final ChecksumAlgorithm checksumAlgorithm) {
+  @ParameterizedTest
+  @EnumSource(value = ChecksumAlgorithm.class,
+      names = {"CRC32", "CRC32_C", "SHA1", "SHA256", "CRC64_NVME"})
+  public void testGetSupportedChecksumAlgorithm(ChecksumAlgorithm checksumAlgorithm) {
     assertChecksumAlgorithm(checksumAlgorithm, checksumAlgorithm.toString());
   }
+
   /**
    * Assert that a checksum algorithm string resolves to a value.
    * @param checksumAlgorithm expected value

@@ -30,7 +30,6 @@ import org.apache.hadoop.hdfs.MiniDFSCluster;
 import org.apache.hadoop.hdfs.server.common.Storage;
 import org.apache.hadoop.hdfs.server.common.StorageInfo;
 import org.apache.hadoop.hdfs.server.protocol.NamespaceInfo;
-
 import org.junit.jupiter.api.Test;
 
 public class TestGenericJournalConf {
@@ -41,11 +40,10 @@ public class TestGenericJournalConf {
    * in the configuration 
    */
   @Test
-  public void testNotConfigured() {
+  public void testNotConfigured() throws Exception {
     assertThrows(IllegalArgumentException.class, () -> {
       MiniDFSCluster cluster = null;
       Configuration conf = new Configuration();
-
       conf.set(DFSConfigKeys.DFS_NAMENODE_EDITS_DIR_KEY,
           "dummy://test");
       try {
@@ -64,16 +62,14 @@ public class TestGenericJournalConf {
    * exist in the classloader.
    */
   @Test
-  public void testClassDoesntExist() {
+  public void testClassDoesntExist() throws Exception {
     assertThrows(IllegalArgumentException.class, () -> {
       MiniDFSCluster cluster = null;
       Configuration conf = new Configuration();
-
       conf.set(DFSConfigKeys.DFS_NAMENODE_EDITS_PLUGIN_PREFIX + ".dummy",
           "org.apache.hadoop.nonexistent");
       conf.set(DFSConfigKeys.DFS_NAMENODE_EDITS_DIR_KEY,
           "dummy://test");
-
       try {
         cluster = new MiniDFSCluster.Builder(conf).numDataNodes(0).build();
         cluster.waitActive();

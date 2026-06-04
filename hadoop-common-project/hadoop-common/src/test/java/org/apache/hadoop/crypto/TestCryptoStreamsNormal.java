@@ -86,67 +86,67 @@ public class TestCryptoStreamsNormal extends CryptoStreamsTestBase {
   @Disabled("Wrapped stream doesn't support Syncable")
   @Override
   @Test
-  @Timeout(value=10000, unit=TimeUnit.MILLISECONDS)
+  @Timeout(value = 10)
   public void testSyncable() throws IOException {}
   
   @Disabled("Wrapped stream doesn't support PositionedRead")
   @Override
   @Test
-  @Timeout(value=10000, unit=TimeUnit.MILLISECONDS)
+  @Timeout(value = 10)
   public void testPositionedRead() throws IOException {}
 
   @Disabled("Wrapped stream doesn't support ByteBufferPositionedReadable")
   @Override
   @Test
-  @Timeout(value=10000, unit=TimeUnit.MILLISECONDS)
+  @Timeout(value = 10)
   public void testPositionedReadWithByteBuffer() throws IOException {}
 
   @Disabled("Wrapped stream doesn't support ByteBufferPositionedReadable")
   @Override
   @Test
-  @Timeout(value=10000, unit=TimeUnit.MILLISECONDS)
+  @Timeout(value = 10)
   public void testByteBufferReadFully() throws Exception {}
 
   @Disabled("Wrapped stream doesn't support ReadFully")
   @Override
   @Test
-  @Timeout(value=10000, unit=TimeUnit.MILLISECONDS)
+  @Timeout(value = 10)
   public void testReadFully() throws IOException {}
   
   @Disabled("Wrapped stream doesn't support Seek")
   @Override
   @Test
-  @Timeout(value=10000, unit=TimeUnit.MILLISECONDS)
+  @Timeout(value = 10)
   public void testSeek() throws IOException {}
   
   @Disabled("Wrapped stream doesn't support ByteBufferRead")
   @Override
   @Test
-  @Timeout(value=10000, unit=TimeUnit.MILLISECONDS)
+  @Timeout(value = 10)
   public void testByteBufferRead() throws IOException {}
 
   @Disabled("Wrapped stream doesn't support ByteBufferPositionedReadable")
   @Override
   @Test
-  @Timeout(value=10000, unit=TimeUnit.MILLISECONDS)
+  @Timeout(value = 10)
   public void testByteBufferPread() throws IOException {}
   
   @Disabled("Wrapped stream doesn't support ByteBufferRead, Seek")
   @Override
   @Test
-  @Timeout(value=10000, unit=TimeUnit.MILLISECONDS)
+  @Timeout(value = 10)
   public void testCombinedOp() throws IOException {}
   
   @Disabled("Wrapped stream doesn't support SeekToNewSource")
   @Override
   @Test
-  @Timeout(value=10000, unit=TimeUnit.MILLISECONDS)
+  @Timeout(value = 10)
   public void testSeekToNewSource() throws IOException {}
   
   @Disabled("Wrapped stream doesn't support HasEnhancedByteBufferAccess")
   @Override
   @Test
-  @Timeout(value=10000, unit=TimeUnit.MILLISECONDS)
+  @Timeout(value = 10)
   public void testHasEnhancedByteBufferAccess() throws IOException {}
 
   @Disabled("ByteArrayInputStream does not support unbuffer")

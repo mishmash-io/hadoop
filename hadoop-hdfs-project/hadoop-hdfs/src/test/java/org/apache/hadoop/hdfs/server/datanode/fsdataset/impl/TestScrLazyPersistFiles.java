@@ -28,11 +28,8 @@ import org.apache.hadoop.io.nativeio.NativeIO;
 import org.apache.hadoop.net.unix.DomainSocket;
 import org.apache.hadoop.test.GenericTestUtils;
 import org.apache.hadoop.util.NativeCodeLoader;
-
-import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.Assumptions;
-import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
 import java.io.File;
@@ -42,10 +39,12 @@ import java.util.concurrent.TimeoutException;
 import static org.apache.hadoop.fs.StorageType.DEFAULT;
 import static org.apache.hadoop.fs.StorageType.RAM_DISK;
 import static org.apache.hadoop.test.PlatformAssumptions.assumeNotWindows;
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.core.Is.is;
+import static org.assertj.core.api.Assumptions.assumeThat;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assumptions.assumeTrue;
 
 /**
@@ -62,9 +61,9 @@ public class TestScrLazyPersistFiles extends LazyPersistTestCase {
 
   @BeforeEach
   public void before() {
-    Assumptions.assumeTrue(NativeCodeLoader.isNativeCodeLoaded());
+    assumeTrue(NativeCodeLoader.isNativeCodeLoaded());
     assumeNotWindows();
-    assumeTrue(DomainSocket.getLoadingFailureReason() == null);
+    assumeThat(DomainSocket.getLoadingFailureReason()).isNull();
 
     final long osPageSize = NativeIO.POSIX.getCacheManipulator().getOperatingSystemPageSize();
     Preconditions.checkState(BLOCK_SIZE >= osPageSize);
@@ -94,10 +93,9 @@ public class TestScrLazyPersistFiles extends LazyPersistTestCase {
     try {
       byte[] buf = new byte[BUFFER_LENGTH];
       fis.read(0, buf, 0, BUFFER_LENGTH);
-      Assertions.assertEquals(BUFFER_LENGTH,
-        fis.getReadStatistics().getTotalBytesRead());
-      Assertions.assertEquals(BUFFER_LENGTH,
-        fis.getReadStatistics().getTotalShortCircuitBytesRead());
+      assertEquals(BUFFER_LENGTH, fis.getReadStatistics().getTotalBytesRead());
+      assertEquals(BUFFER_LENGTH,
+          fis.getReadStatistics().getTotalShortCircuitBytesRead());
     } finally {
       fis.close();
       fis = null;
@@ -130,10 +128,9 @@ public class TestScrLazyPersistFiles extends LazyPersistTestCase {
 
       // Ensure path1 is still readable from the open SCR handle.
       fis.read(0, buf, 0, BUFFER_LENGTH);
-      assertThat(fis.getReadStatistics().getTotalBytesRead(),
-          is((long) 2 * BUFFER_LENGTH));
-      assertThat(fis.getReadStatistics().getTotalShortCircuitBytesRead(),
-          is((long) 2 * BUFFER_LENGTH));
+      assertThat(fis.getReadStatistics().getTotalBytesRead()).isEqualTo((long) 2 * BUFFER_LENGTH);
+      assertThat(fis.getReadStatistics().getTotalShortCircuitBytesRead())
+          .isEqualTo((long) 2 * BUFFER_LENGTH);
     }
   }
 
@@ -159,7 +156,7 @@ public class TestScrLazyPersistFiles extends LazyPersistTestCase {
     // subsequent legacy short-circuit reads in the ClientContext.
     // Assert that it didn't get disabled.
     ClientContext clientContext = client.getClientContext();
-    Assertions.assertFalse(clientContext.getDisableLegacyBlockReaderLocal());
+    assertFalse(clientContext.getDisableLegacyBlockReaderLocal());
   }
 
   private void doShortCircuitReadAfterEvictionTest() throws IOException,
@@ -207,20 +204,21 @@ public class TestScrLazyPersistFiles extends LazyPersistTestCase {
     doShortCircuitReadBlockFileCorruptionTest();
   }
 
-  public void doShortCircuitReadBlockFileCorruptionTest() {
+  public void doShortCircuitReadBlockFileCorruptionTest() throws IOException,
+      InterruptedException, TimeoutException {
+    final String METHOD_NAME = GenericTestUtils.getMethodName();
+    Path path1 = new Path("/" + METHOD_NAME + ".01.dat");
+
+    makeTestFile(path1, BLOCK_SIZE, true);
+    ensureFileReplicasOnStorageType(path1, RAM_DISK);
+    waitForMetric("RamDiskBlocksLazyPersisted", 1);
+    triggerEviction(cluster.getDataNodes().get(0));
+
+    // Corrupt the lazy-persisted block file, and verify that checksum
+    // verification catches it.
+    ensureFileReplicasOnStorageType(path1, DEFAULT);
+    cluster.corruptReplica(0, DFSTestUtil.getFirstBlock(fs, path1));
     assertThrows(ChecksumException.class, () -> {
-      final String METHOD_NAME = GenericTestUtils.getMethodName();
-      Path path1 = new Path("/" + METHOD_NAME + ".01.dat");
-
-      makeTestFile(path1, BLOCK_SIZE, true);
-      ensureFileReplicasOnStorageType(path1, RAM_DISK);
-      waitForMetric("RamDiskBlocksLazyPersisted", 1);
-      triggerEviction(cluster.getDataNodes().get(0));
-
-      // Corrupt the lazy-persisted block file, and verify that checksum
-      // verification catches it.
-      ensureFileReplicasOnStorageType(path1, DEFAULT);
-      cluster.corruptReplica(0, DFSTestUtil.getFirstBlock(fs, path1));
       DFSTestUtil.readFileBuffer(fs, path1);
     });
   }
@@ -243,20 +241,21 @@ public class TestScrLazyPersistFiles extends LazyPersistTestCase {
     doShortCircuitReadMetaFileCorruptionTest();
   }
 
-  public void doShortCircuitReadMetaFileCorruptionTest() {
+  public void doShortCircuitReadMetaFileCorruptionTest() throws IOException,
+      InterruptedException, TimeoutException {
+    final String METHOD_NAME = GenericTestUtils.getMethodName();
+    Path path1 = new Path("/" + METHOD_NAME + ".01.dat");
+
+    makeTestFile(path1, BLOCK_SIZE, true);
+    ensureFileReplicasOnStorageType(path1, RAM_DISK);
+    waitForMetric("RamDiskBlocksLazyPersisted", 1);
+    triggerEviction(cluster.getDataNodes().get(0));
+
+    // Corrupt the lazy-persisted checksum file, and verify that checksum
+    // verification catches it.
+    ensureFileReplicasOnStorageType(path1, DEFAULT);
+    cluster.corruptMeta(0, DFSTestUtil.getFirstBlock(fs, path1));
     assertThrows(ChecksumException.class, () -> {
-      final String METHOD_NAME = GenericTestUtils.getMethodName();
-      Path path1 = new Path("/" + METHOD_NAME + ".01.dat");
-
-      makeTestFile(path1, BLOCK_SIZE, true);
-      ensureFileReplicasOnStorageType(path1, RAM_DISK);
-      waitForMetric("RamDiskBlocksLazyPersisted", 1);
-      triggerEviction(cluster.getDataNodes().get(0));
-
-      // Corrupt the lazy-persisted checksum file, and verify that checksum
-      // verification catches it.
-      ensureFileReplicasOnStorageType(path1, DEFAULT);
-      cluster.corruptMeta(0, DFSTestUtil.getFirstBlock(fs, path1));
       DFSTestUtil.readFileBuffer(fs, path1);
     });
   }

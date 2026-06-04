@@ -18,6 +18,7 @@
  */
 package org.apache.hadoop.hdfs.server.namenode;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.fail;
 
@@ -45,8 +46,10 @@ import org.apache.hadoop.hdfs.server.blockmanagement.BlockPlacementPolicy;
 import org.apache.hadoop.hdfs.server.datanode.DataNode;
 import org.apache.hadoop.test.GenericTestUtils;
 import org.slf4j.event.Level;
-import org.junit.jupiter.api.*;
-
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.Timeout;
 
 public class TestFavoredNodesEndToEnd {
   {
@@ -80,7 +83,7 @@ public class TestFavoredNodesEndToEnd {
   }
 
   @Test
-  @Timeout(value = 180000, unit = TimeUnit.MILLISECONDS)
+  @Timeout(value = 180)
   public void testFavoredNodesEndToEnd() throws Exception {
     //create 10 files with random preferred nodes
     for (int i = 0; i < NUM_FILES; i++) {
@@ -104,7 +107,7 @@ public class TestFavoredNodesEndToEnd {
   }
 
   @Test
-  @Timeout(value = 180000, unit = TimeUnit.MILLISECONDS)
+  @Timeout(value = 180)
   public void testWhenFavoredNodesNotPresent() throws Exception {
     //when we ask for favored nodes but the nodes are not there, we should
     //get some other nodes. In other words, the write to hdfs should not fail
@@ -123,7 +126,7 @@ public class TestFavoredNodesEndToEnd {
   }
 
   @Test
-  @Timeout(value = 180000, unit = TimeUnit.MILLISECONDS)
+  @Timeout(value = 180)
   public void testWhenSomeNodesAreNotGood() throws Exception {
     // 4 favored nodes
     final InetSocketAddress addrs[] = new InetSocketAddress[4];
@@ -151,20 +154,20 @@ public class TestFavoredNodesEndToEnd {
     d.stopDecommission();
 
     BlockLocation[] locations = getBlockLocations(p);
-    Assertions.assertEquals(replication, locations[0].getNames().length);
+    assertEquals(replication, locations[0].getNames().length);
     //also make sure that the datanode[0] is not in the list of hosts
     for (int i = 0; i < replication; i++) {
       final String loc = locations[0].getNames()[i];
       int j = 0;
       for(; j < hosts.length && !loc.equals(hosts[j]); j++);
-      Assertions.assertTrue(j > 0, "j=" + j);
-      Assertions.assertTrue(j < hosts.length, "loc=" + loc + " not in host list "
-          + Arrays.asList(hosts) + ", j=" + j);
+      assertTrue(j > 0, "j=" + j);
+      assertTrue(j < hosts.length,
+          "loc=" + loc + " not in host list " + Arrays.asList(hosts) + ", j=" + j);
     }
   }
 
   @Test
-  @Timeout(value = 180000, unit = TimeUnit.MILLISECONDS)
+  @Timeout(value = 180)
   public void testFavoredNodesEndToEndForAppend() throws Exception {
     // create 10 files with random preferred nodes
     for (int i = 0; i < NUM_FILES; i++) {
@@ -192,7 +195,7 @@ public class TestFavoredNodesEndToEnd {
   }
 
   @Test
-  @Timeout(value = 180000, unit = TimeUnit.MILLISECONDS)
+  @Timeout(value = 180)
   public void testCreateStreamBuilderFavoredNodesEndToEnd() throws Exception {
     //create 10 files with random preferred nodes
     for (int i = 0; i < NUM_FILES; i++) {

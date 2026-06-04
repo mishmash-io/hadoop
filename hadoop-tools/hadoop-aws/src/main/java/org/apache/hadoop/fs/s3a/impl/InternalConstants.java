@@ -39,6 +39,7 @@ import static org.apache.hadoop.fs.Options.CreateFileOptionKeys.FS_OPTION_CREATE
 import static org.apache.hadoop.fs.Options.CreateFileOptionKeys.FS_OPTION_CREATE_CONTENT_TYPE;
 import static org.apache.hadoop.fs.Options.CreateFileOptionKeys.FS_OPTION_CREATE_IN_CLOSE;
 import static org.apache.hadoop.fs.Options.OpenFileOptions.FS_OPTION_OPENFILE_STANDARD_OPTIONS;
+import static org.apache.hadoop.fs.s3a.Constants.AWS_S3_ACCESS_GRANTS_ENABLED;
 import static org.apache.hadoop.fs.s3a.Constants.DIRECTORY_OPERATIONS_PURGE_UPLOADS;
 import static org.apache.hadoop.fs.s3a.Constants.ENABLE_MULTI_DELETE;
 import static org.apache.hadoop.fs.s3a.Constants.FIPS_ENDPOINT;
@@ -284,6 +285,7 @@ public final class InternalConstants {
           FS_MULTIPART_UPLOADER,
           DIRECTORY_LISTING_INCONSISTENT,
           FIPS_ENDPOINT,
+          AWS_S3_ACCESS_GRANTS_ENABLED,
 
           // s3 specific
           STORE_CAPABILITY_AWS_V2,

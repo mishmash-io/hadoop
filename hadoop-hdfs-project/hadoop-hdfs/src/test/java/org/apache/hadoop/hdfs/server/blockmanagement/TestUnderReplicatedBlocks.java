@@ -31,6 +31,8 @@ import org.apache.hadoop.hdfs.MiniDFSCluster;
 import org.apache.hadoop.hdfs.protocol.ExtendedBlock;
 import org.apache.hadoop.hdfs.server.datanode.DataNodeTestUtils;
 import org.apache.hadoop.test.Whitebox;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.Timeout;
 
 import java.util.Iterator;
 import java.util.concurrent.TimeUnit;
@@ -41,7 +43,7 @@ import org.junit.jupiter.api.Timeout;
 
 public class TestUnderReplicatedBlocks {
   @Test
-  @Timeout(value = 120000, unit = TimeUnit.MILLISECONDS) // 1 min timeout
+  @Timeout(value = 120)
   public void testSetRepIncWithUnderReplicatedBlocks() throws Exception {
     Configuration conf = new HdfsConfiguration();
     final short REPLICATION_FACTOR = 2;
@@ -81,15 +83,14 @@ public class TestUnderReplicatedBlocks {
 
       // increment this file's replication factor
       FsShell shell = new FsShell(conf);
-      assertEquals(0, shell.run(new String[] {
-          "-setrep", "-w", Integer.toString(1 + REPLICATION_FACTOR),
-          FILE_NAME }));
+      assertEquals(0, shell.run(
+          new String[]{"-setrep", "-w", Integer.toString(1 + REPLICATION_FACTOR), FILE_NAME}));
       BlockManagerTestUtil.updateState(bm);
       DFSTestUtil.verifyClientStats(conf, cluster);
     } finally {
       cluster.shutdown();
     }
-    
+
   }
 
   /**
@@ -110,7 +111,7 @@ public class TestUnderReplicatedBlocks {
    * @throws Exception
    */
   @Test
-  @Timeout(value = 60000, unit = TimeUnit.MILLISECONDS) // 1 min timeout
+  @Timeout(value = 60)
   public void testNumberOfBlocksToBeReplicated() throws Exception {
     Configuration conf = new HdfsConfiguration();
 
@@ -157,16 +158,15 @@ public class TestUnderReplicatedBlocks {
       DFSTestUtil.verifyClientStats(conf, cluster);
 
       bm.computeDatanodeWork();
-      assertTrue((Integer)Whitebox.getInternalState(secondDn,
+      assertTrue((Integer) Whitebox.getInternalState(secondDn,
               "pendingReplicationWithoutTargets") >= 0,
-          "The number of replication work pending before targets are " +
-              "determined should be non-negative.");
+          "The number of replication work pending before targets are "
+              + "determined should be non-negative.");
 
       BlockManagerTestUtil.updateState(bm);
-      assertTrue(secondDn.getNumberOfBlocksToBeReplicated()
-          <= bm.getReplicationStreamsHardLimit(),
-          "The number of blocks to be replicated should be less than "
-          + "or equal to " + bm.getReplicationStreamsHardLimit());
+      assertTrue(secondDn.getNumberOfBlocksToBeReplicated() <= bm.getReplicationStreamsHardLimit(),
+          "The number of blocks to be replicated should be less than " + "or equal to "
+              + bm.getReplicationStreamsHardLimit());
       DFSTestUtil.verifyClientStats(conf, cluster);
     } finally {
       cluster.shutdown();

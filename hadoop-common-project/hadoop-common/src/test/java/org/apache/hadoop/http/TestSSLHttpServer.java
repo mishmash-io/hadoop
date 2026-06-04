@@ -308,8 +308,7 @@ public class TestSSLHttpServer extends HttpServerFunctionalTest {
     HttpsURLConnection conn =
         getConnectionWithPreferredProtocolSSLSocketFactory(url,
             includedProtocols);
-    assertFalse(includedProtocols.isEmpty(),
-        "included protocol list is empty");
+    assertFalse(includedProtocols.isEmpty(), "included protocol list is empty");
 
     readFromConnection(conn);
 

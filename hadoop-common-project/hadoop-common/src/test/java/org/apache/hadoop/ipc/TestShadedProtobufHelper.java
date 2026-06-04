@@ -20,6 +20,8 @@ package org.apache.hadoop.ipc;
 
 import java.io.IOException;
 
+import org.junit.jupiter.api.Test;
+
 import org.apache.hadoop.ipc.internal.ShadedProtobufHelper;
 import org.apache.hadoop.test.AbstractHadoopTestBase;
 import org.apache.hadoop.thirdparty.protobuf.ServiceException;

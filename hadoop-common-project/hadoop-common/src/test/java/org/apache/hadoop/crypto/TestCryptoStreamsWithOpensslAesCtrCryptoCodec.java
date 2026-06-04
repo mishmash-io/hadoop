@@ -24,6 +24,11 @@ import org.apache.hadoop.test.GenericTestUtils;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
 import static org.apache.hadoop.fs.CommonConfigurationKeysPublic.HADOOP_SECURITY_CRYPTO_CIPHER_SUITE_KEY;
 import static org.apache.hadoop.fs.CommonConfigurationKeysPublic.HADOOP_SECURITY_CRYPTO_CODEC_CLASSES_AES_CTR_NOPADDING_KEY;
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -59,9 +64,9 @@ public class TestCryptoStreamsWithOpensslAesCtrCryptoCodec
         CommonConfigurationKeysPublic.HADOOP_SECURITY_SECURE_RANDOM_IMPL_KEY,
         OsSecureRandom.class.getName());
     CryptoCodec codecWithRandom = CryptoCodec.getInstance(conf);
-    assertNotNull(codecWithRandom,
-        "Unable to instantiate codec " + OpensslAesCtrCryptoCodec.class
-            .getName() + ", is the required " + "version of OpenSSL installed?");
+    assertNotNull(
+        codecWithRandom, "Unable to instantiate codec " + OpensslAesCtrCryptoCodec.class
+        .getName() + ", is the required " + "version of OpenSSL installed?");
     OsSecureRandom random = (OsSecureRandom)
             ((OpensslAesCtrCryptoCodec) codecWithRandom).getRandom();
     // trigger the OsSecureRandom to create an internal FileInputStream

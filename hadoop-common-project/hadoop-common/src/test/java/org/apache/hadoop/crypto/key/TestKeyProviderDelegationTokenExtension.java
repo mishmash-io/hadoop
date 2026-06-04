@@ -30,7 +30,6 @@ import org.apache.hadoop.io.Text;
 import org.apache.hadoop.security.Credentials;
 import org.apache.hadoop.security.token.Token;
 import org.junit.jupiter.api.Test;
-import org.mockito.Mockito;
 
 public class TestKeyProviderDelegationTokenExtension {
   
@@ -58,7 +57,7 @@ public class TestKeyProviderDelegationTokenExtension {
     assertEquals(0, tokens.length);
     
     MockKeyProvider mock = mock(MockKeyProvider.class);
-    Mockito.when(mock.getConf()).thenReturn(new Configuration());
+    when(mock.getConf()).thenReturn(new Configuration());
     when(mock.getCanonicalServiceName()).thenReturn("cservice");
     when(mock.getDelegationToken("renewer")).thenReturn(
         new Token(null, null, new Text("kind"), new Text(

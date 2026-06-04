@@ -17,7 +17,10 @@
  */
 package org.apache.hadoop.hdfs;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.fail;
 
 import java.io.FileNotFoundException;
 import java.io.IOException;
@@ -38,7 +41,6 @@ import org.apache.hadoop.test.GenericTestUtils;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
-
 import org.slf4j.event.Level;
 
 /**
@@ -94,8 +96,8 @@ public class TestFileStatus {
   public void testGetFileInfo() throws IOException {
     // Check that / exists
     Path path = new Path("/");
-    assertTrue(fs.getFileStatus(path).isDirectory(), 
-               "/ should be a directory");
+    assertTrue(
+               fs.getFileStatus(path).isDirectory(), "/ should be a directory");
     ContractTestUtils.assertNotErasureCoded(fs, path);
 
     // Make sure getFileInfo returns null for files which do not exist
@@ -118,7 +120,7 @@ public class TestFileStatus {
       fail("getFileInfo for a non-absolute path did not throw IOException");
     } catch (RemoteException re) {
       assertTrue(re.toString().contains("Absolute path required"),
-          "Wrong exception for invalid file name: "+re);
+          "Wrong exception for invalid file name: " + re);
     }
   }
 
@@ -184,7 +186,7 @@ public class TestFileStatus {
       fs.getFileStatus(dir);
       fail("getFileStatus of non-existent path should fail");
     } catch (FileNotFoundException fe) {
-      assertTrue(fe.getMessage().startsWith("File does not exist"), 
+      assertTrue(fe.getMessage().startsWith("File does not exist"),
           "Exception doesn't indicate non-existant path");
     }
   }
@@ -209,7 +211,8 @@ public class TestFileStatus {
     // test listStatus on an empty directory
     FileStatus[] stats = fs.listStatus(dir);
     assertEquals(0, stats.length, dir + " should be empty");
-    assertEquals(0, fs.getContentSummary(dir).getLength(), dir + " should be zero size ");
+    assertEquals(0, fs.getContentSummary(dir).getLength(),
+        dir + " should be zero size ");
     
     RemoteIterator<FileStatus> itor = fc.listStatus(dir);
     assertFalse(itor.hasNext(), dir + " should be empty");
@@ -239,8 +242,9 @@ public class TestFileStatus {
 
     // Verify that the size of the directory increased by the size 
     // of the two files
-    final int expected = blockSize/2;  
-    assertEquals(expected, fs.getContentSummary(dir).getLength(), dir + " size should be " + expected);
+    final int expected = blockSize/2;
+    assertEquals(expected, fs.getContentSummary(dir).getLength(),
+        dir + " size should be " + expected);
 
     // Test listStatus on a non-empty directory
     stats = fs.listStatus(dir);

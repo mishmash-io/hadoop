@@ -18,6 +18,7 @@
 package org.apache.hadoop.hdfs;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.io.IOException;
 import java.net.InetSocketAddress;
@@ -27,7 +28,6 @@ import org.slf4j.LoggerFactory;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hdfs.client.HdfsClientConfigKeys;
 import org.apache.hadoop.hdfs.client.impl.BlockReaderTestUtil;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
 /**
@@ -52,7 +52,7 @@ public class TestConnCache {
                      int length,
                      byte[] authenticData)
       throws IOException {
-    Assertions.assertTrue(buffer.length >= offset + length, "Test buffer too small");
+    assertTrue(buffer.length >= offset + length, "Test buffer too small");
 
     if (pos >= 0)
       in.seek(pos);
@@ -62,7 +62,7 @@ public class TestConnCache {
 
     while (length > 0) {
       int cnt = in.read(buffer, offset, length);
-      Assertions.assertTrue(cnt > 0, "Error in read");
+      assertTrue(cnt > 0, "Error in read");
       offset += cnt;
       length -= cnt;
     }
@@ -72,7 +72,7 @@ public class TestConnCache {
       byte actual = buffer[i];
       byte expect = authenticData[(int)pos + i];
       assertEquals(actual, expect, "Read data mismatch at file offset " + (pos + i) +
-                   ". Expects " + expect + "; got " + actual);
+              ". Expects " + expect + "; got " + actual);
     }
   }
 
@@ -115,7 +115,6 @@ public class TestConnCache {
 
     in.close();
     client.close();
-    Assertions.assertEquals(1,
-        ClientContext.getFromConf(configuration).getPeerCache().size());
+    assertEquals(1, ClientContext.getFromConf(configuration).getPeerCache().size());
   }
 }

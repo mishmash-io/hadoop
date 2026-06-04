@@ -38,6 +38,12 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.apache.hadoop.io.file.tfile.TFile.Reader.Scanner;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 
 /**
  * test tfile features.
@@ -112,16 +118,16 @@ public class TestTFile {
       assertTrue(Arrays.equals(keyStr.getBytes(), key),
           "bytes for keys do not match " + keyStr + " "
           + new String(key));
-      assertTrue(Arrays.equals(valStr.getBytes(), val),
-          "bytes for vals do not match " + valStr + " "
+      assertTrue(Arrays.equals(
+          valStr.getBytes(), val), "bytes for vals do not match " + valStr + " "
           + new String(val));
       assertTrue(scanner.advance());
       key = readKey(scanner);
       val = readValue(scanner);
-      assertTrue(Arrays.equals(keyStr.getBytes(), key),
-          "bytes for keys do not match");
-      assertTrue(Arrays.equals(valStr.getBytes(), val),
-          "bytes for vals do not match");
+      assertTrue(Arrays.equals(
+          keyStr.getBytes(), key), "bytes for keys do not match");
+      assertTrue(Arrays.equals(
+          valStr.getBytes(), val), "bytes for vals do not match");
       assertTrue(scanner.advance());
     }
     return (start + n);
@@ -147,12 +153,12 @@ public class TestTFile {
     for (int i = start; i < (start + n); i++) {
       byte[] key = readKey(scanner);
       String keyStr = String.format(localFormatter, i);
-      assertTrue(Arrays.equals(keyStr.getBytes(), key),
-          "bytes for keys do not match");
+      assertTrue(Arrays.equals(
+          keyStr.getBytes(), key), "bytes for keys do not match");
       scanner.advance();
       key = readKey(scanner);
-      assertTrue(Arrays.equals(keyStr.getBytes(), key),
-          "bytes for keys do not match");
+      assertTrue(Arrays.equals(
+          keyStr.getBytes(), key), "bytes for keys do not match");
       scanner.advance();
     }
     return (start + n);
@@ -298,8 +304,8 @@ public class TestTFile {
     assertTrue(scanner.seekTo(getSomeKey(50)), "location lookup failed");
     // read the key and see if it matches
     byte[] readKey = readKey(scanner);
-    assertTrue(Arrays.equals(getSomeKey(50), readKey),
-        "seeked key does not match");
+    assertTrue(Arrays.equals(getSomeKey(50),
+        readKey), "seeked key does not match");
 
     scanner.seekTo(new byte[0]);
     byte[] val1 = readValue(scanner);
@@ -309,19 +315,19 @@ public class TestTFile {
     
     // check for lowerBound
     scanner.lowerBound(getSomeKey(50));
-    assertTrue(scanner.currentLocation.compareTo(reader.end()) < 0,
-        "locaton lookup failed");
+    assertTrue(scanner.currentLocation
+        .compareTo(reader.end()) < 0, "locaton lookup failed");
     readKey = readKey(scanner);
-    assertTrue(Arrays.equals(readKey, getSomeKey(50)),
-        "seeked key does not match");
+    assertTrue(Arrays.equals(readKey,
+        getSomeKey(50)), "seeked key does not match");
 
     // check for upper bound
     scanner.upperBound(getSomeKey(50));
-    assertTrue(scanner.currentLocation.compareTo(reader.end()) < 0,
-        "location lookup failed");
+    assertTrue(scanner.currentLocation
+        .compareTo(reader.end()) < 0, "location lookup failed");
     readKey = readKey(scanner);
-    assertTrue(Arrays.equals(readKey, getSomeKey(51)),
-        "seeked key does not match");
+    assertTrue(Arrays.equals(readKey,
+        getSomeKey(51)), "seeked key does not match");
 
     scanner.close();
     // test for a range of scanner
@@ -399,8 +405,8 @@ public class TestTFile {
       DataInputStream din = reader.getMetaBlock("TfileMeta" + i);
       byte b[] = new byte[len];
       din.readFully(b);
-      assertTrue(Arrays.equals(("something to test" + i).getBytes(), b),
-          "faield to match metadata");
+      assertTrue(Arrays.equals(
+          ("something to test" + i).getBytes(), b), "faield to match metadata");
       din.close();
     }
   }

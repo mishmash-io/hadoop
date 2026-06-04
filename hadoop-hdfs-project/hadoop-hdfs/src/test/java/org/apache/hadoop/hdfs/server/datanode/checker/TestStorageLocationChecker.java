@@ -40,11 +40,10 @@ import static org.apache.hadoop.test.LambdaTestUtils.intercept;
 import static org.apache.hadoop.hdfs.DFSConfigKeys.DFS_DATANODE_DISK_CHECK_TIMEOUT_KEY;
 import static org.apache.hadoop.hdfs.DFSConfigKeys.DFS_DATANODE_FAILED_VOLUMES_TOLERATED_KEY;
 import static org.apache.hadoop.hdfs.server.datanode.checker.VolumeCheckResult.*;
-import static org.hamcrest.CoreMatchers.is;
-import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.*;
+import static org.assertj.core.api.Assertions.assertThat;
 
 /**
  * Unit tests for the {@link StorageLocationChecker} class.
@@ -59,7 +58,7 @@ public class TestStorageLocationChecker {
    * @throws Exception
    */
   @Test
-  @Timeout(value = 30000, unit = TimeUnit.MILLISECONDS)
+  @Timeout(value = 30)
   public void testAllLocationsHealthy() throws Exception {
     final List<StorageLocation> locations =
         makeMockLocations(HEALTHY, HEALTHY, HEALTHY);
@@ -70,7 +69,7 @@ public class TestStorageLocationChecker {
     List<StorageLocation> filteredLocations = checker.check(conf, locations);
 
     // All locations should be healthy.
-    assertThat(filteredLocations.size(), is(3));
+    assertThat(filteredLocations.size()).isEqualTo(3);
 
     // Ensure that the check method was invoked for each location.
     for (StorageLocation location : locations) {
@@ -85,7 +84,7 @@ public class TestStorageLocationChecker {
    * @throws Exception
    */
   @Test
-  @Timeout(value = 30000, unit = TimeUnit.MILLISECONDS)
+  @Timeout(value = 30)
   public void testFailedLocationsBelowThreshold() throws Exception {
     final List<StorageLocation> locations =
         makeMockLocations(HEALTHY, HEALTHY, FAILED); // 2 healthy, 1 failed.
@@ -94,7 +93,7 @@ public class TestStorageLocationChecker {
     StorageLocationChecker checker =
         new StorageLocationChecker(conf, new FakeTimer());
     List<StorageLocation> filteredLocations = checker.check(conf, locations);
-    assertThat(filteredLocations.size(), is(2));
+    assertThat(filteredLocations.size()).isEqualTo(2);
   }
 
   /**
@@ -104,18 +103,19 @@ public class TestStorageLocationChecker {
    * @throws Exception
    */
   @Test
-  @Timeout(value = 30000, unit = TimeUnit.MILLISECONDS)
-  public void testFailedLocationsAboveThreshold() {
-    Throwable exception = assertThrows(IOException.class, () -> {
-      final List<StorageLocation> locations =
-          makeMockLocations(HEALTHY, FAILED, FAILED); // 1 healthy, 2 failed.
-      final Configuration conf = new HdfsConfiguration();
-      conf.setInt(DFS_DATANODE_FAILED_VOLUMES_TOLERATED_KEY, 1);
+  @Timeout(value = 30)
+  public void testFailedLocationsAboveThreshold() throws Exception {
+    final List<StorageLocation> locations =
+        makeMockLocations(HEALTHY, FAILED, FAILED); // 1 healthy, 2 failed.
+    final Configuration conf = new HdfsConfiguration();
+    conf.setInt(DFS_DATANODE_FAILED_VOLUMES_TOLERATED_KEY, 1);
+
+    IOException ex = assertThrows(IOException.class, () -> {
       StorageLocationChecker checker =
           new StorageLocationChecker(conf, new FakeTimer());
       checker.check(conf, locations);
     });
-    assertTrue(exception.getMessage().contains("Too many failed volumes - current valid volumes: 1,"
+    assertTrue(ex.getMessage().contains("Too many failed volumes - current valid volumes: 1,"
         + " volumes configured: 3, volumes failed: 2, volume failures"
         + " tolerated: 1"));
   }
@@ -126,18 +126,19 @@ public class TestStorageLocationChecker {
    * @throws Exception
    */
   @Test
-  @Timeout(value = 30000, unit = TimeUnit.MILLISECONDS)
-  public void testBadConfiguration() {
-    Throwable exception = assertThrows(HadoopIllegalArgumentException.class, () -> {
-      final List<StorageLocation> locations =
-          makeMockLocations(HEALTHY, HEALTHY, HEALTHY);
-      final Configuration conf = new HdfsConfiguration();
-      conf.setInt(DFS_DATANODE_FAILED_VOLUMES_TOLERATED_KEY, 3);
+  @Timeout(value = 30)
+  public void testBadConfiguration() throws Exception {
+    final List<StorageLocation> locations =
+        makeMockLocations(HEALTHY, HEALTHY, HEALTHY);
+    final Configuration conf = new HdfsConfiguration();
+    conf.setInt(DFS_DATANODE_FAILED_VOLUMES_TOLERATED_KEY, 3);
+
+    HadoopIllegalArgumentException ex = assertThrows(HadoopIllegalArgumentException.class, () -> {
       StorageLocationChecker checker =
           new StorageLocationChecker(conf, new FakeTimer());
       checker.check(conf, locations);
     });
-    assertTrue(exception.getMessage().contains("Invalid value configured"));
+    assertTrue(ex.getMessage().contains("Invalid value configured"));
   }
 
   /**
@@ -149,7 +150,7 @@ public class TestStorageLocationChecker {
    * @throws Exception
    */
   @Test
-  @Timeout(value = 300000, unit = TimeUnit.MILLISECONDS)
+  @Timeout(value = 300)
   public void testTimeoutInCheck() throws Exception {
     final Configuration conf = new HdfsConfiguration();
     conf.setTimeDuration(DFS_DATANODE_DISK_CHECK_TIMEOUT_KEY,
@@ -167,7 +168,7 @@ public class TestStorageLocationChecker {
       // Check the two locations and ensure that only one of them
       // was filtered out.
       List<StorageLocation> filteredList = checker.check(conf, locations);
-      assertThat(filteredList.size(), is(1));
+      assertThat(filteredList.size()).isEqualTo(1);
     } finally {
       checker.shutdownAndWait(10, TimeUnit.SECONDS);
     }

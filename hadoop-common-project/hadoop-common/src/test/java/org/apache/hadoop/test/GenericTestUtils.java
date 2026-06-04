@@ -55,11 +55,13 @@ import org.apache.hadoop.util.BlockingThreadPoolExecutorService;
 import org.apache.hadoop.util.DurationInfo;
 import org.apache.hadoop.util.StringUtils;
 import org.apache.hadoop.util.Time;
-import org.apache.logging.log4j.core.LoggerContext;
-import org.apache.logging.log4j.Level;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
-import org.apache.logging.log4j.core.config.Configurator;
+import org.apache.log4j.Appender;
+import org.apache.log4j.Layout;
+import org.apache.log4j.Level;
+import org.apache.log4j.LogManager;
+import org.apache.log4j.Logger;
+import org.apache.log4j.PatternLayout;
+import org.apache.log4j.WriterAppender;
 import org.mockito.invocation.InvocationOnMock;
 import org.mockito.stubbing.Answer;
 import org.slf4j.LoggerFactory;
@@ -291,8 +293,7 @@ public abstract class GenericTestUtils {
     }
     Set<String> expectedSet = new TreeSet<>(
         Arrays.asList(expectedMatches));
-    assertEquals(
-        Joiner.on(",").join(expectedSet),
+    assertEquals(Joiner.on(",").join(expectedSet),
         Joiner.on(",").join(found),
         "Bad files matching " + pattern + " in " + dir);
   }
@@ -329,9 +330,8 @@ public abstract class GenericTestUtils {
     if (msg == null) {
       throw new AssertionError(E_NULL_THROWABLE_STRING, t);
     }
-    if (expectedText != null && !msg.contains(expectedText)) {
-      String prefix = org.apache.commons.lang3.StringUtils.isEmpty(message)
-          ? "" : (message + ": ");
+    if (expectedText != null && !msg.toLowerCase().contains(expectedText.toLowerCase())) {
+      final String prefix = message == null || message.isEmpty() ? "" : message + ": ";
       throw new AssertionError(
           String.format("%s Expected to find '%s' %s: %s",
               prefix, expectedText, E_UNEXPECTED_EXCEPTION,
@@ -766,8 +766,8 @@ public abstract class GenericTestUtils {
    * in the definition of native profile in pom.xml.
    */
   public static void assumeInNativeProfile() {
-    assumeTrue(
-        Boolean.parseBoolean(System.getProperty("runningWithNative", "false")));
+    assumeTrue(Boolean.parseBoolean(
+        System.getProperty("runningWithNative", "false")));
   }
 
   /**

@@ -28,9 +28,12 @@ import java.util.concurrent.TimeoutException;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 
+import org.apache.hadoop.util.concurrent.SubjectInheritingThread;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.Timeout;
-import org.junit.platform.engine.TestExecutionResult;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public class TestTimedOutTestsListener {
 
@@ -62,7 +65,7 @@ public class TestTimedOutTestsListener {
       }
     }
   
-    class DeadlockThread extends Thread {
+    class DeadlockThread extends SubjectInheritingThread {
       private Lock lock1 = null;
   
       private Lock lock2 = null;
@@ -87,7 +90,7 @@ public class TestTimedOutTestsListener {
         this.useSync = false;
       }
   
-      public void run() {
+      public void work() {
         if (useSync) {
           syncLock();
         } else {
@@ -149,7 +152,7 @@ public class TestTimedOutTestsListener {
   }
 
   @Test
-  @Timeout(value=30000, unit=TimeUnit.MILLISECONDS)
+  @Timeout(value = 30)
   public void testThreadDumpAndDeadlocks() throws Exception {
     new Deadlock();
     String s = null;
@@ -162,6 +165,8 @@ public class TestTimedOutTestsListener {
     
     assertEquals(3, countStringOccurrences(s, "BLOCKED"));
     
+    RuntimeException failure =
+        new RuntimeException(TimedOutTestsListener.TEST_TIMED_OUT_PREFIX);
     StringWriter writer = new StringWriter();
     new TimedOutTestsListener(new PrintWriter(writer))
       .executionFinished(null,

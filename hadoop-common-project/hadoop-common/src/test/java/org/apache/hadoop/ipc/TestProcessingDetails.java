@@ -18,6 +18,8 @@
 
 package org.apache.hadoop.ipc;
 
+import org.junit.jupiter.api.Test;
+
 import java.util.concurrent.TimeUnit;
 
 import org.junit.jupiter.api.Test;

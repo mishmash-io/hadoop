@@ -22,7 +22,8 @@ import static org.apache.hadoop.fs.permission.AclEntryType.*;
 import static org.apache.hadoop.fs.permission.FsAction.*;
 import static org.apache.hadoop.hdfs.server.namenode.AclTestHelpers.*;
 import static org.apache.hadoop.hdfs.server.namenode.AclTransformation.*;
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import java.util.List;
 
@@ -310,7 +311,8 @@ public class TestAclTransformation {
   }
 
   @Test
-  public void testFilterAclEntriesByAclSpecRemoveAccessMaskRequired() {
+  public void testFilterAclEntriesByAclSpecRemoveAccessMaskRequired()
+      throws AclException {
     assertThrows(AclException.class, () -> {
       List<AclEntry> existing = new ImmutableList.Builder<AclEntry>()
           .add(aclEntry(ACCESS, USER, ALL))
@@ -326,7 +328,8 @@ public class TestAclTransformation {
   }
 
   @Test
-  public void testFilterAclEntriesByAclSpecRemoveDefaultMaskRequired() {
+  public void testFilterAclEntriesByAclSpecRemoveDefaultMaskRequired()
+      throws AclException {
     assertThrows(AclException.class, () -> {
       List<AclEntry> existing = new ImmutableList.Builder<AclEntry>()
           .add(aclEntry(ACCESS, USER, ALL))
@@ -345,7 +348,7 @@ public class TestAclTransformation {
   }
 
   @Test
-  public void testFilterAclEntriesByAclSpecInputTooLarge() {
+  public void testFilterAclEntriesByAclSpecInputTooLarge() throws AclException {
     assertThrows(AclException.class, () -> {
       List<AclEntry> existing = new ImmutableList.Builder<AclEntry>()
           .add(aclEntry(ACCESS, USER, ALL))
@@ -357,7 +360,8 @@ public class TestAclTransformation {
   }
 
   @Test
-  public void testFilterDefaultAclEntriesByAclSpecInputTooLarge() {
+  public void testFilterDefaultAclEntriesByAclSpecInputTooLarge()
+      throws AclException {
     assertThrows(AclException.class, () -> {
       List<AclEntry> existing = new ImmutableList.Builder<AclEntry>()
           .add(aclEntry(DEFAULT, USER, ALL))
@@ -727,7 +731,7 @@ public class TestAclTransformation {
   }
 
   @Test
-  public void testMergeAclEntriesInputTooLarge() {
+  public void testMergeAclEntriesInputTooLarge() throws AclException {
     assertThrows(AclException.class, () -> {
       List<AclEntry> existing = new ImmutableList.Builder<AclEntry>()
           .add(aclEntry(ACCESS, USER, ALL))
@@ -739,7 +743,7 @@ public class TestAclTransformation {
   }
 
   @Test
-  public void testMergeAclDefaultEntriesInputTooLarge() {
+  public void testMergeAclDefaultEntriesInputTooLarge() throws AclException {
     assertThrows(AclException.class, () -> {
       List<AclEntry> existing = new ImmutableList.Builder<AclEntry>()
           .add(aclEntry(DEFAULT, USER, ALL))
@@ -751,12 +755,12 @@ public class TestAclTransformation {
   }
 
   @Test
-  public void testMergeAclEntriesResultTooLarge() {
+  public void testMergeAclEntriesResultTooLarge() throws AclException {
     assertThrows(AclException.class, () -> {
       ImmutableList.Builder<AclEntry> aclBuilder =
           new ImmutableList.Builder<AclEntry>()
               .add(aclEntry(ACCESS, USER, ALL));
-      for (int i = 1;i <= 28;++i) {
+      for (int i = 1; i <= 28; ++i) {
         aclBuilder.add(aclEntry(ACCESS, USER, "user" + i, READ));
       }
       aclBuilder
@@ -771,12 +775,12 @@ public class TestAclTransformation {
   }
 
   @Test
-  public void testMergeAclDefaultEntriesResultTooLarge() {
+  public void testMergeAclDefaultEntriesResultTooLarge() throws AclException {
     assertThrows(AclException.class, () -> {
       ImmutableList.Builder<AclEntry> aclBuilder =
           new ImmutableList.Builder<AclEntry>()
               .add(aclEntry(DEFAULT, USER, ALL));
-      for (int i = 1;i <= 28;++i) {
+      for (int i = 1; i <= 28; ++i) {
         aclBuilder.add(aclEntry(DEFAULT, USER, "user" + i, READ));
       }
       aclBuilder
@@ -791,7 +795,7 @@ public class TestAclTransformation {
   }
 
   @Test
-  public void testMergeAclEntriesDuplicateEntries() {
+  public void testMergeAclEntriesDuplicateEntries() throws AclException {
     assertThrows(AclException.class, () -> {
       List<AclEntry> existing = new ImmutableList.Builder<AclEntry>()
           .add(aclEntry(ACCESS, USER, ALL))
@@ -808,7 +812,7 @@ public class TestAclTransformation {
   }
 
   @Test
-  public void testMergeAclEntriesNamedMask() {
+  public void testMergeAclEntriesNamedMask() throws AclException {
     assertThrows(AclException.class, () -> {
       List<AclEntry> existing = new ImmutableList.Builder<AclEntry>()
           .add(aclEntry(ACCESS, USER, ALL))
@@ -822,7 +826,7 @@ public class TestAclTransformation {
   }
 
   @Test
-  public void testMergeAclEntriesNamedOther() {
+  public void testMergeAclEntriesNamedOther() throws AclException {
     assertThrows(AclException.class, () -> {
       List<AclEntry> existing = new ImmutableList.Builder<AclEntry>()
           .add(aclEntry(ACCESS, USER, ALL))
@@ -1141,7 +1145,7 @@ public class TestAclTransformation {
   }
 
   @Test
-  public void testReplaceAclEntriesInputTooLarge() {
+  public void testReplaceAclEntriesInputTooLarge() throws AclException {
     assertThrows(AclException.class, () -> {
       List<AclEntry> existing = new ImmutableList.Builder<AclEntry>()
           .add(aclEntry(ACCESS, USER, ALL))
@@ -1153,7 +1157,7 @@ public class TestAclTransformation {
   }
 
   @Test
-  public void testReplaceAclDefaultEntriesInputTooLarge() {
+  public void testReplaceAclDefaultEntriesInputTooLarge() throws AclException {
     assertThrows(AclException.class, () -> {
       List<AclEntry> existing = new ImmutableList.Builder<AclEntry>()
           .add(aclEntry(DEFAULT, USER, ALL))
@@ -1165,7 +1169,7 @@ public class TestAclTransformation {
   }
 
   @Test
-  public void testReplaceAclEntriesResultTooLarge() {
+  public void testReplaceAclEntriesResultTooLarge() throws AclException {
     assertThrows(AclException.class, () -> {
       List<AclEntry> existing = new ImmutableList.Builder<AclEntry>()
           .add(aclEntry(ACCESS, USER, ALL))
@@ -1174,19 +1178,19 @@ public class TestAclTransformation {
           .build();
       List<AclEntry> aclSpec = Lists.newArrayListWithCapacity(32);
       aclSpec.add(aclEntry(ACCESS, USER, ALL));
-      for (int i = 1;i <= 29;++i) {
+      for (int i = 1; i <= 29; ++i) {
         aclSpec.add(aclEntry(ACCESS, USER, "user" + i, READ));
       }
       aclSpec.add(aclEntry(ACCESS, GROUP, READ));
       aclSpec.add(aclEntry(ACCESS, OTHER, NONE));
-      // The ACL spec now has 32 entries.  Automatic mask calculation will push it
-      // over the limit to 33.
       replaceAclEntries(existing, aclSpec);
     });
+    // The ACL spec now has 32 entries.  Automatic mask calculation will push it
+
   }
 
   @Test
-  public void testReplaceAclEntriesDuplicateEntries() {
+  public void testReplaceAclEntriesDuplicateEntries() throws AclException {
     assertThrows(AclException.class, () -> {
       List<AclEntry> existing = new ImmutableList.Builder<AclEntry>()
           .add(aclEntry(ACCESS, USER, ALL))
@@ -1206,7 +1210,7 @@ public class TestAclTransformation {
   }
 
   @Test
-  public void testReplaceAclEntriesNamedMask() {
+  public void testReplaceAclEntriesNamedMask() throws AclException {
     assertThrows(AclException.class, () -> {
       List<AclEntry> existing = new ImmutableList.Builder<AclEntry>()
           .add(aclEntry(ACCESS, USER, ALL))
@@ -1223,7 +1227,7 @@ public class TestAclTransformation {
   }
 
   @Test
-  public void testReplaceAclEntriesNamedOther() {
+  public void testReplaceAclEntriesNamedOther() throws AclException {
     assertThrows(AclException.class, () -> {
       List<AclEntry> existing = new ImmutableList.Builder<AclEntry>()
           .add(aclEntry(ACCESS, USER, ALL))
@@ -1240,7 +1244,7 @@ public class TestAclTransformation {
   }
 
   @Test
-  public void testReplaceAclEntriesMissingUser() {
+  public void testReplaceAclEntriesMissingUser() throws AclException {
     assertThrows(AclException.class, () -> {
       List<AclEntry> existing = new ImmutableList.Builder<AclEntry>()
           .add(aclEntry(ACCESS, USER, ALL))
@@ -1258,7 +1262,7 @@ public class TestAclTransformation {
   }
 
   @Test
-  public void testReplaceAclEntriesMissingGroup() {
+  public void testReplaceAclEntriesMissingGroup() throws AclException {
     assertThrows(AclException.class, () -> {
       List<AclEntry> existing = new ImmutableList.Builder<AclEntry>()
           .add(aclEntry(ACCESS, USER, ALL))
@@ -1276,7 +1280,7 @@ public class TestAclTransformation {
   }
 
   @Test
-  public void testReplaceAclEntriesMissingOther() {
+  public void testReplaceAclEntriesMissingOther() throws AclException {
     assertThrows(AclException.class, () -> {
       List<AclEntry> existing = new ImmutableList.Builder<AclEntry>()
           .add(aclEntry(ACCESS, USER, ALL))

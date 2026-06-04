@@ -39,7 +39,9 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /**
  * Testing correctness of FileSystem.getFileBlockLocations and
@@ -105,7 +107,7 @@ public class TestDistributedFileSystemWithECFile {
   }
 
   @Test
-  @Timeout(value = 60000, unit = TimeUnit.MILLISECONDS)
+  @Timeout(value = 60)
   public void testListECFilesSmallerThanOneCell() throws Exception {
     createFile("/ec/smallcell", 1);
     final List<LocatedFileStatus> retVal = new ArrayList<>();
@@ -140,7 +142,7 @@ public class TestDistributedFileSystemWithECFile {
   }
 
   @Test
-  @Timeout(value = 60000, unit = TimeUnit.MILLISECONDS)
+  @Timeout(value = 60)
   public void testListECFilesSmallerThanOneStripe() throws Exception {
     int dataBlocksNum = dataBlocks;
     createFile("/ec/smallstripe", cellSize * dataBlocksNum);
@@ -172,7 +174,7 @@ public class TestDistributedFileSystemWithECFile {
   }
 
   @Test
-  @Timeout(value = 60000, unit = TimeUnit.MILLISECONDS)
+  @Timeout(value = 60)
   public void testListECFilesMoreThanOneBlockGroup() throws Exception {
     createFile("/ec/group", blockGroupSize + 123);
     RemoteIterator<LocatedFileStatus> iter =
@@ -207,7 +209,7 @@ public class TestDistributedFileSystemWithECFile {
   }
 
   @Test
-  @Timeout(value = 60000, unit = TimeUnit.MILLISECONDS)
+  @Timeout(value = 60)
   public void testReplayEditLogsForReplicatedFile() throws Exception {
     cluster.shutdown();
 

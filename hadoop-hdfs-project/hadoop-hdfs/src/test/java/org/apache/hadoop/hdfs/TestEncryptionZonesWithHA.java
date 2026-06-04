@@ -28,12 +28,17 @@ import org.apache.hadoop.hdfs.client.CreateEncryptionZoneFlag;
 import org.apache.hadoop.hdfs.server.namenode.ha.HATestUtil;
 import org.apache.hadoop.hdfs.client.HdfsAdmin;
 import org.apache.hadoop.hdfs.server.namenode.NameNode;
-import org.junit.jupiter.api.*;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.Timeout;
 
 import java.io.File;
 import java.io.IOException;
 import java.util.EnumSet;
 import java.util.concurrent.TimeUnit;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 /**
  * Tests interaction of encryption zones with HA failover.
@@ -97,7 +102,7 @@ public class TestEncryptionZonesWithHA {
    * Test that encryption zones are properly tracked by the standby.
    */
   @Test
-  @Timeout(value = 60000, unit = TimeUnit.MILLISECONDS)
+  @Timeout(value = 60)
   public void testEncryptionZonesTrackedOnStandby() throws Exception {
     final int len = 8196;
     final Path dir = new Path("/enc");
@@ -114,13 +119,12 @@ public class TestEncryptionZonesWithHA {
     cluster.shutdownNameNode(0);
     cluster.transitionToActive(1);
 
-    Assertions.assertEquals(dir.toString(),
-        dfsAdmin1.getEncryptionZoneForPath(dir).getPath().toString(),
+    assertEquals(dir.toString(), dfsAdmin1.getEncryptionZoneForPath(dir).getPath().toString(),
         "Got unexpected ez path");
-    Assertions.assertEquals(dir.toString(),
-        dfsAdmin1.getEncryptionZoneForPath(dirChild).getPath().toString(),
+    assertEquals(dir.toString(), dfsAdmin1.getEncryptionZoneForPath(dirChild).getPath().toString(),
         "Got unexpected ez path");
-    Assertions.assertEquals(contents, DFSTestUtil.readFile(fs, dirFile), "File contents after failover were changed");
+    assertEquals(contents, DFSTestUtil.readFile(fs, dirFile),
+        "File contents after failover were changed");
   }
 
 }

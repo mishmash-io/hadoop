@@ -54,7 +54,7 @@ public class TestStatsDMetrics {
   }
 
   @Test
-  @Timeout(value=3000, unit=TimeUnit.MILLISECONDS)
+  @Timeout(value = 3)
   public void testPutMetrics() throws IOException, IllegalAccessException {
     final StatsDSink sink = new StatsDSink();
     List<MetricsTag> tags = new ArrayList<MetricsTag>();
@@ -79,8 +79,7 @@ public class TestStatsDMetrics {
 
       String result =new String(p.getData(), 0, p.getLength(),
           StandardCharsets.UTF_8);
-      assertTrue(
-          result.equals("host.process.jvm.Context.foo1:1.25|c") ||
+      assertTrue(result.equals("host.process.jvm.Context.foo1:1.25|c") ||
           result.equals("host.process.jvm.Context.foo2:2.25|g"),
           "Received data did not match data sent");
 
@@ -90,7 +89,7 @@ public class TestStatsDMetrics {
   }
 
   @Test
-  @Timeout(value=3000, unit=TimeUnit.MILLISECONDS)
+  @Timeout(value = 3)
   public void testPutMetrics2() throws IOException, IllegalAccessException {
     StatsDSink sink = new StatsDSink();
     List<MetricsTag> tags = new ArrayList<MetricsTag>();
@@ -115,8 +114,7 @@ public class TestStatsDMetrics {
       String result =
           new String(p.getData(), 0, p.getLength(), StandardCharsets.UTF_8);
 
-      assertTrue(
-          result.equals("process.jvm.Context.foo1:1|c") ||
+      assertTrue(result.equals("process.jvm.Context.foo1:1|c") ||
           result.equals("process.jvm.Context.foo2:2|g"),
           "Received data did not match data sent");
     } finally {

@@ -47,11 +47,10 @@ import org.apache.hadoop.hdfs.server.datanode.DataNodeTestUtils;
 import org.apache.hadoop.hdfs.server.protocol.BlockECReconstructionCommand.BlockECReconstructionInfo;
 
 import org.apache.hadoop.hdfs.util.StripedBlockUtil;
+import org.apache.hadoop.hdfs.util.RwLockMode;
 import org.apache.hadoop.test.GenericTestUtils;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.Timeout;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -61,7 +60,9 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public class TestReconstructStripedBlocks {
   public static final Logger LOG = LoggerFactory.getLogger(
@@ -138,8 +139,7 @@ public class TestReconstructStripedBlocks {
       for (BlockInfo blk : blocks) {
         assertTrue(blk.isStriped());
         assertTrue(blk.isComplete());
-        assertEquals(cellSize * dataBlocks,
-            blk.getNumBytes());
+        assertEquals(cellSize * dataBlocks, blk.getNumBytes());
         final BlockInfoStriped sb = (BlockInfoStriped) blk;
         assertEquals(groupSize, sb.numNodes());
       }
@@ -173,16 +173,14 @@ public class TestReconstructStripedBlocks {
       DataNode lastDn = cluster.getDataNodes().get(groupSize);
       DatanodeDescriptor last =
           bm.getDatanodeManager().getDatanode(lastDn.getDatanodeId());
-      assertEquals(numBlocks,
-          last.getNumberOfBlocksToBeErasureCoded(),
+      assertEquals(numBlocks, last.getNumberOfBlocksToBeErasureCoded(),
           "Counting the number of outstanding EC tasks");
       List<BlockECReconstructionInfo> reconstruction =
           last.getErasureCodeCommand(numBlocks);
       for (BlockECReconstructionInfo info : reconstruction) {
         assertEquals(1, info.getTargetDnInfos().length);
         assertEquals(last, info.getTargetDnInfos()[0]);
-        assertEquals(info.getSourceDnInfos().length,
-            info.getLiveBlockIndices().length);
+        assertEquals(info.getSourceDnInfos().length, info.getLiveBlockIndices().length);
         if (groupSize - numOfMissed == dataBlocks) {
           // It's a QUEUE_HIGHEST_PRIORITY block, so the busy DNs will be chosen
           // to make sure we have NUM_DATA_BLOCKS DNs to do reconstruction
@@ -191,8 +189,7 @@ public class TestReconstructStripedBlocks {
         } else {
           // The block has no highest priority, so we don't use the busy DNs as
           // sources
-          assertEquals(groupSize - numOfMissed - numOfBusy,
-              info.getSourceDnInfos().length);
+          assertEquals(groupSize - numOfMissed - numOfBusy, info.getSourceDnInfos().length);
         }
       }
       BlockManagerTestUtil.updateState(bm);
@@ -340,13 +337,13 @@ public class TestReconstructStripedBlocks {
       boolean reconstructed = false;
       for (int i = 0; i < 5; i++) {
         NumberReplicas num = null;
-        fsn.readLock();
+        fsn.readLock(RwLockMode.GLOBAL);
         try {
           BlockInfo blockInfo = cluster.getNamesystem().getFSDirectory()
               .getINode4Write(filePath.toString()).asFile().getLastBlock();
           num = bm.countNodes(blockInfo);
         } finally {
-          fsn.readUnlock();
+          fsn.readUnlock(RwLockMode.GLOBAL, "testCountLiveReplicas");
         }
         if (num.liveReplicas() >= groupSize) {
           reconstructed = true;
@@ -355,7 +352,7 @@ public class TestReconstructStripedBlocks {
           Thread.sleep(1000);
         }
       }
-      Assertions.assertTrue(reconstructed);
+      assertTrue(reconstructed);
 
       blks = fs.getClient().getLocatedBlocks(filePath.toString(), 0);
       block = (LocatedStripedBlock) blks.getLastLocatedBlock();
@@ -364,7 +361,7 @@ public class TestReconstructStripedBlocks {
         bitSet.set(index);
       }
       for (int i = 0; i < groupSize; i++) {
-        Assertions.assertTrue(bitSet.get(i));
+        assertTrue(bitSet.get(i));
       }
     } finally {
       cluster.shutdown();
@@ -372,7 +369,7 @@ public class TestReconstructStripedBlocks {
   }
 
   @Test
-  @Timeout(value = 120000, unit = TimeUnit.MILLISECONDS) // 2 min timeout
+  @Timeout(value = 120)
   public void testReconstructionWork() throws Exception {
     Configuration conf = new HdfsConfiguration();
     conf.setLong(DFSConfigKeys.DFS_NAMENODE_MIN_BLOCK_SIZE_KEY, 0);
@@ -570,7 +567,7 @@ public class TestReconstructStripedBlocks {
         bitSet.set(index);
       }
       for (int i = 0; i < groupSize; i++) {
-        Assertions.assertTrue(bitSet.get(i));
+        assertTrue(bitSet.get(i));
       }
     } finally {
       cluster.shutdown();

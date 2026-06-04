@@ -31,7 +31,7 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /**
- * Tests {@link FileContext.#deleteOnExit(Path)} functionality.
+ * Tests {@link FileContext#deleteOnExit(Path)} functionality.
  */
 public class TestFileContextDeleteOnExit {
   private static int blockSize = 1024;

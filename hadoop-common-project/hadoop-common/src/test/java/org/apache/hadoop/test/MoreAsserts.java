@@ -23,7 +23,8 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import java.util.Iterator;
 import java.util.concurrent.CompletableFuture;
 
-import org.assertj.core.api.Assertions;
+import org.junit.jupiter.api.Assertions;
+import static org.assertj.core.api.Assertions.assertThat;
 
 /**
  * A few more asserts
@@ -43,10 +44,10 @@ public class MoreAsserts {
     Iterator<T> it = actual.iterator();
     int i = 0;
     for (; i < expected.length && it.hasNext(); ++i) {
-      org.junit.jupiter.api.Assertions.assertEquals(expected[i], it.next(), "Element " + i + " for " + s);
+      Assertions.assertEquals(expected[i], it.next(), "Element " + i + " for " + s);
     }
-    assertTrue(i == expected.length, "Expected more elements");
-    assertTrue(!it.hasNext(), "Expected less elements");
+    Assertions.assertTrue(i == expected.length, "Expected more elements");
+    Assertions.assertTrue(!it.hasNext(), "Expected less elements");
   }
 
   /**
@@ -63,26 +64,26 @@ public class MoreAsserts {
     Iterator<T> ita = actual.iterator();
     int i = 0;
     while (ite.hasNext() && ita.hasNext()) {
-      org.junit.jupiter.api.Assertions.assertEquals(ite.next(), ita.next(), "Element " + i + " for " + s);
+      Assertions.assertEquals(ite.next(), ita.next(), "Element " + i + " for " + s);
     }
-    assertTrue(!ite.hasNext(), "Expected more elements");
-    assertTrue(!ita.hasNext(), "Expected less elements");
+    Assertions.assertTrue(!ite.hasNext(), "Expected more elements");
+    Assertions.assertTrue(!ita.hasNext(), "Expected less elements");
   }
 
 
   public static <T> void assertFutureCompletedSuccessfully(CompletableFuture<T> future) {
-    Assertions.assertThat(future.isDone())
+    assertThat(future.isDone())
             .describedAs("This future is supposed to be " +
                     "completed successfully")
             .isTrue();
-    Assertions.assertThat(future.isCompletedExceptionally())
+    assertThat(future.isCompletedExceptionally())
             .describedAs("This future is supposed to be " +
                     "completed successfully")
             .isFalse();
   }
 
   public static <T> void assertFutureFailedExceptionally(CompletableFuture<T> future) {
-    Assertions.assertThat(future.isCompletedExceptionally())
+    assertThat(future.isCompletedExceptionally())
             .describedAs("This future is supposed to be " +
                     "completed exceptionally")
             .isTrue();
@@ -95,7 +96,7 @@ public class MoreAsserts {
    * @param message error message to print in case of mismatch.
    */
   public static <T> void assertEqual(T actual, T expected, String message) {
-    Assertions.assertThat(actual)
+    assertThat(actual)
             .describedAs("Mismatch in %s", message)
             .isEqualTo(expected);
   }

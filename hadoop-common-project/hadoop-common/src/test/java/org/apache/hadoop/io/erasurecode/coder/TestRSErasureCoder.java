@@ -24,12 +24,10 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.Timeout;
 
-import java.util.concurrent.TimeUnit;
-
 /**
  * Test Reed-Solomon encoding and decoding.
  */
-@Timeout(value=30000, unit=TimeUnit.MILLISECONDS)
+@Timeout(300)
 public class TestRSErasureCoder extends TestErasureCoderBase {
 
   @BeforeEach

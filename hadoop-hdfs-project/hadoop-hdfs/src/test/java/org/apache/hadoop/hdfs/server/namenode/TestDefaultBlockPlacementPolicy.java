@@ -156,9 +156,9 @@ public class TestDefaultBlockPlacementPolicy {
     LocatedBlock locatedBlock = nameNodeRpc.addBlock(src, clientMachine, null,
         null, fileStatus.getFileId(), null, null);
 
-    assertEquals(REPLICATION_FACTOR, locatedBlock.getLocations().length, "Block should be allocated sufficient locations");
-    assertEquals(clientRack,
-        locatedBlock.getLocations()[0].getNetworkLocation(),
+    assertEquals(REPLICATION_FACTOR, locatedBlock.getLocations().length,
+        "Block should be allocated sufficient locations");
+    assertEquals(clientRack, locatedBlock.getLocations()[0].getNetworkLocation(),
         "First datanode should be rack local");
     nameNodeRpc.abandonBlock(locatedBlock.getBlock(), fileStatus.getFileId(),
         src, clientMachine);
@@ -209,11 +209,11 @@ public class TestDefaultBlockPlacementPolicy {
       LocatedBlock locatedBlock = nameNodeRpc.addBlock(src, clientMachine,
           null, null, fileStatus.getFileId(), null, null);
 
-      assertEquals(REPLICATION_FACTOR, locatedBlock.getLocations().length, "Block should be allocated sufficient locations");
+      assertEquals(REPLICATION_FACTOR, locatedBlock.getLocations().length,
+          "Block should be allocated sufficient locations");
       if (clientRack != null) {
         if (hasBlockReplicaOnRack) {
-          assertEquals(clientRack,
-              locatedBlock.getLocations()[0].getNetworkLocation(),
+          assertEquals(clientRack, locatedBlock.getLocations()[0].getNetworkLocation(),
               "First datanode should be rack local");
         } else {
           for (DatanodeInfo dni : locatedBlock.getLocations()) {

@@ -189,14 +189,12 @@ public class TestMachineList {
 
   @Test
   public void testNullIpAddress() {
-    //create MachineList with a list of of ip ranges specified in CIDR format
-    MachineList ml = new MachineList(CIDR_LIST, new TestAddressFactory());
+    assertThrows(IllegalArgumentException.class, () -> {
+      //create MachineList with a list of ip ranges specified in CIDR format
+      MachineList ml = new MachineList(CIDR_LIST, new TestAddressFactory());
 
-    //test for exclusion with a null IP
-    assertThrows(IllegalArgumentException.class, () -> {
+      //test for exclusion with a null IP
       assertFalse(ml.includes((String) null));
-    });
-    assertThrows(IllegalArgumentException.class, () -> {
       assertFalse(ml.includes((InetAddress) null));
     });
   }

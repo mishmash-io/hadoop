@@ -21,7 +21,14 @@ package org.apache.hadoop.metrics2.util;
 import java.util.Arrays;
 import java.util.Collection;
 
-import static org.mockito.Mockito.*;
+import org.junit.jupiter.api.Test;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 import org.apache.hadoop.metrics2.AbstractMetric;
 import org.apache.hadoop.metrics2.MetricsRecord;
@@ -50,9 +57,8 @@ public class TestMetricsCache {
     verify(mr).name();
     verify(mr).tags();
     verify(mr).metrics();
-    assertEquals(cr.metrics().size(),
-                 ((Collection<AbstractMetric>)mr.metrics()).size(),
-                 "same record size");
+    assertEquals(cr.metrics().size(), ((Collection<AbstractMetric>) mr.metrics()).size(),
+        "same record size");
     assertEquals(0, cr.getMetric("m"), "same metric value");
 
     MetricsRecord mr2 = makeRecord("r",
@@ -105,7 +111,7 @@ public class TestMetricsCache {
         Arrays.asList(makeMetric("m", 0), makeMetric("m1", 1)));
 
     MetricsCache.Record cr = cache.update(mr);
-    assertNull(cr.getTag("t"), "t value should be null");
+    assertTrue(null == cr.getTag("t"), "t value should be null");
   }
 
   @Test public void testOverflow() {

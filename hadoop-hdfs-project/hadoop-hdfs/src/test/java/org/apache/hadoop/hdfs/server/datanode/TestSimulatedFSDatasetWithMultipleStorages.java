@@ -23,7 +23,6 @@ import org.junit.jupiter.api.Test;
 import static org.apache.hadoop.hdfs.DFSConfigKeys.DFS_DATANODE_DATA_DIR_KEY;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
-
 /**
  * Test that the {@link SimulatedFSDataset} works correctly when configured
  * with multiple storages.
@@ -31,9 +30,8 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 public class TestSimulatedFSDatasetWithMultipleStorages
     extends TestSimulatedFSDataset {
 
-  @Override
-  protected int getStorageCount() {
-    return 2;
+  public TestSimulatedFSDatasetWithMultipleStorages() {
+    pTestSimulatedFSDataset(2);
   }
 
   @BeforeEach

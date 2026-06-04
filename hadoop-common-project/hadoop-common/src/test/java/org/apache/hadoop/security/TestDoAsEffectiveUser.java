@@ -32,6 +32,9 @@ import org.apache.hadoop.security.UserGroupInformation.AuthenticationMethod;
 import org.apache.hadoop.security.authorize.DefaultImpersonationProvider;
 import org.apache.hadoop.security.authorize.ProxyUsers;
 import org.apache.hadoop.security.token.Token;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.Timeout;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -45,6 +48,9 @@ import java.security.PrivilegedExceptionAction;
 import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.concurrent.TimeUnit;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.fail;
 
 /**
  * Test do as effective user.
@@ -148,7 +154,7 @@ public class TestDoAsEffectiveUser extends TestRpcBase {
   }
   
   @Test
-  @Timeout(value=4000, unit=TimeUnit.MILLISECONDS)
+  @Timeout(value = 4)
   public void testRealUserSetup() throws IOException {
     final Configuration conf = new Configuration();
     conf.setStrings(DefaultImpersonationProvider.getTestProvider().
@@ -172,14 +178,14 @@ public class TestDoAsEffectiveUser extends TestRpcBase {
       checkRemoteUgi(proxyUserUgi, conf);
     } catch (Exception e) {
       e.printStackTrace();
-      fail(e);
+      fail();
     } finally {
       stop(server, client);
     }
   }
 
   @Test
-  @Timeout(value=4000, unit=TimeUnit.MILLISECONDS)
+  @Timeout(value = 4)
   public void testRealUserAuthorizationSuccess() throws IOException {
     final Configuration conf = new Configuration();
     configureSuperUserIPAddresses(conf, REAL_USER_SHORT_NAME);
@@ -202,7 +208,7 @@ public class TestDoAsEffectiveUser extends TestRpcBase {
       checkRemoteUgi(proxyUserUgi, conf);
     } catch (Exception e) {
       e.printStackTrace();
-      fail(e);
+      fail();
     } finally {
       stop(server, client);
     }

@@ -19,7 +19,8 @@
 package org.apache.hadoop.ipc;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.jupiter.api.Assertions.assertThrows;
+
+import org.junit.jupiter.api.Test;
 
 import org.apache.hadoop.conf.Configuration;
 import org.junit.jupiter.api.Test;
@@ -27,6 +28,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import static org.apache.hadoop.ipc.WeightedRoundRobinMultiplexer.IPC_CALLQUEUE_WRRMUX_WEIGHTS_KEY;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 public class TestWeightedRoundRobinMultiplexer {
   public static final Logger LOG =
@@ -50,12 +52,11 @@ public class TestWeightedRoundRobinMultiplexer {
 
   @Test
   public void testInstantiateIllegalMux() {
-    Configuration conf = new Configuration();
-    conf.setStrings("namespace." + IPC_CALLQUEUE_WRRMUX_WEIGHTS_KEY,
-      "1", "2", "3");
-
-    // ask for 3 weights with 2 queues
-    assertThrows(IllegalArgumentException.class, () -> {
+    assertThrows(IllegalArgumentException.class, ()->{
+      Configuration conf = new Configuration();
+      conf.setStrings("namespace." + IPC_CALLQUEUE_WRRMUX_WEIGHTS_KEY,
+          "1", "2", "3");
+      // ask for 3 weights with 2 queues
       mux = new WeightedRoundRobinMultiplexer(2, "namespace", conf);
     });
   }

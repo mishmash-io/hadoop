@@ -17,7 +17,9 @@
  */
 package org.apache.hadoop.hdfs;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.fail;
 
 import java.io.IOException;
 import java.util.EnumSet;
@@ -25,10 +27,7 @@ import java.util.List;
 
 import org.apache.hadoop.fs.CreateFlag;
 import org.apache.hadoop.test.GenericTestUtils;
-import org.junit.jupiter.api.AfterAll;
-import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.Test;
+import org.apache.hadoop.util.concurrent.SubjectInheritingThread;
 import org.mockito.invocation.InvocationOnMock;
 import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.when;
@@ -47,6 +46,9 @@ import org.apache.hadoop.hdfs.protocol.LocatedBlocks;
 import org.apache.hadoop.hdfs.server.datanode.DataNode;
 import org.apache.hadoop.hdfs.server.datanode.DataNodeTestUtils;
 import org.apache.hadoop.hdfs.server.protocol.InterDatanodeProtocol;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
 import org.slf4j.event.Level;
 
 /** This class implements some of tests posted in HADOOP-2658. */
@@ -198,10 +200,10 @@ public class TestFileAppend3  {
     AppendTestUtil.check(fs, p, len1 + len2);
     List<LocatedBlock> blocks = fs.getClient().getLocatedBlocks(
         p.toString(), 0L).getLocatedBlocks();
-    Assertions.assertEquals(3, blocks.size());
-    Assertions.assertEquals(BLOCK_SIZE, blocks.get(0).getBlockSize());
-    Assertions.assertEquals(BLOCK_SIZE / 2, blocks.get(1).getBlockSize());
-    Assertions.assertEquals(BLOCK_SIZE / 4, blocks.get(2).getBlockSize());
+    assertEquals(3, blocks.size());
+    assertEquals(BLOCK_SIZE, blocks.get(0).getBlockSize());
+    assertEquals(BLOCK_SIZE / 2, blocks.get(1).getBlockSize());
+    assertEquals(BLOCK_SIZE / 4, blocks.get(2).getBlockSize());
   }
 
   /**
@@ -426,9 +428,9 @@ public class TestFileAppend3  {
     AppendTestUtil.check(fs, p, len1 + len2);
     if (appendToNewBlock) {
       LocatedBlocks blks = fs.dfs.getLocatedBlocks(p.toString(), 0);
-      Assertions.assertEquals(2, blks.getLocatedBlocks().size());
-      Assertions.assertEquals(len1, blks.getLocatedBlocks().get(0).getBlockSize());
-      Assertions.assertEquals(len2, blks.getLocatedBlocks().get(1).getBlockSize());
+      assertEquals(2, blks.getLocatedBlocks().size());
+      assertEquals(len1, blks.getLocatedBlocks().get(0).getBlockSize());
+      assertEquals(len2, blks.getLocatedBlocks().get(1).getBlockSize());
       AppendTestUtil.check(fs, p, 0, len1);
       AppendTestUtil.check(fs, p, len1, len2);
     }
@@ -551,9 +553,9 @@ public class TestFileAppend3  {
     DFSClientAdapter.setDFSClient(fs, spyClient);
 
     // Create two threads for doing appends to the same file.
-    Thread worker1 = new Thread() {
+    SubjectInheritingThread worker1 = new SubjectInheritingThread() {
       @Override
-      public void run() {
+      public void work() {
         try {
           doSmallAppends(file, fs, 20);
         } catch (IOException e) {
@@ -561,9 +563,9 @@ public class TestFileAppend3  {
       }
     };
 
-    Thread worker2 = new Thread() {
+    SubjectInheritingThread worker2 = new SubjectInheritingThread() {
       @Override
-      public void run() {
+      public void work() {
         try {
           doSmallAppends(file, fs, 20);
         } catch (IOException e) {
@@ -587,5 +589,41 @@ public class TestFileAppend3  {
   @Test
   public void testAppendToPartialChunkforAppend2() throws IOException {
     testAppendToPartialChunk(true);
+  }
+
+  @Test
+  public void testApppendToPartialChunkWithMiddleBlockNotComplete() throws IOException {
+    final Path p = new Path("/TC8/foo");
+
+    //a. Create file and write one block of data. Close file.
+    final int len1 = (int) BLOCK_SIZE;
+    try (FSDataOutputStream out = fs.create(p, false, buffersize, REPLICATION,
+        BLOCK_SIZE)) {
+      AppendTestUtil.write(out, 0, len1);
+    }
+
+    // Reopen file to append. This length is not the multiple of 512.
+    final int len2 = (int) BLOCK_SIZE / 2 + 68;
+    try (FSDataOutputStream out = fs.append(p,
+        EnumSet.of(CreateFlag.APPEND, CreateFlag.NEW_BLOCK), 4096, null)) {
+      AppendTestUtil.write(out, len1, len2);
+    }
+
+    // Reopen file to append with NEW_BLOCK flag again, this will make middle block
+    // in file /TC8/foo not full.
+    final int len3 = (int) BLOCK_SIZE / 2;
+    try (FSDataOutputStream out = fs.append(p,
+        EnumSet.of(CreateFlag.APPEND, CreateFlag.NEW_BLOCK), 4096, null)) {
+      AppendTestUtil.write(out, len1 + len2, len3);
+    }
+
+    // Not use NEW_BLOCK flag.
+    final int len4 = 600;
+    try(FSDataOutputStream out = fs.append(p,
+        EnumSet.of(CreateFlag.APPEND), 4096, null)) {
+      AppendTestUtil.write(out, len1 + len2 + len3, len4);
+    }
+
+    AppendTestUtil.check(fs, p, len1 + len2 + len3 + len4);
   }
 }

@@ -22,7 +22,7 @@ import java.nio.file.AccessDeniedException;
 import java.util.EnumSet;
 
 import org.assertj.core.api.Assertions;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.s3a.S3AFileSystem;
@@ -50,10 +50,6 @@ import static org.apache.hadoop.test.LambdaTestUtils.intercept;
  * {@link org.apache.hadoop.fs.s3a.Statistic#AUDIT_FAILURE}.
  */
 public class ITestAuditManager extends AbstractS3ACostTest {
-
-  public ITestAuditManager() {
-    super(true);
-  }
 
   @Override
   public Configuration createConfiguration() {

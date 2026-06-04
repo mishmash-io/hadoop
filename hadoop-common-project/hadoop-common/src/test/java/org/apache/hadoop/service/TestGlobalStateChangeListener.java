@@ -19,6 +19,10 @@
 package org.apache.hadoop.service;
 
 import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.service.AbstractService;
+import org.apache.hadoop.service.LoggingStateChangeListener;
+import org.apache.hadoop.service.Service;
+import org.apache.hadoop.service.ServiceStateChangeListener;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
 
@@ -76,9 +80,8 @@ public class TestGlobalStateChangeListener extends ServiceAssert {
    */
   public void assertListenerEventCount(BreakableStateChangeListener breakable,
                                        int count) {
-    assertEquals(count,
-                 breakable.getEventCount(),
-                 "Wrong event count in " + breakable);
+    assertEquals(count, breakable.getEventCount(),
+        "Wrong event count in " + breakable);
   }
 
   /**

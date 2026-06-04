@@ -38,8 +38,7 @@ import java.io.IOException;
 import java.util.Arrays;
 import java.util.concurrent.TimeUnit;
 
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.core.Is.is;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyBoolean;
 import static org.mockito.ArgumentMatchers.anyLong;
@@ -54,8 +53,9 @@ import static org.mockito.Mockito.when;
  * Mock-based unit test to verify that the DataXceiver correctly handles the
  * LazyPersist hint from clients.
  */
-@Timeout(value=300000, unit=TimeUnit.MILLISECONDS)
+@Timeout(300)
 public class TestDataXceiverLazyPersistHint {
+
   private enum PeerLocality {
     LOCAL,
     REMOTE
@@ -78,7 +78,7 @@ public class TestDataXceiverLazyPersistHint {
 
     for (Boolean lazyPersistSetting : Arrays.asList(true, false)) {
       issueWriteBlockCall(xceiver, lazyPersistSetting);
-      assertThat(captor.getValue(), is(lazyPersistSetting));
+      assertThat(captor.getValue()).isEqualTo(lazyPersistSetting);
     }
   }
 
@@ -93,7 +93,7 @@ public class TestDataXceiverLazyPersistHint {
 
     for (Boolean lazyPersistSetting : Arrays.asList(true, false)) {
       issueWriteBlockCall(xceiver, lazyPersistSetting);
-      assertThat(captor.getValue(), is(false));
+      assertThat(captor.getValue()).isEqualTo(false);
     }
   }
 
@@ -110,7 +110,7 @@ public class TestDataXceiverLazyPersistHint {
 
     for (Boolean lazyPersistSetting : Arrays.asList(true, false)) {
       issueWriteBlockCall(xceiver, lazyPersistSetting);
-      assertThat(captor.getValue(), is(lazyPersistSetting));
+      assertThat(captor.getValue()).isEqualTo(lazyPersistSetting);
     }
   }
 

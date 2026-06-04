@@ -147,8 +147,7 @@ public class TestAddBlock {
       assertEquals(BLOCKSIZE, fileBlocks[0].getNumBytes());
       assertEquals(BlockUCState.COMPLETE, fileBlocks[0].getBlockUCState());
       assertEquals(appendContent.length() - 1, fileBlocks[1].getNumBytes());
-      assertEquals(BlockUCState.UNDER_CONSTRUCTION,
-          fileBlocks[1].getBlockUCState());
+      assertEquals(BlockUCState.UNDER_CONSTRUCTION, fileBlocks[1].getBlockUCState());
     } finally {
       if (out != null) {
         out.close();

@@ -118,7 +118,7 @@ public class TestLdapGroupsMappingWithOneQuery
 
     assertEquals(expectedGroups, groups);
     assertFalse(groupsMapping.isSecondaryQueryCalled(),
-            "Second LDAP query should NOT have been called.");
+        "Second LDAP query should NOT have been called.");
 
     // We should have only made one query because single-query lookup is enabled
     verify(getContext(), times(1)).search(anyString(), anyString(),
@@ -150,7 +150,7 @@ public class TestLdapGroupsMappingWithOneQuery
 
     // expect secondary query to be called: getGroups()
     assertTrue(groupsMapping.isSecondaryQueryCalled(),
-            "Second LDAP query should have been called.");
+        "Second LDAP query should have been called.");
 
     // We should have fallen back to the second query because first threw
     // NamingException expected count is 3 since testGetGroups calls

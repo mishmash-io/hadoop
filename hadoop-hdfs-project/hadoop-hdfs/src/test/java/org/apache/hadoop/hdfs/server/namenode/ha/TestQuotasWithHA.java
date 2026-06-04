@@ -92,7 +92,7 @@ public class TestQuotasWithHA {
    * create, append, delete.
    */
   @Test
-  @Timeout(value = 60000, unit = TimeUnit.MILLISECONDS)
+  @Timeout(value = 60)
   public void testQuotasTrackedOnStandby() throws Exception {
     fs.mkdirs(TEST_DIR);
     DistributedFileSystem dfs = (DistributedFileSystem)fs;
@@ -143,10 +143,9 @@ public class TestQuotasWithHA {
    * exception.
    */
   @Test
-  public void testGetContentSummaryOnStandby() {
+  public void testGetContentSummaryOnStandby() throws Exception {
     assertThrows(StandbyException.class, () -> {
       Configuration nn1conf = cluster.getConfiguration(1);
-      // just reset the standby reads to default i.e False on standby.
       HAUtil.setAllowStandbyReads(nn1conf, false);
       cluster.restartNameNode(1);
       cluster.getNameNodeRpc(1).getContentSummary("/");
@@ -157,10 +156,9 @@ public class TestQuotasWithHA {
    * Test that getQuotaUsage on Standby should should throw standby exception.
    */
   @Test
-  public void testGetQuotaUsageOnStandby() {
+  public void testGetQuotaUsageOnStandby() throws Exception {
     assertThrows(StandbyException.class, () -> {
       Configuration nn1conf = cluster.getConfiguration(1);
-      // just reset the standby reads to default i.e False on standby.
       HAUtil.setAllowStandbyReads(nn1conf, false);
       cluster.restartNameNode(1);
       cluster.getNameNodeRpc(1).getQuotaUsage("/");

@@ -45,6 +45,9 @@ import org.apache.hadoop.security.UserGroupInformation;
 import org.apache.hadoop.security.token.Token;
 import org.apache.hadoop.security.token.delegation.AbstractDelegationTokenIdentifier;
 import org.apache.hadoop.test.GenericTestUtils;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import org.apache.hadoop.thirdparty.com.google.common.collect.Maps;
 import org.apache.hadoop.util.Shell;
@@ -73,7 +76,7 @@ public class TestGenericOptionsParser {
     String files = conf.get("tmpfiles");
     assertNotNull(files, "files is null");
     assertEquals(localFs.makeQualified(tmpPath).toString(), files,
-      "files option does not match");
+        "files option does not match");
     
     // pass file as uri
     Configuration conf1 = new Configuration();
@@ -84,7 +87,7 @@ public class TestGenericOptionsParser {
     files = conf1.get("tmpfiles");
     assertNotNull(files, "files is null");
     assertEquals(localFs.makeQualified(new Path(tmpURI)).toString(), files,
-      "files option does not match");
+        "files option does not match");
    
     // pass a file that does not exist.
     // GenericOptionParser should throw exception
@@ -99,7 +102,7 @@ public class TestGenericOptionsParser {
     }
     assertNotNull(th, "throwable is null");
     assertTrue(th instanceof FileNotFoundException,
-      "FileNotFoundException is not thrown");
+        "FileNotFoundException is not thrown");
     files = conf2.get("tmpfiles");
     assertNull(files, "files is not null");
   }
@@ -213,7 +216,7 @@ public class TestGenericOptionsParser {
     args[1] = "7";
     GenericOptionsParser g = new GenericOptionsParser(opts, args);
     assertEquals("7", g.getCommandLine().getOptionValues("newOpt")[0],
-      "New option was ignored");
+        "New option was ignored");
   }
 
   /**
@@ -226,9 +229,9 @@ public class TestGenericOptionsParser {
     args[1] = "--conf=bar";
     GenericOptionsParser g = new GenericOptionsParser(args);
     assertEquals("foo", g.getCommandLine().getOptionValues("conf")[0],
-      "1st conf param is incorrect");
+        "1st conf param is incorrect");
     assertEquals("bar", g.getCommandLine().getOptionValues("conf")[1],
-      "2st conf param is incorrect");
+        "2st conf param is incorrect");
   }
 
   @BeforeEach
@@ -382,7 +385,7 @@ public class TestGenericOptionsParser {
     }
 
     assertArrayEquals(expectedRemainingArgs, remainingArgs,
-      Arrays.toString(remainingArgs) + Arrays.toString(expectedRemainingArgs));
+        Arrays.toString(remainingArgs) + Arrays.toString(expectedRemainingArgs));
   }
 
   /** Test passing null as args. Some classes still call

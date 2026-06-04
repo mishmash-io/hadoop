@@ -63,9 +63,12 @@ import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 
 import static org.apache.hadoop.hdfs.DFSConfigKeys.DFS_BYTES_PER_CHECKSUM_DEFAULT;
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 
-@Timeout(value=300000, unit=TimeUnit.MILLISECONDS)
+@Timeout(300)
 public class TestAddStripedBlocks {
   private final ErasureCodingPolicy ecPolicy =
       StripedFileTestUtil.getDefaultECPolicy();
@@ -159,7 +162,7 @@ public class TestAddStripedBlocks {
   }
 
   @Test
-  @Timeout(value = 60000, unit = TimeUnit.MILLISECONDS)
+  @Timeout(value = 60)
   public void testAddStripedBlock() throws Exception {
     final Path file = new Path("/file1");
     // create an empty file
@@ -481,7 +484,8 @@ public class TestAddStripedBlocks {
       out.write("this is a replicated file".getBytes());
     }
     BlockLocation[] locations = dfs.getFileBlockLocations(replicated, 0, 100);
-    assertEquals(1, locations.length, "There should be exactly one Block present");
+    assertEquals(1, locations.length,
+        "There should be exactly one Block present");
     assertFalse(locations[0].isStriped(), "The file is Striped");
 
     Path striped = new Path("/blockLocation/striped");
@@ -489,7 +493,8 @@ public class TestAddStripedBlocks {
       out.write("this is a striped file".getBytes());
     }
     locations = dfs.getFileBlockLocations(striped, 0, 100);
-    assertEquals(1, locations.length, "There should be exactly one Block present");
+    assertEquals(1, locations.length,
+        "There should be exactly one Block present");
     assertTrue(locations[0].isStriped(), "The file is not Striped");
   }
 }

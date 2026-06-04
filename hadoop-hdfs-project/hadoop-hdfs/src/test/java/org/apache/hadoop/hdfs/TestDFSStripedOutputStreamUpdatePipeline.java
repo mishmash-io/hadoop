@@ -21,7 +21,6 @@ import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FSDataOutputStream;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.io.IOUtils;
-
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.Timeout;
 
@@ -71,7 +70,7 @@ public class TestDFSStripedOutputStreamUpdatePipeline {
    * an addBlock exception (e.g. quota exception).
    */
   @Test
-  @Timeout(value = 90000, unit = TimeUnit.MILLISECONDS)
+  @Timeout(value = 90)
   public void testECWriteHangWhenAddBlockWithException() throws Exception {
     Configuration conf = new HdfsConfiguration();
     conf.setLong(DFSConfigKeys.DFS_BLOCK_SIZE_KEY, 1 * 1024 * 1024);

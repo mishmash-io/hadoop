@@ -31,6 +31,8 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.Timeout;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+
 /**
  * Tests resolution of AbstractFileSystems for a given path with symlinks.
  */
@@ -51,7 +53,7 @@ public class TestFileContextResolveAfs {
   }
   
   @Test
-  @Timeout(value=30000, unit=TimeUnit.MILLISECONDS)
+  @Timeout(value = 30)
   public void testFileContextResolveAfs() throws IOException {
     Configuration conf = new Configuration();
     localFs = FileSystem.get(conf);

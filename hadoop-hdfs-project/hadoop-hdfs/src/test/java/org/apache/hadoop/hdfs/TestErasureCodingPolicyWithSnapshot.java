@@ -37,7 +37,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.Timeout;
 
-@Timeout(value=120000, unit=TimeUnit.MILLISECONDS)
+@Timeout(120)
 public class TestErasureCodingPolicyWithSnapshot {
   private MiniDFSCluster cluster;
   private DistributedFileSystem fs;
@@ -89,8 +89,7 @@ public class TestErasureCodingPolicyWithSnapshot {
     String contents = DFSTestUtil.readFile(fs, ecFile);
     final Path snap1 = fs.createSnapshot(ecDirParent, "snap1");
     final Path snap1ECDir = new Path(snap1, ecDir.getName());
-    assertEquals(ecPolicy,
-        fs.getErasureCodingPolicy(snap1ECDir),
+    assertEquals(ecPolicy, fs.getErasureCodingPolicy(snap1ECDir),
         "Got unexpected erasure coding policy");
 
     // Now delete the dir which has erasure coding policy. Re-create the dir again, and
@@ -108,13 +107,10 @@ public class TestErasureCodingPolicyWithSnapshot {
     final Path snap3ECDir = new Path(snap3, ecDir.getName());
     // Check that snap3's ECPolicy has the correct settings
     ErasureCodingPolicy ezSnap3 = fs.getErasureCodingPolicy(snap3ECDir);
-    assertEquals(ecPolicy,
-        ezSnap3,
-        "Got unexpected erasure coding policy");
+    assertEquals(ecPolicy, ezSnap3, "Got unexpected erasure coding policy");
 
     // Check that older snapshots still have the old ECPolicy settings
-    assertEquals(ecPolicy,
-        fs.getErasureCodingPolicy(snap1ECDir),
+    assertEquals(ecPolicy, fs.getErasureCodingPolicy(snap1ECDir),
         "Got unexpected erasure coding policy");
     assertNull(fs.getErasureCodingPolicy(snap2ECDir),
         "Expected null erasure coding policy");
@@ -122,20 +118,18 @@ public class TestErasureCodingPolicyWithSnapshot {
     // Verify contents of the snapshotted file
     final Path snapshottedECFile = new Path(snap1.toString() + "/"
         + ecDir.getName() + "/" + ecFile.getName());
-    assertEquals(contents, DFSTestUtil.readFile(fs, snapshottedECFile), "Contents of snapshotted file have changed unexpectedly");
+    assertEquals(contents, DFSTestUtil.readFile(fs, snapshottedECFile),
+        "Contents of snapshotted file have changed unexpectedly");
 
     // Now delete the snapshots out of order and verify the EC policy
     // correctness
     fs.deleteSnapshot(ecDirParent, snap2.getName());
-    assertEquals(ecPolicy,
-        fs.getErasureCodingPolicy(snap1ECDir),
+    assertEquals(ecPolicy, fs.getErasureCodingPolicy(snap1ECDir),
         "Got unexpected erasure coding policy");
-    assertEquals(ecPolicy,
-        fs.getErasureCodingPolicy(snap3ECDir),
+    assertEquals(ecPolicy, fs.getErasureCodingPolicy(snap3ECDir),
         "Got unexpected erasure coding policy");
     fs.deleteSnapshot(ecDirParent, snap1.getName());
-    assertEquals(ecPolicy,
-        fs.getErasureCodingPolicy(snap3ECDir),
+    assertEquals(ecPolicy, fs.getErasureCodingPolicy(snap3ECDir),
         "Got unexpected erasure coding policy");
   }
 
@@ -150,8 +144,7 @@ public class TestErasureCodingPolicyWithSnapshot {
 
     fs.setErasureCodingPolicy(ecDir, ecPolicy.getName());
     final Path snap1 = fs.createSnapshot(ecDir, "snap1");
-    assertEquals(ecPolicy,
-        fs.getErasureCodingPolicy(snap1),
+    assertEquals(ecPolicy, fs.getErasureCodingPolicy(snap1),
         "Got unexpected erasure coding policy");
   }
 
@@ -168,9 +161,7 @@ public class TestErasureCodingPolicyWithSnapshot {
     fs.setErasureCodingPolicy(ecDir, ecPolicy.getName());
     final Path snap1 = fs.createSnapshot(ecDir, "snap1");
     ErasureCodingPolicy ecSnap = fs.getErasureCodingPolicy(snap1);
-    assertEquals(ecPolicy,
-        ecSnap,
-        "Got unexpected erasure coding policy");
+    assertEquals(ecPolicy, ecSnap, "Got unexpected erasure coding policy");
 
     // save namespace, restart namenode, and check ec policy correctness.
     fs.setSafeMode(SafeModeAction.ENTER);
@@ -179,12 +170,8 @@ public class TestErasureCodingPolicyWithSnapshot {
     cluster.restartNameNode(true);
 
     ErasureCodingPolicy ecSnap1 = fs.getErasureCodingPolicy(snap1);
-    assertEquals(ecPolicy,
-        ecSnap1,
-        "Got unexpected erasure coding policy");
-    assertEquals(ecSnap.getSchema(),
-        ecSnap1.getSchema(),
-        "Got unexpected ecSchema");
+    assertEquals(ecPolicy, ecSnap1, "Got unexpected erasure coding policy");
+    assertEquals(ecSnap.getSchema(), ecSnap1.getSchema(), "Got unexpected ecSchema");
   }
 
   /**
@@ -213,13 +200,12 @@ public class TestErasureCodingPolicyWithSnapshot {
 
     assertNull(fs.getErasureCodingPolicy(snap1CopyECDir),
         "Got unexpected erasure coding policy");
-    assertEquals(ecPolicy,
-        fs.getErasureCodingPolicy(snap1),
+    assertEquals(ecPolicy, fs.getErasureCodingPolicy(snap1),
         "Got unexpected erasure coding policy");
   }
 
   @Test
-  @Timeout(value = 300000, unit = TimeUnit.MILLISECONDS)
+  @Timeout(value = 300)
   public void testFileStatusAcrossNNRestart() throws IOException {
     final int len = 1024;
     final Path normalFile = new Path("/", "normalFile");
@@ -256,9 +242,7 @@ public class TestErasureCodingPolicyWithSnapshot {
 
     // verify the EC policy correctness
     ErasureCodingPolicy ecSnap = fs.getErasureCodingPolicy(snap);
-    assertEquals(ecPolicy,
-        ecSnap,
-        "Got unexpected erasure coding policy");
+    assertEquals(ecPolicy, ecSnap, "Got unexpected erasure coding policy");
 
     // verify the EC policy is null, not an exception
     final Path ecDotSnapshotDir = new Path(ecDir, ".snapshot");
@@ -278,23 +262,20 @@ public class TestErasureCodingPolicyWithSnapshot {
     fs.allowSnapshot(ecDir);
 
     final Path snap1 = fs.createSnapshot(ecDir, "snap1");
-    assertNull(fs.getErasureCodingPolicy(snap1),
-        "Expected null erasure coding policy");
+    assertNull(fs.getErasureCodingPolicy(snap1), "Expected null erasure coding policy");
 
     // Set erasure coding policy
     final ErasureCodingPolicy ec63Policy = SystemErasureCodingPolicies
         .getByID(SystemErasureCodingPolicies.RS_6_3_POLICY_ID);
     fs.setErasureCodingPolicy(ecDir, ec63Policy.getName());
     final Path snap2 = fs.createSnapshot(ecDir, "snap2");
-    assertEquals(ec63Policy,
-        fs.getErasureCodingPolicy(snap2),
+    assertEquals(ec63Policy, fs.getErasureCodingPolicy(snap2),
         "Got unexpected erasure coding policy");
 
     // Verify the EC policy correctness after the unset operation
     fs.unsetErasureCodingPolicy(ecDir);
     final Path snap3 = fs.createSnapshot(ecDir, "snap3");
-    assertNull(fs.getErasureCodingPolicy(snap3),
-        "Expected null erasure coding policy");
+    assertNull(fs.getErasureCodingPolicy(snap3), "Expected null erasure coding policy");
 
     // Change the erasure coding policy and take another snapshot
     final ErasureCodingPolicy ec32Policy = SystemErasureCodingPolicies
@@ -302,17 +283,13 @@ public class TestErasureCodingPolicyWithSnapshot {
     fs.enableErasureCodingPolicy(ec32Policy.getName());
     fs.setErasureCodingPolicy(ecDir, ec32Policy.getName());
     final Path snap4 = fs.createSnapshot(ecDir, "snap4");
-    assertEquals(ec32Policy,
-        fs.getErasureCodingPolicy(snap4),
+    assertEquals(ec32Policy, fs.getErasureCodingPolicy(snap4),
         "Got unexpected erasure coding policy");
 
     // Check that older snapshot still have the old ECPolicy settings
-    assertNull(fs.getErasureCodingPolicy(snap1),
-        "Expected null erasure coding policy");
-    assertEquals(ec63Policy,
-        fs.getErasureCodingPolicy(snap2),
+    assertNull(fs.getErasureCodingPolicy(snap1), "Expected null erasure coding policy");
+    assertEquals(ec63Policy, fs.getErasureCodingPolicy(snap2),
         "Got unexpected erasure coding policy");
-    assertNull(fs.getErasureCodingPolicy(snap3),
-        "Expected null erasure coding policy");
+    assertNull(fs.getErasureCodingPolicy(snap3), "Expected null erasure coding policy");
   }
 }

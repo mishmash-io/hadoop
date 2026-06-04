@@ -104,7 +104,7 @@ public class TestRollingUpgradeRollback {
       // start rolling upgrade
       dfs.setSafeMode(SafeModeAction.ENTER);
       Assertions.assertEquals(0,
-          dfsadmin.run(new String[] { "-rollingUpgrade", "prepare" }));
+          dfsadmin.run(new String[]{"-rollingUpgrade", "prepare"}));
       dfs.setSafeMode(SafeModeAction.LEAVE);
       // create new directory
       dfs.mkdirs(bar);
@@ -165,8 +165,7 @@ public class TestRollingUpgradeRollback {
 
       // start rolling upgrade
       dfs.setSafeMode(SafeModeAction.ENTER);
-      Assertions.assertEquals(0,
-          dfsadmin.run(new String[] { "-rollingUpgrade", "prepare" }));
+      Assertions.assertEquals(0, dfsadmin.run(new String[]{"-rollingUpgrade", "prepare"}));
       dfs.setSafeMode(SafeModeAction.LEAVE);
       // create new directory
       dfs.mkdirs(bar);

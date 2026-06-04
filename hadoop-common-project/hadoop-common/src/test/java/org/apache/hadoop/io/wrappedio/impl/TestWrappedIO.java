@@ -32,7 +32,6 @@ import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.TestInfo;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -82,9 +81,8 @@ public class TestWrappedIO extends AbstractFSContractTestBase {
   private DynamicWrappedStatistics statistics;
 
   @BeforeEach
-  @Override
-  public void setup(TestInfo info) throws Exception {
-    super.setup(info);
+  public void setup() throws Exception {
+    super.setup();
 
     io = new DynamicWrappedIO();
     statistics = new DynamicWrappedStatistics();

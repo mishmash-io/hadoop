@@ -19,7 +19,9 @@
 package org.apache.hadoop.hdfs.server.datanode;
 
 import static org.apache.hadoop.hdfs.DFSConfigKeys.DFS_DATANODE_METRICS_LOGGER_PERIOD_SECONDS_KEY;
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.io.File;
 import java.io.IOException;
@@ -30,6 +32,7 @@ import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 
+import org.junit.jupiter.api.Timeout;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.apache.hadoop.conf.Configuration;
@@ -40,14 +43,10 @@ import org.apache.hadoop.hdfs.HdfsConfiguration;
 import org.apache.hadoop.hdfs.MiniDFSCluster;
 import org.apache.hadoop.metrics2.util.MBeans;
 import org.apache.hadoop.test.GenericTestUtils;
-import org.apache.hadoop.test.LogCapturingAppender;
-import org.apache.logging.log4j.core.LoggerContext;
-import org.apache.logging.log4j.core.async.AsyncLogger;
-import org.apache.logging.log4j.core.async.AsyncLoggerConfig;
+import org.apache.log4j.Appender;
+import org.apache.log4j.AsyncAppender;
 import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.Timeout;
 
 import java.util.function.Predicate;
 import java.util.function.Supplier;
@@ -56,7 +55,7 @@ import java.util.regex.Pattern;
 /**
  * Test periodic logging of DataNode metrics.
  */
-@Timeout(value=300000, unit=TimeUnit.MILLISECONDS)
+@Timeout(300)
 public class TestDataNodeMetricsLogger {
   static final Logger LOG =
       LoggerFactory.getLogger(TestDataNodeMetricsLogger.class);
@@ -105,8 +104,7 @@ public class TestDataNodeMetricsLogger {
       } finally {
         File dir = new File(DATA_DIR);
         if (dir.exists())
-          Assertions.assertTrue(FileUtil.fullyDelete(dir),
-              "Cannot delete data-node dirs");
+          assertTrue(FileUtil.fullyDelete(dir), "Cannot delete data-node dirs");
       }
     }
     dn = null;

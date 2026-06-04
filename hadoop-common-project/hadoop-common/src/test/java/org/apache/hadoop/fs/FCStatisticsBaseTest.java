@@ -35,11 +35,12 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 import org.apache.hadoop.fs.FileSystem.Statistics;
 import org.apache.hadoop.test.GenericTestUtils;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.Timeout;
 
 import java.util.function.Supplier;
 import org.apache.hadoop.thirdparty.com.google.common.util.concurrent.Uninterruptibles;
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.Timeout;
+import org.apache.hadoop.util.concurrent.SubjectInheritingThread;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -61,7 +62,7 @@ public abstract class FCStatisticsBaseTest {
   protected static FileContext fc = null;
   
   @Test
-  @Timeout(value=60000, unit=TimeUnit.MILLISECONDS)
+  @Timeout(value = 60)
   public void testStatisticsOperations() throws Exception {
     final Statistics stats = new Statistics("file");
     assertEquals(0L, stats.getBytesRead());
@@ -73,9 +74,9 @@ public abstract class FCStatisticsBaseTest {
     stats.incrementWriteOps(123);
     assertEquals(123, stats.getWriteOps());
     
-    Thread thread = new Thread() {
+    SubjectInheritingThread thread = new SubjectInheritingThread() {
       @Override
-      public void run() {
+      public void work() {
         stats.incrementWriteOps(1);
       }
     };
@@ -118,7 +119,7 @@ public abstract class FCStatisticsBaseTest {
   }
 
   @Test
-  @Timeout(value=70000, unit=TimeUnit.MILLISECONDS)
+  @Timeout(value = 70)
   public void testStatisticsThreadLocalDataCleanUp() throws Exception {
     final Statistics stats = new Statistics("test");
     // create a small thread pool to test the statistics

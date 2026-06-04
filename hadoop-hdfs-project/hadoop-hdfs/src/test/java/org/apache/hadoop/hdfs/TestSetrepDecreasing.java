@@ -25,7 +25,7 @@ import org.junit.jupiter.api.Timeout;
 
 public class TestSetrepDecreasing {
   @Test
-  @Timeout(value = 120000, unit = TimeUnit.MILLISECONDS)
+  @Timeout(value = 120)
   public void testSetrepDecreasing() throws IOException {
     TestSetrepIncreasing.setrep(5, 3, false);
   }

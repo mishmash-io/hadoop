@@ -18,7 +18,6 @@
 package org.apache.hadoop.hdfs;
 
 import org.junit.jupiter.api.AfterAll;
-import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Timeout;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.MethodSource;
@@ -40,7 +39,7 @@ import static org.apache.hadoop.hdfs.ReadStripedFileWithDecodingHelper.tearDownC
 /**
  * Test online recovery with failed DNs. This test is parameterized.
  */
-@Timeout(value=300000, unit=TimeUnit.MILLISECONDS)
+@Timeout(300)
 public class TestReadStripedFileWithDNFailure {
   static final Logger LOG =
       LoggerFactory.getLogger(TestReadStripedFileWithDNFailure.class);
@@ -48,7 +47,6 @@ public class TestReadStripedFileWithDNFailure {
   private static MiniDFSCluster cluster;
   private static DistributedFileSystem dfs;
 
-  @BeforeAll
   public static void setup() throws IOException {
     cluster = initializeCluster();
     dfs = cluster.getFileSystem();
@@ -72,7 +70,8 @@ public class TestReadStripedFileWithDNFailure {
   private int fileLength;
   private int dnFailureNum;
 
-  public void initTestReadStripedFileWithDNFailure(int fileLength, int dnFailureNum) {
+  public void initTestReadStripedFileWithDNFailure(int pFileLength, int pDnFailureNum)
+      throws IOException {
     this.fileLength = fileLength;
     this.dnFailureNum = dnFailureNum;
   }
@@ -83,9 +82,10 @@ public class TestReadStripedFileWithDNFailure {
    */
   @MethodSource("getParameters")
   @ParameterizedTest
-  public void testReadWithDNFailure(int fileLength, int dnFailureNum) throws Exception {
-    initTestReadStripedFileWithDNFailure(fileLength, dnFailureNum);
+  public void testReadWithDNFailure(int pFileLength, int pDnFailureNum)
+      throws Exception {
     try {
+      initTestReadStripedFileWithDNFailure(pFileLength, pDnFailureNum);
       // setup a new cluster with no dead datanode
       setup();
       ReadStripedFileWithDecodingHelper.testReadWithDNFailure(cluster,

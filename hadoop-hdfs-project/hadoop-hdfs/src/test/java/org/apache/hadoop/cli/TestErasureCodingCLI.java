@@ -32,7 +32,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.Timeout;
 import org.xml.sax.SAXException;
 
-@Timeout(value=300000, unit=TimeUnit.MILLISECONDS)
+@Timeout(300)
 public class TestErasureCodingCLI extends CLITestHelper {
   private final int NUM_OF_DATANODES = 3;
   private MiniDFSCluster dfsCluster = null;

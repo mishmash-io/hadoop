@@ -15,16 +15,17 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.apache.hadoop.fs.contract.s3a;
 
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.contract.AbstractFSContract;
 import org.apache.hadoop.io.wrappedio.impl.TestWrappedIO;
+import org.apache.hadoop.test.tags.IntegrationTest;
 
 /**
  * Test S3A access through the wrapped operations class.
  */
+@IntegrationTest
 public class ITestS3AWrappedIO extends TestWrappedIO {
 
   @Override

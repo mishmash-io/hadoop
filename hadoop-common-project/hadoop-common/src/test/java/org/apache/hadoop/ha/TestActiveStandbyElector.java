@@ -37,6 +37,8 @@ import org.apache.zookeeper.data.Stat;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.apache.zookeeper.ZooDefs.Ids;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Mockito;
 
@@ -54,7 +56,7 @@ import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.fail;
-import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.any;
 
 public class TestActiveStandbyElector {
 
@@ -130,9 +132,8 @@ public class TestActiveStandbyElector {
    */
   @Test
   public void testJoinElectionException() {
-    assertThrows(HadoopIllegalArgumentException.class, () -> {
-      elector.joinElection(null);
-    });
+    assertThrows(HadoopIllegalArgumentException.class,
+        () -> elector.joinElection(null));
   }
 
   /**
@@ -850,9 +851,9 @@ public class TestActiveStandbyElector {
     Mockito.verify(e).initiateZookeeper(configArgumentCaptor.capture());
     ZKClientConfig clientConfig = configArgumentCaptor.getValue();
     assertEquals(defaultConfig.getProperty(ZKClientConfig.SECURE_CLIENT),
-            clientConfig.getProperty(ZKClientConfig.SECURE_CLIENT));
+        clientConfig.getProperty(ZKClientConfig.SECURE_CLIENT));
     assertEquals(defaultConfig.getProperty(ZKClientConfig.ZOOKEEPER_CLIENT_CNXN_SOCKET),
-            clientConfig.getProperty(ZKClientConfig.ZOOKEEPER_CLIENT_CNXN_SOCKET));
+        clientConfig.getProperty(ZKClientConfig.ZOOKEEPER_CLIENT_CNXN_SOCKET));
     assertNull(clientConfig.getProperty(clientX509Util.getSslKeystoreLocationProperty()));
     assertNull(clientConfig.getProperty(clientX509Util.getSslKeystorePasswdProperty()));
     assertNull(clientConfig.getProperty(clientX509Util.getSslTruststoreLocationProperty()));
@@ -891,15 +892,15 @@ public class TestActiveStandbyElector {
     ZKClientConfig clientConfig = configArgumentCaptor.getValue();
     assertEquals("true", clientConfig.getProperty(ZKClientConfig.SECURE_CLIENT));
     assertEquals("org.apache.zookeeper.ClientCnxnSocketNetty",
-            clientConfig.getProperty(ZKClientConfig.ZOOKEEPER_CLIENT_CNXN_SOCKET));
+        clientConfig.getProperty(ZKClientConfig.ZOOKEEPER_CLIENT_CNXN_SOCKET));
     assertEquals("keystore_location",
-            clientConfig.getProperty(clientX509Util.getSslKeystoreLocationProperty()));
+        clientConfig.getProperty(clientX509Util.getSslKeystoreLocationProperty()));
     assertEquals("keystore_password",
-            clientConfig.getProperty(clientX509Util.getSslKeystorePasswdProperty()));
+        clientConfig.getProperty(clientX509Util.getSslKeystorePasswdProperty()));
     assertEquals("truststore_location",
-            clientConfig.getProperty(clientX509Util.getSslTruststoreLocationProperty()));
+        clientConfig.getProperty(clientX509Util.getSslTruststoreLocationProperty()));
     assertEquals("truststore_password",
-            clientConfig.getProperty(clientX509Util.getSslTruststorePasswdProperty()));
+        clientConfig.getProperty(clientX509Util.getSslTruststorePasswdProperty()));
 
   }
 }

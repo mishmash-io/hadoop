@@ -135,7 +135,7 @@ public abstract class AbstractParentQueue extends AbstractCSQueue {
     this.childQueues = new ArrayList<>();
     this.allowZeroCapacitySum =
           queueContext.getConfiguration()
-              .getAllowZeroCapacitySum(getQueuePath());
+              .getAllowZeroCapacitySum(getQueuePathObject());
 
   }
 
@@ -169,7 +169,7 @@ public abstract class AbstractParentQueue extends AbstractCSQueue {
 
       // Initialize queue ordering policy
       queueOrderingPolicy = configuration.getQueueOrderingPolicy(
-          getQueuePath(), parent == null ?
+          getQueuePathObject(), parent == null ?
               null :
               ((AbstractParentQueue) parent).getQueueOrderingPolicyConfigName());
       queueOrderingPolicy.setQueues(childQueues);
@@ -230,8 +230,7 @@ public abstract class AbstractParentQueue extends AbstractCSQueue {
               "{Queue=" + queue.getQueuePath() + ", label=" + nodeLabel
                   + " uses weight mode}. ");
         }
-        if (!queue.getQueueResourceQuotas().getConfiguredMinResource(nodeLabel)
-            .equals(Resources.none())) {
+        if (checkConfigTypeIsAbsoluteResource(queue.getQueuePathObject(), nodeLabel)) {
           absoluteMinResSet = true;
           // There's a special handling: when absolute resource is configured,
           // capacity will be calculated (and set) for UI/metrics purposes, so
@@ -551,7 +550,16 @@ public abstract class AbstractParentQueue extends AbstractCSQueue {
    */
   public boolean isEligibleForAutoQueueCreation() {
     return isDynamicQueue() || queueContext.getConfiguration().
-        isAutoQueueCreationV2Enabled(getQueuePath());
+        isAutoQueueCreationV2Enabled(getQueuePathObject());
+  }
+  /**
+   * Check whether this queue supports legacy(v1) dynamic child queue creation.
+   * @return true if queue is eligible to create child queues dynamically using
+   * the legacy system, false otherwise
+   */
+  public boolean isEligibleForLegacyAutoQueueCreation() {
+    return isDynamicQueue() || queueContext.getConfiguration().
+        isAutoCreateChildQueueEnabled(getQueuePathObject());
   }
 
   @Override
@@ -1631,7 +1639,7 @@ public abstract class AbstractParentQueue extends AbstractCSQueue {
   public boolean isEligibleForAutoDeletion() {
     return isDynamicQueue() && getChildQueues().size() == 0 &&
         queueContext.getConfiguration().
-            isAutoExpiredDeletionEnabled(this.getQueuePath());
+            isAutoExpiredDeletionEnabled(this.getQueuePathObject());
   }
 
   public AutoCreatedQueueTemplate getAutoCreatedQueueTemplate() {

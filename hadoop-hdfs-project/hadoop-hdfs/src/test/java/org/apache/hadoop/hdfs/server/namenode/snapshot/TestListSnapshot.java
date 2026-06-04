@@ -33,9 +33,10 @@ import org.junit.jupiter.api.Timeout;
 
 import static org.apache.hadoop.hdfs.server.namenode.snapshot.SnapshotManager.
     DFS_NAMENODE_SNAPSHOT_DELETION_ORDERED;
-import static org.junit.jupiter.api.Assertions.*;
-
-import java.util.concurrent.TimeUnit;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNull;
 
 /**
  * Tests listSnapshot.
@@ -75,7 +76,7 @@ public class TestListSnapshot {
    * Test listing all the snapshottable directories.
    */
   @Test
-  @Timeout(value = 60000, unit = TimeUnit.MILLISECONDS)
+  @Timeout(value = 60)
   public void testListSnapshot() throws Exception {
     fsn.getSnapshotManager().setAllowNestedSnapshots(true);
 
@@ -107,10 +108,8 @@ public class TestListSnapshot {
     hdfs.createSnapshot(dir1, "s0");
     snapshotStatuses = hdfs.getSnapshotListing(dir1);
     assertEquals(1, snapshotStatuses.length);
-    assertEquals("s0", snapshotStatuses[0].getDirStatus().
-        getLocalName());
-    assertEquals(SnapshotTestHelper.getSnapshotRoot(dir1, "s0"),
-        snapshotStatuses[0].getFullPath());
+    assertEquals("s0", snapshotStatuses[0].getDirStatus().getLocalName());
+    assertEquals(SnapshotTestHelper.getSnapshotRoot(dir1, "s0"), snapshotStatuses[0].getFullPath());
     // snapshot id is zero
     assertEquals(0, snapshotStatuses[0].getSnapshotID());
     // Create a snapshot for dir1

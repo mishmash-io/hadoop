@@ -25,6 +25,8 @@ import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hdfs.DFSConfigKeys;
 import org.apache.hadoop.hdfs.MiniDFSCluster;
 
+import static org.junit.jupiter.api.Assertions.assertNotEquals;
+
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -46,7 +48,7 @@ public class TestMalformedURLs {
     // correctly.
 
     assertNotEquals(config.get(DFSConfigKeys.DFS_NAMENODE_HTTP_ADDRESS_KEY),
-      config.getTrimmed(DFSConfigKeys.DFS_NAMENODE_HTTP_ADDRESS_KEY));
+        config.getTrimmed(DFSConfigKeys.DFS_NAMENODE_HTTP_ADDRESS_KEY));
     cluster = new MiniDFSCluster.Builder(config).build();
     cluster.waitActive();
   }

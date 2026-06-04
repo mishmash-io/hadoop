@@ -58,7 +58,6 @@ import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.junit.platform.console.ConsoleLauncher;
 
 import static org.apache.hadoop.conf.StorageUnit.BYTES;
 import static org.apache.hadoop.conf.StorageUnit.GB;
@@ -84,11 +83,14 @@ import org.apache.hadoop.security.alias.CredentialProvider;
 import org.apache.hadoop.security.alias.CredentialProviderFactory;
 import org.apache.hadoop.security.alias.LocalJavaKeyStoreProvider;
 import org.apache.hadoop.test.GenericTestUtils;
-import org.apache.hadoop.test.LogCapturingAppender;
+import org.apache.hadoop.util.concurrent.SubjectInheritingThread;
 
 import static org.apache.hadoop.util.PlatformName.IBM_JAVA;
 
-import org.apache.logging.log4j.core.LogEvent;
+import org.apache.log4j.AppenderSkeleton;
+import org.apache.log4j.Logger;
+import org.apache.log4j.spi.LoggingEvent;
+import org.junit.jupiter.api.io.TempDir;
 import org.mockito.Mockito;
 
 public class TestConfiguration {
@@ -122,7 +124,7 @@ public class TestConfiguration {
 
   @BeforeEach
   public void setUp() throws Exception {
-    conf = new Configuration();
+    conf = new Configuration(false);
   }
 
   @AfterEach
@@ -240,13 +242,13 @@ public class TestConfiguration {
       conf.addResource(in2);
       assertEquals("A", conf.get("prop"), "should see the first value");
 
+      List<LoggingEvent> events = appender.getLog();
       assertEquals(1, events.size(),
-        "overriding a final parameter should cause logging");
-      LogEvent loggingEvent = events.peek();
-      String renderedMessage = loggingEvent.getMessage().getFormattedMessage();
-      assertTrue(
-        renderedMessage.contains("an attempt to override final parameter: "
-            + "prop;  Ignoring."),
+          "overriding a final parameter should cause logging");
+      LoggingEvent loggingEvent = events.get(0);
+      String renderedMessage = loggingEvent.getRenderedMessage();
+      assertTrue(renderedMessage.contains(
+          "an attempt to override final parameter: prop;  Ignoring."),
           "did not see expected string inside message "+ renderedMessage);
     } finally {
       LogCapturingAppender.stop(Configuration.class.getName());
@@ -280,8 +282,7 @@ public class TestConfiguration {
       for (LogEvent loggingEvent : events) {
         System.out.println("Event = " + loggingEvent.getMessage().getFormattedMessage());
       }
-      assertTrue(events.isEmpty(),
-        "adding same resource twice should not cause logging");
+      assertTrue(events.isEmpty(), "adding same resource twice should not cause logging");
     } finally {
       LogCapturingAppender.stop(Configuration.class.getName());
     }
@@ -312,8 +313,7 @@ public class TestConfiguration {
       for (LogEvent loggingEvent : events) {
         System.out.println("Event = " + loggingEvent.getMessage().getFormattedMessage());
       }
-      assertTrue(events.isEmpty(),
-        "adding same resource twice should not cause logging");
+      assertTrue(events.isEmpty(), "adding same resource twice should not cause logging");
     } finally {
       LogCapturingAppender.stop(Configuration.class.getName());
     }
@@ -341,16 +341,94 @@ public class TestConfiguration {
       conf.addResource(in1);
       assertEquals("A", conf.get("prop"), "should see the value");
 
-      assertEquals(1, events.size(),
-        "overriding a final parameter should cause logging");
-      LogEvent loggingEvent = events.peek();
-      String renderedMessage = loggingEvent.getMessage().getFormattedMessage();
-      assertTrue(
-        renderedMessage.contains("an attempt to override final parameter: "
-            + "prop;  Ignoring."),
-        "did not see expected string inside message "+ renderedMessage);
+      List<LoggingEvent> events = appender.getLog();
+      assertEquals(1, events.size(), "overriding a final parameter should cause logging");
+      LoggingEvent loggingEvent = events.get(0);
+      String renderedMessage = loggingEvent.getRenderedMessage();
+      assertTrue(renderedMessage.contains("an attempt to override final parameter: " +
+          "prop;  Ignoring."), "did not see expected string inside message "+ renderedMessage);
     } finally {
-      LogCapturingAppender.stop(Configuration.class.getName());
+      // Make sure the appender is removed
+      logger.removeAppender(appender);
+    }
+  }
+
+  @Test
+  public void testDeprecatedPropertyInXMLFileGeneratesLogMessage(@TempDir java.nio.file.Path tmp) throws IOException {
+    String oldProp = "test.deprecation.old.conf.a";
+    String newProp = "test.deprecation.new.conf.a";
+    Configuration.addDeprecation(oldProp, newProp);
+    java.nio.file.Path confFile = Files.createFile(tmp.resolve("TestConfiguration.xml"));
+    String confXml = "<configuration><property><name>" + oldProp + "</name><value>a</value></property></configuration>";
+    Files.write(confFile, confXml.getBytes());
+
+    TestAppender appender = new TestAppender();
+    Logger deprecationLogger = Logger.getLogger("org.apache.hadoop.conf.Configuration.deprecation");
+    deprecationLogger.addAppender(appender);
+
+    try {
+      conf.addResource(new Path(confFile.toUri()));
+      // Properties are lazily initialized so access them to trigger the loading of the resource
+      conf.getProps();
+    } finally {
+      deprecationLogger.removeAppender(appender);
+    }
+
+    Pattern deprecationMsgPattern = Pattern.compile(oldProp + " in file:" + confFile + " is deprecated");
+    boolean hasDeprecationMessage = appender.log.stream().map(LoggingEvent::getRenderedMessage)
+            .anyMatch(msg -> deprecationMsgPattern.matcher(msg).find());
+    assertTrue(hasDeprecationMessage);
+  }
+
+  @Test
+  public void testDeprecatedPropertyLogsWarningOnEveryUse(){
+    String oldProp = "test.deprecation.old.conf.b";
+    String newProp = "test.deprecation.new.conf.b";
+    Configuration.addDeprecation(oldProp, newProp);
+
+    TestAppender appender = new TestAppender();
+    Logger deprecationLogger = Logger.getLogger("org.apache.hadoop.conf.Configuration.deprecation");
+    deprecationLogger.addAppender(appender);
+
+    try {
+      conf.set(oldProp, "b1");
+      conf.get(oldProp);
+      conf.set(oldProp, "b2");
+      conf.get(oldProp);
+      // Using the new property should not log a warning
+      conf.set(newProp, "b3");
+      conf.get(newProp);
+      conf.set(newProp, "b4");
+      conf.get(newProp);
+    } finally {
+      deprecationLogger.removeAppender(appender);
+    }
+
+    Pattern deprecationMsgPattern = Pattern.compile(oldProp + " is deprecated");
+    long count = appender.log.stream().map(LoggingEvent::getRenderedMessage)
+            .filter(msg -> deprecationMsgPattern.matcher(msg).find()).count();
+    assertEquals(4, count, "Expected exactly four warnings for deprecated property usage");
+  }
+
+  /**
+   * A simple appender for white box testing.
+   */
+  private static class TestAppender extends AppenderSkeleton {
+    private final List<LoggingEvent> log = new ArrayList<>();
+
+    @Override public boolean requiresLayout() {
+      return false;
+    }
+
+    @Override protected void append(final LoggingEvent loggingEvent) {
+      log.add(loggingEvent);
+    }
+
+    @Override public void close() {
+    }
+
+    public List<LoggingEvent> getLog() {
+      return new ArrayList<>(log);
     }
   }
 
@@ -367,7 +445,7 @@ public class TestConfiguration {
       String name = "multi_byte_\u611b_name";
       String value = "multi_byte_\u0641_value";
       out = new BufferedWriter(new OutputStreamWriter(
-        new FileOutputStream(CONFIG_MULTI_BYTE), "UTF-8"));
+        new FileOutputStream(CONFIG_MULTI_BYTE), StandardCharsets.UTF_8));
       startConfig();
       declareProperty(name, value, value);
       endConfig();
@@ -788,12 +866,10 @@ public class TestConfiguration {
     conf.set("dirs", StringUtils.join(dirs, ","));
     for (int i = 0; i < 1000; i++) {
       String localPath = conf.getLocalPath("dirs", "dir" + i).toString();
-      assertTrue(
-        localPath.endsWith("dir" + i),
-        "Path doesn't end in specified dir: " + localPath);
-      assertFalse(
-        localPath.contains(" "),
-        "Path has internal whitespace: " + localPath);
+      assertTrue(localPath.endsWith("dir" + i),
+          "Path doesn't end in specified dir: " + localPath);
+      assertFalse(localPath.contains(" "),
+          "Path has internal whitespace: " + localPath);
     }
   }
 
@@ -807,12 +883,10 @@ public class TestConfiguration {
     conf.set("dirs", StringUtils.join(dirs, ","));
     for (int i = 0; i < 1000; i++) {
       String localPath = conf.getFile("dirs", "dir" + i).toString();
-      assertTrue(
-        localPath.endsWith("dir" + i),
-        "Path doesn't end in specified dir: " + localPath);
-      assertFalse(
-        localPath.contains(" "),
-        "Path has internal whitespace: " + localPath);
+      assertTrue(localPath.endsWith("dir" + i),
+          "Path doesn't end in specified dir: " + localPath);
+      assertFalse(localPath.contains(" "),
+          "Path has internal whitespace: " + localPath);
     }
   }
 
@@ -825,8 +899,7 @@ public class TestConfiguration {
     conf.addResource(fileResource);
 
     String expectedOutput =
-      "Configuration: core-default.xml, core-site.xml, " +
-      fileResource.toString();
+      "Configuration: " + fileResource;
     assertEquals(expectedOutput, conf.toString());
   }
 
@@ -1674,15 +1747,14 @@ public class TestConfiguration {
     String [] sources = conf.getPropertySources("test.foo");
     assertEquals(1, sources.length);
     assertEquals(fileResource, new Path(sources[0]),
-        "Resource string returned for a file-loaded property" +
-            " must be a proper absolute path");
+        "Resource string returned for a file-loaded property " +
+        "must be a proper absolute path");
     assertArrayEquals(new String[]{"programmatically"},
         conf.getPropertySources("fs.defaultFS"),
         "Resource string returned for a set() property must be " +
-            "\"programmatically\"");
-    assertArrayEquals(null, conf.getPropertySources("fs.defaultFoo"), 
-        "Resource string returned for an unset property must "
-            + "be null");
+        "\"programmatically\"");
+    assertArrayEquals(null, conf.getPropertySources("fs.defaultFoo"),
+        "Resource string returned for an unset property must be null");
   }
 
   @Test
@@ -1700,7 +1772,7 @@ public class TestConfiguration {
     assertEquals("c", sources[2]);
     assertEquals(fileResource, new Path(sources[3]),
         "Resource string returned for a file-loaded property" +
-            " must be a proper absolute path");
+        " must be a proper absolute path");
   }
 
   @Test
@@ -2217,10 +2289,8 @@ public class TestConfiguration {
     Class<?>[] classes =
         config.getClasses("testClassName", Configuration.class);
     assertEquals(1, classes.length,
-        "Not returning expected number of classes. Number of returned classes ="
-            + classes.length);
-    assertEquals(Configuration.class, classes[0],
-        "Not returning the default class Name");
+        "Not returning expected number of classes. Number of returned classes =" + classes.length);
+    assertEquals(Configuration.class, classes[0], "Not returning the default class Name");
   }
 
   @Test
@@ -2230,8 +2300,7 @@ public class TestConfiguration {
     config.set("testClassName", "");
     Class<?>[] classes = config.getClasses("testClassName", Configuration.class);
     assertEquals(0, classes.length,
-        "Not returning expected number of classes. Number of returned classes ="
-            + classes.length);
+        "Not returning expected number of classes. Number of returned classes =" + classes.length);
   }
 
   @Test
@@ -2405,7 +2474,7 @@ public class TestConfiguration {
     Configuration conf = new Configuration();
     conf.addResource(fileResource);
 
-    class ConfigModifyThread extends Thread {
+    class ConfigModifyThread extends SubjectInheritingThread {
       final private Configuration config;
       final private String prefix;
 
@@ -2415,7 +2484,7 @@ public class TestConfiguration {
       }
 
       @Override
-      public void run() {
+      public void work() {
         for (int i = 0; i < 10000; i++) {
           config.set("some.config.value-" + prefix + i, "value");
         }
@@ -2535,12 +2604,6 @@ public class TestConfiguration {
     prefixedProps = conf.getPropsWithPrefix("none");
     assertNotNull(prefixedProps.isEmpty());
     assertTrue(prefixedProps.isEmpty());
-  }
-
-  public static void main(String[] argv) throws Exception {
-    ConsoleLauncher.main(new String[]{
-      TestConfiguration.class.getName()
-    });
   }
 
   @Test
@@ -2673,7 +2736,7 @@ public class TestConfiguration {
   @Test
   public void testConcurrentModificationDuringIteration() throws InterruptedException {
     Configuration configuration = new Configuration();
-    new Thread(() -> {
+    new SubjectInheritingThread(() -> {
       while (true) {
         configuration.set(String.valueOf(Math.random()), String.valueOf(Math.random()));
       }
@@ -2681,7 +2744,7 @@ public class TestConfiguration {
 
     AtomicBoolean exceptionOccurred = new AtomicBoolean(false);
 
-    new Thread(() -> {
+    new SubjectInheritingThread(() -> {
       while (true) {
         try {
           configuration.iterator();

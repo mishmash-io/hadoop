@@ -49,7 +49,7 @@ public class TestDataStream {
   }
 
   @Test
-  @Timeout(value = 60000, unit = TimeUnit.MILLISECONDS)
+  @Timeout(value = 60)
   public void testDfsClient() throws IOException, InterruptedException {
     LogCapturer logs = GenericTestUtils.LogCapturer.captureLogs(LoggerFactory
         .getLogger(DataStreamer.class));

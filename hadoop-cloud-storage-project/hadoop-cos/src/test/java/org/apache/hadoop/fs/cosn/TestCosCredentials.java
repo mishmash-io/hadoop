@@ -24,7 +24,7 @@ import com.qcloud.cos.auth.COSCredentialsProvider;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.hadoop.conf.Configuration;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -34,9 +34,10 @@ import java.net.URISyntaxException;
 
 import static org.apache.hadoop.fs.cosn.auth.DynamicTemporaryCosnCredentialsProvider.STS_SECRET_ID_KEY;
 import static org.apache.hadoop.fs.cosn.auth.DynamicTemporaryCosnCredentialsProvider.STS_SECRET_KEY_KEY;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
+import static org.junit.jupiter.api.Assertions.assertInstanceOf;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.fail;
 
 public class TestCosCredentials {
   private static final Logger LOG = LoggerFactory.getLogger(TestCosCredentials.class);
@@ -79,7 +80,7 @@ public class TestCosCredentials {
       COSCredentialsProvider credentialsProvider =
           CosNUtils.createCosCredentialsProviderSet(uri, configuration);
       COSCredentials cosCredentials = credentialsProvider.getCredentials();
-      assertNotNull("The cos credentials obtained is null.", cosCredentials);
+      assertNotNull(cosCredentials, "The cos credentials obtained is null.");
       if (configuration.get(
           CosNConfigKeys.COSN_CREDENTIALS_PROVIDER).compareToIgnoreCase(
           "org.apache.hadoop.fs.cosn.auth.EnvironmentVariableCredentialsProvider")
@@ -153,17 +154,17 @@ public class TestCosCredentials {
     COSCredentialsProvider credentialsProvider =
         CosNUtils.createCosCredentialsProviderSet(uri, configuration);
     COSCredentials cosCredentials = credentialsProvider.getCredentials();
-    assertNotNull("The cos credentials obtained is null.", cosCredentials);
-    assertTrue("CredentialsProvider must be DynamicTemporaryCosnCredentialsProvider",
+    assertNotNull(cosCredentials, "The cos credentials obtained is null.");
+    assertTrue(
         StringUtils.equalsIgnoreCase(configuration.get(CosNConfigKeys.COSN_CREDENTIALS_PROVIDER),
-            "org.apache.hadoop.fs.cosn.auth.DynamicTemporaryCosnCredentialsProvider"));
+            "org.apache.hadoop.fs.cosn.auth.DynamicTemporaryCosnCredentialsProvider"),
+        "CredentialsProvider must be DynamicTemporaryCosnCredentialsProvider");
 
-    assertTrue("cosCredentials must be instanceof BasicSessionCredentials",
-        cosCredentials instanceof BasicSessionCredentials);
-
-    assertNotNull("session access key id is null", cosCredentials.getCOSAccessKeyId());
-    assertNotNull("session access key is null", cosCredentials.getCOSSecretKey());
-    assertNotNull("access token is null",
-        ((BasicSessionCredentials) cosCredentials).getSessionToken());
+    assertInstanceOf(BasicSessionCredentials.class, cosCredentials,
+        "cosCredentials must be instanceof BasicSessionCredentials");
+    assertNotNull(cosCredentials.getCOSAccessKeyId(), "session access key id is null");
+    assertNotNull(cosCredentials.getCOSSecretKey(), "session access key is null");
+    assertNotNull(((BasicSessionCredentials) cosCredentials).getSessionToken(),
+        "access token is null");
   }
 }

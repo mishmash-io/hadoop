@@ -19,11 +19,12 @@ package org.apache.hadoop.fs;
 
 import static org.apache.hadoop.test.LambdaTestUtils.intercept;
 import static org.apache.hadoop.test.PlatformAssumptions.assumeNotWindows;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -69,13 +70,13 @@ import org.apache.hadoop.util.StringUtils;
 import org.apache.tools.tar.TarEntry;
 import org.apache.tools.tar.TarOutputStream;
 
-import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.Timeout;
 import org.junit.jupiter.api.io.TempDir;
+import org.mockito.exceptions.misusing.MissingMethodInvocationException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -83,7 +84,7 @@ public class TestFileUtil {
   private static final Logger LOG = LoggerFactory.getLogger(TestFileUtil.class);
 
   @TempDir
-  public File testFolder;
+  private java.nio.file.Path testFolder;
 
   private static final String FILE = "x";
   private static final String LINK = "y";
@@ -143,12 +144,9 @@ public class TestFileUtil {
    */
   @BeforeEach
   public void setup() throws IOException {
-    del = new File(testFolder, "del");
-    FileUtils.forceMkdir(del);
-    tmp = new File(testFolder, "tmp");
-    FileUtils.forceMkdir(tmp);
-    partitioned = new File(testFolder, "partitioned");
-    FileUtils.forceMkdir(partitioned);
+    del = testFolder.resolve("del").toFile();
+    tmp = testFolder.resolve("tmp").toFile();
+    partitioned = testFolder.resolve("partitioned").toFile();
 
     zlink = new File(del, "zlink");
 
@@ -166,6 +164,8 @@ public class TestFileUtil {
 
     FileUtils.forceMkdir(dir1);
     FileUtils.forceMkdir(dir2);
+    FileUtils.forceMkdir(tmp);
+    FileUtils.forceMkdir(partitioned);
 
     Verify.createNewFile(new File(del, FILE));
     File tmpFile = Verify.createNewFile(new File(tmp, FILE));
@@ -193,7 +193,17 @@ public class TestFileUtil {
 
   @AfterEach
   public void tearDown() throws IOException {
-    testFolder.delete();
+    if (Files.exists(testFolder)) {
+      Files.walk(testFolder)
+          .map(java.nio.file.Path::toFile)
+          .forEach(file -> {
+            if (file.isDirectory()) {
+              file.delete();
+            } else {
+              file.delete();
+            }
+          });
+    }
   }
 
   /**
@@ -215,7 +225,7 @@ public class TestFileUtil {
   }
 
   @Test
-  @Timeout(value=30000, unit=TimeUnit.MILLISECONDS)
+  @Timeout(value = 30)
   public void testListFiles() throws IOException {
     //Test existing files case 
     File[] files = FileUtil.listFiles(partitioned);
@@ -242,7 +252,7 @@ public class TestFileUtil {
   }
 
   @Test
-  @Timeout(value=30000, unit=TimeUnit.MILLISECONDS)
+  @Timeout(value = 30)
   public void testListAPI() throws IOException {
     //Test existing files case 
     String[] files = FileUtil.list(partitioned);
@@ -269,7 +279,7 @@ public class TestFileUtil {
   }
 
   @Test
-  @Timeout(value=30000, unit=TimeUnit.MILLISECONDS)
+  @Timeout(value = 30)
   public void testFullyDelete() throws IOException {
     boolean ret = FileUtil.fullyDelete(del);
     assertTrue(ret);
@@ -284,7 +294,7 @@ public class TestFileUtil {
    * @throws IOException
    */
   @Test
-  @Timeout(value=30000, unit=TimeUnit.MILLISECONDS)
+  @Timeout(value = 30)
   public void testFullyDeleteSymlinks() throws IOException {
     File link = new File(del, LINK);
     assertDelListLength(5);
@@ -313,7 +323,7 @@ public class TestFileUtil {
    * @throws IOException
    */
   @Test
-  @Timeout(value=30000, unit=TimeUnit.MILLISECONDS)
+  @Timeout(value = 30)
   public void testFullyDeleteDanglingSymlinks() throws IOException {
     // delete the directory tmp to make tmpDir a dangling link to dir tmp and
     // to make y as a dangling link to file tmp/x
@@ -340,7 +350,7 @@ public class TestFileUtil {
   }
 
   @Test
-  @Timeout(value=30000, unit=TimeUnit.MILLISECONDS)
+  @Timeout(value = 30)
   public void testFullyDeleteContents() throws IOException {
     boolean ret = FileUtil.fullyDeleteContents(del);
     assertTrue(ret);
@@ -420,10 +430,9 @@ public class TestFileUtil {
     grantPermissions(xSubSubDir);
     
     assertFalse(ret, "The return value should have been false.");
-    assertTrue(new File(del, FILE_1_NAME).exists(), "The file file1 should not have been deleted.");
-    
-    assertEquals(
-        expectedRevokedPermissionDirsExist, xSubDir.exists(),
+    assertTrue(new File(del, FILE_1_NAME).exists(),
+        "The file file1 should not have been deleted.");
+    assertEquals(expectedRevokedPermissionDirsExist, xSubDir.exists(),
         "The directory xSubDir *should* not have been deleted.");
     assertEquals(expectedRevokedPermissionDirsExist, file2.exists(),
         "The file file2 *should* not have been deleted.");
@@ -431,15 +440,12 @@ public class TestFileUtil {
         "The directory xSubSubDir *should* not have been deleted.");
     assertEquals(expectedRevokedPermissionDirsExist, file22.exists(),
         "The file file22 *should* not have been deleted.");
-    
-    assertFalse(ySubDir.exists(),
-        "The directory ySubDir should have been deleted.");
-    assertFalse(zlink.exists(),
-        "The link zlink should have been deleted.");
+    assertFalse(ySubDir.exists(), "The directory ySubDir should have been deleted.");
+    assertFalse(zlink.exists(), "The link zlink should have been deleted.");
   }
 
   @Test
-  @Timeout(value=30000, unit=TimeUnit.MILLISECONDS)
+  @Timeout(value = 30)
   public void testFailFullyDelete() throws IOException {
     // Windows Dir.setWritable(false) does not work for directories
     assumeNotWindows();
@@ -450,7 +456,7 @@ public class TestFileUtil {
   }
 
   @Test
-  @Timeout(value=30000, unit=TimeUnit.MILLISECONDS)
+  @Timeout(value = 30)
   public void testFailFullyDeleteGrantPermissions() throws IOException {
     setupDirsAndNonWritablePermissions();
     boolean ret = FileUtil.fullyDelete(new MyFile(del), true);
@@ -464,7 +470,7 @@ public class TestFileUtil {
    * @throws IOException
    */
   @Test
-  @Timeout(value=30000, unit=TimeUnit.MILLISECONDS)
+  @Timeout(value = 30)
   public void testFailFullyDeleteDirSymlinks() throws IOException {
     File linkDir = new File(del, "tmpDir");
     FileUtil.setWritable(del, false);
@@ -494,7 +500,7 @@ public class TestFileUtil {
    * @param expectedLength The expected length of the {@link TestFileUtil#del}.
    */
   private void assertDelListLength(int expectedLength) {
-    Assertions.assertThat(del.list()).describedAs("del list").isNotNull().hasSize(expectedLength);
+    assertThat(del.list()).describedAs("del list").isNotNull().hasSize(expectedLength);
   }
 
   /**
@@ -632,7 +638,7 @@ public class TestFileUtil {
   }
 
   @Test
-  @Timeout(value=30000, unit=TimeUnit.MILLISECONDS)
+  @Timeout(value = 30)
   public void testFailFullyDeleteContents() throws IOException {
     // Windows Dir.setWritable(false) does not work for directories
     assumeNotWindows();
@@ -643,7 +649,7 @@ public class TestFileUtil {
   }
 
   @Test
-  @Timeout(value=30000, unit=TimeUnit.MILLISECONDS)
+  @Timeout(value = 30)
   public void testFailFullyDeleteContentsGrantPermissions() throws IOException {
     setupDirsAndNonWritablePermissions();
     boolean ret = FileUtil.fullyDeleteContents(new MyFile(del), true);
@@ -657,9 +663,9 @@ public class TestFileUtil {
    * @throws IOException
    */
   @Test
-  @Timeout(value=30000, unit=TimeUnit.MILLISECONDS)
+  @Timeout(value = 30)
   public void testGetDU() throws Exception {
-    long du = FileUtil.getDU(testFolder);
+    long du = FileUtil.getDU(testFolder.toFile());
     // Only two files (in partitioned).  Each has 3 characters + system-specific
     // line separator.
     final long expected = 2 * (3 + System.getProperty("line.separator").length());
@@ -707,7 +713,7 @@ public class TestFileUtil {
   }
 
   @Test
-  @Timeout(value=30000, unit=TimeUnit.MILLISECONDS)
+  @Timeout(value = 30)
   public void testUnTar() throws Exception {
     // make a simple tar:
     final File simpleTar = new File(del, FILE);
@@ -735,7 +741,7 @@ public class TestFileUtil {
   }
   
   @Test
-  @Timeout(value=30000, unit=TimeUnit.MILLISECONDS)
+  @Timeout(value = 30)
   public void testReplaceFile() throws IOException {
     // src exists, and target does not exist:
     final File srcFile = Verify.createNewFile(new File(tmp, "src"));
@@ -772,7 +778,7 @@ public class TestFileUtil {
   }
   
   @Test
-  @Timeout(value=30000, unit=TimeUnit.MILLISECONDS)
+  @Timeout(value = 30)
   public void testCreateLocalTempFile() throws IOException {
     final File baseFile = new File(tmp, "base");
     File tmp1 = FileUtil.createLocalTempFile(baseFile, "foo", false);
@@ -788,7 +794,7 @@ public class TestFileUtil {
   }
   
   @Test
-  @Timeout(value=30000, unit=TimeUnit.MILLISECONDS)
+  @Timeout(value = 30)
   public void testUnZip() throws Exception {
     // make sa simple zip
     final File simpleZip = new File(del, FILE);
@@ -864,7 +870,7 @@ public class TestFileUtil {
   }
 
   @Test
-  @Timeout(value=30000, unit=TimeUnit.MILLISECONDS)
+  @Timeout(value = 30)
   public void testUnZip2() throws IOException {
     // make a simple zip
     final File simpleZip = new File(del, FILE);
@@ -892,7 +898,7 @@ public class TestFileUtil {
   }
 
   @Test
-  @Timeout(value=30000, unit=TimeUnit.MILLISECONDS)
+  @Timeout(value = 30)
   /*
    * Test method copy(FileSystem srcFS, Path src, File dst, boolean deleteSource, Configuration conf)
    */
@@ -941,7 +947,7 @@ public class TestFileUtil {
   }  
 
   @Test
-  @Timeout(value=30000, unit=TimeUnit.MILLISECONDS)
+  @Timeout(value = 30)
   public void testStat2Paths1() {
     assertNull(FileUtil.stat2Paths(null));
     
@@ -962,7 +968,7 @@ public class TestFileUtil {
   }
   
   @Test
-  @Timeout(value=30000, unit=TimeUnit.MILLISECONDS)
+  @Timeout(value = 30)
   public void testStat2Paths2()  {
     Path defaultPath = new Path("file://default");
     Path[] paths = FileUtil.stat2Paths(null, defaultPath);
@@ -987,7 +993,7 @@ public class TestFileUtil {
   }
 
   @Test
-  @Timeout(value=30000, unit=TimeUnit.MILLISECONDS)
+  @Timeout(value = 30)
   public void testSymlink() throws Exception {
     byte[] data = "testSymLink".getBytes();
 
@@ -1020,7 +1026,7 @@ public class TestFileUtil {
    * Test that rename on a symlink works as expected.
    */
   @Test
-  @Timeout(value=30000, unit=TimeUnit.MILLISECONDS)
+  @Timeout(value = 30)
   public void testSymlinkRenameTo() throws Exception {
     File file = new File(del, FILE);
     file.createNewFile();
@@ -1050,7 +1056,7 @@ public class TestFileUtil {
    * Test that deletion of a symlink works as expected.
    */
   @Test
-  @Timeout(value=30000, unit=TimeUnit.MILLISECONDS)
+  @Timeout(value = 30)
   public void testSymlinkDelete() throws Exception {
     File file = new File(del, FILE);
     file.createNewFile();
@@ -1072,7 +1078,7 @@ public class TestFileUtil {
    * Test that length on a symlink works as expected.
    */
   @Test
-  @Timeout(value=30000, unit=TimeUnit.MILLISECONDS)
+  @Timeout(value = 30)
   public void testSymlinkLength() throws Exception {
     byte[] data = "testSymLinkData".getBytes();
 
@@ -1257,7 +1263,7 @@ public class TestFileUtil {
   }
 
   @Test
-  @Timeout(value=30000, unit=TimeUnit.MILLISECONDS)
+  @Timeout(value = 30)
   public void testUntar() throws IOException {
     String tarGzFileName = System.getProperty("test.cache.data",
         "target/test/cache") + "/test-untar.tgz";
@@ -1276,7 +1282,7 @@ public class TestFileUtil {
    * but both MUST throw an IOE of some kind.
    */
   @Test
-  @Timeout(value=30000, unit=TimeUnit.MILLISECONDS)
+  @Timeout(value = 30)
   public void testUntarMissingFile() throws Throwable {
     File dataDir = GenericTestUtils.getTestDir();
     File tarFile = new File(dataDir, "missing; true");
@@ -1292,7 +1298,7 @@ public class TestFileUtil {
    * will behave on Windows,
    */
   @Test
-  @Timeout(value=30000, unit=TimeUnit.MILLISECONDS)
+  @Timeout(value = 30)
   public void testUntarMissingFileThroughJava() throws Throwable {
     File dataDir = GenericTestUtils.getTestDir();
     File tarFile = new File(dataDir, "missing; true");
@@ -1305,7 +1311,7 @@ public class TestFileUtil {
   }
 
   @Test
-  @Timeout(value=30000, unit=TimeUnit.MILLISECONDS)
+  @Timeout(value = 30)
   public void testCreateJarWithClassPath() throws Exception {
     // create files expected to match a wildcard
     List<File> wildcardMatches = Arrays.asList(new File(tmp, "wildcard1.jar"),
@@ -1313,7 +1319,7 @@ public class TestFileUtil {
       new File(tmp, "wildcard4.JAR"));
     for (File wildcardMatch: wildcardMatches) {
       assertTrue(wildcardMatch.createNewFile(),
-        "failure creating file: " + wildcardMatch);
+          "failure creating file: " + wildcardMatch);
     }
 
     // create non-jar files, which we expect to not be included in the classpath
@@ -1328,10 +1334,12 @@ public class TestFileUtil {
     List<String> classPaths = Arrays.asList("", "cp1.jar", "cp2.jar", wildcardPath,
       "cp3.jar", nonExistentSubdir);
     String inputClassPath = StringUtils.join(File.pathSeparator, classPaths);
-    String[] jarCp = FileUtil.createJarWithClassPath(inputClassPath + File.pathSeparator + "unexpandedwildcard/*",
-      new Path(tmp.getCanonicalPath()), System.getenv());
+    String[] jarCp = FileUtil.createJarWithClassPath(inputClassPath +
+        File.pathSeparator + "unexpandedwildcard/*",
+        new Path(tmp.getCanonicalPath()), System.getenv());
     String classPathJar = jarCp[0];
-    assertNotEquals(jarCp[1].indexOf("unexpanded"), -1, "Unexpanded wildcard was not placed in extra classpath");
+    assertNotEquals(jarCp[1].indexOf("unexpanded"), -1,
+        "Unexpanded wildcard was not placed in extra classpath");
 
     // verify classpath by reading manifest from jar file
     JarFile jarFile = null;
@@ -1415,8 +1423,7 @@ public class TestFileUtil {
     assertEquals(2, jars.size(), "there should be 2 jars");
     for (Path jar: jars) {
       URL url = jar.toUri().toURL();
-      assertTrue(
-          url.equals(jar1.getCanonicalFile().toURI().toURL()) ||
+      assertTrue(url.equals(jar1.getCanonicalFile().toURI().toURL()) ||
           url.equals(jar2.getCanonicalFile().toURI().toURL()),
           "the jar should match either of the jars");
     }
@@ -1466,7 +1473,7 @@ public class TestFileUtil {
       when(InetAddress.getByName(uris3)).thenReturn(inet3);
       when(InetAddress.getByName(uris4)).thenReturn(inet4);
       when(InetAddress.getByName(uris5)).thenReturn(inet5);
-    } catch (UnknownHostException ignored) {
+    } catch (UnknownHostException | MissingMethodInvocationException ignored) {
     }
 
     fs1 = mock(FileSystem.class);
@@ -1501,7 +1508,7 @@ public class TestFileUtil {
   }
 
   @Test
-  @Timeout(value=8000, unit=TimeUnit.MILLISECONDS)
+  @Timeout(value = 8)
   public void testCreateSymbolicLinkUsingJava() throws IOException {
     final File simpleTar = new File(del, FILE);
     OutputStream os = new FileOutputStream(simpleTar);
@@ -1537,39 +1544,38 @@ public class TestFileUtil {
 
   @Test
   public void testCreateArbitrarySymlinkUsingJava() throws IOException {
-    final File simpleTar = new File(del, FILE);
-    OutputStream os = new FileOutputStream(simpleTar);
+    assertThrows(IOException.class, () -> {
+      final File simpleTar = new File(del, FILE);
+      OutputStream os = new FileOutputStream(simpleTar);
+      File rootDir = new File("tmp");
+      try (TarArchiveOutputStream tos = new TarArchiveOutputStream(os)) {
+        tos.setLongFileMode(TarArchiveOutputStream.LONGFILE_GNU);
 
-    File rootDir = new File("tmp");
-    try (TarArchiveOutputStream tos = new TarArchiveOutputStream(os)) {
-      tos.setLongFileMode(TarArchiveOutputStream.LONGFILE_GNU);
+        // Create arbitrary dir
+        File arbitraryDir = new File(rootDir, "arbitrary-dir/");
+        Verify.mkdirs(arbitraryDir);
 
-      // Create arbitrary dir
-      File arbitraryDir = new File(rootDir, "arbitrary-dir/");
-      Verify.mkdirs(arbitraryDir);
+        // We will tar from the tar-root lineage
+        File tarRoot = new File(rootDir, "tar-root/");
+        File symlinkRoot = new File(tarRoot, "dir1/");
+        Verify.mkdirs(symlinkRoot);
 
-      // We will tar from the tar-root lineage
-      File tarRoot = new File(rootDir, "tar-root/");
-      File symlinkRoot = new File(tarRoot, "dir1/");
-      Verify.mkdirs(symlinkRoot);
+        // Create Symbolic Link to an arbitrary dir
+        java.nio.file.Path symLink = Paths.get(symlinkRoot.getPath(), "sl");
+        Files.createSymbolicLink(symLink, arbitraryDir.toPath().toAbsolutePath());
 
-      // Create Symbolic Link to an arbitrary dir
-      java.nio.file.Path symLink = Paths.get(symlinkRoot.getPath(), "sl");
-      Files.createSymbolicLink(symLink, arbitraryDir.toPath().toAbsolutePath());
+        // Put entries in tar file
+        putEntriesInTar(tos, tarRoot);
+        putEntriesInTar(tos, new File(symLink.toFile(), "dir-outside-tar-root/"));
+        tos.close();
 
-      // Put entries in tar file
-      putEntriesInTar(tos, tarRoot);
-      putEntriesInTar(tos, new File(symLink.toFile(), "dir-outside-tar-root/"));
-      tos.close();
-
-      assertThrows(IOException.class, () -> {
         // Untar using Java
         File untarFile = new File(rootDir, "extracted");
         FileUtil.unTarUsingJava(simpleTar, untarFile, false);
-      });
-    } finally {
-      FileUtils.deleteDirectory(rootDir);
-    }
+      } finally {
+        FileUtils.deleteDirectory(rootDir);
+      }
+    });
   }
 
   private void putEntriesInTar(TarArchiveOutputStream tos, File f)

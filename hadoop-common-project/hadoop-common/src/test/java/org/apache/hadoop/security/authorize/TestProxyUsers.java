@@ -17,10 +17,6 @@
  */
 package org.apache.hadoop.security.authorize;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.junit.jupiter.api.Assertions.fail;
-
 import java.io.IOException;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
@@ -37,6 +33,8 @@ import org.apache.hadoop.util.StringUtils;
 import org.junit.jupiter.api.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import static org.junit.jupiter.api.Assertions.*;
 
 
 public class TestProxyUsers {
@@ -339,43 +337,35 @@ public class TestProxyUsers {
 
   @Test
   public void testNullUser() throws Exception {
-    Configuration conf = new Configuration();
-    conf.set(
-        DefaultImpersonationProvider.getTestProvider().
-            getProxySuperuserGroupConfKey(REAL_USER_NAME),
-        "*");
-    conf.set(
-        DefaultImpersonationProvider.getTestProvider().
-            getProxySuperuserIpConfKey(REAL_USER_NAME),
-        PROXY_IP_RANGE);
-    ProxyUsers.refreshSuperUserGroupsConfiguration(conf);
-    // user is null
     assertThrows(IllegalArgumentException.class, () -> {
+      Configuration conf = new Configuration();
+      conf.set(DefaultImpersonationProvider.getTestProvider().
+          getProxySuperuserGroupConfKey(REAL_USER_NAME), "*");
+      conf.set(DefaultImpersonationProvider.getTestProvider().
+          getProxySuperuserIpConfKey(REAL_USER_NAME), PROXY_IP_RANGE);
+      ProxyUsers.refreshSuperUserGroupsConfiguration(conf);
+      // user is null
       ProxyUsers.authorize(null, "10.222.0.0");
     });
   }
 
   @Test
   public void testNullIpAddress() throws Exception {
-    Configuration conf = new Configuration();
-    conf.set(
-        DefaultImpersonationProvider.getTestProvider().
-            getProxySuperuserGroupConfKey(REAL_USER_NAME),
-        "*");
-    conf.set(
-        DefaultImpersonationProvider.getTestProvider().
-            getProxySuperuserIpConfKey(REAL_USER_NAME),
-        PROXY_IP_RANGE);
-    ProxyUsers.refreshSuperUserGroupsConfiguration(conf);
-
-    // First try proxying a group that's allowed
-    UserGroupInformation realUserUgi = UserGroupInformation
-        .createRemoteUser(REAL_USER_NAME);
-    UserGroupInformation proxyUserUgi = UserGroupInformation.createProxyUserForTesting(
-        PROXY_USER_NAME, realUserUgi, GROUP_NAMES);
-
-    // remote address is null
     assertThrows(IllegalArgumentException.class, () -> {
+      Configuration conf = new Configuration();
+      conf.set(DefaultImpersonationProvider.getTestProvider().
+          getProxySuperuserGroupConfKey(REAL_USER_NAME), "*");
+      conf.set(DefaultImpersonationProvider.getTestProvider().
+          getProxySuperuserIpConfKey(REAL_USER_NAME), PROXY_IP_RANGE);
+      ProxyUsers.refreshSuperUserGroupsConfiguration(conf);
+
+      // First try proxying a group that's allowed
+      UserGroupInformation realUserUgi = UserGroupInformation
+          .createRemoteUser(REAL_USER_NAME);
+      UserGroupInformation proxyUserUgi = UserGroupInformation.createProxyUserForTesting(
+          PROXY_USER_NAME, realUserUgi, GROUP_NAMES);
+
+      // remote address is null
       ProxyUsers.authorize(proxyUserUgi, (InetAddress) null);
     });
   }
@@ -483,17 +473,14 @@ public class TestProxyUsers {
 
   @Test
   public void testProxyUsersWithNullPrefix() throws Exception {
-    assertThrows(IllegalArgumentException.class, () -> {
-      ProxyUsers.refreshSuperUserGroupsConfiguration(new Configuration(false), 
-        null);
-    });
+    assertThrows(IllegalArgumentException.class,
+        ()-> ProxyUsers.refreshSuperUserGroupsConfiguration(new Configuration(false), null));
   }
 
   @Test
   public void testProxyUsersWithEmptyPrefix() throws Exception {
     assertThrows(IllegalArgumentException.class, () -> {
-      ProxyUsers.refreshSuperUserGroupsConfiguration(new Configuration(false), 
-        "");
+      ProxyUsers.refreshSuperUserGroupsConfiguration(new Configuration(false), "");
     });
   }
 

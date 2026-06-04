@@ -21,10 +21,8 @@ package org.apache.hadoop.hdfs.server.namenode;
 import static org.apache.hadoop.fs.CommonConfigurationKeysPublic.HADOOP_CALLER_CONTEXT_ENABLED_KEY;
 import static org.apache.hadoop.hdfs.DFSConfigKeys.DFS_NAMENODE_EDITS_DIR_KEY;
 import static org.apache.hadoop.hdfs.DFSConfigKeys.DFS_NAMENODE_NAME_DIR_KEY;
-import static org.hamcrest.CoreMatchers.either;
-import static org.hamcrest.CoreMatchers.instanceOf;
-import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.jupiter.api.Assertions.*;
+import static org.assertj.core.api.Assertions.assertThat;
 
 import java.io.File;
 import java.io.IOException;
@@ -47,6 +45,7 @@ import org.apache.hadoop.hdfs.server.namenode.ha.HAState;
 import org.apache.hadoop.hdfs.server.namenode.snapshot.Snapshot;
 import org.apache.hadoop.hdfs.server.namenode.top.TopAuditLogger;
 import org.apache.hadoop.hdfs.server.protocol.NamespaceInfo;
+import org.apache.hadoop.hdfs.util.RwLockMode;
 import org.apache.hadoop.test.Whitebox;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
@@ -111,16 +110,17 @@ public class TestFSNamesystem {
     FSNamesystem fsn = new FSNamesystem(conf, fsImage);
 
     fsn.leaveSafeMode(false);
-    assertTrue(!fsn.isInStartupSafeMode(), "After leaving safemode FSNamesystem.isInStartupSafeMode still "
-      + "returned true");
-    assertTrue(!fsn.isInSafeMode(), "After leaving safemode FSNamesystem.isInSafeMode still returned"
-      + " true");
+    assertTrue(!fsn.isInStartupSafeMode(),
+        "After leaving safemode FSNamesystem.isInStartupSafeMode still " + "returned true");
+    assertTrue(!fsn.isInSafeMode(),
+        "After leaving safemode FSNamesystem.isInSafeMode still returned" + " true");
 
     fsn.enterSafeMode(true);
-    assertTrue(!fsn.isInStartupSafeMode(), "After entering safemode due to low resources FSNamesystem."
-      + "isInStartupSafeMode still returned true");
-    assertTrue(fsn.isInSafeMode(),  "After entering safemode due to low resources FSNamesystem."
-      + "isInSafeMode still returned false");
+    assertTrue(!fsn.isInStartupSafeMode(),
+        "After entering safemode due to low resources FSNamesystem."
+            + "isInStartupSafeMode still returned true");
+    assertTrue(fsn.isInSafeMode(), "After entering safemode due to low resources FSNamesystem."
+        + "isInSafeMode still returned false");
   }
 
   @Test
@@ -148,16 +148,16 @@ public class TestFSNamesystem {
 
     fsn.enterSafeMode(false);
     assertTrue(fsn.isInSafeMode(), "FSNamesystem didn't enter safemode");
-    assertTrue(!bm.isPopulatingReplQueues(), "Replication queues were being populated during very first "
-        + "safemode");
+    assertTrue(!bm.isPopulatingReplQueues(),
+        "Replication queues were being populated during very first " + "safemode");
     fsn.leaveSafeMode(false);
     assertTrue(!fsn.isInSafeMode(), "FSNamesystem didn't leave safemode");
-    assertTrue(bm.isPopulatingReplQueues(), "Replication queues weren't being populated even after leaving "
-      + "safemode");
+    assertTrue(bm.isPopulatingReplQueues(),
+        "Replication queues weren't being populated even after leaving " + "safemode");
     fsn.enterSafeMode(false);
     assertTrue(fsn.isInSafeMode(), "FSNamesystem didn't enter safemode");
-    assertTrue(bm.isPopulatingReplQueues(), "Replication queues weren't being populated after entering "
-      + "safemode 2nd time");
+    assertTrue(bm.isPopulatingReplQueues(),
+        "Replication queues weren't being populated after entering " + "safemode 2nd time");
   }
 
   @Test
@@ -197,33 +197,25 @@ public class TestFSNamesystem {
   }
 
   private void clearNamesystem(FSNamesystem fsn) {
-    fsn.writeLock();
+    fsn.writeLock(RwLockMode.GLOBAL);
     try {
       fsn.clear();
       assertFalse(fsn.isImageLoaded());
     } finally {
-      fsn.writeUnlock();
+      fsn.writeUnlock(RwLockMode.GLOBAL, "clearNamesystem");
     }
   }
 
   @Test
   public void testGetEffectiveLayoutVersion() {
-    assertEquals(-63,
-        FSNamesystem.getEffectiveLayoutVersion(true, -60, -61, -63));
-    assertEquals(-61,
-        FSNamesystem.getEffectiveLayoutVersion(true, -61, -61, -63));
-    assertEquals(-62,
-        FSNamesystem.getEffectiveLayoutVersion(true, -62, -61, -63));
-    assertEquals(-63,
-        FSNamesystem.getEffectiveLayoutVersion(true, -63, -61, -63));
-    assertEquals(-63,
-        FSNamesystem.getEffectiveLayoutVersion(false, -60, -61, -63));
-    assertEquals(-63,
-        FSNamesystem.getEffectiveLayoutVersion(false, -61, -61, -63));
-    assertEquals(-63,
-        FSNamesystem.getEffectiveLayoutVersion(false, -62, -61, -63));
-    assertEquals(-63,
-        FSNamesystem.getEffectiveLayoutVersion(false, -63, -61, -63));
+    assertEquals(-63, FSNamesystem.getEffectiveLayoutVersion(true, -60, -61, -63));
+    assertEquals(-61, FSNamesystem.getEffectiveLayoutVersion(true, -61, -61, -63));
+    assertEquals(-62, FSNamesystem.getEffectiveLayoutVersion(true, -62, -61, -63));
+    assertEquals(-63, FSNamesystem.getEffectiveLayoutVersion(true, -63, -61, -63));
+    assertEquals(-63, FSNamesystem.getEffectiveLayoutVersion(false, -60, -61, -63));
+    assertEquals(-63, FSNamesystem.getEffectiveLayoutVersion(false, -61, -61, -63));
+    assertEquals(-63, FSNamesystem.getEffectiveLayoutVersion(false, -62, -61, -63));
+    assertEquals(-63, FSNamesystem.getEffectiveLayoutVersion(false, -63, -61, -63));
   }
 
   @Test
@@ -243,7 +235,7 @@ public class TestFSNamesystem {
   }
 
   @Test
-  @Timeout(value = 30000, unit = TimeUnit.MILLISECONDS)
+  @Timeout(value = 30)
   public void testInitAuditLoggers() throws IOException {
     Configuration conf = new Configuration();
     FSImage fsImage = Mockito.mock(FSImage.class);
@@ -275,9 +267,9 @@ public class TestFSNamesystem {
     assertTrue(auditLoggers.size() == 2);
     // the audit loggers order is not defined
     for (AuditLogger auditLogger : auditLoggers) {
-      assertThat(auditLogger,
-          either(instanceOf(FSNamesystem.FSNamesystemAuditLogger.class))
-              .or(instanceOf(TopAuditLogger.class)));
+      assertThat(auditLogger)
+          .isInstanceOfAny(FSNamesystem.FSNamesystemAuditLogger.class,
+              TopAuditLogger.class);
     }
 
     // Configure default audit loggers in config
@@ -288,9 +280,9 @@ public class TestFSNamesystem {
     auditLoggers = fsn.getAuditLoggers();
     assertTrue(auditLoggers.size() == 2);
     for (AuditLogger auditLogger : auditLoggers) {
-      assertThat(auditLogger,
-          either(instanceOf(FSNamesystem.FSNamesystemAuditLogger.class))
-              .or(instanceOf(TopAuditLogger.class)));
+      assertThat(auditLogger)
+          .isInstanceOfAny(FSNamesystem.FSNamesystemAuditLogger.class,
+              TopAuditLogger.class);
     }
 
     // Configure default and customized audit loggers in config with whitespaces
@@ -302,10 +294,9 @@ public class TestFSNamesystem {
     auditLoggers = fsn.getAuditLoggers();
     assertTrue(auditLoggers.size() == 3);
     for (AuditLogger auditLogger : auditLoggers) {
-      assertThat(auditLogger,
-          either(instanceOf(FSNamesystem.FSNamesystemAuditLogger.class))
-              .or(instanceOf(TopAuditLogger.class))
-              .or(instanceOf(DummyAuditLogger.class)));
+      assertThat(auditLogger)
+          .isInstanceOfAny(FSNamesystem.FSNamesystemAuditLogger.class,
+              TopAuditLogger.class, DummyAuditLogger.class);
     }
 
     // Test Configuring TopAuditLogger.
@@ -314,7 +305,7 @@ public class TestFSNamesystem {
     fsn = new FSNamesystem(conf, fsImage);
     auditLoggers = fsn.getAuditLoggers();
     assertEquals(1, auditLoggers.size());
-    assertThat(auditLoggers.get(0), instanceOf(TopAuditLogger.class));
+    assertThat(auditLoggers.get(0)).isInstanceOf(TopAuditLogger.class);
   }
 
   static class DummyAuditLogger implements AuditLogger {

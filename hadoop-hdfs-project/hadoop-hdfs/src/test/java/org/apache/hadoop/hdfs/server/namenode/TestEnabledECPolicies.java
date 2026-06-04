@@ -25,7 +25,6 @@ import org.apache.hadoop.hdfs.protocol.ErasureCodingPolicyState;
 import org.apache.hadoop.hdfs.protocol.SystemErasureCodingPolicies;
 import org.apache.hadoop.hdfs.protocol.ErasureCodingPolicy;
 import org.apache.hadoop.test.GenericTestUtils;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.Timeout;
 
@@ -36,13 +35,19 @@ import java.util.List;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.fail;
 
 /**
  * Test that ErasureCodingPolicyManager correctly parses the set of enabled
  * erasure coding policies from configuration and exposes this information.
  */
-@Timeout(value=60000, unit=TimeUnit.MILLISECONDS)
+@Timeout(600)
 public class TestEnabledECPolicies {
 
   private void expectInvalidPolicy(String value) throws IOException {
@@ -64,7 +69,8 @@ public class TestEnabledECPolicies {
         ErasureCodingPolicyManager.getInstance();
     manager.init(conf);
     manager.enablePolicy(value);
-    assertEquals(numEnabled, manager.getEnabledPolicies().length, "Incorrect number of enabled policies");
+    assertEquals(numEnabled, manager.getEnabledPolicies().length,
+        "Incorrect number of enabled policies");
   }
 
   @Test
@@ -125,8 +131,8 @@ public class TestEnabledECPolicies {
     final String defaultPolicy = conf.getTrimmed(
         DFSConfigKeys.DFS_NAMENODE_EC_SYSTEM_DEFAULT_POLICY,
         DFSConfigKeys.DFS_NAMENODE_EC_SYSTEM_DEFAULT_POLICY_DEFAULT);
-    assertNotEquals(testPolicy, defaultPolicy, "The default policy and the next default policy " +
-        "should not be the same!");
+    assertNotEquals(testPolicy, defaultPolicy,
+        "The default policy and the next default policy " + "should not be the same!");
 
     ErasureCodingPolicyManager manager =
         ErasureCodingPolicyManager.getInstance();
@@ -140,35 +146,32 @@ public class TestEnabledECPolicies {
 
     ErasureCodingPolicyInfo[] getPoliciesResult = manager.getPolicies();
     boolean isEnabled = isPolicyEnabled(testPolicy, getPoliciesResult);
-    assertTrue(isEnabled, "The new default policy should be " +
-        "in enabled state!");
+    assertTrue(isEnabled, "The new default policy should be " + "in enabled state!");
     ErasureCodingPolicyInfo[] getPersistedPoliciesResult
         = manager.getPersistedPolicies();
     isEnabled = isPolicyEnabled(testPolicy, getPersistedPoliciesResult);
-    assertFalse(isEnabled, "The new default policy should be " +
-        "in disabled state in the persisted list!");
+    assertFalse(isEnabled,
+        "The new default policy should be " + "in disabled state in the persisted list!");
 
     manager.disablePolicy(testPolicy);
     getPoliciesResult = manager.getPolicies();
     isEnabled = isPolicyEnabled(testPolicy, getPoliciesResult);
-    assertFalse(isEnabled, "The new default policy should be " +
-        "in disabled state!");
+    assertFalse(isEnabled, "The new default policy should be " + "in disabled state!");
     getPersistedPoliciesResult
         = manager.getPersistedPolicies();
     isEnabled = isPolicyEnabled(testPolicy, getPersistedPoliciesResult);
-    assertFalse(isEnabled, "The new default policy should be " +
-        "in disabled state in the persisted list!");
+    assertFalse(isEnabled,
+        "The new default policy should be " + "in disabled state in the persisted list!");
 
     manager.enablePolicy(testPolicy);
     getPoliciesResult = manager.getPolicies();
     isEnabled = isPolicyEnabled(testPolicy, getPoliciesResult);
-    assertTrue(isEnabled, "The new default policy should be " +
-        "in enabled state!");
+    assertTrue(isEnabled, "The new default policy should be " + "in enabled state!");
     getPersistedPoliciesResult
         = manager.getPersistedPolicies();
     isEnabled = isPolicyEnabled(testPolicy, getPersistedPoliciesResult);
-    assertTrue(isEnabled, "The new default policy should be " +
-        "in enabled state in the persisted list!");
+    assertTrue(isEnabled,
+        "The new default policy should be " + "in enabled state in the persisted list!");
 
     final String emptyPolicy = "";
     // Change the default policy to a empty
@@ -194,26 +197,26 @@ public class TestEnabledECPolicies {
     // Check that returned values are unique
     Set<String> found = new HashSet<>();
     for (ErasureCodingPolicy p : manager.getEnabledPolicies()) {
-      Assertions.assertFalse(found.contains(p.getName()),
+      assertFalse(found.contains(p.getName()),
           "Duplicate policy name found: " + p.getName());
       found.add(p.getName());
     }
     // Check that the policies specified in conf are found
     for (ErasureCodingPolicy p: enabledPolicies) {
-      Assertions.assertTrue(found.contains(p.getName()),
+      assertTrue(found.contains(p.getName()),
           "Did not find specified EC policy " + p.getName());
     }
-    Assertions.assertEquals(enabledPolicies.length, found.size()-1);
+    assertEquals(enabledPolicies.length, found.size() - 1);
     // Check that getEnabledPolicyByName only returns enabled policies
     for (ErasureCodingPolicy p: SystemErasureCodingPolicies.getPolicies()) {
       if (found.contains(p.getName())) {
         // Enabled policy should be present
-        Assertions.assertNotNull(
+        assertNotNull(
             manager.getEnabledPolicyByName(p.getName()),
             "getEnabledPolicyByName did not find enabled policy" + p.getName());
       } else {
         // Disabled policy should not be present
-        Assertions.assertNull(
+        assertNull(
             manager.getEnabledPolicyByName(p.getName()),
             "getEnabledPolicyByName found disabled policy " + p.getName());
       }

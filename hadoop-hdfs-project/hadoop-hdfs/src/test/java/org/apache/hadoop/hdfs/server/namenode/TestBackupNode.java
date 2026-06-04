@@ -17,7 +17,11 @@
  */
 package org.apache.hadoop.hdfs.server.namenode;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.fail;
 
 import java.io.File;
 import java.io.IOException;
@@ -107,9 +111,8 @@ public class TestBackupNode {
     BackupNode bn = (BackupNode)NameNode.createNameNode(
         new String[]{startupOpt.getName()}, c);
     assertTrue(bn.isInSafeMode(), bn.getRole() + " must be in SafeMode.");
-    assertTrue(bn.getNamesystem().getHAState()
-                 .equalsIgnoreCase(HAServiceState.STANDBY.name()),
-               bn.getRole() + " must be in StandbyState");
+    assertTrue(bn.getNamesystem().getHAState().equalsIgnoreCase(HAServiceState.STANDBY.name()),
+        bn.getRole() + " must be in StandbyState");
     return bn;
   }
 
@@ -178,8 +181,7 @@ public class TestBackupNode {
     try {
       bn = (BackupNode)NameNode.createNameNode(
           new String[] {startupOpt.getName()}, c);
-      assertTrue(bn.getNamesystem() == null,
-          "Namesystem in BackupNode should be null");
+      assertTrue(bn.getNamesystem() == null, "Namesystem in BackupNode should be null");
       fail("Incorrect authentication setting should throw IOException");
     } catch (IOException e) {
       LOG.info("IOException thrown.", e);
@@ -244,9 +246,8 @@ public class TestBackupNode {
       long nnImageAfter =
         nn.getFSImage().getStorage().getMostRecentCheckpointTxId();
       
-      assertTrue(nnImageAfter > nnImageBefore,
-          "nn should have received new checkpoint. before: " +
-          nnImageBefore + " after: " + nnImageAfter);
+      assertTrue(nnImageAfter > nnImageBefore, "nn should have received new checkpoint. before: "
+          + nnImageBefore + " after: " + nnImageAfter);
 
       // BN should stay in sync after checkpoint
       testBNInSync(cluster, backup, 3);
@@ -259,10 +260,8 @@ public class TestBackupNode {
       // When shutting down the BN, it shouldn't finalize logs that are
       // still open on the NN
       EditLogFile editsLog = FSImageTestUtil.findLatestEditsLog(sd);
-      assertEquals(editsLog.getFirstTxId(),
-          nn.getFSImage().getEditLog().getCurSegmentTxId());
-      assertTrue(editsLog.isInProgress(),
-          "Should not have finalized " + editsLog);
+      assertEquals(editsLog.getFirstTxId(), nn.getFSImage().getEditLog().getCurSegmentTxId());
+      assertTrue(editsLog.isInProgress(), "Should not have finalized " + editsLog);
       
       // do some edits
       assertTrue(fileSys.mkdirs(new Path("/edit-while-bn-down")));
@@ -453,7 +452,8 @@ public class TestBackupNode {
         LOG.info("Read from " + backup.getRole() + " failed: ", eio);
         canRead = false;
       }
-      assertEquals(canRead, backup.isRole(NamenodeRole.BACKUP), "Reads to BackupNode are allowed, but not CheckpointNode.");
+      assertEquals(canRead, backup.isRole(NamenodeRole.BACKUP),
+          "Reads to BackupNode are allowed, but not CheckpointNode.");
 
       DFSTestUtil.createFile(fileSys, file3, fileSize, fileSize, blockSize,
           replication, seed);

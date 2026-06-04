@@ -19,18 +19,20 @@
 package org.apache.hadoop.fs.shell.find;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoMoreInteractions;
+import static org.mockito.Mockito.when;
 
 import java.io.IOException;
 import java.util.Deque;
 import java.util.LinkedList;
-import java.util.concurrent.TimeUnit;
 
 import org.apache.hadoop.fs.shell.PathData;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.Timeout;
 
-@Timeout(value=10000, unit=TimeUnit.MILLISECONDS)
+@Timeout(10)
 public class TestAnd {
 
   // test all expressions passing

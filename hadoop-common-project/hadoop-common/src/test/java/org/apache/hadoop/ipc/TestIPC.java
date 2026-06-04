@@ -18,6 +18,7 @@
 
 package org.apache.hadoop.ipc;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatExceptionOfType;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
@@ -27,13 +28,18 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.fail;
 import static org.junit.jupiter.api.Assumptions.assumeTrue;
-import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.any;
+import static org.mockito.Mockito.anyInt;
 import static org.mockito.Mockito.doAnswer;
+import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.spy;
+import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.timeout;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.reset;
 
 import java.io.ByteArrayOutputStream;
 import java.io.DataInput;
@@ -98,11 +104,10 @@ import org.apache.hadoop.security.token.SecretManager.InvalidToken;
 import org.apache.hadoop.test.GenericTestUtils;
 import org.apache.hadoop.test.LambdaTestUtils;
 import org.apache.hadoop.util.StringUtils;
-import org.assertj.core.api.Condition;
+import org.apache.hadoop.util.concurrent.SubjectInheritingThread;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.Timeout;
-import org.mockito.Mockito;
 import org.mockito.invocation.InvocationOnMock;
 import org.mockito.stubbing.Answer;
 
@@ -112,8 +117,6 @@ import org.apache.hadoop.thirdparty.com.google.common.primitives.Ints;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.slf4j.event.Level;
-
-import static org.assertj.core.api.Assertions.assertThat;
 
 /** Unit tests for IPC. */
 public class TestIPC {
@@ -251,7 +254,7 @@ public class TestIPC {
     }
   }
 
-  private static class SerialCaller extends Thread {
+  private static class SerialCaller extends SubjectInheritingThread {
     private Client client;
     private InetSocketAddress server;
     private int count;
@@ -264,7 +267,7 @@ public class TestIPC {
     }
 
     @Override
-    public void run() {
+    public void work() {
       for (int i = 0; i < count; i++) {
         try {
           final long param = RANDOM.nextLong();
@@ -343,7 +346,7 @@ public class TestIPC {
   }
 
   @Test
-  @Timeout(value=60000, unit=TimeUnit.MILLISECONDS)
+  @Timeout(value = 60)
   public void testSerial() throws IOException, InterruptedException {
     internalTestSerial(3, false, 2, 5, 100);
     internalTestSerial(3, true, 2, 5, 10);
@@ -408,7 +411,7 @@ public class TestIPC {
   }
 	
   @Test
-  @Timeout(value=60000, unit=TimeUnit.MILLISECONDS)
+  @Timeout(value = 60)
   public void testStandAloneClient() throws IOException {
     Client client = new Client(LongWritable.class, conf);
     InetSocketAddress address = new InetSocketAddress("127.0.0.1", 10);
@@ -419,12 +422,12 @@ public class TestIPC {
       String message = e.getMessage();
       String addressText = address.getHostName() + ":" + address.getPort();
       assertTrue(message.contains(addressText),
-              "Did not find "+addressText+" in "+message);
+          "Did not find "+addressText+" in "+message);
       Throwable cause=e.getCause();
       assertNotNull(cause, "No nested exception in "+e);
       String causeText=cause.getMessage();
       assertTrue(message.contains(causeText),
-              "Did not find " + causeText + " in " + message);
+          "Did not find " + causeText + " in " + message);
     } finally {
       client.stop();
     }
@@ -545,7 +548,7 @@ public class TestIPC {
   }
 
   @Test
-  @Timeout(value=60000, unit=TimeUnit.MILLISECONDS)
+  @Timeout(value = 60)
   public void testIOEOnClientWriteParam() throws Exception {
     doErrorTest(IOEOnWriteWritable.class,
         LongWritable.class,
@@ -554,7 +557,7 @@ public class TestIPC {
   }
   
   @Test
-  @Timeout(value=60000, unit=TimeUnit.MILLISECONDS)
+  @Timeout(value = 60)
   public void testRTEOnClientWriteParam() throws Exception {
     doErrorTest(RTEOnWriteWritable.class,
         LongWritable.class,
@@ -563,7 +566,7 @@ public class TestIPC {
   }
 
   @Test
-  @Timeout(value=60000, unit=TimeUnit.MILLISECONDS)
+  @Timeout(value = 60)
   public void testIOEOnServerReadParam() throws Exception {
     doErrorTest(LongWritable.class,
         IOEOnReadWritable.class,
@@ -572,7 +575,7 @@ public class TestIPC {
   }
   
   @Test
-  @Timeout(value=60000, unit=TimeUnit.MILLISECONDS)
+  @Timeout(value = 60)
   public void testRTEOnServerReadParam() throws Exception {
     doErrorTest(LongWritable.class,
         RTEOnReadWritable.class,
@@ -582,7 +585,7 @@ public class TestIPC {
 
   
   @Test
-  @Timeout(value=60000, unit=TimeUnit.MILLISECONDS)
+  @Timeout(value = 60)
   public void testIOEOnServerWriteResponse() throws Exception {
     doErrorTest(LongWritable.class,
         LongWritable.class,
@@ -591,7 +594,7 @@ public class TestIPC {
   }
   
   @Test
-  @Timeout(value=60000, unit=TimeUnit.MILLISECONDS)
+  @Timeout(value = 60)
   public void testRTEOnServerWriteResponse() throws Exception {
     doErrorTest(LongWritable.class,
         LongWritable.class,
@@ -600,7 +603,7 @@ public class TestIPC {
   }
   
   @Test
-  @Timeout(value=60000, unit=TimeUnit.MILLISECONDS)
+  @Timeout(value = 60)
   public void testIOEOnClientReadResponse() throws Exception {
     doErrorTest(LongWritable.class,
         LongWritable.class,
@@ -609,7 +612,7 @@ public class TestIPC {
   }
   
   @Test
-  @Timeout(value=60000, unit=TimeUnit.MILLISECONDS)
+  @Timeout(value = 60)
   public void testRTEOnClientReadResponse() throws Exception {
     doErrorTest(LongWritable.class,
         LongWritable.class,
@@ -623,7 +626,7 @@ public class TestIPC {
    * deadlock seen in one iteration of HADOOP-6762.
    */
   @Test
-  @Timeout(value=60000, unit=TimeUnit.MILLISECONDS)
+  @Timeout(value = 60)
   public void testIOEOnWriteAfterPingClient() throws Exception {
     // start server
     Client.setPingInterval(conf, 100);
@@ -643,8 +646,7 @@ public class TestIPC {
       Throwable t, String substring) {
     String msg = StringUtils.stringifyException(t);
     assertTrue(msg.contains(substring),
-        "Exception should contain substring '" + substring + "':\n" +
-        msg);
+        "Exception should contain substring '" + substring + "':\n" + msg);
     LOG.info("Got expected exception", t);
   }
   
@@ -653,7 +655,7 @@ public class TestIPC {
    * to the client.
    */
   @Test
-  @Timeout(value=60000, unit=TimeUnit.MILLISECONDS)
+  @Timeout(value = 60)
   public void testSocketFactoryException() throws IOException {
     SocketFactory mockFactory = mock(SocketFactory.class);
     doThrow(new IOException("Injected fault")).when(mockFactory).createSocket();
@@ -687,12 +689,12 @@ public class TestIPC {
    * HADOOP-7428.
    */
   @Test
-  @Timeout(value=60000, unit=TimeUnit.MILLISECONDS)
+  @Timeout(value = 60)
   public void testRTEDuringConnectionSetup() throws IOException {
     // Set up a socket factory which returns sockets which
     // throw an RTE when setSoTimeout is called.
     SocketFactory spyFactory = spy(NetUtils.getDefaultSocketFactory(conf));
-    Mockito.doAnswer(new Answer<Socket>() {
+    doAnswer(new Answer<Socket>() {
       @Override
       public Socket answer(InvocationOnMock invocation) {
         return new MockSocket();
@@ -716,7 +718,7 @@ public class TestIPC {
       // Resetting to the normal socket behavior should succeed
       // (i.e. it should not have cached a half-constructed connection)
   
-      Mockito.reset(spyFactory);
+      reset(spyFactory);
       call(client, RANDOM.nextLong(), address, conf);
     } finally {
       client.stop();
@@ -725,7 +727,7 @@ public class TestIPC {
   }
   
   @Test
-  @Timeout(value=60000, unit=TimeUnit.MILLISECONDS)
+  @Timeout(value = 60)
   public void testIpcTimeout() throws IOException {
     // start server
     Server server = new TestServer(1, true);
@@ -749,7 +751,7 @@ public class TestIPC {
   }
 
   @Test
-  @Timeout(value=60000, unit=TimeUnit.MILLISECONDS)
+  @Timeout(value = 60)
   public void testIpcConnectTimeout() throws IOException {
     // start server
     Server server = new TestServer(1, true);
@@ -774,7 +776,7 @@ public class TestIPC {
    * Check service class byte in IPC header is correct on wire.
    */
   @Test
-  @Timeout(value=60000, unit=TimeUnit.MILLISECONDS)
+  @Timeout(value = 60)
   public void testIpcWithServiceClass() throws IOException {
     // start server
     Server server = new TestServer(5, false);
@@ -821,7 +823,7 @@ public class TestIPC {
   }
 
   @Test
-  @Timeout(value=60000, unit=TimeUnit.MILLISECONDS)
+  @Timeout(value = 60)
   public void testIpcHostResolutionTimeout() throws Exception {
     final InetSocketAddress addr = new InetSocketAddress("host.invalid", 80);
 
@@ -920,7 +922,7 @@ public class TestIPC {
   }
 
   @Test
-  @Timeout(value=60000, unit=TimeUnit.MILLISECONDS)
+  @Timeout(value = 60)
   public void testIpcFlakyHostResolution() throws IOException {
     // start server
     Server server = new TestServer(5, false);
@@ -952,7 +954,7 @@ public class TestIPC {
    * @throws InterruptedException 
    */
   @Test
-  @Timeout(value=60000, unit=TimeUnit.MILLISECONDS)
+  @Timeout(value = 60)
   public void testIpcWithReaderQueuing() throws Exception {
     // 1 reader, 1 connectionQ slot, 1 callq
     for (int i=0; i < 10; i++) {
@@ -996,7 +998,7 @@ public class TestIPC {
     // instantiate the threads, will start in batches
     Thread[] threads = new Thread[clients];
     for (int i=0; i<clients; i++) {
-      threads[i] = new Thread(new Runnable() {
+      threads[i] = new SubjectInheritingThread(new Runnable() {
         @Override
         public void run() {
           Client client = new Client(LongWritable.class, conf);
@@ -1082,7 +1084,7 @@ public class TestIPC {
   }
 
   @Test
-  @Timeout(value=30000, unit=TimeUnit.MILLISECONDS)
+  @Timeout(value = 30)
   public void testConnectionIdleTimeouts() throws Exception {
     GenericTestUtils.setLogLevel(Server.LOG, Level.DEBUG);
     final int maxIdle = 1000;
@@ -1129,7 +1131,7 @@ public class TestIPC {
       final Configuration clientConf = new Configuration();
       clientConf.setInt(CommonConfigurationKeysPublic.IPC_CLIENT_CONNECTION_MAXIDLETIME_KEY, 10000);
       for (int i=0; i < clients; i++) {
-        threads[i] = new Thread(new Runnable(){
+        threads[i] = new SubjectInheritingThread(new Runnable(){
           @Override
           public void run() {
             Client client = new Client(LongWritable.class, clientConf);
@@ -1206,22 +1208,22 @@ public class TestIPC {
     assertFalse(noChanged ^ serviceClass == serviceClass2);
     client.stop();
   }
-  
-  @Test
-  @Timeout(value=30000, unit=TimeUnit.MILLISECONDS)
-  public void testIpcAfterStopping() throws IOException {
-    // start server
-    Server server = new TestServer(5, false);
-    InetSocketAddress addr = NetUtils.getConnectAddress(server);
-    server.start();
 
-    // start client
-    Client client = new Client(LongWritable.class, conf);
-    call(client, addr, 0, conf);
-    client.stop();
- 
-    // This call should throw IOException.
+  @Test
+  @Timeout(value = 30)
+  public void testIpcAfterStopping() throws IOException {
     assertThrows(IOException.class, () -> {
+      // start server
+      Server server = new TestServer(5, false);
+      InetSocketAddress addr = NetUtils.getConnectAddress(server);
+      server.start();
+
+      // start client
+      Client client = new Client(LongWritable.class, conf);
+      call(client, addr, 0, conf);
+      client.stop();
+
+      // This call should throw IOException.
       call(client, addr, 0, conf);
     });
   }
@@ -1231,7 +1233,7 @@ public class TestIPC {
    * and stopping IPC servers.
    */
   @Test
-  @Timeout(value=60000, unit=TimeUnit.MILLISECONDS)
+  @Timeout(value = 60)
   public void testSocketLeak() throws IOException {
     assumeTrue(FD_DIR.exists()); // only run on Linux
 
@@ -1252,7 +1254,7 @@ public class TestIPC {
    * InterruptedException during cleanup
    */
   @Test
-  @Timeout(value=30000, unit=TimeUnit.MILLISECONDS)
+  @Timeout(value = 30)
   public void testInterrupted() {
     Client client = new Client(LongWritable.class, conf);
     Thread.currentThread().interrupt();
@@ -1273,35 +1275,35 @@ public class TestIPC {
   }
 
   @Test
-  @Timeout(value=60000, unit=TimeUnit.MILLISECONDS)
+  @Timeout(value = 60)
   public void testIpcFromHadoop_0_18_13() throws IOException {
     doIpcVersionTest(NetworkTraces.HADOOP_0_18_3_RPC_DUMP,
         NetworkTraces.RESPONSE_TO_HADOOP_0_18_3_RPC);
   }
   
   @Test
-  @Timeout(value=60000, unit=TimeUnit.MILLISECONDS)
+  @Timeout(value = 60)
   public void testIpcFromHadoop0_20_3() throws IOException {
     doIpcVersionTest(NetworkTraces.HADOOP_0_20_3_RPC_DUMP,
         NetworkTraces.RESPONSE_TO_HADOOP_0_20_3_RPC);
   }
   
   @Test
-  @Timeout(value=60000, unit=TimeUnit.MILLISECONDS)
+  @Timeout(value = 60)
   public void testIpcFromHadoop0_21_0() throws IOException {
     doIpcVersionTest(NetworkTraces.HADOOP_0_21_0_RPC_DUMP,
         NetworkTraces.RESPONSE_TO_HADOOP_0_21_0_RPC);
   }
   
   @Test
-  @Timeout(value=60000, unit=TimeUnit.MILLISECONDS)
+  @Timeout(value = 60)
   public void testHttpGetResponse() throws IOException {
     doIpcVersionTest("GET / HTTP/1.0\r\n\r\n".getBytes(),
         Server.RECEIVED_HTTP_REQ_RESPONSE.getBytes());
   }
   
   @Test
-  @Timeout(value=60000, unit=TimeUnit.MILLISECONDS)
+  @Timeout(value = 60)
   public void testConnectionRetriesOnSocketTimeoutExceptions() throws IOException {
     Configuration conf = new Configuration();
     // set max retries to 0
@@ -1328,7 +1330,7 @@ public class TestIPC {
    * (2) the rpc client receives the same call id/retry from the rpc server.
    */
   @Test
-  @Timeout(value=60000, unit=TimeUnit.MILLISECONDS)
+  @Timeout(value = 60)
   public void testCallIdAndRetry() throws IOException {
     final CallInfo info = new CallInfo();
 
@@ -1378,11 +1380,11 @@ public class TestIPC {
    * @throws IOException
    */
   @Test
-  @Timeout(value=60000, unit=TimeUnit.MILLISECONDS)
+  @Timeout(value = 60)
   public void testReceiveStateBeforeCallerNotification() throws IOException {
     AtomicBoolean stateReceived = new AtomicBoolean(false);
-    AlignmentContext alignmentContext = Mockito.mock(AlignmentContext.class);
-    Mockito.doAnswer((Answer<Void>) invocation -> {
+    AlignmentContext alignmentContext = mock(AlignmentContext.class);
+    doAnswer((Answer<Void>) invocation -> {
       Thread.sleep(1000);
       stateReceived.set(true);
       return null;
@@ -1414,7 +1416,7 @@ public class TestIPC {
    * Test the retry count while used in a retry proxy.
    */
   @Test
-  @Timeout(value=100000, unit=TimeUnit.MILLISECONDS)
+  @Timeout(value = 100)
   public void testRetryProxy() throws IOException {
     final Client client = new Client(LongWritable.class, conf);
     
@@ -1454,22 +1456,21 @@ public class TestIPC {
    */
   @Test
   public void testNoRetryOnInvalidToken() throws IOException {
-    final Client client = new Client(LongWritable.class, conf);
-    final TestServer server = new TestServer(1, false);
-    TestInvalidTokenHandler handler =
-        new TestInvalidTokenHandler(client, server);
-    DummyProtocol proxy = (DummyProtocol) Proxy.newProxyInstance(
-        DummyProtocol.class.getClassLoader(),
-        new Class[] { DummyProtocol.class }, handler);
-    FailoverProxyProvider<DummyProtocol> provider =
-        new DefaultFailoverProxyProvider<DummyProtocol>(
-            DummyProtocol.class, proxy);
-    DummyProtocol retryProxy =
-        (DummyProtocol) RetryProxy.create(DummyProtocol.class, provider,
-        RetryPolicies.failoverOnNetworkException(
-            RetryPolicies.TRY_ONCE_THEN_FAIL, 100, 100, 10000, 0));
-
     assertThrows(InvalidToken.class, () -> {
+      final Client client = new Client(LongWritable.class, conf);
+      final TestServer server = new TestServer(1, false);
+      TestInvalidTokenHandler handler =
+          new TestInvalidTokenHandler(client, server);
+      DummyProtocol proxy = (DummyProtocol) Proxy.newProxyInstance(
+          DummyProtocol.class.getClassLoader(),
+          new Class[]{DummyProtocol.class}, handler);
+      FailoverProxyProvider<DummyProtocol> provider =
+           new DefaultFailoverProxyProvider<>(DummyProtocol.class, proxy);
+      DummyProtocol retryProxy =
+          (DummyProtocol) RetryProxy.create(DummyProtocol.class, provider,
+          RetryPolicies.failoverOnNetworkException(
+          RetryPolicies.TRY_ONCE_THEN_FAIL, 100, 100, 10000, 0));
+
       try {
         server.start();
         retryProxy.dummyRun();
@@ -1487,7 +1488,7 @@ public class TestIPC {
    * Test if the rpc server gets the default retry count (0) from client.
    */
   @Test
-  @Timeout(value=60000, unit=TimeUnit.MILLISECONDS)
+  @Timeout(value = 60)
   public void testInitialCallRetryCount() throws IOException {
     // Override client to store the call id
     final Client client = new Client(LongWritable.class, conf);
@@ -1519,7 +1520,7 @@ public class TestIPC {
    * Test if the rpc server gets the retry count from client.
    */
   @Test
-  @Timeout(value=60000, unit=TimeUnit.MILLISECONDS)
+  @Timeout(value = 60)
   public void testCallRetryCount() throws IOException {
     final int retryCount = 255;
     // Override client to store the call id
@@ -1555,7 +1556,7 @@ public class TestIPC {
  * @throws InterruptedException 
    */
   @Test
-  @Timeout(value=60000, unit=TimeUnit.MILLISECONDS)
+  @Timeout(value = 60)
   public void testUniqueSequentialCallIds() 
       throws IOException, InterruptedException {
     int serverThreads = 10, callerCount = 100, perCallerCallCount = 100;
@@ -1608,7 +1609,7 @@ public class TestIPC {
   public void testMaxConnections() throws Exception {
     conf.setInt("ipc.server.max.connections", 6);
     Server server = null;
-    Thread connectors[] = new Thread[10];
+    SubjectInheritingThread connectors[] = new SubjectInheritingThread[10];
 
     try {
       server = new TestServer(3, false);
@@ -1617,9 +1618,9 @@ public class TestIPC {
       assertEquals(0, server.getNumOpenConnections());
 
       for (int i = 0; i < 10; i++) {
-        connectors[i] = new Thread() {
+        connectors[i] = new SubjectInheritingThread() {
           @Override
-          public void run() {
+          public void work() {
             Socket sock = null;
             try {
               sock = NetUtils.getDefaultSocketFactory(conf).createSocket();
@@ -1665,10 +1666,10 @@ public class TestIPC {
   }
 
   @Test
-  @Timeout(value=60000, unit=TimeUnit.MILLISECONDS)
+  @Timeout(value = 60)
   public void testSetupConnectionShouldNotBlockShutdown() throws Exception {
     // Start server
-    SocketFactory mockFactory = Mockito.mock(SocketFactory.class);
+    SocketFactory mockFactory = mock(SocketFactory.class);
     Server server = new TestServer(1, true);
     final InetSocketAddress addr = NetUtils.getConnectAddress(server);
 
@@ -1688,7 +1689,7 @@ public class TestIPC {
     final AtomicBoolean callStarted = new AtomicBoolean(false);
 
     // Call a random function asynchronously so that we can call stop()
-    new Thread(new Runnable() {
+    new SubjectInheritingThread(new Runnable() {
       public void run() {
         try {
           callStarted.set(true);
@@ -1711,7 +1712,7 @@ public class TestIPC {
 
   private void assertRetriesOnSocketTimeouts(Configuration conf,
       int maxTimeoutRetries) throws IOException {
-    SocketFactory mockFactory = Mockito.mock(SocketFactory.class);
+    SocketFactory mockFactory = mock(SocketFactory.class);
     doThrow(new ConnectTimeoutException("fake")).when(mockFactory).createSocket();
     Client client = new Client(LongWritable.class, conf, mockFactory);
     InetSocketAddress address = new InetSocketAddress("127.0.0.1", 9090);
@@ -1719,20 +1720,20 @@ public class TestIPC {
       call(client, RANDOM.nextLong(), address, conf);
       fail("Not throwing the SocketTimeoutException");
     } catch (SocketTimeoutException e) {
-      Mockito.verify(mockFactory, Mockito.times(maxTimeoutRetries))
+      verify(mockFactory, times(maxTimeoutRetries))
           .createSocket();
     }
     client.stop();
   }
   
   @Test
-  @Timeout(value=4000, unit=TimeUnit.MILLISECONDS)
+  @Timeout(value = 4)
   public void testInsecureVersionMismatch() throws IOException {
     checkVersionMismatch();
   }
 
   @Test
-  @Timeout(value=4000, unit=TimeUnit.MILLISECONDS)
+  @Timeout(value = 4)
   public void testSecureVersionMismatch() throws IOException {
     SecurityUtil.setAuthenticationMethod(AuthenticationMethod.KERBEROS, conf);
     UserGroupInformation.setConfiguration(conf);
@@ -1811,13 +1812,13 @@ public class TestIPC {
   }
 
   @Test
-  @Timeout(value=60000, unit=TimeUnit.MILLISECONDS)
+  @Timeout(value = 60)
   public void testUpdateAddressEnsureResolved() throws Exception {
     // start server
     Server server = new TestServer(1, false);
     server.start();
 
-    SocketFactory mockFactory = Mockito.mock(SocketFactory.class);
+    SocketFactory mockFactory = mock(SocketFactory.class);
     doThrow(new ConnectTimeoutException("fake")).when(mockFactory)
         .createSocket();
     Client client = new Client(LongWritable.class, conf, mockFactory);
@@ -1856,16 +1857,16 @@ public class TestIPC {
     Socket s;
     // don't attempt bind with no service host.
     s = checkConnect(null, asProxy);
-    Mockito.verify(s, Mockito.never()).bind(any(SocketAddress.class));
+    verify(s, never()).bind(any(SocketAddress.class));
 
     // don't attempt bind with service host not belonging to this host.
     s = checkConnect("1.2.3.4", asProxy);
-    Mockito.verify(s, Mockito.never()).bind(any(SocketAddress.class));
+    verify(s, never()).bind(any(SocketAddress.class));
 
     // do attempt bind when service host is this host.
     InetAddress addr = InetAddress.getLocalHost();
     s = checkConnect(addr.getHostAddress(), asProxy);
-    Mockito.verify(s).bind(new InetSocketAddress(addr, 0));
+    verify(s).bind(new InetSocketAddress(addr, 0));
   }
 
   // dummy protocol that claims to support kerberos.
@@ -1883,7 +1884,7 @@ public class TestIPC {
     principal.append("@REALM");
     UserGroupInformation ugi =
         spy(UserGroupInformation.createRemoteUser(principal.toString()));
-    Mockito.doReturn(true).when(ugi).hasKerberosCredentials();
+    doReturn(true).when(ugi).hasKerberosCredentials();
     if (asProxy) {
       ugi = UserGroupInformation.createProxyUser("proxy", ugi);
     }
@@ -1891,11 +1892,11 @@ public class TestIPC {
     // create a mock socket that throws on connect.
     SocketException expectedConnectEx =
         new SocketException("Expected connect failure");
-    Socket s = Mockito.mock(Socket.class);
-    SocketFactory mockFactory = Mockito.mock(SocketFactory.class);
-    Mockito.doReturn(s).when(mockFactory).createSocket();
+    Socket s = mock(Socket.class);
+    SocketFactory mockFactory = mock(SocketFactory.class);
+    doReturn(s).when(mockFactory).createSocket();
     doThrow(expectedConnectEx).when(s).connect(
-        any(SocketAddress.class), Mockito.anyInt());
+        any(SocketAddress.class), anyInt());
 
     // do a dummy call and expect it to throw an exception on connect.
     // tests should verify if/how a bind occurred.

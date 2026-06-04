@@ -110,10 +110,8 @@ import org.apache.hadoop.thirdparty.com.google.common.collect.Maps;
 import org.apache.hadoop.thirdparty.protobuf.ByteString;
 
 import org.junit.jupiter.api.AfterAll;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.slf4j.event.Level;
@@ -144,7 +142,12 @@ import static org.apache.hadoop.hdfs.tools.offlineImageViewer.PBImageXmlWriter.E
 import static org.apache.hadoop.hdfs.tools.offlineImageViewer.PBImageXmlWriter.ERASURE_CODING_SECTION_SCHEMA;
 import static org.apache.hadoop.hdfs.tools.offlineImageViewer.PBImageXmlWriter.ERASURE_CODING_SECTION_SCHEMA_CODEC_NAME;
 import static org.apache.hadoop.hdfs.tools.offlineImageViewer.PBImageXmlWriter.ERASURE_CODING_SECTION_SCHEMA_OPTION;
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.fail;
 import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.when;
@@ -174,6 +177,7 @@ public class TestOfflineImageViewer {
   // data structure and store its fsimage location.
   // We only want to generate the fsimage file once and use it for
   // multiple tests.
+  @SuppressWarnings("checkstyle:MethodLength")
   @BeforeAll
   public static void createOriginalFSImage() throws IOException {
     defaultTimeZone = TimeZone.getDefault();
@@ -402,7 +406,7 @@ public class TestOfflineImageViewer {
   }
 
   @Test
-  public void testTruncatedFSImage() {
+  public void testTruncatedFSImage() throws IOException {
     assertThrows(IOException.class, () -> {
       File truncatedFile = new File(tempDir, "truncatedFsImage");
       PrintStream output = new PrintStream(NullOutputStream.INSTANCE);
@@ -525,11 +529,11 @@ public class TestOfflineImageViewer {
         if (currentInodeName != null && currentInodeName.length() > 0) {
           if (currentBlockType != null && currentBlockType.equalsIgnoreCase(
               BlockType.STRIPED.name())) {
-            Assertions.assertEquals(Byte.parseByte(currentECPolicy),
+            assertEquals(Byte.parseByte(currentECPolicy),
                 SystemErasureCodingPolicies.XOR_2_1_POLICY_ID,
                 "INode '"
                     + currentInodeName + "' has unexpected EC Policy!");
-            Assertions.assertEquals(currentRepl,
+            assertEquals(currentRepl,
                 Short.toString(INodeFile.DEFAULT_REPL_FOR_STRIPED_BLOCKS),
                 "INode '"
                     + currentInodeName + "' has unexpected replication!");
@@ -889,8 +893,7 @@ public class TestOfflineImageViewer {
     int status =
         OfflineImageViewerPB.run(new String[] { "-i",
             originalFsimage.getAbsolutePath(), "-o", "-", "-p", "invalid" });
-    assertTrue(status != 0,
-        "Exit code returned for invalid processor option is incorrect");
+    assertTrue(status != 0, "Exit code returned for invalid processor option is incorrect");
   }
 
   @Test
@@ -902,15 +905,13 @@ public class TestOfflineImageViewer {
       System.setOut(out);
       int status = OfflineImageViewerPB.run(new String[] { "-h" });
       assertTrue(status == 0, "Exit code returned for help option is incorrect");
-      Assertions.assertFalse(
-          bytes
-              .toString().contains("Error parsing command-line options"), "Invalid Command error displayed when help option is passed.");
+      assertFalse(bytes.toString().contains("Error parsing command-line options"),
+          "Invalid Command error displayed when help option is passed.");
       status =
           OfflineImageViewerPB.run(new String[] { "-h", "-i",
               originalFsimage.getAbsolutePath(), "-o", "-", "-p",
               "FileDistribution", "-maxSize", "512", "-step", "8" });
-      Assertions.assertTrue(
-          status == -1,
+      assertTrue(status == -1,
           "Exit code returned for help with other option is incorrect");
     } finally {
       System.setOut(oldOut);
@@ -919,7 +920,8 @@ public class TestOfflineImageViewer {
   }
 
   @Test
-  public void testDelimitedWithExistingFolder() {
+  public void testDelimitedWithExistingFolder() throws IOException,
+      InterruptedException {
     assertThrows(IOException.class, () -> {
       File tempDelimitedDir = null;
       try {
@@ -927,7 +929,7 @@ public class TestOfflineImageViewer {
         String tempDelimitedDirPath = new FileSystemTestHelper().
             getTestRootDir() + "/" + tempDelimitedDirName;
         tempDelimitedDir = new File(tempDelimitedDirPath);
-        Assertions.assertTrue(tempDelimitedDir.mkdirs(),
+        assertTrue(tempDelimitedDir.mkdirs(),
             "Couldn't create temp directory!");
         testPBDelimitedWriter(tempDelimitedDirPath);
       } finally {
@@ -1229,7 +1231,7 @@ public class TestOfflineImageViewer {
     }
     // The XML file we wrote based on the re-created fsimage should be the
     // same as the one we dumped from the original fsimage.
-    Assertions.assertEquals("",
+    assertEquals("",
         GenericTestUtils.getFilesDiff(reverseImageXml, reverseImage2Xml));
   }
 
@@ -1257,8 +1259,8 @@ public class TestOfflineImageViewer {
     }
     try {
       OfflineImageReconstructor.run(imageWrongVersion.getAbsolutePath(),
-          imageWrongVersion.getAbsolutePath() + ".out"); 
-      Assertions.fail("Expected OfflineImageReconstructor to fail with " +
+          imageWrongVersion.getAbsolutePath() + ".out");
+      fail("Expected OfflineImageReconstructor to fail with " +
           "version mismatch.");
     } catch (Throwable t) {
       GenericTestUtils.assertExceptionContains("Layout version mismatch.", t);
@@ -1361,7 +1363,7 @@ public class TestOfflineImageViewer {
       // and don't need to do the following operations.
       OfflineImageViewer.main(new String[] {"-i", "-", "-o", "-", "-p",
           "FileDistribution", "-maxSize", "512", "-step", "8", "-h"});
-      Assertions.assertFalse(bytes.toString().contains(
+      assertFalse(bytes.toString().contains(
           "Error parsing command-line options: "));
     } finally {
       System.setOut(oldOut);
@@ -1382,7 +1384,7 @@ public class TestOfflineImageViewer {
               "FileDistribution", "-maxSize", "512", "-step", "8",
               "-format"});
       assertEquals(0, status);
-      Assertions.assertTrue(bytes.toString().contains("(0 B, 8 B]"));
+      assertTrue(bytes.toString().contains("(0 B, 8 B]"));
     } finally {
       System.setOut(oldOut);
       IOUtils.closeStream(out);

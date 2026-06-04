@@ -17,11 +17,11 @@
  */
 package org.apache.hadoop.fs.shell.find;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.apache.hadoop.fs.shell.find.TestHelper.*;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import java.io.IOException;
-import java.util.concurrent.TimeUnit;
 
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.shell.PathData;
@@ -29,7 +29,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.Timeout;
 
-@Timeout(value=10000, unit=TimeUnit.MILLISECONDS)
+@Timeout(10)
 public class TestName {
   private FileSystem mockFs;
   private Name name;

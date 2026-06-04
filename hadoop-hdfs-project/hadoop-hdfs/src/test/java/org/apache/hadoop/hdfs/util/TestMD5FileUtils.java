@@ -17,7 +17,10 @@
  */
 package org.apache.hadoop.hdfs.util;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.fail;
 
 import java.io.File;
 import java.io.FileOutputStream;
@@ -68,9 +71,10 @@ public class TestMD5FileUtils {
    * Test when .md5 file does not exist at all
    */
   @Test
-  public void testVerifyMD5FileMissing() {
-    assertThrows(IOException.class, () ->
-      MD5FileUtils.verifySavedMD5(TEST_FILE, TEST_MD5));
+  public void testVerifyMD5FileMissing() throws Exception {
+    assertThrows(IOException.class, () -> {
+      MD5FileUtils.verifySavedMD5(TEST_FILE, TEST_MD5);
+    });
   }
 
   /**

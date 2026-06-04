@@ -40,7 +40,7 @@ import org.apache.hadoop.hdfs.server.datanode.InternalDataNodeTestUtils;
 import org.apache.hadoop.hdfs.server.namenode.FSNamesystem;
 import org.apache.hadoop.hdfs.server.namenode.NameNodeAdapter;
 import org.apache.hadoop.hdfs.server.protocol.DatanodeRegistration;
-
+import org.apache.hadoop.hdfs.util.RwLockMode;
 import org.junit.jupiter.api.Test;
 
 public class TestOverReplicatedBlocks {
@@ -76,8 +76,8 @@ public class TestOverReplicatedBlocks {
           "scanner.cursor");
       //wait for one minute for deletion to succeed;
       for(int i = 0; !scanCursor.delete(); i++) {
-        assertTrue(i < 60, "Could not delete " + scanCursor.getAbsolutePath() +
-            " in one minute");
+        assertTrue(i < 60, "Could not delete " +
+            scanCursor.getAbsolutePath() + " in one minute");
         try {
           Thread.sleep(1000);
         } catch (InterruptedException ignored) {}
@@ -96,7 +96,7 @@ public class TestOverReplicatedBlocks {
       final BlockManager bm = namesystem.getBlockManager();
       final HeartbeatManager hm = bm.getDatanodeManager().getHeartbeatManager();
       try {
-        namesystem.writeLock();
+        namesystem.writeLock(RwLockMode.GLOBAL);
         synchronized(hm) {
           // set live datanode's remaining space to be 0 
           // so they will be chosen to be deleted when over-replication occurs
@@ -119,7 +119,7 @@ public class TestOverReplicatedBlocks {
               bm.getStoredBlock(block.getLocalBlock())).liveReplicas());
         }
       } finally {
-        namesystem.writeUnlock();
+        namesystem.writeUnlock(RwLockMode.GLOBAL, "testProcesOverReplicateBlock");
       }
       
     } finally {
@@ -182,12 +182,15 @@ public class TestOverReplicatedBlocks {
 
       // All replicas for deletion should be scheduled on lastDN.
       // And should not actually be deleted, because lastDN does not heartbeat.
-      namesystem.readLock();
+      namesystem.readLock(RwLockMode.BM);
       final int dnBlocks = bm.getExcessSize4Testing(dnReg.getDatanodeUuid());
-      assertEquals(SMALL_FILE_LENGTH / SMALL_BLOCK_SIZE, dnBlocks, "Replicas on node " + lastDNid + " should have been deleted");
-      namesystem.readUnlock();
-      for(BlockLocation location : locs)
-        assertEquals(4, location.getNames().length, "Block should still have 4 replicas");
+      assertEquals(SMALL_FILE_LENGTH / SMALL_BLOCK_SIZE, dnBlocks,
+          "Replicas on node " + lastDNid + " should have been deleted");
+      namesystem.readUnlock(RwLockMode.BM, "excessSize4Testing");
+      for (BlockLocation location : locs) {
+        assertEquals(4, location.getNames().length,
+            "Block should still have 4 replicas");
+      }
     } finally {
       if(fs != null) fs.close();
       if(cluster != null) cluster.shutdown();
@@ -214,8 +217,8 @@ public class TestOverReplicatedBlocks {
       fs.setReplication(p, (short) 1);
       out.close();
       ExtendedBlock block = DFSTestUtil.getFirstBlock(fs, p);
-      assertEquals(1, bm
-          .countNodes(bm.getStoredBlock(block.getLocalBlock())).liveReplicas(), "Expected only one live replica for the block");
+      assertEquals(1, bm.countNodes(bm.getStoredBlock(block.getLocalBlock())).liveReplicas(),
+          "Expected only one live replica for the block");
     } finally {
       cluster.shutdown();
     }

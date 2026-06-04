@@ -35,7 +35,6 @@ import org.apache.hadoop.hdfs.server.datanode.DataNode;
 import org.apache.hadoop.hdfs.tools.DFSAdmin;
 import org.apache.hadoop.test.GenericTestUtils;
 import org.apache.hadoop.util.cli.ToolRunner;
-
 import org.junit.jupiter.api.Test;
 
 /**

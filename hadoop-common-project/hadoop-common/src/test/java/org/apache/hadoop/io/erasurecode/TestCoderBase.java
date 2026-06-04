@@ -28,6 +28,8 @@ import java.nio.ByteBuffer;
 import java.util.Arrays;
 import java.util.Random;
 
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
 /**
  * Test base of common utilities for tests not only raw coders but also block
  * coders.

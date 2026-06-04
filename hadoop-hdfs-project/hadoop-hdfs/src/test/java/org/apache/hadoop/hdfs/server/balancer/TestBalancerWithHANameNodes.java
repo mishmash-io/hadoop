@@ -58,6 +58,8 @@ import org.apache.hadoop.hdfs.server.namenode.ha.ObserverReadProxyProvider;
 import org.apache.hadoop.hdfs.server.protocol.DatanodeStorageReport;
 import org.apache.hadoop.test.GenericTestUtils;
 import org.apache.hadoop.test.GenericTestUtils.LogCapturer;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.Timeout;
 import org.slf4j.LoggerFactory;
 
 import org.junit.jupiter.api.Test;
@@ -108,7 +110,7 @@ public class TestBalancerWithHANameNodes {
    * datanodes); It then adds one new empty node and starts balancing.
    */
   @Test
-  @Timeout(value = 60000, unit = TimeUnit.MILLISECONDS)
+  @Timeout(value = 60)
   public void testBalancerWithHANameNodes() throws Exception {
     Configuration conf = new HdfsConfiguration();
     TestBalancer.initConf(conf);
@@ -183,7 +185,7 @@ public class TestBalancerWithHANameNodes {
    * Test Balancer request Standby NameNode when enable this feature.
    */
   @Test
-  @Timeout(value = 60000, unit = TimeUnit.MILLISECONDS)
+  @Timeout(value = 60)
   public void testBalancerRequestSBNWithHA() throws Exception {
     Configuration conf = new HdfsConfiguration();
     conf.setBoolean(DFS_NAMENODE_GETBLOCKS_CHECK_OPERATION_KEY, false);
@@ -229,7 +231,7 @@ public class TestBalancerWithHANameNodes {
    * Test Balancer with ObserverNodes.
    */
   @Test
-  @Timeout(value = 120000, unit = TimeUnit.MILLISECONDS)
+  @Timeout(value = 120)
   public void testBalancerWithObserver() throws Exception {
     testBalancerWithObserver(false);
   }
@@ -238,7 +240,7 @@ public class TestBalancerWithHANameNodes {
    * Test Balancer with ObserverNodes when one has failed.
    */
   @Test
-  @Timeout(value = 180000, unit = TimeUnit.MILLISECONDS)
+  @Timeout(value = 180)
   public void testBalancerWithObserverWithFailedNode() throws Exception {
     testBalancerWithObserver(true);
   }
@@ -299,7 +301,7 @@ public class TestBalancerWithHANameNodes {
    * the results should be the same.
    */
   @Test
-  @Timeout(value = 60000, unit = TimeUnit.MILLISECONDS)
+  @Timeout(value = 60)
   public void testGetLiveDatanodeStorageReport() throws Exception {
     Configuration conf = new HdfsConfiguration();
     TestBalancer.initConf(conf);

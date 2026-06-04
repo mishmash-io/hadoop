@@ -20,7 +20,6 @@ package org.apache.hadoop.cli;
 
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-
 import org.apache.hadoop.cli.util.CLICommand;
 import org.apache.hadoop.cli.util.CommandExecutor.Result;
 import org.apache.hadoop.fs.FileSystem;
@@ -54,8 +53,8 @@ public class TestXAttrCLI  extends CLITestHelperDFS {
     username = System.getProperty("user.name");
 
     fs = dfsCluster.getFileSystem();
-    assertTrue(fs instanceof DistributedFileSystem, 
-        "Not a HDFS: "+fs.getUri());
+    assertTrue(fs instanceof DistributedFileSystem,
+        "Not a HDFS: " + fs.getUri());
   }
 
   @Override

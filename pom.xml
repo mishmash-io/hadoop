@@ -18,7 +18,7 @@ xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/x
   <modelVersion>4.0.0</modelVersion>
   <groupId>org.apache.hadoop</groupId>
   <artifactId>hadoop-main</artifactId>
-  <version>3.4.3</version>
+  <version>3.5.0</version>
   <description>Apache Hadoop Main</description>
   <name>Apache Hadoop Main</name>
   <packaging>pom</packaging>
@@ -83,7 +83,9 @@ xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/x
 
   <properties>
     <!-- required as child projects with different version can't use ${project.version} -->
-    <hadoop.version>3.4.3</hadoop.version>
+    <hadoop.version>3.5.0</hadoop.version>
+
+    <docker.image>apache/hadoop:${project.version}</docker.image>
 
     <distMgmtSnapshotsId>apache.snapshots.https</distMgmtSnapshotsId>
     <distMgmtSnapshotsName>Apache Development Snapshot Repository</distMgmtSnapshotsName>
@@ -102,10 +104,10 @@ xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/x
     <maven-stylus-skin.version>1.5</maven-stylus-skin.version>
     <maven-antrun-plugin.version>1.7</maven-antrun-plugin.version>
     <maven-assembly-plugin.version>2.4</maven-assembly-plugin.version>
-    <maven-dependency-plugin.version>3.0.2</maven-dependency-plugin.version>
+    <maven-dependency-plugin.version>3.8.1</maven-dependency-plugin.version>
     <maven-enforcer-plugin.version>3.5.0</maven-enforcer-plugin.version>
     <restrict-imports.enforcer.version>2.0.0</restrict-imports.enforcer.version>
-    <maven-javadoc-plugin.version>3.0.1</maven-javadoc-plugin.version>
+    <maven-javadoc-plugin.version>3.8.0</maven-javadoc-plugin.version>
     <maven-gpg-plugin.version>1.5</maven-gpg-plugin.version>
     <maven-remote-resources-plugin.version>1.5</maven-remote-resources-plugin.version>
     <maven-resources-plugin.version>3.0.1</maven-resources-plugin.version>
@@ -114,18 +116,38 @@ xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/x
     <clover-maven-plugin.version>4.4.1</clover-maven-plugin.version>
     <maven-bundle-plugin.version>2.5.0</maven-bundle-plugin.version>
     <lifecycle-mapping.version>1.0.0</lifecycle-mapping.version>
-    <maven-checkstyle-plugin.version>3.1.0</maven-checkstyle-plugin.version>
-    <checkstyle.version>8.29</checkstyle.version>
+    <maven-checkstyle-plugin.version>3.6.0</maven-checkstyle-plugin.version>
+    <checkstyle.version>11.1.0</checkstyle.version>
     <dependency-check-maven.version>7.1.1</dependency-check-maven.version>
-    <spotbugs.version>4.2.2</spotbugs.version>
-    <spotbugs-maven-plugin.version>4.2.0</spotbugs-maven-plugin.version>
+    <spotbugs.version>4.9.7</spotbugs.version>
+    <spotbugs-maven-plugin.version>4.9.7.0</spotbugs-maven-plugin.version>
     <jsonschema2pojo-maven-plugin.version>1.1.1</jsonschema2pojo-maven-plugin.version>
     <maven-compiler-plugin.version>3.10.1</maven-compiler-plugin.version>
-    <cyclonedx.version>2.7.10</cyclonedx.version>
+    <cyclonedx.version>2.9.1</cyclonedx.version>
+    <docker-maven-plugin.version>0.29.0</docker-maven-plugin.version>
 
     <shell-executable>bash</shell-executable>
 
     <leveldbjni.group>org.fusesource.leveldbjni</leveldbjni.group>
+
+    <!--
+     Surefire option to not fail a build if -Dtest=NAME doesn't find a
+     test called NAME. This is needed when running integration tests through
+     failsafe, as setting -Dtest=none is the way to stop surefire
+     running all unit tests before the it.test option is picked up.
+    -->
+    <surefire.failIfNoSpecifiedTests>false</surefire.failIfNoSpecifiedTests>
+
+    <!-- define the Java language version used by the compiler -->
+    <javac.version>17</javac.version>
+
+    <!-- The java version enforced by the maven enforcer -->
+    <!-- more complex patterns can be used here, such as
+       [${javac.version})
+    for an open-ended enforcement
+    -->
+    <enforced.java.version>[${javac.version},)</enforced.java.version>
+    <enforced.maven.version>[3.3.0,)</enforced.maven.version>
   </properties>
 
   <modules>
@@ -154,16 +176,21 @@ xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/x
           <version>${maven-dependency-plugin.version}</version>
         </plugin>
         <plugin>
+          <groupId>io.fabric8</groupId>
+          <artifactId>docker-maven-plugin</artifactId>
+          <version>${docker-maven-plugin.version}</version>
+        </plugin>
+        <plugin>
           <groupId>org.apache.maven.plugins</groupId>
           <artifactId>maven-enforcer-plugin</artifactId>
           <version>${maven-enforcer-plugin.version}</version>
           <configuration>
             <rules>
               <requireMavenVersion>
-                <version>[3.0.2,)</version>
+                <version>${enforced.maven.version}</version>
               </requireMavenVersion>
               <requireJavaVersion>
-                <version>[1.8,)</version>
+                <version>${enforced.java.version}</version>
               </requireJavaVersion>
             </rules>
           </configuration>
@@ -305,6 +332,17 @@ xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/x
                     <bannedImports>
                       <bannedImport>org.apache.commons.logging.**</bannedImport>
                     </bannedImports>
+                  </restrictImports>
+                  <restrictImports>
+                     <includeTestCode>true</includeTestCode>
+                     <reason>Use JUnit5</reason>
+                     <bannedImports>
+                        <bannedImport>org.junit.**</bannedImport>
+                     </bannedImports>
+                     <allowedImports>
+                        <allowedImport>org.junit.jupiter.**</allowedImport>
+                        <allowedImport>org.junit.platform.**</allowedImport>
+                     </allowedImports>
                   </restrictImports>
                 </rules>
               </configuration>
@@ -510,6 +548,9 @@ xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/x
           <groupId>org.apache.maven.plugins</groupId>
           <artifactId>maven-compiler-plugin</artifactId>
           <version>${maven-compiler-plugin.version}</version>
+          <configuration>
+            <release>${javac.version}</release>
+          </configuration>
         </plugin>
       </plugins>
     </pluginManagement>
@@ -570,13 +611,16 @@ xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/x
             <exclude>.git/**</exclude>
             <exclude>.github/pull_request_template.md</exclude>
             <exclude>.idea/**</exclude>
+            <exclude>.mvn/*.config</exclude>
             <exclude>**/build/**</exclude>
+            <exclude>**/dependency-reduced-pom.xml</exclude>
             <exclude>**/patchprocess/**</exclude>
             <exclude>**/*.js</exclude>
             <exclude>licenses/**</exclude>
             <exclude>licenses-binary/**</exclude>
             <exclude>dev-support/docker/pkg-resolver/packages.json</exclude>
             <exclude>dev-support/docker/pkg-resolver/platforms.json</exclude>
+            <exclude>dev-support/docker/vcpkg/vcpkg.json</exclude>
             <exclude>**/target/**</exclude>
          </excludes>
        </configuration>
@@ -608,8 +652,7 @@ xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/x
              dependencies of this project for known CVEs (security
              vulnerabilities against them). It will produce a report
              in target/dependency-check-report.html. To invoke, run
-             'mvn dependency-check:aggregate'. Note that this plugin
-             requires maven 3.1.1 or greater.
+             'mvn dependency-check:aggregate'.
         -->
         <groupId>org.owasp</groupId>
         <artifactId>dependency-check-maven</artifactId>
@@ -639,9 +682,9 @@ xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/x
           <reportSet>
             <id>aggregate</id>
             <configuration>
-              <maxmemory>1024m</maxmemory>
               <quiet>true</quiet>
               <verbose>false</verbose>
+              <legacyMode>true</legacyMode>
               <source>${maven.compile.source}</source>
               <charset>${maven.compile.encoding}</charset>
               <reportOutputDirectory>${project.build.directory}/site</reportOutputDirectory>
@@ -674,8 +717,15 @@ xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/x
                   <version>${project.version}</version>
                 </docletArtifact>
               </docletArtifacts>
-              <useStandardDocletOptions>true</useStandardDocletOptions>
-
+              <additionalJOptions>
+                <!-- To fix doclet runtime error -->
+                <additionalJOption>-J--add-exports=jdk.javadoc/jdk.javadoc.internal.tool=ALL-UNNAMED</additionalJOption>
+              </additionalJOptions>
+              <additionalOptions>
+                <!-- To fix doclet compile error -->
+                <additionalOption>--add-exports</additionalOption>
+                <additionalOption>jdk.javadoc/jdk.javadoc.internal.tool=ALL-UNNAMED</additionalOption>
+              </additionalOptions>
               <!-- switch on dependency-driven aggregation -->
               <includeDependencySources>false</includeDependencySources>
 
@@ -683,7 +733,14 @@ xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/x
                 <!-- include ONLY dependencies I control -->
                 <dependencySourceInclude>org.apache.hadoop:hadoop-annotations</dependencySourceInclude>
               </dependencySourceIncludes>
-
+              <additionalDependencies>
+                <additionalDependency>
+                  <groupId>org.apache.hadoop</groupId>
+                  <artifactId>hadoop-hdfs</artifactId>
+                  <version>${project.version}</version>
+                  <classifier>tests</classifier>
+                </additionalDependency>
+              </additionalDependencies>
             </configuration>
             <reports>
               <report>aggregate</report>
@@ -895,5 +952,11 @@ xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/x
       </activation>
     </profile>
 
+    <profile>
+      <id>docker-build</id>
+      <properties>
+        <docker.image>${user.name}/hadoop:${project.version}</docker.image>
+      </properties>
+    </profile>
   </profiles>
 </project>

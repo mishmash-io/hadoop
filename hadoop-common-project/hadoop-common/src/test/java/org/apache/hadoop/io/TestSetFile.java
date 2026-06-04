@@ -34,6 +34,11 @@ import org.junit.jupiter.api.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.fail;
+
 /** Support for flat files of binary key/value pairs. */
 public class TestSetFile {
   private static final Logger LOG = LoggerFactory.getLogger(TestSetFile.class);
@@ -67,10 +72,13 @@ public class TestSetFile {
       int size = 10;
       writeData(fs, size);
       SetFile.Reader reader = createReader(fs);
-      assertTrue(reader.next(new IntWritable(0)), "testSetFileWithConstruction1 error !!!");
+      assertTrue(reader.next(new IntWritable(0)),
+          "testSetFileWithConstruction1 error !!!");
       // don't know why reader.get(i) return i+1
-      assertEquals(new IntWritable(size/2 + 1), reader.get(new IntWritable(size/2)), "testSetFileWithConstruction2 error !!!");      
-      assertNull(reader.get(new IntWritable(size*2)), "testSetFileWithConstruction3 error !!!");
+      assertEquals(new IntWritable(size/2 + 1), reader.get(new IntWritable(size/2)),
+          "testSetFileWithConstruction2 error !!!");
+      assertNull(reader.get(new IntWritable(size*2)),
+          "testSetFileWithConstruction3 error !!!");
     } catch (Exception ex) {
       fail("testSetFileWithConstruction error !!!");    
     }

@@ -54,7 +54,11 @@ import java.util.Iterator;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import static org.apache.hadoop.hdfs.server.datanode.DiskBalancerWorkStatus.Result.NO_PLAN;
-import static org.junit.jupiter.api.Assertions.*;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /**
  * Tests diskbalancer with a mock mover.
@@ -88,10 +92,11 @@ public class TestDiskBalancerWithMockMover {
         .setMover(blockMover)
         .build();
 
-    DiskBalancerException e = assertThrows(DiskBalancerException.class, () -> {
+    DiskBalancerException ex = assertThrows(DiskBalancerException.class, () -> {
       balancer.queryWorkStatus();
     });
-    assertEquals(Result.DISK_BALANCER_NOT_ENABLED, e.getResult());
+    assertThat(ex.getResult()).isEqualTo(DiskBalancerException
+        .Result.DISK_BALANCER_NOT_ENABLED);
   }
 
   /**
@@ -142,13 +147,15 @@ public class TestDiskBalancerWithMockMover {
     // ask block mover to get stuck in copy block
     mockMoverHelper.getBlockMover().setSleep();
     executeSubmitPlan(plan, balancer);
-    DiskBalancerException e = assertThrows(DiskBalancerException.class, () -> {
-      executeSubmitPlan(plan, balancer);
-    });
-    assertEquals(Result.PLAN_ALREADY_IN_PROGRESS, e.getResult());
 
-    // Not needed but this is the cleanup step.
-    mockMoverHelper.getBlockMover().clearSleep();
+    DiskBalancerException ex = assertThrows(DiskBalancerException.class, () -> {
+      executeSubmitPlan(plan, balancer);
+
+      // Not needed but this is the cleanup step.
+      mockMoverHelper.getBlockMover().clearSleep();
+    });
+    assertThat(ex.getResult()).isEqualTo(DiskBalancerException
+        .Result.PLAN_ALREADY_IN_PROGRESS);
   }
 
   @Test
@@ -182,10 +189,12 @@ public class TestDiskBalancerWithMockMover {
     DiskBalancer balancer = mockMoverHelper.getBalancer();
 
     plan.setTimeStamp(Time.now() - (32 * millisecondInAnHour));
-    DiskBalancerException e = assertThrows(DiskBalancerException.class, () -> {
+
+    DiskBalancerException ex = assertThrows(DiskBalancerException.class, () -> {
       executeSubmitPlan(plan, balancer);
     });
-    assertEquals(Result.OLD_PLAN_SUBMITTED, e.getResult());
+    assertThat(ex.getResult()).isEqualTo(DiskBalancerException
+        .Result.OLD_PLAN_SUBMITTED);
   }
 
   @Test
@@ -194,11 +203,12 @@ public class TestDiskBalancerWithMockMover {
     NodePlan plan = mockMoverHelper.getPlan();
     DiskBalancer balancer = mockMoverHelper.getBalancer();
 
-    // Plan version is invalid -- there is no version 0.
-    DiskBalancerException e = assertThrows(DiskBalancerException.class, () -> {
+    DiskBalancerException ex = assertThrows(DiskBalancerException.class, () -> {
+      // Plan version is invalid -- there is no version 0.
       executeSubmitPlan(plan, balancer, 0);
     });
-    assertEquals(Result.INVALID_PLAN_VERSION, e.getResult());
+    assertThat(ex.getResult()).isEqualTo(DiskBalancerException
+        .Result.INVALID_PLAN_VERSION);
   }
 
   @Test
@@ -209,10 +219,11 @@ public class TestDiskBalancerWithMockMover {
     String planJson = plan.toJson();
     String planID = DigestUtils.sha1Hex(planJson);
 
-    DiskBalancerException e = assertThrows(DiskBalancerException.class, () -> {
+    DiskBalancerException ex = assertThrows(DiskBalancerException.class, () -> {
       balancer.submitPlan(planID, 1, "no-plan-file.json", null, false);
     });
-    assertEquals(Result.INVALID_PLAN, e.getResult());
+    assertThat(ex.getResult()).isEqualTo(DiskBalancerException
+        .Result.INVALID_PLAN);
   }
 
   @Test
@@ -226,11 +237,14 @@ public class TestDiskBalancerWithMockMover {
     String planID = DigestUtils.sha1Hex(planJson);
     char repChar = (char)(planID.charAt(0) + 1);
 
-    DiskBalancerException e = assertThrows(DiskBalancerException.class, () -> {
-      balancer.submitPlan(planID.replace(planID.charAt(0), repChar),
-        1, PLAN_FILE, planJson, false);
+    final char repCharVariant = repChar;
+    DiskBalancerException ex = assertThrows(DiskBalancerException.class, () -> {
+      balancer.submitPlan(planID.replace(planID.charAt(0), repCharVariant),
+          1, PLAN_FILE, planJson, false);
     });
-    assertEquals(Result.INVALID_PLAN_HASH, e.getResult());
+    assertThat(ex.getResult()).isEqualTo(DiskBalancerException
+        .Result.INVALID_PLAN_HASH);
+
   }
 
   /**
@@ -255,27 +269,27 @@ public class TestDiskBalancerWithMockMover {
     balancer.cancelPlan(planID);
 
     DiskBalancerWorkStatus status = balancer.queryWorkStatus();
-    assertEquals(DiskBalancerWorkStatus.Result.PLAN_CANCELLED,
-        status.getResult());
-
+    assertEquals(DiskBalancerWorkStatus.Result.PLAN_CANCELLED, status.getResult());
 
     executeSubmitPlan(plan, balancer);
 
     // Send a Wrong cancellation request.
-    char first = (char)(planID.charAt(0) + 1);
-    DiskBalancerException e = assertThrows(DiskBalancerException.class, () -> {
-      balancer.cancelPlan(planID.replace(planID.charAt(0), first));
+    char first = planID.charAt(0);
+    first++;
+
+    final char firstVariant = first;
+    DiskBalancerException ex = assertThrows(DiskBalancerException.class, () -> {
+      balancer.cancelPlan(planID.replace(planID.charAt(0), firstVariant));
+
+      // Now cancel the real one
+      balancer.cancelPlan(planID);
+      mockMoverHelper.getBlockMover().clearSleep(); // unblock mover.
+
+      final DiskBalancerWorkStatus statusVariant = balancer.queryWorkStatus();
+      assertEquals(DiskBalancerWorkStatus.Result.PLAN_CANCELLED, statusVariant.getResult());
     });
-    assertEquals(Result.NO_SUCH_PLAN, e.getResult());
-
-    // Now cancel the real one
-    balancer.cancelPlan(planID);
-    mockMoverHelper.getBlockMover().clearSleep(); // unblock mover.
-
-    status = balancer.queryWorkStatus();
-    assertEquals(DiskBalancerWorkStatus.Result.PLAN_CANCELLED,
-        status.getResult());
-
+    assertThat(ex.getResult()).isEqualTo(DiskBalancerException
+        .Result.NO_SUCH_PLAN);
   }
 
 

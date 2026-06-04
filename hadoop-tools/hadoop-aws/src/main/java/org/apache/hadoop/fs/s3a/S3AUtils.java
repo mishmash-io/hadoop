@@ -39,6 +39,7 @@ import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.fs.PathFilter;
 import org.apache.hadoop.fs.PathIOException;
 import org.apache.hadoop.fs.RemoteIterator;
+import org.apache.hadoop.fs.s3a.impl.S3AEncryption;
 import org.apache.hadoop.util.functional.RemoteIterators;
 import org.apache.hadoop.fs.s3a.auth.delegation.EncryptionSecrets;
 import org.apache.hadoop.fs.s3a.impl.MultiObjectDeleteException;
@@ -638,6 +639,10 @@ public final class S3AUtils {
    * <li>a public default constructor.</li>
    * </ol>
    *
+   * Uses the configuration's class loader, to respect the setting of
+   * {@link Constants#AWS_S3_CLASSLOADER_ISOLATION}. For backwards
+   * compatibility, if configuration is null, a default classloader is used.
+   *
    * @param className name of class for which instance is to be created
    * @param conf configuration
    * @param uri URI of the FS
@@ -656,7 +661,18 @@ public final class S3AUtils {
       String methodName,
       String configKey) throws IOException {
     try {
-      Class<?> instanceClass = S3AUtils.class.getClassLoader().loadClass(className);
+      ClassLoader classLoader;
+      if (conf != null) {
+        classLoader = conf.getClassLoader();
+        LOG.debug("Loading class {} with Configuration classloader {}",
+              className, classLoader);
+      } else {
+        classLoader = S3AUtils.class.getClassLoader();
+        LOG.debug("Loading class {} with default classloader {}",
+              className, classLoader);
+      }
+
+      Class<?> instanceClass = classLoader.loadClass(className);
       if (Modifier.isAbstract(instanceClass.getModifiers())) {
         throw isAbstract(uri, className, configKey);
       }
@@ -741,7 +757,6 @@ public final class S3AUtils {
    */
   public static S3xLoginHelper.Login getAWSAccessKeys(URI name,
       Configuration conf) throws IOException {
-    S3xLoginHelper.rejectSecretsInURIs(name);
     Configuration c = ProviderUtils.excludeIncompatibleCredentialProviders(
         conf, S3AFileSystem.class);
     String bucket = name != null ? name.getHost() : "";
@@ -1342,7 +1357,7 @@ public final class S3AUtils {
    * @throws IOException on any IO problem
    * @throws IllegalArgumentException bad arguments
    */
-  private static String lookupBucketSecret(
+  public static String lookupBucketSecret(
       String bucket,
       Configuration conf,
       String baseKey)
@@ -1488,6 +1503,8 @@ public final class S3AUtils {
     int encryptionKeyLen =
         StringUtils.isBlank(encryptionKey) ? 0 : encryptionKey.length();
     String diagnostics = passwordDiagnostics(encryptionKey, "key");
+    String encryptionContext = S3AEncryption.getS3EncryptionContextBase64Encoded(bucket, conf,
+        encryptionMethod.requiresSecret());
     switch (encryptionMethod) {
     case SSE_C:
       LOG.debug("Using SSE-C with {}", diagnostics);
@@ -1523,7 +1540,7 @@ public final class S3AUtils {
       LOG.debug("Data is unencrypted");
       break;
     }
-    return new EncryptionSecrets(encryptionMethod, encryptionKey);
+    return new EncryptionSecrets(encryptionMethod, encryptionKey, encryptionContext);
   }
 
   /**
@@ -1716,6 +1733,21 @@ public final class S3AUtils {
       final Configuration configuration,
       final String name) {
     String valueString = configuration.get(name);
+    return getTrimmedStringCollectionSplitByEquals(valueString);
+  }
+
+  /**
+   * Get the equal op (=) delimited key-value pairs of the <code>name</code> property as
+   * a collection of pair of <code>String</code>s, trimmed of the leading and trailing whitespace
+   * after delimiting the <code>name</code> by comma and new line separator.
+   * If no such property is specified then empty <code>Map</code> is returned.
+   *
+   * @param valueString the string containing the key-value pairs.
+   * @return property value as a <code>Map</code> of <code>String</code>s, or empty
+   * <code>Map</code>.
+   */
+  public static Map<String, String> getTrimmedStringCollectionSplitByEquals(
+      final String valueString) {
     if (null == valueString) {
       return new HashMap<>();
     }

@@ -13,10 +13,10 @@
  */
 package org.apache.hadoop.security.authentication.server;
 
-import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+
 import org.junit.jupiter.api.Test;
 
 public class TestAuthenticationToken {
@@ -24,9 +24,9 @@ public class TestAuthenticationToken {
   @Test
   public void testAnonymous() {
     assertNotNull(AuthenticationToken.ANONYMOUS);
-    assertNull(AuthenticationToken.ANONYMOUS.getUserName());
-    assertNull(AuthenticationToken.ANONYMOUS.getName());
-    assertNull(AuthenticationToken.ANONYMOUS.getType());
+    assertEquals(null, AuthenticationToken.ANONYMOUS.getUserName());
+    assertEquals(null, AuthenticationToken.ANONYMOUS.getName());
+    assertEquals(null, AuthenticationToken.ANONYMOUS.getType());
     assertEquals(-1, AuthenticationToken.ANONYMOUS.getExpires());
     assertFalse(AuthenticationToken.ANONYMOUS.isExpired());
   }

@@ -27,6 +27,7 @@ import java.util.Random;
 
 import org.apache.hadoop.constants.ConfigConstants;
 import org.apache.hadoop.thirdparty.com.google.common.primitives.Bytes;
+import org.apache.hadoop.util.concurrent.SubjectInheritingThread;
 import org.junit.jupiter.api.Test;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -223,13 +224,11 @@ public class TestText {
           
       assertEquals(ret1, ret2);
           
-      assertEquals(0,
-              txt1.compareTo(txt3),
-              "Equivalence of different txt objects, same content");
-      assertEquals(0,
-              comparator.compare(out1.getData(), 0, out3.getLength(),
-                      out3.getData(), 0, out3.getLength()),
-              "Equvalence of data output buffers");
+      assertEquals(0, txt1.compareTo(txt3),
+          "Equivalence of different txt objects, same content");
+      assertEquals(0, comparator.compare(out1.getData(), 0, out3.getLength(),
+          out3.getData(), 0, out3.getLength()),
+          "Equvalence of data output buffers");
     }
   }
 
@@ -267,23 +266,21 @@ public class TestText {
         "Actual string on an empty text object must be an empty string");
     assertEquals(0, text.getBytes().length,
         "Underlying byte array length must be zero");
-    assertEquals(0, text.getLength(),
-        "String's length must be zero");
-    assertEquals(0, text.getTextLength(),
-        "String's text length must be zero");
+    assertEquals(0, text.getLength(), "String's length must be zero");
+    assertEquals(0, text.getTextLength(), "String's text length must be zero");
 
     // Test if clear works as intended
     text = new Text("abcd\u20acbdcd\u20ac");
     int len = text.getLength();
     text.clear();
     assertEquals("", text.toString(),
-            "String must be empty after clear()");
+        "String must be empty after clear()");
     assertTrue(text.getBytes().length >= len,
-            "Length of the byte array must not decrease after clear()");
+        "Length of the byte array must not decrease after clear()");
     assertEquals(0, text.getLength(),
-            "Length of the string must be reset to 0 after clear()");
+        "Length of the string must be reset to 0 after clear()");
     assertEquals(0, text.getTextLength(),
-            "Text length of the string must be reset to 0 after clear()");
+        "Text length of the string must be reset to 0 after clear()");
   }
 
   @Test
@@ -304,13 +301,13 @@ public class TestText {
     assertEquals(8, a.copyBytes().length);
   }
   
-  private class ConcurrentEncodeDecodeThread extends Thread {
+  private class ConcurrentEncodeDecodeThread extends SubjectInheritingThread {
     public ConcurrentEncodeDecodeThread(String name) {
       super(name);
     }
 
     @Override
-    public void run() {
+    public void work() {
       final String name = this.getName();
       DataOutputBuffer out = new DataOutputBuffer();
       DataInputBuffer in = new DataInputBuffer();
@@ -361,9 +358,9 @@ public class TestText {
     for (int i = 0; i < line.length(); i++) {
       assertTrue(text.charAt(i) == line.charAt(i), "testCharAt error1 !!!");
     }    
-    assertEquals(-1, text.charAt(-1), "testCharAt error2 !!!");    
+    assertEquals(-1, text.charAt(-1), "testCharAt error2 !!!");
     assertEquals(-1, text.charAt(100), "testCharAt error3 !!!");
-  }    
+  }
   
   /**
    * test {@code Text} readFields/write operations
@@ -448,35 +445,35 @@ public class TestText {
   @Test
   public void testUtf8Length() {
     assertEquals(1, Text.utf8Length(new String(new char[]{(char) 1})),
-            "testUtf8Length1 error   !!!");
+        "testUtf8Length1 error !!!");
     assertEquals(1, Text.utf8Length(new String(new char[]{(char) 127})),
-            "testUtf8Length127 error !!!");
+        "testUtf8Length127 error !!!");
     assertEquals(2, Text.utf8Length(new String(new char[]{(char) 128})),
-            "testUtf8Length128 error !!!");
+        "testUtf8Length128 error !!!");
     assertEquals(2, Text.utf8Length(new String(new char[]{(char) 193})),
-            "testUtf8Length193 error !!!");
+        "testUtf8Length193 error !!!");
     assertEquals(2, Text.utf8Length(new String(new char[]{(char) 225})),
-            "testUtf8Length225 error !!!");
+        "testUtf8Length225 error !!!");
     assertEquals(2, Text.utf8Length(new String(new char[]{(char)254})),
-            "testUtf8Length254 error !!!");
+        "testUtf8Length254 error !!!");
   }
 
   @Test
   public void testSetBytes(){
     Text a = new Text(new byte[100]);
     assertEquals(100, a.getLength(),
-            "testSetBytes100 getLength error !");
+        "testSetBytes100 getLength error !");
     assertEquals(100, a.getBytes().length,
-            "testSetBytes100 getBytes.length error !");
+        "testSetBytes100 getBytes.length error !");
     assertEquals(100, a.getTextLength(),
-            "testSetBytes100 getTextLength error !");
+        "testSetBytes100 getTextLength error !");
 
     a.set(new byte[0]);
     assertEquals(0, a.getLength(),
-            "testSetBytes0 getLength error !");
+        "testSetBytes0 getLength error !");
     assertEquals(0, a.getBytes().length,
-            "testSetBytes0 getBytes.length error !");
+        "testSetBytes0 getBytes.length error !");
     assertEquals(0, a.getTextLength(),
-            "testSetBytes0 getTextLength error !");
+        "testSetBytes0 getTextLength error !");
   }
 }

@@ -21,6 +21,8 @@ package org.apache.hadoop.fs.impl.prefetch;
 
 import java.lang.reflect.Method;
 
+import org.junit.jupiter.api.Test;
+
 import org.apache.hadoop.test.AbstractHadoopTestBase;
 import org.junit.jupiter.api.Test;
 

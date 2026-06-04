@@ -36,7 +36,6 @@ import org.junit.jupiter.api.Timeout;
 import java.io.File;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import java.io.RandomAccessFile;
 
 /**
  * Tests to ensure that a block is not read successfully from a datanode
@@ -67,7 +66,7 @@ public class TestCorruptMetadataFile {
   }
 
   @Test
-  @Timeout(value = 60000, unit = TimeUnit.MILLISECONDS)
+  @Timeout(value = 60)
   public void testReadBlockFailsWhenMetaIsCorrupt() throws Exception {
     cluster = clusterBuilder.build();
     cluster.waitActive();

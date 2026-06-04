@@ -22,9 +22,7 @@ import static org.junit.jupiter.api.Assertions.fail;
 
 import org.apache.hadoop.hdfs.server.common.HdfsServerConstants.RollingUpgradeStartupOption;
 import org.apache.hadoop.hdfs.server.common.HdfsServerConstants.StartupOption;
-
 import org.junit.jupiter.api.Test;
-
 
 /**
  * Test enumerations in TestHdfsServerConstants.

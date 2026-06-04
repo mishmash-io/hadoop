@@ -40,7 +40,6 @@ import org.apache.hadoop.hdfs.server.protocol.StorageBlockReport;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
-
 import org.slf4j.event.Level;
 
 /**

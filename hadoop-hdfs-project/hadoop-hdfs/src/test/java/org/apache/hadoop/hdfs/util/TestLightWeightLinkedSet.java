@@ -17,7 +17,10 @@
  */
 package org.apache.hadoop.hdfs.util;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.util.ArrayList;
 import java.util.Iterator;
@@ -372,7 +375,7 @@ public class TestLightWeightLinkedSet {
   }
 
   @Test
-  @Timeout(value = 60000, unit = TimeUnit.MILLISECONDS)
+  @Timeout(value = 60)
   public void testGetBookmarkReturnsBookmarkIterator() {
     LOG.info("Test getBookmark returns proper iterator");
     assertTrue(set.addAll(list));
@@ -390,7 +393,7 @@ public class TestLightWeightLinkedSet {
   }
 
   @Test
-  @Timeout(value = 60000, unit = TimeUnit.MILLISECONDS)
+  @Timeout(value = 60)
   public void testBookmarkAdvancesOnRemoveOfSameElement() {
     LOG.info("Test that the bookmark advances if we remove its element.");
     assertTrue(set.add(list.get(0)));
@@ -405,7 +408,7 @@ public class TestLightWeightLinkedSet {
   }
 
   @Test
-  @Timeout(value = 60000, unit = TimeUnit.MILLISECONDS)
+  @Timeout(value = 60)
   public void testBookmarkSetToHeadOnAddToEmpty() {
     LOG.info("Test bookmark is set after adding to previously empty set.");
     Iterator<Integer> it = set.getBookmark();
@@ -421,7 +424,7 @@ public class TestLightWeightLinkedSet {
   }
 
   @Test
-  @Timeout(value = 60000, unit = TimeUnit.MILLISECONDS)
+  @Timeout(value = 60)
   public void testResetBookmarkPlacesBookmarkAtHead() {
     set.addAll(list);
     Iterator<Integer> it = set.getBookmark();

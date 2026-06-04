@@ -45,6 +45,14 @@ import org.apache.hadoop.test.GenericTestUtils;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
+import static org.junit.jupiter.api.Assertions.assertArrayEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.fail;
+
 public class TestKeyProviderFactory {
 
   private FileSystemTestHelper fsHelper;
@@ -80,7 +88,7 @@ public class TestKeyProviderFactory {
     conf.set(KeyProviderFactory.KEY_PROVIDER_PATH, "unknown:///");
     try {
       List<KeyProvider> providers = KeyProviderFactory.getProviders(conf);
-      fail("should throw!");
+      assertTrue(false, "should throw!");
     } catch (IOException e) {
       assertEquals("No KeyProviderFactory for unknown:/// in " +
           KeyProviderFactory.KEY_PROVIDER_PATH,
@@ -94,7 +102,7 @@ public class TestKeyProviderFactory {
     conf.set(KeyProviderFactory.KEY_PROVIDER_PATH, "unkn@own:/x/y");
     try {
       List<KeyProvider> providers = KeyProviderFactory.getProviders(conf);
-      fail("should throw!");
+      assertTrue(false, "should throw!");
     } catch (IOException e) {
       assertEquals("Bad configuration of " +
           KeyProviderFactory.KEY_PROVIDER_PATH +
@@ -134,14 +142,14 @@ public class TestKeyProviderFactory {
     // try recreating key3
     try {
       provider.createKey("key3", key3, KeyProvider.options(conf));
-      fail("should throw");
+      assertTrue(false, "should throw");
     } catch (IOException e) {
       assertEquals("Key key3 already exists in " + ourUrl, e.getMessage());
     }
     provider.deleteKey("key3");
     try {
       provider.deleteKey("key3");
-      fail("should throw");
+      assertTrue(false, "should throw");
     } catch (IOException e) {
       assertEquals("Key key3 does not exist in " + ourUrl, e.getMessage());
     }
@@ -149,7 +157,7 @@ public class TestKeyProviderFactory {
     try {
       provider.createKey("key4", key3,
           KeyProvider.options(conf).setBitLength(8));
-      fail("should throw");
+      assertTrue(false, "should throw");
     } catch (IOException e) {
       assertEquals("Wrong key length. Required 8, but got 128", e.getMessage());
     }
@@ -165,13 +173,13 @@ public class TestKeyProviderFactory {
     assertEquals("key4@1", provider.getCurrentKey("key4").getVersionName());
     try {
       provider.rollNewVersion("key4", key1);
-      fail("should throw");
+      assertTrue(false, "should throw");
     } catch (IOException e) {
       assertEquals("Wrong key length. Required 8, but got 128", e.getMessage());
     }
     try {
       provider.rollNewVersion("no-such-key", key1);
-      fail("should throw");
+      assertTrue(false, "should throw");
     } catch (IOException e) {
       assertEquals("Key no-such-key not found", e.getMessage());
     }
@@ -190,10 +198,8 @@ public class TestKeyProviderFactory {
     assertTrue(keys.contains("key4"), "Returned Keys should have included key4.");
 
     List<KeyVersion> kvl = provider.getKeyVersions("key3");
-    assertEquals(1, kvl.size(),
-        "KeyVersions should have been returned for key3.");
-    assertEquals(
-        "key3@0", kvl.get(0).getVersionName(),
+    assertEquals(1, kvl.size(), "KeyVersions should have been returned for key3.");
+    assertEquals("key3@0", kvl.get(0).getVersionName(),
         "KeyVersions should have included key3@0.");
     assertArrayEquals(key3, kvl.get(0).getMaterial());
   }
@@ -244,7 +250,7 @@ public class TestKeyProviderFactory {
     } catch (Exception e) {
       // Ignore
     }
-    // SHould be reset to pre-flush state
+    // Should be reset to pre-flush state
     assertNull(provider.getCurrentKey("key5"));
     
     // Un-inject last failure and
@@ -260,7 +266,7 @@ public class TestKeyProviderFactory {
     } catch (Exception e) {
       // Ignore
     }
-    // SHould be reset to pre-flush state
+    // Should be reset to pre-flush state
     assertNull(provider.getCurrentKey("key6"));
     // END : Test flush error by failure injection
 
@@ -375,10 +381,8 @@ public class TestKeyProviderFactory {
 
     FileSystem fs = path.getFileSystem(conf);
     FileStatus s = fs.getFileStatus(path);
-    assertEquals(
-        "rwxrwxrwx", s.getPermission().toString(),
-        "Permissions should have been retained from the preexisting "
-        + "keystore.");
+    assertEquals("rwxrwxrwx", s.getPermission().toString(),
+        "Permissions should have been retained from the preexisting keystore.");
   }
 
   @Test

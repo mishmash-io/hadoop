@@ -23,7 +23,12 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import java.io.IOException;
 import java.util.LinkedList;
 import java.util.concurrent.ThreadPoolExecutor;
-import java.util.concurrent.TimeUnit;
+
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.Timeout;
 
 import org.apache.commons.lang3.RandomStringUtils;
 import org.apache.commons.lang3.RandomUtils;
@@ -34,11 +39,9 @@ import org.apache.hadoop.fs.FileSystemTestHelper;
 import org.apache.hadoop.fs.LocalFileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.fs.shell.CopyCommands.CopyFromLocal;
-import org.junit.jupiter.api.AfterAll;
-import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.Timeout;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /**
  * Test for copyFromLocal.
@@ -115,7 +118,7 @@ public class TestCopyFromLocal {
   }
 
   @Test
-  @Timeout(value=10000, unit=TimeUnit.MILLISECONDS)
+  @Timeout(value = 10)
   public void testCopyFromLocal() {
     run(new TestMultiThreadedCopy(1, 0),
         new Path(dir, FROM_DIR_NAME).toString(),
@@ -123,7 +126,7 @@ public class TestCopyFromLocal {
   }
 
   @Test
-  @Timeout(value=10000, unit=TimeUnit.MILLISECONDS)
+  @Timeout(value = 10)
   public void testCopyFromLocalWithThreads(){
     int threads = Runtime.getRuntime().availableProcessors() * 2 + 1;
     run(new TestMultiThreadedCopy(threads, numFiles),
@@ -133,7 +136,7 @@ public class TestCopyFromLocal {
   }
 
   @Test
-  @Timeout(value=10000, unit=TimeUnit.MILLISECONDS)
+  @Timeout(value = 10)
   public void testCopyFromLocalWithThreadWrong(){
     run(new TestMultiThreadedCopy(1, 0), "-t", "0",
         new Path(dir, FROM_DIR_NAME).toString(),

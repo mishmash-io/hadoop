@@ -17,7 +17,10 @@
  */
 package org.apache.hadoop.hdfs.server.namenode.ha;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.fail;
 
 import java.io.File;
 import java.io.IOException;
@@ -118,8 +121,8 @@ public class TestDFSUpgradeWithHA {
           PersistentLongFile prevLongFile = new PersistentLongFile(prevFile, -10);
           PersistentLongFile currLongFile = new PersistentLongFile(new File(currDir,
               fileName), -11);
-          assertTrue(prevLongFile.get() <= currLongFile.get(), "Value in " + fileName + " has decreased on upgrade in "
-              + journalDir);
+          assertTrue(prevLongFile.get() <= currLongFile.get(),
+              "Value in " + fileName + " has decreased on upgrade in " + journalDir);
         }
       }
     }

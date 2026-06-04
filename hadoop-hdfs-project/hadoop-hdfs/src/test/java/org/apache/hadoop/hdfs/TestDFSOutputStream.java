@@ -50,6 +50,7 @@ import org.apache.hadoop.hdfs.protocol.ExtendedBlock;
 import org.apache.hadoop.hdfs.protocol.HdfsConstants;
 import org.apache.hadoop.hdfs.protocol.HdfsFileStatus;
 import org.apache.hadoop.hdfs.protocol.datatransfer.BlockConstructionStage;
+import org.apache.hadoop.hdfs.protocol.datatransfer.PacketHeader;
 import org.apache.hadoop.hdfs.protocol.datatransfer.PacketReceiver;
 import org.apache.hadoop.hdfs.server.blockmanagement.BlockManager;
 import org.apache.hadoop.hdfs.server.blockmanagement.DatanodeDescriptor;
@@ -59,10 +60,19 @@ import org.apache.hadoop.io.IOUtils;
 import org.apache.hadoop.test.GenericTestUtils;
 import org.apache.hadoop.test.PathUtils;
 import org.apache.hadoop.test.Whitebox;
-import org.junit.jupiter.api.*;
+import org.apache.hadoop.util.DataChecksum;
+import org.apache.hadoop.util.concurrent.SubjectInheritingThread;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.Timeout;
 
 import static org.apache.hadoop.hdfs.client.HdfsClientConfigKeys.Write.RECOVER_LEASE_ON_CLOSE_EXCEPTION_KEY;
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.fail;
 import static org.mockito.ArgumentMatchers.anyBoolean;
 import org.mockito.Mockito;
 
@@ -104,7 +114,7 @@ public class TestDFSOutputStream {
     LastExceptionInStreamer ex = (LastExceptionInStreamer) Whitebox
         .getInternalState(streamer, "lastException");
     Throwable thrown = (Throwable) Whitebox.getInternalState(ex, "thrown");
-    Assertions.assertNull(thrown);
+    assertNull(thrown);
 
     dos.close();
 
@@ -116,7 +126,7 @@ public class TestDFSOutputStream {
       assertEquals(e, dummy);
     }
     thrown = (Throwable) Whitebox.getInternalState(ex, "thrown");
-    Assertions.assertNull(thrown);
+    assertNull(thrown);
     dos.close();
   }
 
@@ -142,10 +152,10 @@ public class TestDFSOutputStream {
     Field field = dos.getClass().getDeclaredField("packetSize");
     field.setAccessible(true);
 
-    Assertions.assertTrue((Integer) field.get(dos) + 33 < packetSize);
+    assertTrue((Integer) field.get(dos) + 33 < packetSize);
     // If PKT_MAX_HEADER_LEN is 257, actual packet size come to over 64KB
     // without a fix on HDFS-7308.
-    Assertions.assertTrue((Integer) field.get(dos) + 257 < packetSize);
+    assertTrue((Integer) field.get(dos) + 257 < packetSize);
   }
 
   /**
@@ -162,7 +172,7 @@ public class TestDFSOutputStream {
    * @throws NoSuchMethodException
    */
   @Test
-  @Timeout(value = 60000, unit = TimeUnit.MILLISECONDS)
+  @Timeout(value = 60)
   public void testPreventOverflow() throws IOException, NoSuchFieldException,
       SecurityException, IllegalAccessException, IllegalArgumentException,
       InvocationTargetException, NoSuchMethodException {
@@ -244,21 +254,21 @@ public class TestDFSOutputStream {
       final Field writePacketSizeField = dos.getClass()
           .getDeclaredField("writePacketSize");
       writePacketSizeField.setAccessible(true);
-      Assertions.assertEquals(writePacketSizeField.getInt(dos),
+      assertEquals(writePacketSizeField.getInt(dos),
           finalWritePacketSize);
 
       /* get and verify chunksPerPacket */
       final Field chunksPerPacketField = dos.getClass()
           .getDeclaredField("chunksPerPacket");
       chunksPerPacketField.setAccessible(true);
-      Assertions.assertEquals(chunksPerPacketField.getInt(dos),
+      assertEquals(chunksPerPacketField.getInt(dos),
           (finalWritePacketSize - packateMaxHeaderLength) / chunkSize);
 
       /* get and verify packetSize */
       final Field packetSizeField = dos.getClass()
           .getDeclaredField("packetSize");
       packetSizeField.setAccessible(true);
-      Assertions.assertEquals(packetSizeField.getInt(dos),
+      assertEquals(packetSizeField.getInt(dos),
           chunksPerPacketField.getInt(dos) * chunkSize);
     } finally {
       if (dfsCluster != null) {
@@ -297,11 +307,11 @@ public class TestDFSOutputStream {
     DFSPacket packet = mock(DFSPacket.class);
     dataQueue.add(packet);
     stream.run();
-    Assertions.assertTrue(congestedNodes.isEmpty());
+    assertTrue(congestedNodes.isEmpty());
   }
 
   @Test
-  @Timeout(value = 60000, unit = TimeUnit.MILLISECONDS)
+  @Timeout(value = 60)
   public void testCongestionAckDelay() {
     DfsClientConf dfsClientConf = mock(DfsClientConf.class);
     DFSClient client = mock(DFSClient.class);
@@ -331,7 +341,7 @@ public class TestDFSOutputStream {
     AtomicBoolean isDelay = new AtomicBoolean(true);
 
     // ResponseProcessor needs the dataQueue for the next step.
-    new Thread(() -> {
+    new SubjectInheritingThread(() -> {
       for (int i = 0; i < 10; i++) {
         // In order to ensure that other threads run for a period of time to prevent affecting
         // the results.
@@ -368,7 +378,7 @@ public class TestDFSOutputStream {
 
     // The purpose of adding packets to the dataQueue is to make the DataStreamer run
     // normally and judge whether to enter the sleep state according to the congestion.
-    new Thread(() -> {
+    new SubjectInheritingThread(() -> {
       for (int i = 0; i < 100; i++) {
         packet[i] = mock(DFSPacket.class);
         dataQueue.add(packet[i]);
@@ -380,7 +390,7 @@ public class TestDFSOutputStream {
       }
     }).start();
     stream.run();
-    Assertions.assertFalse(isDelay.get());
+    assertFalse(isDelay.get());
   }
 
   @Test
@@ -503,6 +513,46 @@ public class TestDFSOutputStream {
         assertFalse(isFileClosed("/testExceptionInCloseWithoutRecoverLease"));
       }
     }
+  }
+
+  @Test
+  @Timeout(value = 60)
+  public void testFirstPacketSizeInNewBlocks() throws IOException {
+    final long blockSize = (long) 1024 * 1024;
+    MiniDFSCluster dfsCluster = cluster;
+    DistributedFileSystem fs = dfsCluster.getFileSystem();
+    Configuration dfsConf = fs.getConf();
+
+    EnumSet<CreateFlag> flags = EnumSet.of(CreateFlag.CREATE);
+    try(FSDataOutputStream fos = fs.create(new Path("/testfile.dat"),
+        FsPermission.getDefault(),
+        flags, 512, (short)3, blockSize, null)) {
+
+      DataChecksum crc32c = DataChecksum.newDataChecksum(
+          DataChecksum.Type.CRC32C, 512);
+
+      long loop = 0;
+      Random r = new Random();
+      byte[] buf = new byte[(int) blockSize];
+      r.nextBytes(buf);
+      fos.write(buf);
+      fos.hflush();
+
+      int chunkSize = crc32c.getBytesPerChecksum() + crc32c.getChecksumSize();
+      int packetContentSize = (dfsConf.getInt(DFS_CLIENT_WRITE_PACKET_SIZE_KEY,
+          DFS_CLIENT_WRITE_PACKET_SIZE_DEFAULT) -
+          PacketHeader.PKT_MAX_HEADER_LEN) / chunkSize * chunkSize;
+
+      while (loop < 20) {
+        r.nextBytes(buf);
+        fos.write(buf);
+        fos.hflush();
+        loop++;
+        assertEquals(((DFSOutputStream) fos.getWrappedStream()).packetSize,
+            packetContentSize);
+      }
+    }
+    fs.delete(new Path("/testfile.dat"), true);
   }
 
   @AfterAll

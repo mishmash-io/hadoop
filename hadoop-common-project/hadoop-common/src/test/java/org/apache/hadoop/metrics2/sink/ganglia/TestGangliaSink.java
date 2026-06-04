@@ -22,12 +22,14 @@ import org.apache.commons.configuration2.SubsetConfiguration;
 import org.apache.hadoop.metrics2.impl.ConfigBuilder;
 import org.junit.jupiter.api.Test;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import org.junit.jupiter.api.Test;
 
 import java.net.DatagramSocket;
 import java.net.MulticastSocket;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public class TestGangliaSink {
   @Test
@@ -37,8 +39,7 @@ public class TestGangliaSink {
     GangliaSink30 gangliaSink = new GangliaSink30();
     gangliaSink.init(conf);
     DatagramSocket socket = gangliaSink.getDatagramSocket();
-    assertFalse(
-        socket == null || socket instanceof MulticastSocket,
+    assertFalse(socket == null || socket instanceof MulticastSocket,
         "Did not create DatagramSocket");
   }
 
@@ -49,8 +50,7 @@ public class TestGangliaSink {
     GangliaSink30 gangliaSink = new GangliaSink30();
     gangliaSink.init(conf);
     DatagramSocket socket = gangliaSink.getDatagramSocket();
-    assertFalse(
-        socket == null || socket instanceof MulticastSocket,
+    assertFalse(socket == null || socket instanceof MulticastSocket,
         "Did not create DatagramSocket");
   }
 

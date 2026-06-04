@@ -18,7 +18,9 @@
 package org.apache.hadoop.hdfs.server.namenode.sps;
 
 import static org.apache.hadoop.util.Time.monotonicNow;
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.util.HashMap;
 import java.util.HashSet;
@@ -97,7 +99,7 @@ public class TestBlockStorageMovementAttemptedItems {
    * Verify that moved blocks reporting should queued up the block info.
    */
   @Test
-  @Timeout(value = 30000, unit = TimeUnit.MILLISECONDS)
+  @Timeout(value = 30)
   public void testAddReportedMoveAttemptFinishedBlocks() throws Exception {
     Long item = new Long(1234);
     Block block = new Block(item);
@@ -109,8 +111,7 @@ public class TestBlockStorageMovementAttemptedItems {
     bsmAttemptedItems.add(0L, 0L, 0L, blocksMap, 0);
     bsmAttemptedItems.notifyReportedBlock(dnInfo, StorageType.ARCHIVE,
         block);
-    assertEquals(1,
-        bsmAttemptedItems.getMovementFinishedBlocksCount(),
+    assertEquals(1, bsmAttemptedItems.getMovementFinishedBlocksCount(),
         "Failed to receive result!");
   }
 
@@ -118,7 +119,7 @@ public class TestBlockStorageMovementAttemptedItems {
    * Verify empty moved blocks reporting queue.
    */
   @Test
-  @Timeout(value = 30000, unit = TimeUnit.MILLISECONDS)
+  @Timeout(value = 30)
   public void testNoBlockMovementAttemptFinishedReportAdded() throws Exception {
     Long item = new Long(1234);
     Block block = new Block(item);
@@ -128,11 +129,8 @@ public class TestBlockStorageMovementAttemptedItems {
     Map<Block, Set<StorageTypeNodePair>> blocksMap = new HashMap<>();
     blocksMap.put(block, locs);
     bsmAttemptedItems.add(0L, 0L, 0L, blocksMap, 0);
-    assertEquals(0,
-        bsmAttemptedItems.getMovementFinishedBlocksCount(),
-        "Shouldn't receive result");
-    assertEquals(1,
-        bsmAttemptedItems.getAttemptedItemsCount(),
+    assertEquals(0, bsmAttemptedItems.getMovementFinishedBlocksCount(), "Shouldn't receive result");
+    assertEquals(1, bsmAttemptedItems.getAttemptedItemsCount(),
         "Item doesn't exist in the attempted list");
   }
 
@@ -143,7 +141,7 @@ public class TestBlockStorageMovementAttemptedItems {
    * #blocksStorageMovementUnReportedItemsCheck().
    */
   @Test
-  @Timeout(value = 30000, unit = TimeUnit.MILLISECONDS)
+  @Timeout(value = 30)
   public void testPartialBlockMovementShouldBeRetried1() throws Exception {
     Long item = new Long(1234);
     Block block1 = new Block(item);
@@ -161,10 +159,8 @@ public class TestBlockStorageMovementAttemptedItems {
 
     // start block movement report monitor thread
     bsmAttemptedItems.start();
-    assertTrue(checkItemMovedForRetry(trackID, 5000),
-        "Failed to add to the retry list");
-    assertEquals(0,
-        bsmAttemptedItems.getAttemptedItemsCount(),
+    assertTrue(checkItemMovedForRetry(trackID, 5000), "Failed to add to the retry list");
+    assertEquals(0, bsmAttemptedItems.getAttemptedItemsCount(),
         "Failed to remove from the attempted list");
   }
 
@@ -174,7 +170,7 @@ public class TestBlockStorageMovementAttemptedItems {
    * #blockStorageMovementReportedItemsCheck().
    */
   @Test
-  @Timeout(value = 30000, unit = TimeUnit.MILLISECONDS)
+  @Timeout(value = 30)
   public void testPartialBlockMovementShouldBeRetried2() throws Exception {
     Long item = new Long(1234);
     Block block = new Block(item);
@@ -195,8 +191,7 @@ public class TestBlockStorageMovementAttemptedItems {
 
     assertTrue(checkItemMovedForRetry(trackID, 5000),
         "Failed to add to the retry list");
-    assertEquals(0,
-        bsmAttemptedItems.getAttemptedItemsCount(),
+    assertEquals(0, bsmAttemptedItems.getAttemptedItemsCount(),
         "Failed to remove from the attempted list");
   }
 
@@ -205,7 +200,7 @@ public class TestBlockStorageMovementAttemptedItems {
    * and storageMovementAttemptedItems list is empty.
    */
   @Test
-  @Timeout(value = 30000, unit = TimeUnit.MILLISECONDS)
+  @Timeout(value = 30)
   public void testPartialBlockMovementWithEmptyAttemptedQueue()
       throws Exception {
     Long item = new Long(1234);
@@ -221,10 +216,8 @@ public class TestBlockStorageMovementAttemptedItems {
         block);
     assertFalse(
         checkItemMovedForRetry(trackID, 5000),
-        "Should not add in queue again if it is not there in"
-            + " storageMovementAttemptedItems");
-    assertEquals(1,
-        bsmAttemptedItems.getAttemptedItemsCount(),
+        "Should not add in queue again if it is not there in" + " storageMovementAttemptedItems");
+    assertEquals(1, bsmAttemptedItems.getAttemptedItemsCount(),
         "Failed to remove from the attempted list");
   }
 }

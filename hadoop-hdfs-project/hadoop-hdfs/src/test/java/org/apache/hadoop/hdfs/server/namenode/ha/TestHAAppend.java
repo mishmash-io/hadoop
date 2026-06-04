@@ -32,8 +32,7 @@ import org.apache.hadoop.hdfs.MiniDFSCluster;
 import org.apache.hadoop.hdfs.MiniDFSNNTopology;
 import org.apache.hadoop.hdfs.server.namenode.TestFileTruncate;
 import org.apache.hadoop.hdfs.tools.DFSck;
-import org.apache.hadoop.util.cli.ToolRunner;
-
+import org.apache.hadoop.util.ToolRunner;
 import org.junit.jupiter.api.Test;
 
 public class TestHAAppend {
@@ -115,8 +114,8 @@ public class TestHAAppend {
           new String[] { "/", "-files", "-blocks" });
       assertEquals(0, rc);
       
-      assertEquals(0, cluster.getNameNode(1)
-          .getNamesystem().getCorruptReplicaBlocks(), "CorruptBlocks should be empty.");
+      assertEquals(0, cluster.getNameNode(1).getNamesystem().getCorruptReplicaBlocks(),
+          "CorruptBlocks should be empty.");
 
       AppendTestUtil.checkFullFile(fs, fileToAppend, data.length, data,
           fileToAppend.toString());

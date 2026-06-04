@@ -28,7 +28,9 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.Timeout;
 
 import static org.junit.jupiter.api.Assertions.assertTrue;
-import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileStatus;
@@ -62,25 +64,25 @@ public class TestDiskChecker {
   }
 
   @Test
-  @Timeout(value=30000, unit=TimeUnit.MILLISECONDS)
+  @Timeout(value = 30)
   public void testMkdirs_dirExists() throws Throwable {
     _mkdirs(true, defaultPerm, defaultPerm);
   }
 
   @Test
-  @Timeout(value=30000, unit=TimeUnit.MILLISECONDS)
+  @Timeout(value = 30)
   public void testMkdirs_noDir() throws Throwable {
     _mkdirs(false, defaultPerm, defaultPerm);
   }
 
   @Test
-  @Timeout(value=30000, unit=TimeUnit.MILLISECONDS)
+  @Timeout(value = 30)
   public void testMkdirs_dirExists_badUmask() throws Throwable {
     _mkdirs(true, defaultPerm, invalidPerm);
   }
 
   @Test
-  @Timeout(value=30000, unit=TimeUnit.MILLISECONDS)
+  @Timeout(value = 30)
   public void testMkdirs_noDir_badUmask() throws Throwable {
     _mkdirs(false, defaultPerm, invalidPerm);
   }
@@ -113,31 +115,31 @@ public class TestDiskChecker {
   }
 
   @Test
-  @Timeout(value=30000, unit=TimeUnit.MILLISECONDS)
+  @Timeout(value = 30)
   public void testCheckDir_normal() throws Throwable {
     _checkDirs(true, new FsPermission("755"), true);
   }
 
   @Test
-  @Timeout(value=30000, unit=TimeUnit.MILLISECONDS)
+  @Timeout(value = 30)
   public void testCheckDir_notDir() throws Throwable {
     _checkDirs(false, new FsPermission("000"), false);
   }
 
   @Test
-  @Timeout(value=30000, unit=TimeUnit.MILLISECONDS)
+  @Timeout(value = 30)
   public void testCheckDir_notReadable() throws Throwable {
     _checkDirs(true, new FsPermission("000"), false);
   }
 
   @Test
-  @Timeout(value=30000, unit=TimeUnit.MILLISECONDS)
+  @Timeout(value = 30)
   public void testCheckDir_notWritable() throws Throwable {
     _checkDirs(true, new FsPermission("444"), false);
   }
 
   @Test
-  @Timeout(value=30000, unit=TimeUnit.MILLISECONDS)
+  @Timeout(value = 30)
   public void testCheckDir_notListable() throws Throwable {
     _checkDirs(true, new FsPermission("666"), false);   // not listable
   }
@@ -187,31 +189,31 @@ public class TestDiskChecker {
    */
 
   @Test
-  @Timeout(value=30000, unit=TimeUnit.MILLISECONDS)
+  @Timeout(value = 30)
   public void testCheckDir_normal_local() throws Throwable {
     checkDirs(true, "755", true);
   }
 
   @Test
-  @Timeout(value=30000, unit=TimeUnit.MILLISECONDS)
+  @Timeout(value = 30)
   public void testCheckDir_notDir_local() throws Throwable {
     checkDirs(false, "000", false);
   }
 
   @Test
-  @Timeout(value=30000, unit=TimeUnit.MILLISECONDS)
+  @Timeout(value = 30)
   public void testCheckDir_notReadable_local() throws Throwable {
     checkDirs(true, "000", false);
   }
 
   @Test
-  @Timeout(value=30000, unit=TimeUnit.MILLISECONDS)
+  @Timeout(value = 30)
   public void testCheckDir_notWritable_local() throws Throwable {
     checkDirs(true, "444", false);
   }
 
   @Test
-  @Timeout(value=30000, unit=TimeUnit.MILLISECONDS)
+  @Timeout(value = 30)
   public void testCheckDir_notListable_local() throws Throwable {
     checkDirs(true, "666", false);
   }

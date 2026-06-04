@@ -17,7 +17,9 @@
  */
 package org.apache.hadoop.hdfs.server.balancer;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 
 import java.io.IOException;
 import java.net.URI;
@@ -51,7 +53,6 @@ import org.apache.hadoop.hdfs.server.blockmanagement.BlockPlacementStatus;
 import org.apache.hadoop.net.NetworkTopology;
 import org.apache.hadoop.net.NetworkTopologyWithNodeGroup;
 import org.apache.hadoop.test.LambdaTestUtils;
-
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.Timeout;
 
@@ -196,7 +197,8 @@ public class TestBalancerWithNodeGroup {
     // start rebalancing
     Collection<URI> namenodes = DFSUtil.getInternalNsRpcUris(conf);
     final int r = Balancer.run(namenodes, BalancerParameters.DEFAULT, conf);
-    assertEquals(ExitStatus.NO_MOVE_PROGRESS.getExitCode(), r, "Balancer did not exit with NO_MOVE_PROGRESS");
+    assertEquals(ExitStatus.NO_MOVE_PROGRESS.getExitCode(), r,
+        "Balancer did not exit with NO_MOVE_PROGRESS");
     waitForHeartBeat(totalUsedSpace, totalCapacity);
     LOG.info("Rebalancing with default factor.");
   }
@@ -233,8 +235,8 @@ public class TestBalancerWithNodeGroup {
       BlockPlacementStatus status = placementPolicy.verifyBlockPlacement(
           locatedBlock.getLocations(), numOfReplicas);
       assertTrue(status.isPlacementPolicySatisfied(),
-          "Block placement policy was not satisfied for block " +
-          locatedBlock.getBlock().getBlockId());
+          "Block placement policy was not satisfied for block "
+              + locatedBlock.getBlock().getBlockId());
     }
   }
 
@@ -243,7 +245,7 @@ public class TestBalancerWithNodeGroup {
    * the cluster, then test rack locality for balancer policy. 
    */
   @Test
-  @Timeout(value = 60000, unit = TimeUnit.MILLISECONDS)
+  @Timeout(value = 60)
   public void testBalancerWithRackLocality() throws Exception {
     Configuration conf = createConf();
     long[] capacities = new long[]{CAPACITY, CAPACITY};
@@ -305,7 +307,7 @@ public class TestBalancerWithNodeGroup {
    * the cluster, then test node-group locality for balancer policy.
    */
   @Test
-  @Timeout(value = 60000, unit = TimeUnit.MILLISECONDS)
+  @Timeout(value = 60)
   public void testBalancerWithNodeGroup() throws Exception {
     Configuration conf = createConf();
     long[] capacities = new long[]{CAPACITY, CAPACITY, CAPACITY, CAPACITY};
@@ -366,7 +368,7 @@ public class TestBalancerWithNodeGroup {
    * to end in 5 iterations without move block process.
    */
   @Test
-  @Timeout(value = 60000, unit = TimeUnit.MILLISECONDS)
+  @Timeout(value = 60)
   public void testBalancerEndInNoMoveProgress() throws Exception {
     Configuration conf = createConf();
     long[] capacities = new long[]{CAPACITY, CAPACITY, CAPACITY, CAPACITY};

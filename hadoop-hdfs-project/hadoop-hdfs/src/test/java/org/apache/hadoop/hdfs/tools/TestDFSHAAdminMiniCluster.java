@@ -18,7 +18,9 @@
 package org.apache.hadoop.hdfs.tools;
 
 import static org.apache.hadoop.hdfs.DFSConfigKeys.DFS_HA_NN_NOT_BECOME_ACTIVE_IN_SAFEMODE;
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
@@ -193,8 +195,7 @@ public class TestDFSHAAdminMiniCluster {
     NameNodeAdapter.enterSafeMode(cluster.getNameNode(0), false);
     assertEquals(-1, runTool("-failover", "nn2", "nn1"));
     assertTrue(errOutput.contains("is not ready to become active: " +
-            "The NameNode is in safemode"),
-        "Bad output: " + errOutput);
+        "The NameNode is in safemode"), "Bad output: " + errOutput);
   }
     
   /**
@@ -299,7 +300,7 @@ public class TestDFSHAAdminMiniCluster {
     runTool("-transitionToActive", "nn1");
     runTool("-transitionToActive", "nn2");
 
-    assertFalse(nn1.isActiveState() 
+    assertFalse(nn1.isActiveState()
         && nn2.isActiveState(), "Both namenodes cannot be active");
    
     /*  In this test case, we have deliberately shut down nn1 and this will

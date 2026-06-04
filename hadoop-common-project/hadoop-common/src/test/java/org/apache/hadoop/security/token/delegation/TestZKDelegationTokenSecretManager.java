@@ -61,12 +61,16 @@ import org.apache.zookeeper.data.Stat;
 import org.apache.zookeeper.server.auth.DigestAuthenticationProvider;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.MethodOrderer;
+import org.junit.jupiter.api.Order;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.TestMethodOrder;
 import org.junit.jupiter.api.Timeout;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-@Timeout(value=300000, unit=TimeUnit.MILLISECONDS)
+@TestMethodOrder(MethodOrderer.OrderAnnotation.class)
+@Timeout(300)
 public class TestZKDelegationTokenSecretManager {
   private static final Logger LOG =
       LoggerFactory.getLogger(TestZKDelegationTokenSecretManager.class);
@@ -110,11 +114,13 @@ public class TestZKDelegationTokenSecretManager {
 
   @SuppressWarnings("unchecked")
   @Test
+  @Order(1)
   public void testMultiNodeOperations() throws Exception {
       testMultiNodeOperationsImpl(false);
   }
 
   @Test
+  @Order(2)
   public void testMultiNodeOperationsWithZeroRetry() throws Exception {
       testMultiNodeOperationsImpl(true);
   }
@@ -167,6 +173,7 @@ public class TestZKDelegationTokenSecretManager {
 
   @SuppressWarnings("unchecked")
   @Test
+  @Order(5)
   public void testNodeUpAferAWhile() throws Exception {
     for (int i = 0; i < TEST_RETRIES; i++) {
       String connectString = zkServer.getConnectString();
@@ -240,6 +247,7 @@ public class TestZKDelegationTokenSecretManager {
 
   @SuppressWarnings("unchecked")
   @Test
+  @Order(6)
   public void testMultiNodeCompeteForSeqNum() throws Exception {
     DelegationTokenManager tm1, tm2 = null;
     String connectString = zkServer.getConnectString();
@@ -255,16 +263,14 @@ public class TestZKDelegationTokenSecretManager {
     assertNotNull(token1);
     AbstractDelegationTokenIdentifier id1 =
         tm1.getDelegationTokenSecretManager().decodeTokenIdentifier(token1);
-    assertEquals(1, id1.getSequenceNumber(),
-        "Token seq should be the same");
+    assertEquals(1, id1.getSequenceNumber(), "Token seq should be the same");
     Token<DelegationTokenIdentifier> token2 =
         (Token<DelegationTokenIdentifier>) tm1.createToken(
             UserGroupInformation.getCurrentUser(), "foo");
     assertNotNull(token2);
     AbstractDelegationTokenIdentifier id2 =
         tm1.getDelegationTokenSecretManager().decodeTokenIdentifier(token2);
-    assertEquals(2, id2.getSequenceNumber(),
-        "Token seq should be the same");
+    assertEquals(2, id2.getSequenceNumber(), "Token seq should be the same");
 
     tm2 = new DelegationTokenManager(conf, new Text("bla"));
     tm2.init();
@@ -275,16 +281,14 @@ public class TestZKDelegationTokenSecretManager {
     assertNotNull(token3);
     AbstractDelegationTokenIdentifier id3 =
         tm2.getDelegationTokenSecretManager().decodeTokenIdentifier(token3);
-    assertEquals(1001, id3.getSequenceNumber(),
-        "Token seq should be the same");
+    assertEquals(1001, id3.getSequenceNumber(), "Token seq should be the same");
     Token<DelegationTokenIdentifier> token4 =
         (Token<DelegationTokenIdentifier>) tm2.createToken(
             UserGroupInformation.getCurrentUser(), "foo");
     assertNotNull(token4);
     AbstractDelegationTokenIdentifier id4 =
         tm2.getDelegationTokenSecretManager().decodeTokenIdentifier(token4);
-    assertEquals(1002, id4.getSequenceNumber(),
-        "Token seq should be the same");
+    assertEquals(1002, id4.getSequenceNumber(), "Token seq should be the same");
 
     verifyDestroy(tm1, conf);
     verifyDestroy(tm2, conf);
@@ -292,6 +296,7 @@ public class TestZKDelegationTokenSecretManager {
 
   @SuppressWarnings("unchecked")
   @Test
+  @Order(3)
   public void testRenewTokenSingleManager() throws Exception {
     for (int i = 0; i < TEST_RETRIES; i++) {
       DelegationTokenManager tm1 = null;
@@ -312,6 +317,7 @@ public class TestZKDelegationTokenSecretManager {
 
   @SuppressWarnings("unchecked")
   @Test
+  @Order(9)
   public void testCancelTokenSingleManager() throws Exception {
     for (int i = 0; i < TEST_RETRIES; i++) {
       DelegationTokenManager tm1 = null;
@@ -349,6 +355,7 @@ public class TestZKDelegationTokenSecretManager {
 
   @SuppressWarnings({ "unchecked", "rawtypes" })
   @Test
+  @Order(7)
   public void testStopThreads() throws Exception {
     DelegationTokenManager tm1 = null;
     String connectString = zkServer.getConnectString();
@@ -451,6 +458,7 @@ public class TestZKDelegationTokenSecretManager {
 
   @SuppressWarnings({ "unchecked" })
   @Test
+  @Order(8)
   public void testNodesLoadedAfterRestart() throws Exception {
     final String connectString = zkServer.getConnectString();
     final Configuration conf = getSecretConf(connectString);
@@ -563,6 +571,7 @@ public class TestZKDelegationTokenSecretManager {
   }
 
   @Test
+  @Order(4)
   public void testCreateNameSpaceRepeatedly() throws Exception {
 
     String connectString = zkServer.getConnectString();

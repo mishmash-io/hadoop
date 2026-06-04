@@ -26,8 +26,8 @@ import java.util.regex.Matcher;
 
 import org.assertj.core.api.Assertions;
 import software.amazon.awssdk.http.SdkHttpRequest;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -71,7 +71,8 @@ public class TestHttpReferrerAuditHeader extends AbstractAuditingTest {
 
   private LoggingAuditor auditor;
 
-  @Before
+  @BeforeEach
+  @Override
   public void setup() throws Exception {
     super.setup();
 
@@ -206,7 +207,7 @@ public class TestHttpReferrerAuditHeader extends AbstractAuditingTest {
           + "&id=e8ede3c7-8506-4a43-8268-fe8fcbb510a4-00000278&t0=154"
           + "&fs=e8ede3c7-8506-4a43-8268-fe8fcbb510a4&t1=156&"
           + "ts=1620905165700\""
-          + " \"Hadoop 3.4.1-SNAPSHOT, java/1.8.0_282 vendor/AdoptOpenJDK\""
+          + " \"Hadoop 3.5.0-SNAPSHOT, java/1.8.0_282 vendor/AdoptOpenJDK\""
           + " -"
           + " TrIqtEYGWAwvu0h1N9WJKyoqM0TyHUaY+ZZBwP2yNf2qQp1Z/0="
           + " SigV4"
@@ -433,12 +434,12 @@ public class TestHttpReferrerAuditHeader extends AbstractAuditingTest {
     });
     try {
       final HttpReferrerAuditHeader referrer = ReferrerExtractor.getReferrer(auditor, span());
-      Assertions.assertThat(referrer.buildHttpReferrer())
+      assertThat(referrer.buildHttpReferrer())
           .describedAs("referrer header")
           .isBlank();
       // repeat
       LOG.info("second attempt: there should be no second warning below");
-      Assertions.assertThat(referrer.buildHttpReferrer())
+      assertThat(referrer.buildHttpReferrer())
           .describedAs("referrer header 2")
           .isBlank();
       referrer.buildHttpReferrer();

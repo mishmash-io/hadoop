@@ -20,7 +20,9 @@ package org.apache.hadoop.hdfs.qjournal.client;
 import static org.apache.hadoop.hdfs.qjournal.QJMTestUtil.FAKE_NSINFO;
 import static org.apache.hadoop.hdfs.qjournal.QJMTestUtil.JID;
 import static org.apache.hadoop.hdfs.qjournal.QJMTestUtil.writeSegment;
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import java.io.Closeable;
 import java.io.IOException;
@@ -79,7 +81,7 @@ public class TestQJMWithFaults {
   static {
     // Don't retry connections - it just slows down the tests.
     conf.setInt(CommonConfigurationKeysPublic.IPC_CLIENT_CONNECT_MAX_RETRIES_KEY, 0);
-    
+
     // Make tests run faster by avoiding fsync()
     EditLogFileOutputStream.setShouldSkipFsyncForTesting(true);
   }
@@ -189,7 +191,7 @@ public class TestQJMWithFaults {
    * Expect {@link UnknownHostException} if a hostname can't be resolved.
    */
   @Test
-  public void testUnresolvableHostName() {
+  public void testUnresolvableHostName() throws Exception {
     assertThrows(UnknownHostException.class, () -> {
       new QuorumJournalManager(conf,
           new URI("qjournal://" + "bogus.invalid:12345" + "/" + JID), FAKE_NSINFO);
@@ -255,9 +257,8 @@ public class TestQJMWithFaults {
             checkException(t);
             continue;
           }
-          assertTrue(recovered >= lastAcked,
-              "Recovered only up to txnid " + recovered +
-              " but had gotten an ack for " + lastAcked);
+          assertTrue(recovered >= lastAcked, "Recovered only up to txnid " + recovered
+              + " but had gotten an ack for " + lastAcked);
           
           txid = recovered + 1;
           

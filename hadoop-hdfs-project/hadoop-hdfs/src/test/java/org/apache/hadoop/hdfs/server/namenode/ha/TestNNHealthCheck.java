@@ -22,7 +22,9 @@ import static org.apache.hadoop.fs.CommonConfigurationKeys.HA_HM_RPC_TIMEOUT_KEY
 import static org.apache.hadoop.hdfs.DFSConfigKeys.DFS_HA_NN_NOT_BECOME_ACTIVE_IN_SAFEMODE;
 import static org.apache.hadoop.hdfs.DFSConfigKeys.DFS_NAMENODE_LIFELINE_RPC_ADDRESS_KEY;
 import static org.apache.hadoop.hdfs.DFSConfigKeys.DFS_NAMENODE_RPC_ADDRESS_KEY;
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.fail;
 
 import java.io.IOException;
 
@@ -110,8 +112,7 @@ public class TestNNHealthCheck {
     final String expectedTargetString = haTarget.getAddress().toString();
 
     assertTrue(haTarget.toString().contains(expectedTargetString),
-        "Expected haTarget " + haTarget + " containing " +
-            expectedTargetString);
+        "Expected haTarget " + haTarget + " containing " + expectedTargetString);
     HAServiceProtocol rpc = haTarget.getHealthMonitorProxy(conf, 5000);
 
     LambdaTestUtils.intercept(RemoteException.class,
@@ -135,8 +136,7 @@ public class TestNNHealthCheck {
       expectedTargetString = haTarget.getAddress().toString();
     }
     assertTrue(haTarget.toString().contains(expectedTargetString),
-        "Expected haTarget " + haTarget + " containing " +
-        expectedTargetString);
+        "Expected haTarget " + haTarget + " containing " + expectedTargetString);
     HAServiceProtocol rpc = haTarget.getHealthMonitorProxy(conf, conf.getInt(
         HA_HM_RPC_TIMEOUT_KEY, HA_HM_RPC_TIMEOUT_DEFAULT));
 

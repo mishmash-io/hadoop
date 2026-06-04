@@ -41,7 +41,12 @@ import org.apache.hadoop.hdfs.TestHDFSFileSystemContract;
 import org.apache.hadoop.security.AccessControlException;
 import org.apache.hadoop.security.UserGroupInformation;
 import org.apache.hadoop.test.GenericTestUtils;
-import org.junit.jupiter.api.*;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Disabled;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.Timeout;
 
 /**
  * Tests ViewFileSystemOverloadScheme with file system contract tests.
@@ -102,16 +107,17 @@ public class TestViewFileSystemOverloadSchemeHdfsFileSystemContract
 
   @Override
   @Test
-  @Timeout(value = 60000, unit = TimeUnit.MILLISECONDS)
+  @Timeout(value = 60)
   public void testAppend() throws IOException {
     AppendTestUtil.testAppend(fs, new Path("/append/f"));
   }
 
   @Override
   @Test
-  public void testRenameRootDirForbidden() {
-    assertThrows(AccessControlException.class, () ->
-      super.testRenameRootDirForbidden());
+  public void testRenameRootDirForbidden() throws Exception {
+    assertThrows(AccessControlException.class, () -> {
+      super.testRenameRootDirForbidden();
+    });
   }
 
   @Override
@@ -129,7 +135,6 @@ public class TestViewFileSystemOverloadSchemeHdfsFileSystemContract
   }
 
   @Override
-  @Test
   @Disabled // This test same as above in this case.
   public void testLSRootDir() throws Throwable {
   }

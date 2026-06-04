@@ -17,7 +17,10 @@
  */
 package org.apache.hadoop.hdfs;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.fail;
 
 import java.io.EOFException;
 import java.io.File;
@@ -37,7 +40,6 @@ import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.fs.permission.FsPermission;
 import org.apache.hadoop.io.IOUtils;
 import org.apache.hadoop.test.PathUtils;
-
 import org.junit.jupiter.api.Test;
 
 /**
@@ -69,8 +71,8 @@ public class TestFSInputChecker {
   private void checkAndEraseData(byte[] actual, int from, byte[] expected, 
       String message) throws Exception {
     for (int idx = 0; idx < actual.length; idx++) {
-      assertEquals(actual[idx], expected[from+idx], message+" byte "+(from+idx)+" differs. expected "+
-                        expected[from+idx]+" actual "+actual[idx]);
+      assertEquals(actual[idx], expected[from + idx], message + " byte " + (from + idx)
+          + " differs. expected " + expected[from + idx] + " actual " + actual[idx]);
       actual[idx] = 0;
     }
   }

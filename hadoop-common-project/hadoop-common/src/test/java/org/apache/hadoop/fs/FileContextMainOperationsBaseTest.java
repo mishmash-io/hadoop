@@ -18,6 +18,15 @@
 
 package org.apache.hadoop.fs;
 
+import static org.junit.jupiter.api.Assertions.assertArrayEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.fail;
+
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
@@ -363,7 +372,7 @@ public abstract class FileContextMainOperationsBaseTest  {
     // test listStatus that returns an iterator
     RemoteIterator<FileStatus> pathsIterator = 
       fc.listStatus(getTestRootPath(fc, "test"));
-    assertEquals(getTestRootPath(fc, "test/hadoop"), 
+    assertEquals(getTestRootPath(fc, "test/hadoop"),
         pathsIterator.next().getPath());
     assertFalse(pathsIterator.hasNext());
 
@@ -442,7 +451,8 @@ public abstract class FileContextMainOperationsBaseTest  {
     // listStatus with filters returns empty correctly
     FileStatus[] filteredPaths = fc.util().listStatus(
         getTestRootPath(fc, "test"), TEST_X_FILTER);
-    assertEquals(0,filteredPaths.length);
+    assertEquals(0, filteredPaths.length);
+    
   }
   
   @Test
@@ -463,7 +473,7 @@ public abstract class FileContextMainOperationsBaseTest  {
     FileStatus[] filteredPaths = fc.util()
         .listStatus(getTestRootPath(fc, "test/hadoop"),
             TEST_X_FILTER);
-    assertEquals(2,filteredPaths.length);
+    assertEquals(2, filteredPaths.length);
     assertTrue(containsPath(getTestRootPath(fc,
         TEST_DIR_AXA), filteredPaths));
     assertTrue(containsPath(getTestRootPath(fc,
@@ -595,7 +605,7 @@ public abstract class FileContextMainOperationsBaseTest  {
     FileStatus[] filteredPaths = fc.util().globStatus(
         getTestRootPath(fc, "test/hadoop/?"),
         DEFAULT_FILTER);
-    assertEquals(0,filteredPaths.length);
+    assertEquals(0, filteredPaths.length);
   }
   
   @Test
@@ -699,7 +709,7 @@ public abstract class FileContextMainOperationsBaseTest  {
     FileStatus[] filteredPaths = fc.util().globStatus(
         getTestRootPath(fc, "test/hadoop/?"),
         TEST_X_FILTER);
-    assertEquals(0,filteredPaths.length);
+    assertEquals(0, filteredPaths.length);
   }
   
   @Test
@@ -789,7 +799,8 @@ public abstract class FileContextMainOperationsBaseTest  {
     assertThrows(HadoopIllegalArgumentException.class, () -> {
       Path p = getTestRootPath(fc, "test/file");
       fc.create(p, null);
-    }, "Excepted exception not thrown");
+      fail("Excepted exception not thrown");
+    });
   }
   
   @Test
@@ -797,7 +808,8 @@ public abstract class FileContextMainOperationsBaseTest  {
     assertThrows(HadoopIllegalArgumentException.class, () -> {
       Path p = getTestRootPath(fc, "test/file");
       fc.create(p, EnumSet.noneOf(CreateFlag.class));
-    }, "Excepted exception not thrown");
+      fail("Excepted exception not thrown");
+    });
   }
   
   @Test
@@ -806,7 +818,8 @@ public abstract class FileContextMainOperationsBaseTest  {
       Path p = getTestRootPath(fc, "test/testCreateFlagCreateExistingFile");
       createFile(p);
       fc.create(p, EnumSet.of(CREATE));
-    }, "Excepted exception not thrown");
+      fail("Excepted exception not thrown");
+    });
   }
   
   @Test
@@ -814,7 +827,8 @@ public abstract class FileContextMainOperationsBaseTest  {
     assertThrows(FileNotFoundException.class, () -> {
       Path p = getTestRootPath(fc, "test/testCreateFlagOverwriteNonExistingFile");
       fc.create(p, EnumSet.of(OVERWRITE));
-    }, "Excepted exception not thrown");
+      fail("Excepted exception not thrown");
+    });
   }
   
   @Test
@@ -830,7 +844,8 @@ public abstract class FileContextMainOperationsBaseTest  {
     assertThrows(FileNotFoundException.class, () -> {
       Path p = getTestRootPath(fc, "test/testCreateFlagAppendNonExistingFile");
       fc.create(p, EnumSet.of(APPEND));
-    }, "Excepted exception not thrown");
+      fail("Excepted exception not thrown");
+    });
   }
   
   @Test
@@ -861,7 +876,8 @@ public abstract class FileContextMainOperationsBaseTest  {
     assertThrows(HadoopIllegalArgumentException.class, () -> {
       Path p = getTestRootPath(fc, "test/nonExistent");
       fc.create(p, EnumSet.of(APPEND, OVERWRITE));
-    }, "Excepted exception not thrown");
+      fail("Excepted exception not thrown");
+    });
   }
   
   @Test
@@ -869,7 +885,8 @@ public abstract class FileContextMainOperationsBaseTest  {
     assertThrows(HadoopIllegalArgumentException.class, () -> {
       Path p = getTestRootPath(fc, "test/nonExistent");
       fc.create(p, EnumSet.of(CREATE, APPEND, OVERWRITE));
-    }, "Excepted exception not thrown");
+      fail("Excepted exception not thrown");
+    });
   }
 
   @Test
@@ -1135,7 +1152,7 @@ public abstract class FileContextMainOperationsBaseTest  {
       rename(src, src, true, true, Rename.OVERWRITE);
       fail("Renamed directory to itself");
     } catch (IOException e) {
-      assertTrue(unwrapException(e) instanceof FileAlreadyExistsException);      
+      assertTrue(unwrapException(e) instanceof FileAlreadyExistsException);
     }
   }
 
@@ -1181,18 +1198,14 @@ public abstract class FileContextMainOperationsBaseTest  {
     fc.mkdir(dst.getParent(), FileContext.DEFAULT_PERM, true);
     
     rename(src, dst, false, true, options);
-    assertFalse( 
-        exists(fc, getTestRootPath(fc, "test/hadoop/dir/file1")),
-        "Nested file1 exists");
-    assertFalse( 
-        exists(fc, getTestRootPath(fc, "test/hadoop/dir/subdir/file2")),
-        "Nested file2 exists");
-    assertTrue(
-        exists(fc, getTestRootPath(fc, "test/new/newdir/file1")),
-        "Renamed nested file1 exists");
-    assertTrue( 
-        exists(fc, getTestRootPath(fc, "test/new/newdir/subdir/file2")),
-        "Renamed nested exists");
+    assertFalse(exists(fc, getTestRootPath(fc,
+        "test/hadoop/dir/file1")), "Nested file1 exists");
+    assertFalse(exists(fc, getTestRootPath(fc,
+        "test/hadoop/dir/subdir/file2")), "Nested file2 exists");
+    assertTrue(exists(fc, getTestRootPath(fc,
+        "test/new/newdir/file1")), "Renamed nested file1 exists");
+    assertTrue(exists(fc, getTestRootPath(fc,
+        "test/new/newdir/subdir/file2")), "Renamed nested exists");
   }
 
   @Test
@@ -1542,9 +1555,7 @@ public abstract class FileContextMainOperationsBaseTest  {
     CompletableFuture<Long> readAllBytes = fc.openFile(path)
         .build()
         .thenApply(ContractTestUtils::readStream);
-    assertEquals(
-        data.length,
-        (long)readAllBytes.get(),
+    assertEquals(data.length, (long) readAllBytes.get(),
         "Wrong number of bytes read from stream");
   }
 

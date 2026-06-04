@@ -23,18 +23,17 @@ import java.util.function.Supplier;
 import java.util.regex.Pattern;
 
 import org.apache.hadoop.metrics2.annotation.Metrics;
+import org.junit.jupiter.api.Timeout;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hdfs.HdfsConfiguration;
 import org.apache.hadoop.metrics2.util.MBeans;
 import org.apache.hadoop.test.GenericTestUtils;
-import org.apache.hadoop.test.LogCapturingAppender;
-import org.apache.logging.log4j.core.LoggerContext;
-import org.apache.logging.log4j.core.async.AsyncLogger;
-import org.apache.logging.log4j.core.async.AsyncLoggerConfig;
+import org.apache.log4j.Appender;
+import org.apache.log4j.AsyncAppender;
+
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.Timeout;
 
 import java.io.IOException;
 import java.util.Collection;
@@ -49,7 +48,7 @@ import static org.mockito.Mockito.mock;
 /**
  * Test periodic logging of NameNode metrics.
  */
-@Timeout(value=300000, unit=TimeUnit.MILLISECONDS)
+@Timeout(300)
 public class TestNameNodeMetricsLogger {
   static final Logger LOG =
       LoggerFactory.getLogger(TestNameNodeMetricsLogger.class);

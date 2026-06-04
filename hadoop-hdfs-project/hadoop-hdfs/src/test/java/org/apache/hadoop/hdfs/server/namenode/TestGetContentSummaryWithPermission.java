@@ -35,7 +35,9 @@ import org.junit.jupiter.api.Test;
 import java.security.PrivilegedExceptionAction;
 
 import static org.apache.hadoop.fs.permission.FsAction.READ_EXECUTE;
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.fail;
 
 /**
  * This class tests get content summary with permission settings.

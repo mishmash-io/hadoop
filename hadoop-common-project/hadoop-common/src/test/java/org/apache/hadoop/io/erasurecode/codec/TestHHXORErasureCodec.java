@@ -25,6 +25,8 @@ import org.apache.hadoop.io.erasurecode.ErasureCodecOptions;
 import org.apache.hadoop.io.erasurecode.coder.ErasureCoder;
 import org.junit.jupiter.api.Test;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+
 public class TestHHXORErasureCodec {
   private ECSchema schema = new ECSchema("hhxor", 10, 4);
   private ErasureCodecOptions options = new ErasureCodecOptions(schema);

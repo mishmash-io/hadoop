@@ -39,9 +39,10 @@ import org.apache.hadoop.http.FilterInitializer;
 import org.apache.hadoop.http.HttpServer2;
 import org.apache.hadoop.net.NetUtils;
 import org.junit.jupiter.api.AfterAll;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
+
+import static org.junit.jupiter.api.Assertions.fail;
 
 public class TestWebHdfsWithAuthenticationFilter {
   private static boolean authorized = false;
@@ -112,7 +113,7 @@ public class TestWebHdfsWithAuthenticationFilter {
     authorized = false;
     try {
       fs.getFileStatus(new Path("/"));
-      Assertions.fail("The filter fails to block the request");
+      fail("The filter fails to block the request");
     } catch (IOException e) {
     }
     authorized = true;

@@ -38,10 +38,10 @@ import org.apache.hadoop.hdfs.server.blockmanagement.BlockManager;
 import org.apache.hadoop.hdfs.server.blockmanagement.BlockPlacementStatus;
 import org.apache.hadoop.hdfs.server.blockmanagement.BlockPlacementPolicyRackFaultTolerant;
 import org.apache.hadoop.hdfs.server.protocol.NamenodeProtocols;
+import org.apache.hadoop.hdfs.util.RwLockMode;
 import org.apache.hadoop.net.StaticMapping;
 import org.apache.hadoop.test.GenericTestUtils;
 import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -253,11 +253,12 @@ public class TestBlockPlacementPolicyRackFaultTolerant {
 
     //test if decommission succeeded
     DatanodeDescriptor dnd3 = dnm.getDatanode(cluster.getDataNodes().get(3).getDatanodeId());
-    cluster.getNamesystem().writeLock();
+    cluster.getNamesystem().writeLock(RwLockMode.BM);
     try {
       dm.getDatanodeAdminManager().startDecommission(dnd3);
     } finally {
-      cluster.getNamesystem().writeUnlock();
+      cluster.getNamesystem().writeUnlock(RwLockMode.BM,
+          "testPlacementWithOnlyOneNodeInRackDecommission");
     }
 
     // make sure the decommission finishes and the block in on 4 racks
@@ -271,12 +272,11 @@ public class TestBlockPlacementPolicyRackFaultTolerant {
     LocatedBlocks locatedBlocks =
         cluster.getFileSystem().getClient().getLocatedBlocks(
             src, 0, DEFAULT_BLOCK_SIZE);
-    assertEquals(4, bm.getDatanodeManager().
-        getNetworkTopology().getNumOfNonEmptyRacks());
+    assertEquals(4, bm.getDatanodeManager().getNetworkTopology().getNumOfNonEmptyRacks());
     for (LocatedBlock block : locatedBlocks.getLocatedBlocks()) {
       BlockPlacementStatus status = bm.getStriptedBlockPlacementPolicy()
               .verifyBlockPlacement(block.getLocations(), 5);
-      Assertions.assertTrue(status.isPlacementPolicySatisfied());
+      assertTrue(status.isPlacementPolicySatisfied());
     }
   }
 

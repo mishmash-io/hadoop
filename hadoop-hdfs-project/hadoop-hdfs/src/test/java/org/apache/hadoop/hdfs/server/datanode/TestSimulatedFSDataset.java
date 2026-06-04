@@ -17,7 +17,10 @@
  */
 package org.apache.hadoop.hdfs.server.datanode;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.io.DataInputStream;
 import java.io.IOException;
@@ -36,6 +39,7 @@ import org.apache.hadoop.hdfs.server.datanode.fsdataset.ReplicaOutputStreams;
 import org.apache.hadoop.hdfs.server.datanode.fsdataset.impl.FsDatasetFactory;
 import org.apache.hadoop.hdfs.server.protocol.DatanodeStorage;
 import org.apache.hadoop.util.DataChecksum;
+import org.apache.hadoop.util.concurrent.SubjectInheritingThread;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -49,8 +53,10 @@ public class TestSimulatedFSDataset {
   static final int BLOCK_LENGTH_MULTIPLIER = 79;
   static final long FIRST_BLK_ID = 1;
 
-  protected int getStorageCount() {
-    return 1;
+  private int storageCount = 1;
+
+  protected void pTestSimulatedFSDataset(int pStorageCount) {
+    this.storageCount = pStorageCount;
   }
 
   @BeforeEach
@@ -376,7 +382,7 @@ public class TestSimulatedFSDataset {
       IOException {
     final String[] bpids = {"BP-TEST1-", "BP-TEST2-"};
     final SimulatedFSDataset fsdataset = new SimulatedFSDataset(null, conf);
-    class AddBlockPoolThread extends Thread {
+    class AddBlockPoolThread extends SubjectInheritingThread {
       private int id;
       private IOException ioe;
       public AddBlockPoolThread(int id) {
@@ -389,7 +395,7 @@ public class TestSimulatedFSDataset {
           throw ioe;
         }
       }
-      public void run() {
+      public void work() {
         for (int i=0; i < 10000; i++) {
           // add different block pools concurrently
           String newbpid = bpids[id] + i;

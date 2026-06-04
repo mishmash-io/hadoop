@@ -18,16 +18,16 @@
 
 package org.apache.hadoop.security.authentication.util;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.fail;
+
 import java.io.IOException;
 
 import org.apache.hadoop.security.authentication.KerberosTestUtils;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.junit.jupiter.api.Assertions.fail;
 
 public class TestKerberosName {
 
@@ -140,10 +140,9 @@ public class TestKerberosName {
 
   @Test
   public void testInvalidRuleMechanism() throws Exception {
-    assertThrows(IllegalArgumentException.class,
-      () -> {
-              KerberosName.setRuleMechanism("INVALID_MECHANISM");
-      });
+    assertThrows(IllegalArgumentException.class, () -> {
+      KerberosName.setRuleMechanism("INVALID_MECHANISM");
+    });
   }
 
   @AfterEach

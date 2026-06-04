@@ -24,7 +24,12 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.eq;
-import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.any;
+import static org.mockito.Mockito.inOrder;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verifyNoMoreInteractions;
+import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.reset;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -44,8 +49,8 @@ import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.fs.permission.AclEntry;
 import org.apache.hadoop.fs.permission.AclStatus;
 import org.apache.hadoop.fs.permission.FsPermission;
-import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.mockito.InOrder;
 
@@ -1140,13 +1145,13 @@ public class TestLs {
   @Test
   public void processPathFileDisplayECPolicyWhenUnsupported()
       throws IOException {
-    TestFile testFile = new TestFile("testDirectory", "testFile");
-    LinkedList<PathData> pathData = new LinkedList<PathData>();
-    pathData.add(testFile.getPathData());
-    Ls ls = new Ls();
-    LinkedList<String> options = new LinkedList<String>();
-    options.add("-e");
-    assertThrows(UnsupportedOperationException.class, () -> {
+    assertThrows(UnsupportedOperationException.class, ()->{
+      TestFile testFile = new TestFile("testDirectory", "testFile");
+      LinkedList<PathData> pathData = new LinkedList<PathData>();
+      pathData.add(testFile.getPathData());
+      Ls ls = new Ls();
+      LinkedList<String> options = new LinkedList<String>();
+      options.add("-e");
       ls.processOptions(options);
       ls.processArguments(pathData);
     });
@@ -1155,16 +1160,16 @@ public class TestLs {
   @Test
   public void processPathDirDisplayECPolicyWhenUnsupported()
       throws IOException {
-    TestFile testFile = new TestFile("testDirectory", "testFile");
-    TestFile testDir = new TestFile("", "testDirectory");
-    testDir.setIsDir(true);
-    testDir.addContents(testFile);
-    LinkedList<PathData> pathData = new LinkedList<PathData>();
-    pathData.add(testDir.getPathData());
-    Ls ls = new Ls();
-    LinkedList<String> options = new LinkedList<String>();
-    options.add("-e");
     assertThrows(UnsupportedOperationException.class, () -> {
+      TestFile testFile = new TestFile("testDirectory", "testFile");
+      TestFile testDir = new TestFile("", "testDirectory");
+      testDir.setIsDir(true);
+      testDir.addContents(testFile);
+      LinkedList<PathData> pathData = new LinkedList<PathData>();
+      pathData.add(testDir.getPathData());
+      Ls ls = new Ls();
+      LinkedList<String> options = new LinkedList<String>();
+      options.add("-e");
       ls.processOptions(options);
       ls.processArguments(pathData);
     });

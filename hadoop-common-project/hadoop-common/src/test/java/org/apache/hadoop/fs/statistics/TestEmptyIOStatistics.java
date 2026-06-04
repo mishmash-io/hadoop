@@ -18,6 +18,8 @@
 
 package org.apache.hadoop.fs.statistics;
 
+import org.junit.jupiter.api.Test;
+
 import org.apache.hadoop.fs.statistics.impl.IOStatisticsBinding;
 import org.apache.hadoop.test.AbstractHadoopTestBase;
 import org.junit.jupiter.api.Test;

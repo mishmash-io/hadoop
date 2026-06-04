@@ -25,6 +25,7 @@ import java.io.Serializable;
 import java.util.Objects;
 
 import com.fasterxml.jackson.core.JsonParseException;
+import org.junit.jupiter.api.Test;
 
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileStatus;
@@ -166,8 +167,7 @@ public class TestJsonSerialization extends HadoopTestBase {
       serDeser.save(fs, tempPath, source, false);
       assertEquals(source, serDeser.load(fs, tempPath),
           "JSON loaded with load(fs, path)");
-      assertEquals(source,
-          serDeser.load(fs, tempPath, fs.getFileStatus(tempPath)),
+      assertEquals(source, serDeser.load(fs, tempPath, fs.getFileStatus(tempPath)),
           "JSON loaded with load(fs, path, status)");
     } finally {
       fs.delete(tempPath, false);

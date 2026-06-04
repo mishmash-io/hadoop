@@ -18,7 +18,9 @@
 package org.apache.hadoop.hdfs.server.datanode;
 
 import static org.apache.hadoop.test.PlatformAssumptions.assumeNotWindows;
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.io.File;
 import java.io.IOException;
@@ -42,8 +44,9 @@ import org.junit.jupiter.api.Timeout;
 
 /**
  * Test the ability of a DN to tolerate volume failures.
+ * specific the timeout for entire test class
  */
-@Timeout(value=120000, unit=TimeUnit.MILLISECONDS)
+@Timeout(120)
 public class TestDataNodeVolumeFailureToleration {
   private FileSystem fs;
   private MiniDFSCluster cluster;
@@ -116,14 +119,12 @@ public class TestDataNodeVolumeFailureToleration {
     cluster.waitActive();
 
     try {
-      assertTrue(cluster.isDataNodeUp(),
-          "The DN should have started up fine.");
+      assertTrue(cluster.isDataNodeUp(), "The DN should have started up fine.");
       DataNode dn = cluster.getDataNodes().get(0);
       String si = DataNodeTestUtils.getFSDataset(dn).getStorageInfo();
       assertTrue(si.contains(dataDir1Actual.getPath()),
           "The DN should have started with this directory");
-      assertFalse(si.contains(dataDir2Actual.getPath()),
-          "The DN shouldn't have a bad directory.");
+      assertFalse(si.contains(dataDir2Actual.getPath()), "The DN shouldn't have a bad directory.");
     } finally {
       cluster.shutdownDataNodes();
       FileUtil.chmod(dataDir2.toString(), "755");
@@ -266,9 +267,7 @@ public class TestDataNodeVolumeFailureToleration {
   private void prepareDirToFail(File dir) throws IOException,
       InterruptedException {
     dir.mkdirs();
-    assertEquals(0,
-        FileUtil.chmod(dir.toString(), "000"),
-        "Couldn't chmod local vol");
+    assertEquals(0, FileUtil.chmod(dir.toString(), "000"), "Couldn't chmod local vol");
   }
 
   /**
@@ -287,8 +286,8 @@ public class TestDataNodeVolumeFailureToleration {
       prepareDirToFail(dir);
       restartDatanodes(1, false);
       // The cluster is up..
-      assertEquals(true, cluster.getDataNodes().get(0)
-          .isBPServiceAlive(cluster.getNamesystem().getBlockPoolId()));
+      assertEquals(true,
+          cluster.getDataNodes().get(0).isBPServiceAlive(cluster.getNamesystem().getBlockPoolId()));
       // but there has been a single volume failure
       DFSTestUtil.waitForDatanodeStatus(dm, 1, 0, 1,
           origCapacity / 2, WAIT_FOR_HEARTBEATS);

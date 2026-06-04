@@ -17,6 +17,8 @@
  */
 package org.apache.hadoop.hdfs.protocol;
 
+import org.junit.jupiter.api.Test;
+
 import static org.apache.hadoop.hdfs.protocol.SystemErasureCodingPolicies.RS_6_3_POLICY_ID;
 
 import org.junit.jupiter.api.Test;
@@ -24,7 +26,9 @@ import org.junit.jupiter.api.Test;
 import static org.apache.hadoop.hdfs.protocol.ErasureCodingPolicyState.DISABLED;
 import static org.apache.hadoop.hdfs.protocol.ErasureCodingPolicyState.ENABLED;
 import static org.apache.hadoop.hdfs.protocol.ErasureCodingPolicyState.REMOVED;
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.fail;
 
 /**
  * Test {@link ErasureCodingPolicyInfo}.

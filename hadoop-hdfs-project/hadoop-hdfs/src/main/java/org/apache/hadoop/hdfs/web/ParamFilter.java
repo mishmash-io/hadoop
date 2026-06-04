@@ -17,72 +17,81 @@
  */
 package org.apache.hadoop.hdfs.web;
 
-import java.io.IOException;
-import java.lang.annotation.ElementType;
-import java.lang.annotation.Retention;
-import java.lang.annotation.RetentionPolicy;
-import java.lang.annotation.Target;
-import java.net.URI;
-import java.util.List;
+import java.util.Collections;
+import java.util.Enumeration;
+import java.util.HashMap;
 import java.util.Map;
+import java.io.IOException;
 
-import jakarta.ws.rs.NameBinding;
-import jakarta.ws.rs.container.ContainerRequestContext;
-import jakarta.ws.rs.container.ContainerRequestFilter;
-import jakarta.ws.rs.core.MultivaluedMap;
-import jakarta.ws.rs.core.UriBuilder;
-import jakarta.ws.rs.core.UriInfo;
-import jakarta.ws.rs.ext.Provider;
-
-import org.apache.hadoop.util.StringUtils;
+import jakarta.servlet.ServletRequest;
+import jakarta.servlet.ServletResponse;
+import jakarta.servlet.Filter;
+import jakarta.servlet.FilterConfig;
+import jakarta.servlet.FilterChain;
+import jakarta.servlet.ServletException;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletRequestWrapper;
 
 /**
  * A filter to change parameter names to lower cases
  * so that parameter names are considered as case insensitive.
  */
-@Provider
-@ParamFilter.LowerCaseParams
-public class ParamFilter implements ContainerRequestFilter {
-  @NameBinding
-  @Target({ElementType.TYPE, ElementType.METHOD})
-  @Retention(value=RetentionPolicy.RUNTIME)
-  public @interface LowerCaseParams {
-      
-  }
+public class ParamFilter implements Filter {
 
-  /** Do the strings contain upper case letters? */
-  static boolean containsUpperCase(final Iterable<String> strings) {
-    for(String s : strings) {
-      for(int i = 0; i < s.length(); i++) {
-        if (Character.isUpperCase(s.charAt(i))) {
-          return true;
-        }
-      }
-    }
-    return false;
-  }
-
-  /** Rebuild the URI query with lower case parameter names. */
-  private static URI rebuildQuery(final URI uri,
-      final MultivaluedMap<String, String> parameters) {
-    UriBuilder b = UriBuilder.fromUri(uri).replaceQuery("");
-    for(Map.Entry<String, List<String>> e : parameters.entrySet()) {
-      final String key = StringUtils.toLowerCase(e.getKey());
-      for(String v : e.getValue()) {
-        b = b.queryParam(key, v);
-      }
-    }
-    return b.build();
+  @Override
+  public void init(FilterConfig filterConfig) throws ServletException {
   }
 
   @Override
-  public void filter(ContainerRequestContext requestContext) throws IOException {
-    final UriInfo uriInfo = requestContext.getUriInfo();
-    final MultivaluedMap<String, String> parameters = uriInfo.getQueryParameters();
-    if (containsUpperCase(parameters.keySet())) {
-      //rebuild URI
-      final URI lower = rebuildQuery(uriInfo.getRequestUri(), parameters);
-      requestContext.setRequestUri(uriInfo.getBaseUri(), lower);
+  public void doFilter(ServletRequest request, ServletResponse response,
+      FilterChain chain) throws IOException, ServletException {
+    if (request instanceof HttpServletRequest) {
+      HttpServletRequest httpServletRequest = (HttpServletRequest) request;
+      chain.doFilter(new CustomHttpServletRequestWrapper(httpServletRequest), response);
+    } else {
+      chain.doFilter(request, response);
+    }
+  }
+
+  @Override
+  public void destroy() {
+  }
+
+  private static final class CustomHttpServletRequestWrapper
+      extends HttpServletRequestWrapper {
+
+    private Map<String, String[]> lowerCaseParams = new HashMap<>();
+
+    private CustomHttpServletRequestWrapper(HttpServletRequest request) {
+      super(request);
+      Map<String, String[]> originalParams = request.getParameterMap();
+      for (Map.Entry<String, String[]> entry : originalParams.entrySet()) {
+        lowerCaseParams.put(entry.getKey().toLowerCase(), entry.getValue());
+      }
+    }
+
+    public String getParameter(String name) {
+      String[] values = getParameterValues(name);
+      if (values != null && values.length > 0) {
+        return values[0];
+      } else {
+        return null;
+      }
+    }
+
+    @Override
+    public Map<String, String[]> getParameterMap() {
+      return Collections.unmodifiableMap(lowerCaseParams);
+    }
+
+    @Override
+    public Enumeration<String> getParameterNames() {
+      return Collections.enumeration(lowerCaseParams.keySet());
+    }
+
+    @Override
+    public String[] getParameterValues(String name) {
+      return lowerCaseParams.get(name.toLowerCase());
     }
   }
 }

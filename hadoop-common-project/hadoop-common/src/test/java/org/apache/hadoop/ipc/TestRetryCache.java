@@ -34,6 +34,8 @@ import org.apache.hadoop.ipc.RetryCache.CacheEntryWithPayload;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+
 /**
  * Tests for {@link RetryCache}
  */

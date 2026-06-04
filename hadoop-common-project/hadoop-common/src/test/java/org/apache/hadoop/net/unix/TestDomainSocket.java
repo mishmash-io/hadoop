@@ -44,17 +44,26 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.Timeout;
 import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.apache.hadoop.io.IOUtils;
 import org.apache.hadoop.net.unix.DomainSocket.DomainChannel;
 import org.apache.hadoop.test.GenericTestUtils;
 import org.apache.hadoop.util.Shell;
-import org.junit.jupiter.api.AfterAll;
-import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.Timeout;
+import org.apache.hadoop.util.concurrent.SubjectInheritingThread;
+
 import org.apache.hadoop.thirdparty.com.google.common.io.Files;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.fail;
+import static org.junit.jupiter.api.Assumptions.assumeTrue;
 
 public class TestDomainSocket {
   private static TemporarySocketDirectory sockDir;
@@ -82,7 +91,7 @@ public class TestDomainSocket {
    * @throws IOException
    */
   @Test
-  @Timeout(value=180000, unit=TimeUnit.MILLISECONDS)
+  @Timeout(value = 180)
   public void testSocketCreateAndClose() throws IOException {
     DomainSocket serv = DomainSocket.bindAndListen(
       new File(sockDir.getDir(), "test_sock_create_and_close").
@@ -96,7 +105,7 @@ public class TestDomainSocket {
    * @throws IOException
    */
   @Test
-  @Timeout(value=180000, unit=TimeUnit.MILLISECONDS)
+  @Timeout(value = 180)
   public void testSocketPathSetGet() throws IOException {
     assertEquals("/var/run/hdfs/sock.100",
         DomainSocket.getEffectivePath("/var/run/hdfs/sock._PORT", 100));
@@ -108,7 +117,7 @@ public class TestDomainSocket {
    * @throws IOException
    */
   @Test
-  @Timeout(value=180000, unit=TimeUnit.MILLISECONDS)
+  @Timeout(value = 180)
   public void testSocketReadEof() throws Exception {
     final String TEST_PATH = new File(sockDir.getDir(),
         "testSocketReadEof").getAbsolutePath();
@@ -149,7 +158,7 @@ public class TestDomainSocket {
    * @throws IOException
    */
   @Test
-  @Timeout(value=180000, unit=TimeUnit.MILLISECONDS)
+  @Timeout(value = 180)
   public void testSocketAcceptAndClose() throws Exception {
     final String TEST_PATH =
         new File(sockDir.getDir(), "test_sock_accept_and_close").getAbsolutePath();
@@ -255,13 +264,13 @@ public class TestDomainSocket {
   }
   
   @Test
-  @Timeout(value=180000, unit=TimeUnit.MILLISECONDS)
+  @Timeout(value = 180)
   public void testAsyncCloseDuringWrite() throws Exception {
     testAsyncCloseDuringIO(true);
   }
   
   @Test
-  @Timeout(value=180000, unit=TimeUnit.MILLISECONDS)
+  @Timeout(value = 180)
   public void testAsyncCloseDuringRead() throws Exception {
     testAsyncCloseDuringIO(false);
   }
@@ -272,7 +281,7 @@ public class TestDomainSocket {
    * @throws IOException
    */
   @Test
-  @Timeout(value=180000, unit=TimeUnit.MILLISECONDS)
+  @Timeout(value = 180)
   public void testInvalidOperations() throws IOException {
     try {
       DomainSocket.connect(
@@ -289,7 +298,7 @@ public class TestDomainSocket {
    * @throws IOException
    */
   @Test
-  @Timeout(value=180000, unit=TimeUnit.MILLISECONDS)
+  @Timeout(value = 180)
   public void testServerOptions() throws Exception {
     final String TEST_PATH = new File(sockDir.getDir(),
         "test_sock_server_options").getAbsolutePath();
@@ -456,8 +465,8 @@ public class TestDomainSocket {
         new ArrayBlockingQueue<Throwable>(2);
     final DomainSocket serv = (preConnectedSockets != null) ?
       null : DomainSocket.bindAndListen(TEST_PATH);
-    Thread serverThread = new Thread() {
-      public void run(){
+    Thread serverThread = new SubjectInheritingThread() {
+      public void work(){
         // Run server
         DomainSocket conn = null;
         try {
@@ -484,8 +493,8 @@ public class TestDomainSocket {
     };
     serverThread.start();
     
-    Thread clientThread = new Thread() {
-      public void run(){
+    SubjectInheritingThread clientThread = new SubjectInheritingThread() {
+      public void work(){
         try {
           DomainSocket client = preConnectedSockets != null ?
                 preConnectedSockets[1] : DomainSocket.connect(TEST_PATH);
@@ -522,42 +531,42 @@ public class TestDomainSocket {
   }
 
   @Test
-  @Timeout(value=180000, unit=TimeUnit.MILLISECONDS)
+  @Timeout(value = 180)
   public void testClientServerOutStreamInStream() throws Exception {
     testClientServer1(OutputStreamWriteStrategy.class,
         InputStreamReadStrategy.class, null);
   }
 
   @Test
-  @Timeout(value=180000, unit=TimeUnit.MILLISECONDS)
+  @Timeout(value = 180)
   public void testClientServerOutStreamInStreamWithSocketpair() throws Exception {
     testClientServer1(OutputStreamWriteStrategy.class,
         InputStreamReadStrategy.class, DomainSocket.socketpair());
   }
 
   @Test
-  @Timeout(value=180000, unit=TimeUnit.MILLISECONDS)
+  @Timeout(value = 180)
   public void testClientServerOutStreamInDbb() throws Exception {
     testClientServer1(OutputStreamWriteStrategy.class,
         DirectByteBufferReadStrategy.class, null);
   }
 
   @Test
-  @Timeout(value=180000, unit=TimeUnit.MILLISECONDS)
+  @Timeout(value = 180)
   public void testClientServerOutStreamInDbbWithSocketpair() throws Exception {
     testClientServer1(OutputStreamWriteStrategy.class,
         DirectByteBufferReadStrategy.class, DomainSocket.socketpair());
   }
 
   @Test
-  @Timeout(value=180000, unit=TimeUnit.MILLISECONDS)
+  @Timeout(value = 180)
   public void testClientServerOutStreamInAbb() throws Exception {
     testClientServer1(OutputStreamWriteStrategy.class,
         ArrayBackedByteBufferReadStrategy.class, null);
   }
 
   @Test
-  @Timeout(value=180000, unit=TimeUnit.MILLISECONDS)
+  @Timeout(value = 180)
   public void testClientServerOutStreamInAbbWithSocketpair() throws Exception {
     testClientServer1(OutputStreamWriteStrategy.class,
         ArrayBackedByteBufferReadStrategy.class, DomainSocket.socketpair());
@@ -609,7 +618,7 @@ public class TestDomainSocket {
    * @throws IOException
    */
   @Test
-  @Timeout(value=180000, unit=TimeUnit.MILLISECONDS)
+  @Timeout(value = 180)
   public void testFdPassing() throws Exception {
     final String TEST_PATH =
         new File(sockDir.getDir(), "test_sock").getAbsolutePath();
@@ -625,8 +634,8 @@ public class TestDomainSocket {
     for (int i = 0; i < passedFiles.length; i++) {
       passedFds[i] = passedFiles[i].getInputStream().getFD();
     }
-    Thread serverThread = new Thread() {
-      public void run(){
+    Thread serverThread = new SubjectInheritingThread() {
+      public void work(){
         // Run server
         DomainSocket conn = null;
         try {
@@ -648,8 +657,8 @@ public class TestDomainSocket {
     };
     serverThread.start();
 
-    Thread clientThread = new Thread() {
-      public void run(){
+    Thread clientThread = new SubjectInheritingThread() {
+      public void work(){
         try {
           DomainSocket client = DomainSocket.connect(TEST_PATH);
           OutputStream clientOutputStream = client.getOutputStream();
@@ -721,7 +730,7 @@ public class TestDomainSocket {
    * @throws IOException
    */
   @Test
-  @Timeout(value=180000, unit=TimeUnit.MILLISECONDS)
+  @Timeout(value = 180)
   public void testFdPassingPathSecurity() throws Exception {
     TemporarySocketDirectory tmp = new TemporarySocketDirectory();
     try {
@@ -761,7 +770,7 @@ public class TestDomainSocket {
   }
 
   @Test
-  @Timeout(value=180000, unit=TimeUnit.MILLISECONDS)
+  @Timeout(value = 180)
   public void testShutdown() throws Exception {
     final AtomicInteger bytesRead = new AtomicInteger(0);
     final AtomicBoolean failed = new AtomicBoolean(false);
@@ -782,7 +791,7 @@ public class TestDomainSocket {
         }
       }
     };
-    Thread readerThread = new Thread(reader);
+    Thread readerThread = new SubjectInheritingThread(reader);
     readerThread.start();
     socks[0].getOutputStream().write(1);
     socks[0].getOutputStream().write(2);

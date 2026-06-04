@@ -36,6 +36,7 @@ import static org.apache.hadoop.fs.FileSystemTestHelper.*;
 
 import java.io.*;
 import java.net.URI;
+import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.EnumSet;
@@ -43,15 +44,10 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Random;
 import java.util.Set;
-import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 import static org.apache.hadoop.test.PlatformAssumptions.assumeNotWindows;
 import static org.apache.hadoop.test.PlatformAssumptions.assumeWindows;
-import static org.mockito.Mockito.*;
-
-import jakarta.annotation.Nonnull;
-
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -59,11 +55,22 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.fail;
+import static org.mockito.Mockito.doReturn;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.spy;
+import static org.mockito.Mockito.when;
+
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.Timeout;
+
+import javax.annotation.Nonnull;
 
 /**
  * This class tests the local file system via the FileSystem abstraction.
  */
-@Timeout(value=60, unit=TimeUnit.SECONDS)
+@Timeout(60)
 public class TestLocalFileSystem {
   private static final File base =
       GenericTestUtils.getTestDir("work-dir/localfs");
@@ -273,8 +280,7 @@ public class TestLocalFileSystem {
     assertTrue(fileSys.mkdirs(dir1));
     writeFile(fileSys, file1, 1);
     writeFile(fileSys, file2, 1);
-    assertFalse(fileSys.delete(file3),
-            "Returned true deleting non-existant path");
+    assertFalse(fileSys.delete(file3), "Returned true deleting non-existant path");
     assertTrue(fileSys.delete(file1), "Did not delete file");
     assertTrue(fileSys.delete(dir1), "Did not delete non-empty dir");
   }
@@ -311,10 +317,8 @@ public class TestLocalFileSystem {
     colonFile.mkdirs();
     FileStatus[] stats = fileSys.listStatus(new Path(TEST_ROOT_DIR));
     assertEquals(1, stats.length, "Unexpected number of stats");
-    assertEquals(
-        colonFile.getAbsolutePath(),
-        stats[0].getPath().toUri().getPath(),
-        "Bad path from stat");
+    assertEquals(colonFile.getAbsolutePath(),
+        stats[0].getPath().toUri().getPath(), "Bad path from stat");
   }
   
   @Test
@@ -328,10 +332,8 @@ public class TestLocalFileSystem {
     file.mkdirs();
     FileStatus[] stats = fileSys.listStatus(new Path(dirNoDriveSpec));
     assertEquals(1, stats.length, "Unexpected number of stats");
-    assertEquals(
-        new Path(file.getPath()).toUri().getPath(),
-        stats[0].getPath().toUri().getPath(),
-        "Bad path from stat");
+    assertEquals(new Path(file.getPath()).toUri().getPath(),
+        stats[0].getPath().toUri().getPath(), "Bad path from stat");
   }
   
   @Test
@@ -425,7 +427,8 @@ public class TestLocalFileSystem {
     long newAccTime = 23456000;
 
     FileStatus status = fileSys.getFileStatus(path);
-    assertTrue(newModTime != status.getModificationTime(), "check we're actually changing something");
+    assertTrue(newModTime != status.getModificationTime(),
+        "check we're actually changing something");
     assertTrue(newAccTime != status.getAccessTime(), "check we're actually changing something");
 
     fileSys.setTimes(path, newModTime, newAccTime);
@@ -602,8 +605,8 @@ public class TestLocalFileSystem {
     // Create test file with fragment
     FileSystemTestHelper.createFile(fs, pathWithFragment);
     Path resolved = fs.resolvePath(pathWithFragment);
-    assertEquals(pathQualified, resolved,
-        "resolvePath did not strip fragment from Path");
+    assertEquals(pathQualified,
+        resolved, "resolvePath did not strip fragment from Path");
   }
 
   @Test
@@ -670,7 +673,7 @@ public class TestLocalFileSystem {
           fileSys.createFile(path).recursive();
       FSDataOutputStream out = builder.build();
       String content = "Create with a generic type of createFile!";
-      byte[] contentOrigin = content.getBytes("UTF8");
+      byte[] contentOrigin = content.getBytes(StandardCharsets.UTF_8);
       out.write(contentOrigin);
       out.close();
 
@@ -679,8 +682,7 @@ public class TestLocalFileSystem {
           new byte[(int) (fileSys.getFileStatus(path).getLen())];
       input.readFully(0, buffer);
       input.close();
-      assertArrayEquals(contentOrigin, buffer,
-          "The data be read should equals with the "
+      assertArrayEquals(contentOrigin, buffer, "The data be read should equals with the "
           + "data written.");
     } catch (IOException e) {
       throw e;

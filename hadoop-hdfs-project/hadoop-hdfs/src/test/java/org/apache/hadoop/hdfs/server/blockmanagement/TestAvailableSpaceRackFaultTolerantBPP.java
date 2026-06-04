@@ -30,7 +30,6 @@ import org.apache.hadoop.net.NetworkTopology;
 import org.apache.hadoop.net.Node;
 import org.apache.hadoop.test.PathUtils;
 import org.junit.jupiter.api.AfterAll;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
@@ -42,6 +41,7 @@ import java.util.HashSet;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.fail;
 
 /**
  * Tests AvailableSpaceRackFaultTolerant block placement policy.
@@ -140,7 +140,7 @@ public class TestAvailableSpaceRackFaultTolerantBPP {
    */
   @Test
   public void testPolicyReplacement() {
-    Assertions.assertTrue(
+    assertTrue(
         (placementPolicy instanceof
             AvailableSpaceRackFaultTolerantBlockPlacementPolicy));
   }
@@ -160,7 +160,7 @@ public class TestAvailableSpaceRackFaultTolerantBPP {
                   new ArrayList<DatanodeStorageInfo>(), false, null, BLOCK_SIZE,
                   TestBlockStoragePolicy.DEFAULT_STORAGE_POLICY, null);
 
-      Assertions.assertTrue(targets.length == REPLICA);
+      assertTrue(targets.length == REPLICA);
       for (int j = 0; j < REPLICA; j++) {
         total++;
         if (targets[j].getDatanodeDescriptor().getRemainingPercent() > 60) {
@@ -168,10 +168,10 @@ public class TestAvailableSpaceRackFaultTolerantBPP {
         }
       }
     }
-    Assertions.assertTrue(total == REPLICA * CHOOSE_TIMES);
+    assertTrue(total == REPLICA * CHOOSE_TIMES);
     double possibility = 1.0 * moreRemainingNode / total;
-    Assertions.assertTrue(possibility > 0.52);
-    Assertions.assertTrue(possibility < 0.55);
+    assertTrue(possibility > 0.52);
+    assertTrue(possibility < 0.55);
   }
 
   @Test
@@ -185,7 +185,7 @@ public class TestAvailableSpaceRackFaultTolerantBPP {
             .chooseDataNode("~", allNodes);
       }
     } catch (NullPointerException npe) {
-      Assertions.fail("NPE should not be thrown");
+      fail("NPE should not be thrown");
     }
   }
 

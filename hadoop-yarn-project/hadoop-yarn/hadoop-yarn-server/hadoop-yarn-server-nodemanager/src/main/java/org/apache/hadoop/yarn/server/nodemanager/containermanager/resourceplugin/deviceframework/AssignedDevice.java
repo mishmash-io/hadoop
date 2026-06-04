@@ -34,6 +34,9 @@ public class AssignedDevice implements Serializable, Comparable {
   private Device device;
   private String containerId;
 
+  public AssignedDevice() {
+  }
+
   public AssignedDevice(ContainerId cId, Device dev) {
     this.device = dev;
     this.containerId = cId.toString();

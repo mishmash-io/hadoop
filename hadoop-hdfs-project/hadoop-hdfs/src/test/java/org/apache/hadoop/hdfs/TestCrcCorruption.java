@@ -18,7 +18,9 @@
 
 package org.apache.hadoop.hdfs;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.fail;
 
 import java.io.IOException;
 import java.util.List;
@@ -87,7 +89,7 @@ public class TestCrcCorruption {
    * least two replicas are needed.
    */
   @Test
-  @Timeout(value = 50000, unit = TimeUnit.MILLISECONDS)
+  @Timeout(value = 50)
   public void testCorruptionDuringWrt() throws Exception {
     Configuration conf = new HdfsConfiguration();
     // Set short retry timeouts so this test runs faster
@@ -198,7 +200,7 @@ public class TestCrcCorruption {
       // be good. Verify.
       //
       assertTrue(util.checkFiles(fs, "/srcdat"),
-                 "Corrupted replicas not handled properly.");
+          "Corrupted replicas not handled properly.");
       LOG.info("All File still have a valid replica");
 
       //
@@ -252,7 +254,7 @@ public class TestCrcCorruption {
    * reports the exception to the client.
    */
   @Test
-  @Timeout(value = 300000, unit = TimeUnit.MILLISECONDS) // 5 min timeout
+  @Timeout(value = 300)
   public void testEntirelyCorruptFileOneNode() throws Exception {
     doTestEntirelyCorruptFile(1);
   }
@@ -266,7 +268,7 @@ public class TestCrcCorruption {
    * indefinitely.
    */
   @Test
-  @Timeout(value = 300000, unit = TimeUnit.MILLISECONDS) // 5 min timeout
+  @Timeout(value = 300)
   public void testEntirelyCorruptFileThreeNodes() throws Exception {
     doTestEntirelyCorruptFile(3);
   }

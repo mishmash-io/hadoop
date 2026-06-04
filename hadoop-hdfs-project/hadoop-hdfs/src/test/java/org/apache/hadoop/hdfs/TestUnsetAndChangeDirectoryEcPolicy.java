@@ -17,6 +17,7 @@
  */
 package org.apache.hadoop.hdfs;
 
+import org.junit.jupiter.api.Timeout;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.apache.hadoop.conf.Configuration;
@@ -28,10 +29,9 @@ import org.apache.hadoop.io.erasurecode.CodecUtil;
 import org.apache.hadoop.io.erasurecode.ErasureCodeNative;
 import org.apache.hadoop.io.erasurecode.rawcoder.NativeRSRawErasureCoderFactory;
 import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.Timeout;
+import org.junit.jupiter.api.Assertions;
 
 import java.io.FileNotFoundException;
 import java.io.IOException;
@@ -43,7 +43,7 @@ import static org.junit.jupiter.api.Assertions.fail;
 /**
  * Test unset and change directory's erasure coding policy.
  */
-@Timeout(value=300000, unit=TimeUnit.MILLISECONDS)
+@Timeout(300)
 public class TestUnsetAndChangeDirectoryEcPolicy {
 
   public static final Logger LOG =
@@ -117,13 +117,11 @@ public class TestUnsetAndChangeDirectoryEcPolicy {
 
     // rep_file should not have EC policy
     tempEcPolicy = fs.getErasureCodingPolicy(replicateFilePath);
-    Assertions.assertNull(tempEcPolicy,
-        "Replicate file should not have erasure coding policy!");
+    Assertions.assertNull(tempEcPolicy, "Replicate file should not have erasure coding policy!");
 
     // Directory should not return erasure coding policy
     tempEcPolicy = fs.getErasureCodingPolicy(dirPath);
-    Assertions.assertNull(tempEcPolicy,
-        "Directory should no have erasure coding policy set!");
+    Assertions.assertNull(tempEcPolicy, "Directory should no have erasure coding policy set!");
 
     fs.delete(dirPath, true);
   }
@@ -221,13 +219,11 @@ public class TestUnsetAndChangeDirectoryEcPolicy {
 
     // rep_file should not have EC policy set
     tempEcPolicy = fs.getErasureCodingPolicy(replicateFilePath);
-    Assertions.assertNull(tempEcPolicy,
-        "Replicate file should not have erasure coding policy!");
+    Assertions.assertNull(tempEcPolicy, "Replicate file should not have erasure coding policy!");
 
     // Directory should not return erasure coding policy
     tempEcPolicy = fs.getErasureCodingPolicy(rootPath);
-    Assertions.assertNull(tempEcPolicy,
-        "Directory should not have erasure coding policy set!");
+    Assertions.assertNull(tempEcPolicy, "Directory should not have erasure coding policy set!");
 
     fs.delete(rootPath, true);
   }
@@ -305,16 +301,13 @@ public class TestUnsetAndChangeDirectoryEcPolicy {
 
     // rep_file should not have EC policy set
     tempEcPolicy = fs.getErasureCodingPolicy(replicateFilePath);
-    Assertions.assertNull(tempEcPolicy,
-        "Replicate file should not have erasure coding policy!");
+    Assertions.assertNull(tempEcPolicy, "Replicate file should not have erasure coding policy!");
     tempEcPolicy = fs.getErasureCodingPolicy(replicateFilePath2);
-    Assertions.assertNull(tempEcPolicy,
-        "Replicate file should not have erasure coding policy!");
+    Assertions.assertNull(tempEcPolicy, "Replicate file should not have erasure coding policy!");
 
     // Directory should not return erasure coding policy
     tempEcPolicy = fs.getErasureCodingPolicy(ecDirPath);
-    Assertions.assertNull(tempEcPolicy,
-        "Directory should not have erasure coding policy set!");
+    Assertions.assertNull(tempEcPolicy, "Directory should not have erasure coding policy set!");
 
     fs.delete(ecDirPath, true);
   }

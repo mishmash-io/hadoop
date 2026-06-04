@@ -62,7 +62,7 @@ public class TestNNStartupWhenViewFSOverloadSchemeEnabled {
    * ViewFSOverloadScheme configured.
    */
   @Test
-  @Timeout(value = 30000, unit = TimeUnit.MILLISECONDS)
+  @Timeout(value = 30)
   public void testHANameNodeAndDataNodeStartup() throws Exception {
     cluster = new MiniDFSCluster.Builder(CONF)
         .nnTopology(MiniDFSNNTopology.simpleHATopology()).numDataNodes(0)
@@ -76,7 +76,7 @@ public class TestNNStartupWhenViewFSOverloadSchemeEnabled {
    * configured.
    */
   @Test
-  @Timeout(value = 30000, unit = TimeUnit.MILLISECONDS)
+  @Timeout(value = 30)
   public void testNameNodeAndDataNodeStartup() throws Exception {
     cluster =
         new MiniDFSCluster.Builder(CONF).numDataNodes(0).waitSafeMode(false)

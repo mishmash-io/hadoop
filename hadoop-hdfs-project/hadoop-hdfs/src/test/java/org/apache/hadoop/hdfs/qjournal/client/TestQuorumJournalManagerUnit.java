@@ -16,7 +16,11 @@
  * limitations under the License.
  */
 package org.apache.hadoop.hdfs.qjournal.client;
-import static org.junit.jupiter.api.Assertions.*;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.fail;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.ArgumentMatchers.anyLong;
@@ -50,7 +54,6 @@ import org.apache.hadoop.hdfs.server.protocol.NamespaceInfo;
 import org.apache.hadoop.hdfs.server.namenode.NNStorage;
 import org.apache.hadoop.test.GenericTestUtils;
 import org.slf4j.event.Level;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
@@ -182,7 +185,7 @@ public class TestQuorumJournalManagerUnit {
     QuorumOutputStream os = (QuorumOutputStream) qjm.startLogSegment(1,
         NameNodeLayoutVersion.CURRENT_LAYOUT_VERSION);
     String report = os.generateReport();
-    Assertions.assertFalse(report.contains("<"), "Report should be plain text");
+    assertFalse(report.contains("<"), "Report should be plain text");
   }
 
   @Test
@@ -215,10 +218,11 @@ public class TestQuorumJournalManagerUnit {
   }
 
   @Test
-  public void testSetOutputBufferCapacityTooLarge() {
-    assertThrows(IllegalArgumentException.class, () ->
+  public void testSetOutputBufferCapacityTooLarge() throws Exception {
+    assertThrows(IllegalArgumentException.class, () -> {
       qjm.setOutputBufferCapacity(
-          CommonConfigurationKeys.IPC_MAXIMUM_DATA_LENGTH_DEFAULT + 1));
+          CommonConfigurationKeys.IPC_MAXIMUM_DATA_LENGTH_DEFAULT + 1);
+    });
   }
 
   // Regression test for HDFS-13977

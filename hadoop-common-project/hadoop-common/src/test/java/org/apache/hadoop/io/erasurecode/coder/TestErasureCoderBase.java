@@ -28,6 +28,8 @@ import static org.junit.jupiter.api.Assertions.fail;
 import java.io.IOException;
 import java.lang.reflect.Constructor;
 
+import static org.junit.jupiter.api.Assertions.fail;
+
 /**
  * Erasure coder test base with utilities.
  */

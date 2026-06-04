@@ -18,7 +18,10 @@
 
 package org.apache.hadoop;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.fail;
 
 import java.io.IOException;
 import java.net.BindException;
@@ -112,8 +115,7 @@ public class TestRefreshCallQueue {
     mockQueuePuts = 0;
     setUp(MockCallQueue.class);
 
-    assertTrue(mockQueueConstructions > 0,
-        "Mock queue should have been constructed");
+    assertTrue(mockQueueConstructions > 0, "Mock queue should have been constructed");
     assertTrue(canPutInMockQueue(), "Puts are routed through MockQueue");
     int lastMockQueueConstructions = mockQueueConstructions;
 
@@ -124,10 +126,10 @@ public class TestRefreshCallQueue {
     int exitCode = admin.run(args);
     assertEquals(0, exitCode, "DFSAdmin should return 0");
 
-    assertEquals(lastMockQueueConstructions, mockQueueConstructions, "Mock queue should have no additional constructions");
+    assertEquals(lastMockQueueConstructions, mockQueueConstructions,
+        "Mock queue should have no additional constructions");
     try {
-      assertFalse(canPutInMockQueue(),
-          "Puts are routed through LBQ instead of MockQueue");
+      assertFalse(canPutInMockQueue(), "Puts are routed through LBQ instead of MockQueue");
     } catch (IOException ioe) {
       fail("Could not put into queue at all");
     }
@@ -145,8 +147,9 @@ public class TestRefreshCallQueue {
         DFSConfigKeys.DFS_NAMENODE_SERVICE_HANDLER_COUNT_DEFAULT);
     NameNodeRpcServer rpcServer = (NameNodeRpcServer) cluster.getNameNodeRpc();
     // check callqueue size
-    assertEquals(CommonConfigurationKeys.IPC_SERVER_HANDLER_QUEUE_SIZE_DEFAULT
-        * serviceHandlerCount, rpcServer.getClientRpcServer().getMaxQueueSize());
+    assertEquals(
+        CommonConfigurationKeys.IPC_SERVER_HANDLER_QUEUE_SIZE_DEFAULT * serviceHandlerCount,
+        rpcServer.getClientRpcServer().getMaxQueueSize());
     // Replace queue and update queue size
     config.setInt(CommonConfigurationKeys.IPC_SERVER_HANDLER_QUEUE_SIZE_KEY,
         150);
@@ -166,8 +169,7 @@ public class TestRefreshCallQueue {
       DefaultMetricsSystem.setMiniClusterMode(oldValue);
     }
     // check callQueueSize has changed
-    assertEquals(150 * serviceHandlerCount, rpcServer.getClientRpcServer()
-        .getMaxQueueSize());
+    assertEquals(150 * serviceHandlerCount, rpcServer.getClientRpcServer().getMaxQueueSize());
   }
 
 }

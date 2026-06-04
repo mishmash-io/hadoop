@@ -37,6 +37,8 @@ import java.net.BindException;
 import java.util.Random;
 import java.util.concurrent.TimeUnit;
 
+import static org.junit.jupiter.api.Assertions.assertThrows;
+
 /**
  * This class tests the validation of the configuration object when passed 
  * to the NameNode
@@ -54,10 +56,10 @@ public class TestValidateConfigurationSettings {
    * is thrown when trying to re-use the same port
    */
   @Test
-  @Timeout(value = 300000, unit = TimeUnit.MILLISECONDS)
-  public void testThatMatchingRPCandHttpPortsThrowException() {
+  @Timeout(value = 300)
+  public void testThatMatchingRPCandHttpPortsThrowException() 
+      throws IOException {
     assertThrows(BindException.class, () -> {
-
       NameNode nameNode = null;
       try {
         Configuration conf = new HdfsConfiguration();
@@ -86,8 +88,8 @@ public class TestValidateConfigurationSettings {
    * exception is NOT thrown 
    */
   @Test
-  @Timeout(value = 300000, unit = TimeUnit.MILLISECONDS)
-  public void testThatDifferentRPCandHttpPortsAreOK()
+  @Timeout(value = 300)
+  public void testThatDifferentRPCandHttpPortsAreOK() 
       throws IOException {
 
     Configuration conf = new HdfsConfiguration();
@@ -125,7 +127,7 @@ public class TestValidateConfigurationSettings {
    * dfs.namenode.name.dir.NameServiceId configuration.
    */
   @Test
-  @Timeout(value = 300000, unit = TimeUnit.MILLISECONDS)
+  @Timeout(value = 300)
   public void testGenericKeysForNameNodeFormat()
       throws IOException {
     Configuration conf = new HdfsConfiguration();

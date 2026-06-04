@@ -24,9 +24,7 @@ import org.apache.hadoop.ipc.metrics.RpcMetrics;
 
 import org.apache.hadoop.thirdparty.com.google.common.util.concurrent.ThreadFactoryBuilder;
 import org.apache.hadoop.thirdparty.protobuf.ServiceException;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.Timeout;
+import org.apache.hadoop.util.concurrent.SubjectInheritingThread;
 import org.apache.hadoop.HadoopIllegalArgumentException;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.CommonConfigurationKeys;
@@ -56,7 +54,9 @@ import org.apache.hadoop.security.token.TokenIdentifier;
 import org.apache.hadoop.test.GenericTestUtils;
 import org.apache.hadoop.test.MetricsAsserts;
 import org.apache.hadoop.test.MockitoUtil;
-import org.mockito.Mockito;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.Timeout;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.slf4j.event.Level;
@@ -113,11 +113,19 @@ import static org.apache.hadoop.test.MetricsAsserts.assertGauge;
 import static org.apache.hadoop.test.MetricsAsserts.getDoubleGauge;
 import static org.apache.hadoop.test.MetricsAsserts.getLongCounter;
 import static org.apache.hadoop.test.MetricsAsserts.getMetrics;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.eq;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotSame;
+import static org.junit.jupiter.api.Assertions.assertSame;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.fail;
+import static org.mockito.Mockito.any;
+import static org.mockito.Mockito.eq;
+import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.timeout;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 /** Unit tests for RPC. */
 @SuppressWarnings("deprecation")
@@ -234,7 +242,7 @@ public class TestRPC extends TestRpcBase {
         addResponse = proxy.add(null, addRequest);
         val = addResponse.getResult();
       } catch (ServiceException e) {
-        fail("Exception from RPC exchange()", e);
+        assertTrue(false, "Exception from RPC exchange() "  + e);
       }
       assertEquals(indata.length, outdata.length);
       assertEquals(3, val);
@@ -267,7 +275,7 @@ public class TestRPC extends TestRpcBase {
         ping(true);
         done = true;
       } catch (ServiceException e) {
-        fail("SlowRPC ping exception ", e);
+        assertTrue(false, "SlowRPC ping exception " + e);
       }
     }
 
@@ -702,6 +710,8 @@ public class TestRPC extends TestRpcBase {
 
     // Expect to succeed
     myConf.set(ACL_CONFIG, "*");
+    RPC.setProtocolEngine(myConf, TestRpcService.class, ProtobufRpcEngine2.class);
+
     doRPCs(myConf, false);
 
     // Reset authorization to expect failure
@@ -907,7 +917,7 @@ public class TestRPC extends TestRpcBase {
   }
 
   @Test
-  @Timeout(value=90000, unit=TimeUnit.MILLISECONDS)
+  @Timeout(value = 90)
   public void testRPCInterruptedSimple() throws Exception {
     Server server;
     TestRpcService proxy = null;
@@ -943,7 +953,7 @@ public class TestRPC extends TestRpcBase {
   }
 
   @Test
-  @Timeout(value=30000, unit=TimeUnit.MILLISECONDS)
+  @Timeout(value = 30)
   public void testRPCInterrupted() throws Exception {
     Server server;
 
@@ -963,7 +973,7 @@ public class TestRPC extends TestRpcBase {
       for (int i = 0; i < numConcurrentRPC; i++) {
         final int num = i;
         final TestRpcService proxy = getClient(addr, conf);
-        Thread rpcThread = new Thread(new Runnable() {
+        Thread rpcThread = new SubjectInheritingThread(new Runnable() {
           @Override
           public void run() {
             try {
@@ -1002,7 +1012,7 @@ public class TestRPC extends TestRpcBase {
       latch.await();
 
       // should not cause any other thread to get an error
-      assertNull(error.get(), "rpc got exception " + error.get());
+      assertTrue(error.get() == null, "rpc got exception " + error.get());
     } finally {
       server.stop();
     }
@@ -1017,17 +1027,17 @@ public class TestRPC extends TestRpcBase {
    * output streams are frozen.
    */
   @Test
-  @Timeout(value=30000, unit=TimeUnit.MILLISECONDS)
+  @Timeout(value = 30)
   public void testSlowConnection() throws Exception {
-    SocketFactory mockFactory = Mockito.mock(SocketFactory.class);
-    Socket mockSocket = Mockito.mock(Socket.class);
-    Mockito.when(mockFactory.createSocket()).thenReturn(mockSocket);
-    Mockito.when(mockSocket.getPort()).thenReturn(1234);
-    Mockito.when(mockSocket.getLocalPort()).thenReturn(2345);
+    SocketFactory mockFactory = mock(SocketFactory.class);
+    Socket mockSocket = mock(Socket.class);
+    when(mockFactory.createSocket()).thenReturn(mockSocket);
+    when(mockSocket.getPort()).thenReturn(1234);
+    when(mockSocket.getLocalPort()).thenReturn(2345);
     MockOutputStream mockOutputStream = new MockOutputStream();
-    Mockito.when(mockSocket.getOutputStream()).thenReturn(mockOutputStream);
+    when(mockSocket.getOutputStream()).thenReturn(mockOutputStream);
     // Use an input stream that always blocks
-    Mockito.when(mockSocket.getInputStream()).thenReturn(new InputStream() {
+    when(mockSocket.getInputStream()).thenReturn(new InputStream() {
       @Override
       public int read() throws IOException {
         // wait forever
@@ -1045,7 +1055,7 @@ public class TestRPC extends TestRpcBase {
     // disable ping & timeout to minimize traffic
     clientConf.setBoolean(CommonConfigurationKeys.IPC_CLIENT_PING_KEY, false);
     clientConf.setInt(CommonConfigurationKeys.IPC_CLIENT_RPC_TIMEOUT_KEY, 0);
-    RPC.setProtocolEngine(clientConf, TestRpcService.class, ProtobufRpcEngine.class);
+    RPC.setProtocolEngine(clientConf, TestRpcService.class, ProtobufRpcEngine2.class);
     // set async mode so that we don't need to implement the input stream
     final boolean wasAsync = Client.isAsynchronousMode();
     TestRpcService client = null;
@@ -1086,8 +1096,7 @@ public class TestRPC extends TestRpcBase {
       mockOutputStream.waitForWriters();
       // interrupt all the threads
       for(int thread=0; thread < numThreads; ++thread) {
-        assertTrue(futures[thread].cancel(true),
-            "cancel thread " + thread);
+        assertTrue(futures[thread].cancel(true), "cancel thread " + thread);
       }
       // wait until all the writers are cancelled
       pool.shutdown();
@@ -1163,17 +1172,17 @@ public class TestRPC extends TestRpcBase {
    * sure that threads aren't leaked.
    */
   @Test
-  @Timeout(value=30000, unit=TimeUnit.MILLISECONDS)
+  @Timeout(value = 30)
   public void testBadSetup() throws Exception {
-    SocketFactory mockFactory = Mockito.mock(SocketFactory.class);
-    Mockito.when(mockFactory.createSocket())
+    SocketFactory mockFactory = mock(SocketFactory.class);
+    when(mockFactory.createSocket())
         .thenThrow(new IOException("can't connect"));
     Configuration clientConf = new Configuration();
     // Set an illegal value to cause an exception in the constructor
     clientConf.set(CommonConfigurationKeys.IPC_MAXIMUM_RESPONSE_LENGTH,
         "xxx");
     RPC.setProtocolEngine(clientConf, TestRpcService.class,
-        ProtobufRpcEngine.class);
+        ProtobufRpcEngine2.class);
     TestRpcService client = null;
     int threadCount = Thread.getAllStackTraces().size();
     try {
@@ -1186,12 +1195,12 @@ public class TestRPC extends TestRpcBase {
             clientConf,
             mockFactory).getProxy();
         client.ping(null, newEmptyRequest());
-        fail("Didn't throw exception!");
+        assertTrue(false, "Didn't throw exception!");
       } catch (ServiceException nfe) {
         // ensure no extra threads are running.
         assertEquals(threadCount, Thread.getAllStackTraces().size());
       } catch (Throwable t) {
-        fail("wrong exception", t);
+        assertTrue(false, "wrong exception: " + t);
       }
     } finally {
       if (client != null) {
@@ -1220,7 +1229,7 @@ public class TestRPC extends TestRpcBase {
   }
 
   @Test
-  @Timeout(value=30000, unit=TimeUnit.MILLISECONDS)
+  @Timeout(value = 30)
   public void testExternalCall() throws Exception {
     final UserGroupInformation ugi = UserGroupInformation
         .createUserForTesting("user123", new String[0]);
@@ -1343,23 +1352,17 @@ public class TestRPC extends TestRpcBase {
       }
       MetricsRecordBuilder rpcMetrics =
           getMetrics(server.getRpcMetrics().name());
-      assertEquals(
-          3000, getLongCounter("RpcEnQueueTimeNumOps", rpcMetrics),
+      assertEquals(3000, getLongCounter("RpcEnQueueTimeNumOps", rpcMetrics),
           "Expected correct rpc en queue count");
-      assertEquals(
-          3000, getLongCounter("RpcQueueTimeNumOps", rpcMetrics),
+      assertEquals(3000, getLongCounter("RpcQueueTimeNumOps", rpcMetrics),
           "Expected correct rpc queue count");
-      assertEquals(
-          3000, getLongCounter("RpcProcessingTimeNumOps", rpcMetrics),
+      assertEquals(3000, getLongCounter("RpcProcessingTimeNumOps", rpcMetrics),
           "Expected correct rpc processing count");
-      assertEquals(
-          3000, getLongCounter("RpcLockWaitTimeNumOps", rpcMetrics),
+      assertEquals(3000, getLongCounter("RpcLockWaitTimeNumOps", rpcMetrics),
           "Expected correct rpc lock wait count");
-      assertEquals(
-          3000, getLongCounter("RpcResponseTimeNumOps", rpcMetrics),
+      assertEquals(3000, getLongCounter("RpcResponseTimeNumOps", rpcMetrics),
           "Expected correct rpc response count");
-      assertEquals(
-          0, getDoubleGauge("RpcLockWaitTimeAvgTime", rpcMetrics), 0.001,
+      assertEquals(0, getDoubleGauge("RpcLockWaitTimeAvgTime", rpcMetrics), 0.001,
           "Expected zero rpc lock wait time");
       MetricsAsserts.assertQuantileGauges("RpcEnQueueTime" + interval + "s",
           rpcMetrics);
@@ -1500,7 +1503,7 @@ public class TestRPC extends TestRpcBase {
    *  Test RPC backoff by queue full.
    */
   @Test
-  @Timeout(value=30000, unit=TimeUnit.MILLISECONDS)
+  @Timeout(value = 30)
   public void testClientBackOff() throws Exception {
     Server server;
     final TestRpcService proxy;
@@ -1563,7 +1566,7 @@ public class TestRPC extends TestRpcBase {
    *  Test RPC backoff by response time of each priority level.
    */
   @Test
-  @Timeout(value=30000, unit=TimeUnit.MILLISECONDS)
+  @Timeout(value = 30)
   public void testClientBackOffByResponseTime() throws Exception {
     final TestRpcService proxy;
     boolean succeeded = false;
@@ -1626,7 +1629,7 @@ public class TestRPC extends TestRpcBase {
 
   /** Test that the metrics for DecayRpcScheduler are updated. */
   @Test
-  @Timeout(value=30000, unit=TimeUnit.MILLISECONDS)
+  @Timeout(value = 30)
   public void testDecayRpcSchedulerMetrics() throws Exception {
     final String ns = CommonConfigurationKeys.IPC_NAMESPACE + ".0";
     Server server = setupDecayRpcSchedulerandTestServer(ns + ".");
@@ -1683,7 +1686,7 @@ public class TestRPC extends TestRpcBase {
   }
 
   @Test
-  @Timeout(value=30000, unit=TimeUnit.MILLISECONDS)
+  @Timeout(value = 30)
   public void testProtocolUserPriority() throws Exception {
     final String ns = CommonConfigurationKeys.IPC_NAMESPACE + ".0";
     conf.set(CLIENT_PRINCIPAL_KEY, "clientForProtocol");
@@ -1752,7 +1755,7 @@ public class TestRPC extends TestRpcBase {
    *  Test RPC timeout.
    */
   @Test
-  @Timeout(value=30000, unit=TimeUnit.MILLISECONDS)
+  @Timeout(value = 30)
   public void testClientRpcTimeout() throws Exception {
     Server server;
     TestRpcService proxy = null;
@@ -1896,7 +1899,7 @@ public class TestRPC extends TestRpcBase {
   }
 
   @Test
-  @Timeout(value=30000, unit=TimeUnit.MILLISECONDS)
+  @Timeout(value = 30)
   public void testReaderExceptions() throws Exception {
     Server server = null;
     TestRpcService proxy = null;
@@ -1963,7 +1966,7 @@ public class TestRPC extends TestRpcBase {
           LOG.info("Connection is from: {}", connectionInfo);
           assertEquals(1, connectionInfo.split(" / ").length,
               "Connection string representation should include only IP address for healthy "
-                  + "connection");
+              + "connection");
           // verify whether the connection should have been reused.
           if (isDisconnected) {
             assertNotSame(lastConn, conns[0], reqName);
@@ -2031,9 +2034,8 @@ public class TestRPC extends TestRpcBase {
       }
       MetricsRecordBuilder rpcMetrics =
           getMetrics(server.getRpcMetrics().name());
-      assertEquals(
-          0, getDoubleGauge("RpcLockWaitTimeAvgTime", rpcMetrics), 0.001,
-          "Expected zero rpc lock wait time");
+      assertEquals(0, getDoubleGauge("RpcLockWaitTimeAvgTime", rpcMetrics),
+          0.001, "Expected zero rpc lock wait time");
       MetricsAsserts.assertQuantileGauges("RpcEnQueueTime" + interval + "s",
           rpcMetrics);
       MetricsAsserts.assertQuantileGauges("RpcQueueTime" + interval + "s",

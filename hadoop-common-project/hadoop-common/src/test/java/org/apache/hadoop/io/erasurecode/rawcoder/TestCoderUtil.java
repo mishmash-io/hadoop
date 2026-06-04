@@ -21,10 +21,10 @@ package org.apache.hadoop.io.erasurecode.rawcoder;
 import org.apache.hadoop.HadoopIllegalArgumentException;
 import org.junit.jupiter.api.Test;
 
+import java.nio.ByteBuffer;
+
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
-
-import java.nio.ByteBuffer;
 
 /**
  * Test of the utility of raw erasure coder.
@@ -119,8 +119,8 @@ public class TestCoderUtil {
 
   @Test
   public void testNoValidInput() {
-    byte[][] inputs = new byte[numInputs][];
     assertThrows(HadoopIllegalArgumentException.class, () -> {
+      byte[][] inputs = new byte[numInputs][];
       CoderUtil.findFirstValidInput(inputs);
     });
   }

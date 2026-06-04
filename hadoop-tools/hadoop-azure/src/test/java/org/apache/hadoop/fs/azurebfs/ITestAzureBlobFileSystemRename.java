@@ -33,7 +33,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import org.assertj.core.api.Assertions;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.mockito.invocation.InvocationOnMock;
 import org.mockito.Mockito;
 import org.mockito.stubbing.Answer;
@@ -70,6 +70,7 @@ import org.apache.hadoop.fs.azurebfs.utils.TracingHeaderValidator;
 import org.apache.hadoop.fs.statistics.IOStatisticAssertions;
 import org.apache.hadoop.fs.statistics.IOStatistics;
 import org.apache.hadoop.test.LambdaTestUtils;
+import org.apache.hadoop.util.concurrent.SubjectInheritingThread;
 import org.apache.hadoop.util.functional.FunctionRaisingIOE;
 
 import static java.net.HttpURLConnection.HTTP_CLIENT_TIMEOUT;
@@ -163,10 +164,9 @@ public class ITestAzureBlobFileSystemRename extends
     Path destDir = path("/testDst");
     assertRenameOutcome(fs, sourceDir, destDir, true);
     FileStatus[] fileStatus = fs.listStatus(destDir);
-    assertNotNull("Null file status", fileStatus);
+    assertNotNull(fileStatus, "Null file status");
     FileStatus status = fileStatus[0];
-    assertEquals("Wrong filename in " + status,
-        filename, status.getPath().getName());
+    assertEquals(filename, status.getPath().getName(), "Wrong filename in " + status);
   }
 
   @Test
@@ -213,7 +213,7 @@ public class ITestAzureBlobFileSystemRename extends
     assertRenameOutcome(fs, source, dest, true);
 
     FileStatus[] files = fs.listStatus(dest);
-    assertEquals("Wrong number of files in listing", 1000, files.length);
+    assertEquals(1000, files.length, "Wrong number of files in listing");
     assertPathDoesNotExist(fs, "rename source dir", source);
   }
 
@@ -263,8 +263,8 @@ public class ITestAzureBlobFileSystemRename extends
 
     // Verify that renaming on a destination with no parent dir wasn't
     // successful.
-    assertFalse("Rename result expected to be false with no Parent dir",
-        fs.rename(sourcePath, destPath));
+    assertFalse(
+       fs.rename(sourcePath, destPath), "Rename result expected to be false with no Parent dir");
 
     // Verify that metadata was in an incomplete state after the rename
     // failure, and we retired the rename once more.
@@ -516,9 +516,7 @@ public class ITestAzureBlobFileSystemRename extends
             Mockito.any(TracingContext.class));
     assertTrue(fs.rename(new Path("hbase/test1/test2/test3"),
         new Path("hbase/test4")));
-    assertEquals("RenamePendingJson should be deleted",
-        1,
-        (int) correctDeletePathCount[0]);
+    assertEquals(1, (int) correctDeletePathCount[0], "RenamePendingJson should be deleted");
   }
 
   /**
@@ -1017,7 +1015,7 @@ public class ITestAzureBlobFileSystemRename extends
         .acquireLease(Mockito.anyString(), Mockito.anyInt(),
             Mockito.nullable(String.class),
             Mockito.any(TracingContext.class));
-    new Thread(() -> {
+    new SubjectInheritingThread(() -> {
       while (!leaseAcquired.get()) {}
       try {
         fs.rename(src, dst);
@@ -1067,7 +1065,7 @@ public class ITestAzureBlobFileSystemRename extends
       return answer.callRealMethod();
     }).when(client).copyBlob(Mockito.any(Path.class), Mockito.any(Path.class),
         Mockito.nullable(String.class), Mockito.any(TracingContext.class));
-    new Thread(() -> {
+    new SubjectInheritingThread(() -> {
       while (!copyInProgress.get()) {}
       try {
         os.write(1);

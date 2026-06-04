@@ -30,9 +30,10 @@ import org.apache.hadoop.hdfs.MiniDFSCluster;
 import org.apache.hadoop.hdfs.MiniDFSNNTopology;
 import org.apache.hadoop.hdfs.protocol.HdfsConstants.StoragePolicySatisfierMode;
 import org.apache.hadoop.test.GenericTestUtils;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.Timeout;
+
+import static org.junit.jupiter.api.Assertions.fail;
 
 /**
  * Tests that StoragePolicySatisfier is able to work with HA enabled.
@@ -87,7 +88,7 @@ public class TestStoragePolicySatisfierWithHA {
    * changes between Standby and Active.
    */
   @Test
-  @Timeout(value = 90000, unit = TimeUnit.MILLISECONDS)
+  @Timeout(value = 90)
   public void testWhenNNHAStateChanges() throws IOException {
     try {
       createCluster();
@@ -98,7 +99,7 @@ public class TestStoragePolicySatisfierWithHA {
         cluster.getNameNode(0).reconfigurePropertyImpl(
             DFSConfigKeys.DFS_STORAGE_POLICY_SATISFIER_MODE_KEY,
             StoragePolicySatisfierMode.NONE.toString());
-        Assertions.fail("It's not allowed to enable or disable"
+        fail("It's not allowed to enable or disable"
             + " StoragePolicySatisfier on Standby NameNode");
       } catch (ReconfigurationException e) {
         GenericTestUtils.assertExceptionContains("Could not change property "

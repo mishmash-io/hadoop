@@ -35,7 +35,7 @@ import java.util.concurrent.TimeUnit;
 /**
  * Test of the URL stream handler factory.
  */
-@Timeout(value=30000, unit=TimeUnit.MILLISECONDS)
+@Timeout(30)
 public class TestUrlStreamHandlerFactory {
 
   private static final int RUNS = 20;

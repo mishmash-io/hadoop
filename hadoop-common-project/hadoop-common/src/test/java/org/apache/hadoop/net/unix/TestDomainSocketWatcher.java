@@ -18,7 +18,6 @@
 package org.apache.hadoop.net.unix;
 
 import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assumptions.assumeTrue;
 
 import java.util.ArrayList;
 import java.util.Random;
@@ -27,13 +26,17 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.locks.ReentrantLock;
 
-import org.apache.hadoop.thirdparty.com.google.common.util.concurrent.Uninterruptibles;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.Timeout;
+
+import org.apache.hadoop.thirdparty.com.google.common.util.concurrent.Uninterruptibles;
+import org.apache.hadoop.util.concurrent.SubjectInheritingThread;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import static org.junit.jupiter.api.Assumptions.assumeTrue;
 
 public class TestDomainSocketWatcher {
   static final Logger LOG =
@@ -59,7 +62,7 @@ public class TestDomainSocketWatcher {
    * Test that we can create a DomainSocketWatcher and then shut it down.
    */
   @Test
-  @Timeout(value=60000, unit=TimeUnit.MILLISECONDS)
+  @Timeout(value = 60)
   public void testCreateShutdown() throws Exception {
     DomainSocketWatcher watcher = newDomainSocketWatcher(10000000);
     watcher.close();
@@ -69,7 +72,7 @@ public class TestDomainSocketWatcher {
    * Test that we can get notifications out a DomainSocketWatcher.
    */
   @Test
-  @Timeout(value=180000, unit=TimeUnit.MILLISECONDS)
+  @Timeout(value = 180)
   public void testDeliverNotifications() throws Exception {
     DomainSocketWatcher watcher = newDomainSocketWatcher(10000000);
     DomainSocket pair[] = DomainSocket.socketpair();
@@ -90,7 +93,7 @@ public class TestDomainSocketWatcher {
    * Test that a java interruption can stop the watcher thread
    */
   @Test
-  @Timeout(value=60000, unit=TimeUnit.MILLISECONDS)
+  @Timeout(value = 60)
   public void testInterruption() throws Exception {
     final DomainSocketWatcher watcher = newDomainSocketWatcher(10);
     watcher.watcherThread.interrupt();
@@ -102,7 +105,7 @@ public class TestDomainSocketWatcher {
    * Test that domain sockets are closed when the watcher is closed.
    */
   @Test
-  @Timeout(value=300000, unit=TimeUnit.MILLISECONDS)
+  @Timeout(value = 300)
   public void testCloseSocketOnWatcherClose() throws Exception {
     final DomainSocketWatcher watcher = newDomainSocketWatcher(10000000);
     DomainSocket pair[] = DomainSocket.socketpair();
@@ -118,7 +121,7 @@ public class TestDomainSocketWatcher {
   }
   
   @Test
-  @Timeout(value=300000, unit=TimeUnit.MILLISECONDS)
+  @Timeout(value = 300)
   public void testStress() throws Exception {
     final int SOCKET_NUM = 250;
     final ReentrantLock lock = new ReentrantLock();
@@ -126,7 +129,7 @@ public class TestDomainSocketWatcher {
     final ArrayList<DomainSocket[]> pairs = new ArrayList<DomainSocket[]>();
     final AtomicInteger handled = new AtomicInteger(0);
 
-    final Thread adderThread = new Thread(new Runnable() {
+    final Thread adderThread = new SubjectInheritingThread(new Runnable() {
       @Override
       public void run() {
         try {
@@ -153,7 +156,7 @@ public class TestDomainSocketWatcher {
       }
     });
     
-    final Thread removerThread = new Thread(new Runnable() {
+    final Thread removerThread = new SubjectInheritingThread(new Runnable() {
       @Override
       public void run() {
         final Random random = new Random();
@@ -189,7 +192,7 @@ public class TestDomainSocketWatcher {
   }
 
   @Test
-  @Timeout(value=300000, unit=TimeUnit.MILLISECONDS)
+  @Timeout(value = 300)
   public void testStressInterruption() throws Exception {
     final int SOCKET_NUM = 250;
     final ReentrantLock lock = new ReentrantLock();
@@ -197,7 +200,7 @@ public class TestDomainSocketWatcher {
     final ArrayList<DomainSocket[]> pairs = new ArrayList<DomainSocket[]>();
     final AtomicInteger handled = new AtomicInteger(0);
 
-    final Thread adderThread = new Thread(new Runnable() {
+    final Thread adderThread = new SubjectInheritingThread(new Runnable() {
       @Override
       public void run() {
         try {
@@ -225,7 +228,7 @@ public class TestDomainSocketWatcher {
       }
     });
 
-    final Thread removerThread = new Thread(new Runnable() {
+    final Thread removerThread = new SubjectInheritingThread(new Runnable() {
       @Override
       public void run() {
         final Random random = new Random();

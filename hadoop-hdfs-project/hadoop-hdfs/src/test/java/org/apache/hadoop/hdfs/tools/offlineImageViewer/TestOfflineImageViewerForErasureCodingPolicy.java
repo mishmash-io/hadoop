@@ -29,7 +29,6 @@ import org.apache.hadoop.hdfs.server.namenode.FSImageTestUtil;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -41,6 +40,8 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 /**
  * Tests OfflineImageViewer if the input fsimage has HDFS ErasureCodingPolicy

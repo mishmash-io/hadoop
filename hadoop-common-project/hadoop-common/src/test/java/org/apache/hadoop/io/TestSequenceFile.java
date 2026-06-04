@@ -40,9 +40,16 @@ import org.apache.hadoop.io.serializer.avro.AvroReflectSerialization;
 import org.apache.hadoop.test.GenericTestUtils;
 import org.apache.hadoop.util.ReflectionUtils;
 import org.apache.hadoop.conf.*;
-import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.Test;
-import org.mockito.Mockito;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.fail;
+import static org.mockito.Mockito.spy;
+import static org.mockito.Mockito.verify;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -87,7 +94,7 @@ public class TestSequenceFile {
     config.setInt(CommonConfigurationKeys.SEQ_IO_SORT_FACTOR_KEY, 20);
     SequenceFile.Sorter sorter = new SequenceFile.Sorter(
         fs, Text.class, Text.class, config);
-    assertEquals(10*1024*1024, sorter.getMemory(),
+    assertEquals(10 * 1024 * 1024, sorter.getMemory(),
         "Deprecated memory conf must be honored over newer property");
     assertEquals(10, sorter.getFactor(),
         "Deprecated factor conf must be honored over newer property");
@@ -99,14 +106,12 @@ public class TestSequenceFile {
     config.setInt(CommonConfigurationKeys.IO_SORT_FACTOR_KEY, 10);
     sorter = new SequenceFile.Sorter(
         fs, Text.class, Text.class, config);
-    assertEquals(
-        10*1024*1024, // In bytes
-        sorter.getMemory(),
-        "Deprecated memory property "
+    assertEquals(10 * 1024 * 1024, // In bytes
+        sorter.getMemory(), "Deprecated memory property "
         + CommonConfigurationKeys.IO_SORT_MB_KEY
         + " must get properly applied.");
-    assertEquals(10, sorter.getFactor(),
-        "Deprecated sort factor property "
+    assertEquals(10,
+        sorter.getFactor(), "Deprecated sort factor property "
         + CommonConfigurationKeys.IO_SORT_FACTOR_KEY
         + " must get properly applied.");
 
@@ -117,10 +122,8 @@ public class TestSequenceFile {
     config.setInt(CommonConfigurationKeys.SEQ_IO_SORT_FACTOR_KEY, 20);
     sorter = new SequenceFile.Sorter(
         fs, Text.class, Text.class, config);
-    assertEquals(
-        20*1024*1024, // In bytes
-        sorter.getMemory(),
-        "Memory property "
+    assertEquals(20 * 1024 * 1024, // In bytes
+        sorter.getMemory(), "Memory property "
         + CommonConfigurationKeys.SEQ_IO_SORT_MB_KEY
         + " must get properly applied if present.");
     assertEquals(20, sorter.getFactor(),
@@ -556,12 +559,12 @@ public class TestSequenceFile {
   @Test
   public void testCreateUsesFsArg() throws Exception {
     FileSystem fs = FileSystem.getLocal(conf);
-    FileSystem spyFs = Mockito.spy(fs);
+    FileSystem spyFs = spy(fs);
     Path p = new Path(GenericTestUtils.getTempPath("testCreateUsesFSArg.seq"));
     SequenceFile.Writer writer = SequenceFile.createWriter(
         spyFs, conf, p, NullWritable.class, NullWritable.class);
     writer.close();
-    Mockito.verify(spyFs).getDefaultReplication(p);
+    verify(spyFs).getDefaultReplication(p);
   }
 
   private static class TestFSDataInputStream extends FSDataInputStream {
@@ -746,9 +749,9 @@ public class TestSequenceFile {
       .getTempPath("testSequenceFileWriter.seq"));
     try(SequenceFile.Writer writer = SequenceFile.createWriter(
             fs, conf, p, LongWritable.class, Text.class)) {
-      Assertions.assertThat(writer.hasCapability
+      assertThat(writer.hasCapability
         (StreamCapabilities.HSYNC)).isEqualTo(true);
-      Assertions.assertThat(writer.hasCapability(
+      assertThat(writer.hasCapability(
         StreamCapabilities.HFLUSH)).isEqualTo(true);
       LongWritable key = new LongWritable();
       key.set(1);
@@ -758,7 +761,7 @@ public class TestSequenceFile {
       writer.flush();
       writer.hflush();
       writer.hsync();
-      Assertions.assertThat(fs.getFileStatus(p).getLen()).isGreaterThan(0);
+      assertThat(fs.getFileStatus(p).getLen()).isGreaterThan(0);
     }
   }
 

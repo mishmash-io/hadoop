@@ -25,7 +25,6 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.Timeout;
 
 import java.io.IOException;
-import java.util.concurrent.TimeUnit;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -33,7 +32,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 /**
  * Test the behavior of the default retry policy.
  */
-@Timeout(value=30000, unit=TimeUnit.MILLISECONDS)
+@Timeout(30)
 public class TestDefaultRetryPolicy {
 
   /** Verify FAIL < RETRY < FAILOVER_AND_RETRY. */

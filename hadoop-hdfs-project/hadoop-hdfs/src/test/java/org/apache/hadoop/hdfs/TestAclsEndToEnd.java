@@ -43,10 +43,9 @@ import org.apache.hadoop.fs.FileSystemTestHelper;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.security.UserGroupInformation;
 import org.apache.hadoop.security.authorize.ProxyUsers;
-
-import static org.junit.jupiter.api.Assertions.*;
-
-import org.junit.jupiter.api.Assertions;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
@@ -174,7 +173,7 @@ public class TestAclsEndToEnd {
 
       kmsDir = new File(fsHelper.getTestRootDir()).getAbsoluteFile();
 
-      Assertions.assertTrue(kmsDir.mkdirs());
+      assertTrue(kmsDir.mkdirs());
     }
 
     writeConf(kmsDir, conf);
@@ -412,14 +411,14 @@ public class TestAclsEndToEnd {
       setup(conf);
 
       // Create a test key
-      assertTrue(createKey(keyadminUgi, KEY1, conf), "Exception during creation of key " + KEY1 + " by "
-          + keyadminUgi.getUserName());
+      assertTrue(createKey(keyadminUgi, KEY1, conf),
+          "Exception during creation of key " + KEY1 + " by " + keyadminUgi.getUserName());
 
       // Fail to create a test key
-      assertFalse(createKey(hdfsUgi, KEY2, conf), "Allowed creation of key " + KEY2 + " by "
-          + hdfsUgi.getUserName());
-      assertFalse(createKey(userUgi, KEY2, conf), "Allowed creation of key " + KEY2 + " by "
-          + userUgi.getUserName());
+      assertFalse(createKey(hdfsUgi, KEY2, conf),
+          "Allowed creation of key " + KEY2 + " by " + hdfsUgi.getUserName());
+      assertFalse(createKey(userUgi, KEY2, conf),
+          "Allowed creation of key " + KEY2 + " by " + userUgi.getUserName());
 
       // Create a directory and chown it to the normal user.
       fs.mkdirs(ZONE1);
@@ -428,36 +427,42 @@ public class TestAclsEndToEnd {
 
       // Create an EZ
       assertTrue(createEncryptionZone(hdfsUgi, KEY1, ZONE1),
-            "Exception during creation of EZ " + ZONE1 + " by "
+          "Exception during creation of EZ " + ZONE1 + " by "
           + hdfsUgi.getUserName() + " using key " + KEY1);
 
       // Fail to create an EZ
       assertFalse(createEncryptionZone(keyadminUgi, KEY1, ZONE2),
-            "Allowed creation of EZ " + ZONE2 + " by "
+          "Allowed creation of EZ " + ZONE2 + " by "
           + keyadminUgi.getUserName() + " using key " + KEY1);
       assertFalse(createEncryptionZone(userUgi, KEY1, ZONE2),
-            "Allowed creation of EZ " + ZONE2 + " by "
+          "Allowed creation of EZ " + ZONE2 + " by "
           + userUgi.getUserName() + " using key " + KEY1);
 
       // Create a file in the zone
-      assertTrue(createFile(userUgi, FILE1, TEXT), "Exception during creation of file " + FILE1 + " by "
-          + userUgi.getUserName());
+      assertTrue(createFile(userUgi, FILE1, TEXT),
+          "Exception during creation of file " + FILE1 + " by "
+              + userUgi.getUserName());
 
       // Fail to create a file in the zone
-      assertFalse(createFile(hdfsUgi, FILE1A, TEXT), "Allowed creation of file " + FILE1A + " by "
-          + hdfsUgi.getUserName());
-      assertFalse(createFile(keyadminUgi, FILE1A, TEXT), "Allowed creation of file " + FILE1A + " by "
-          + keyadminUgi.getUserName());
+      assertFalse(createFile(hdfsUgi, FILE1A, TEXT),
+          "Allowed creation of file " + FILE1A + " by "
+              + hdfsUgi.getUserName());
+      assertFalse(createFile(keyadminUgi, FILE1A, TEXT),
+          "Allowed creation of file " + FILE1A + " by "
+              + keyadminUgi.getUserName());
 
       // Read a file in the zone
-      assertTrue(compareFile(userUgi, FILE1, TEXT), "Exception while reading file " + FILE1 + " by "
-          + userUgi.getUserName());
+      assertTrue(compareFile(userUgi, FILE1, TEXT),
+          "Exception while reading file " + FILE1 + " by "
+              + userUgi.getUserName());
 
       // Fail to read a file in the zone
-      assertFalse(compareFile(hdfsUgi, FILE1, TEXT), "Allowed reading of file " + FILE1 + " by "
-          + hdfsUgi.getUserName());
-      assertFalse(compareFile(keyadminUgi, FILE1, TEXT), "Allowed reading of file " + FILE1 + " by "
-          + keyadminUgi.getUserName());
+      assertFalse(compareFile(hdfsUgi, FILE1, TEXT),
+          "Allowed reading of file " + FILE1 + " by "
+              + hdfsUgi.getUserName());
+      assertFalse(compareFile(keyadminUgi, FILE1, TEXT),
+          "Allowed reading of file " + FILE1 + " by "
+              + keyadminUgi.getUserName());
 
       // Remove the zone
       fs.delete(ZONE1, true);
@@ -469,8 +474,9 @@ public class TestAclsEndToEnd {
           + userUgi.getUserName());
 
       // Remove
-      assertTrue(deleteKey(keyadminUgi, KEY1), "Exception during deletion of file " + FILE1 + " by "
-          + keyadminUgi.getUserName());
+      assertTrue(deleteKey(keyadminUgi, KEY1),
+          "Exception during deletion of file " + FILE1 + " by "
+              + keyadminUgi.getUserName());
     } finally {
       fs.delete(ZONE1, true);
       fs.delete(ZONE2, true);
@@ -495,8 +501,8 @@ public class TestAclsEndToEnd {
     try {
       setup(conf);
 
-      assertTrue(createKey(realUgi, KEY1, conf), "Exception during key creation with correct config"
-          + " using whitelist key ACLs");
+      assertTrue(createKey(realUgi, KEY1, conf),
+          "Exception during key creation with correct config using whitelist key ACLs");
     } finally {
       teardown();
     }
@@ -512,8 +518,8 @@ public class TestAclsEndToEnd {
     try {
       setup(conf);
 
-      assertTrue(createKey(realUgi, KEY2, conf), "Exception during key creation with correct config"
-          + " using default key ACLs");
+      assertTrue(createKey(realUgi, KEY2, conf),
+          "Exception during key creation with correct config using default key ACLs");
     } finally {
       teardown();
     }
@@ -581,8 +587,9 @@ public class TestAclsEndToEnd {
     try {
       setup(conf);
 
-      assertFalse(createKey(realUgi, KEY3, conf), "Allowed key creation when default key ACL should have been"
-          + " overridden by key ACL");
+      assertFalse(createKey(realUgi, KEY3, conf),
+          "Allowed key creation when default key ACL should have been"
+              + " overridden by key ACL");
     } finally {
       teardown();
     }
@@ -647,8 +654,9 @@ public class TestAclsEndToEnd {
 
       fs.mkdirs(ZONE1);
 
-      assertTrue(createEncryptionZone(realUgi, KEY1, ZONE1), "Exception during zone creation with correct config using"
-          + " whitelist key ACLs");
+      assertTrue(createEncryptionZone(realUgi, KEY1, ZONE1),
+          "Exception during zone creation with correct config using"
+              + " whitelist key ACLs");
     } finally {
       fs.delete(ZONE1, true);
       teardown();
@@ -671,8 +679,9 @@ public class TestAclsEndToEnd {
 
       fs.mkdirs(ZONE2);
 
-      assertTrue(createEncryptionZone(realUgi, KEY1, ZONE2), "Exception during zone creation with correct config using"
-          + " default key ACLs");
+      assertTrue(createEncryptionZone(realUgi, KEY1, ZONE2),
+          "Exception during zone creation with correct config using"
+              + " default key ACLs");
     } finally {
       fs.delete(ZONE2, true);
       teardown();
@@ -698,8 +707,8 @@ public class TestAclsEndToEnd {
       fs.mkdirs(ZONE3);
 
       assertFalse(createEncryptionZone(realUgi, KEY1, ZONE3),
-            "Allowed creation of zone when default key ACLs should have"
-          + " been overridden by key ACL");
+          "Allowed creation of zone when default key ACLs should have"
+              + " been overridden by key ACL");
     } finally {
       fs.delete(ZONE3, true);
       teardown();
@@ -941,8 +950,8 @@ public class TestAclsEndToEnd {
     try {
       setup(conf, false, false);
 
-      assertTrue(createFile(realUgi, FILE1, TEXT), "Exception during file creation with correct config"
-          + " using whitelist ACL");
+      assertTrue(createFile(realUgi, FILE1, TEXT),
+          "Exception during file creation with correct config" + " using whitelist ACL");
     } finally {
       fs.delete(ZONE1, true);
       teardown();
@@ -963,8 +972,8 @@ public class TestAclsEndToEnd {
     try {
       setup(conf, false, false);
 
-      assertTrue(createFile(realUgi, FILE2, TEXT), "Exception during file creation with correct config"
-          + " using whitelist ACL");
+      assertTrue(createFile(realUgi, FILE2, TEXT),
+          "Exception during file creation with correct config using whitelist ACL");
     } finally {
       fs.delete(ZONE2, true);
       teardown();
@@ -987,8 +996,8 @@ public class TestAclsEndToEnd {
     try {
       setup(conf, false, false);
 
-      assertFalse(createFile(realUgi, FILE3, TEXT), "Allowed file creation when default key ACLs should have been"
-          + " overridden by key ACL");
+      assertFalse(createFile(realUgi, FILE3, TEXT),
+          "Allowed file creation when default key ACLs should have been overridden by key ACL");
     } catch (Exception ex) {
       fs.delete(ZONE3, true);
 
@@ -1204,7 +1213,7 @@ public class TestAclsEndToEnd {
       assertTrue(createEncryptionZone(realUgi, KEY1, ZONE1),
           "Exception during zone creation");
       assertTrue(createFile(realUgi, FILE1, TEXT),
-              "Exception during file creation");
+          "Exception during file creation");
     } catch (Throwable ex) {
       fs.delete(ZONE1, true);
 
@@ -1229,8 +1238,8 @@ public class TestAclsEndToEnd {
     try {
       setup(conf, false, false);
 
-      assertTrue(compareFile(realUgi, FILE1, TEXT), "Exception while reading file with correct config with"
-          + " whitelist ACLs");
+      assertTrue(compareFile(realUgi, FILE1, TEXT),
+          "Exception while reading file with correct config with whitelist ACLs");
     } catch (Throwable ex) {
       fs.delete(ZONE1, true);
 
@@ -1250,8 +1259,8 @@ public class TestAclsEndToEnd {
     try {
       setup(conf, false, false);
 
-      assertTrue(compareFile(realUgi, FILE1, TEXT), "Exception while reading file with correct config"
-          + " with default ACLs");
+      assertTrue(compareFile(realUgi, FILE1, TEXT),
+          "Exception while reading file with correct config with default ACLs");
     } catch (Throwable ex) {
       fs.delete(ZONE1, true);
 
@@ -1273,8 +1282,8 @@ public class TestAclsEndToEnd {
     try {
       setup(conf, false, false);
 
-      assertFalse(compareFile(realUgi, FILE1, TEXT), "Allowed file read when default key ACLs should have been"
-          + " overridden by key ACL");
+      assertFalse(compareFile(realUgi, FILE1, TEXT),
+          "Allowed file read when default key ACLs should have been overridden by key ACL");
     } catch (Throwable ex) {
       fs.delete(ZONE1, true);
 
@@ -1492,8 +1501,8 @@ public class TestAclsEndToEnd {
     try {
       setup(conf, false);
 
-      assertFalse(deleteKey(realUgi, KEY3), "Allowed key deletion when default key ACL should have been"
-          + " overridden by key ACL");
+      assertFalse(deleteKey(realUgi, KEY3),
+          "Allowed key deletion when default key ACL should have been overridden by key ACL");
     } finally {
       teardown();
     }
@@ -1596,7 +1605,8 @@ public class TestAclsEndToEnd {
         FSDataInputStream din =  cluster.getFileSystem().open(file);
         BufferedReader in = new BufferedReader(new InputStreamReader(din));
 
-        assertEquals(text, in.readLine(), "The text read does not match the text written");
+        assertEquals(text, in.readLine(),
+            "The text read does not match the text written");
       }
     });
   }

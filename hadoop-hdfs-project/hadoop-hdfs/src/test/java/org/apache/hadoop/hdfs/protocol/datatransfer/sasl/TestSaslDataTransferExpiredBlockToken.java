@@ -22,7 +22,6 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.io.IOException;
 import java.util.Random;
-import java.util.concurrent.TimeUnit;
 
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FSDataInputStream;
@@ -42,7 +41,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.Timeout;
 
-@Timeout(value=60, unit=TimeUnit.SECONDS)
+@Timeout(60)
 public class TestSaslDataTransferExpiredBlockToken extends SaslDataTransferTestCase {
   private static final int BLOCK_SIZE = 4096;
   private static final int FILE_SIZE = 2 * BLOCK_SIZE;

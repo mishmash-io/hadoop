@@ -19,7 +19,6 @@ package org.apache.hadoop.hdfs;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
-
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FSDataInputStream;
 import org.apache.hadoop.fs.FSDataOutputStream;
@@ -31,6 +30,8 @@ import org.apache.hadoop.hdfs.server.namenode.LeaseManager;
 import org.apache.hadoop.hdfs.server.protocol.InterDatanodeProtocol;
 import org.apache.hadoop.io.IOUtils;
 import org.apache.hadoop.test.GenericTestUtils;
+import org.apache.hadoop.util.concurrent.SubjectInheritingThread;
+import org.junit.jupiter.api.Test;
 import org.slf4j.event.Level;
 
 import org.junit.jupiter.api.Test;
@@ -115,7 +116,7 @@ public class TestFileCreationClient {
     }
   }
 
-  static class SlowWriter extends Thread {
+  static class SlowWriter extends SubjectInheritingThread {
     final FileSystem fs;
     final Path filepath;
     boolean running = true;
@@ -127,7 +128,7 @@ public class TestFileCreationClient {
     }
 
     @Override
-    public void run() {
+    public void work() {
       FSDataOutputStream out = null;
       int i = 0;
       try {

@@ -21,7 +21,9 @@ package org.apache.hadoop.fs.shell;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.eq;
-import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.reset;
 
 import java.io.IOException;
 import java.net.URI;
@@ -34,8 +36,8 @@ import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.FilterFileSystem;
 import org.apache.hadoop.fs.PathExistsException;
 import org.apache.hadoop.fs.shell.CommandFormat.UnknownOptionException;
-import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
 public class TestMove {
@@ -93,14 +95,13 @@ public class TestMove {
     
     // make sure command failed with the proper exception
     assertTrue(cmd.error instanceof PathExistsException,
-               "Rename should have failed with path exists exception");
+        "Rename should have failed with path exists exception");
   }
 
   @Test
   public void testMoveFromLocalDoesNotAllowTOption() {
     assertThrows(UnknownOptionException.class, () -> {
-      new MoveCommands.MoveFromLocal().run("-t", "2",
-        null, null);
+      new MoveCommands.MoveFromLocal().run("-t", "2", null, null);
     });
   }
     

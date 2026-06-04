@@ -22,6 +22,8 @@ import java.util.function.Supplier;
 import org.apache.hadoop.thirdparty.com.google.common.util.concurrent.ListenableFuture;
 import org.apache.hadoop.test.GenericTestUtils;
 import org.apache.hadoop.util.FakeTimer;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.Timeout;
 import org.slf4j.Logger;
 
 import org.junit.jupiter.api.Test;
@@ -36,7 +38,9 @@ import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicLong;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.fail;
 
 /**
  * Verify functionality of {@link ThrottledAsyncChecker}.
@@ -51,7 +55,7 @@ public class TestThrottledAsyncChecker {
    * throttling behave as expected.
    */
   @Test
-  @Timeout(value = 60000, unit = TimeUnit.MILLISECONDS)
+  @Timeout(value = 60)
   public void testScheduler() throws Exception {
     final NoOpCheckable target1 = new NoOpCheckable();
     final NoOpCheckable target2 = new NoOpCheckable();
@@ -92,7 +96,7 @@ public class TestThrottledAsyncChecker {
   }
 
   @Test
-  @Timeout(value = 60000, unit = TimeUnit.MILLISECONDS)
+  @Timeout(value = 60)
   public void testConcurrentChecks() throws Exception {
     final StalledCheckable target = new StalledCheckable();
     final FakeTimer timer = new FakeTimer();
@@ -117,7 +121,7 @@ public class TestThrottledAsyncChecker {
    * @throws Exception
    */
   @Test
-  @Timeout(value = 60000, unit = TimeUnit.MILLISECONDS)
+  @Timeout(value = 60)
   public void testContextIsPassed() throws Exception {
     final NoOpCheckable target1 = new NoOpCheckable();
     final FakeTimer timer = new FakeTimer();
@@ -154,7 +158,7 @@ public class TestThrottledAsyncChecker {
    * @throws Exception
    */
   @Test
-  @Timeout(value = 60000, unit = TimeUnit.MILLISECONDS)
+  @Timeout(value = 60)
   public void testExceptionIsPropagated() throws Exception {
     final ThrowingCheckable target = new ThrowingCheckable();
     final FakeTimer timer = new FakeTimer();
@@ -181,7 +185,7 @@ public class TestThrottledAsyncChecker {
    * @throws Exception
    */
   @Test
-  @Timeout(value = 60000, unit = TimeUnit.MILLISECONDS)
+  @Timeout(value = 60)
   public void testExceptionCaching() throws Exception {
     final ThrowingCheckable target1 = new ThrowingCheckable();
     final FakeTimer timer = new FakeTimer();

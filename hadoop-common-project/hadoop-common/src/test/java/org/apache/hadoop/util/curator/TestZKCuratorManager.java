@@ -58,11 +58,10 @@ public class TestZKCuratorManager {
     this.server = new TestingServer();
 
     Configuration conf = new Configuration();
-    conf.set(
-        CommonConfigurationKeys.ZK_ADDRESS, this.server.getConnectString());
+    String zkHostPort = this.server.getConnectString();
 
     this.curator = new ZKCuratorManager(conf);
-    this.curator.start();
+    this.curator.start(zkHostPort);
   }
 
   @AfterEach
@@ -236,11 +235,9 @@ public class TestZKCuratorManager {
 
     AppConfigurationEntry[] entries = javax.security.auth.login.Configuration.getConfiguration()
         .getAppConfigurationEntry(clientConfig);
-    assertEquals(principal,
-        entries[0].getOptions().get("principal"),
+    assertEquals(principal, entries[0].getOptions().get("principal"),
         "Validate that expected principal is set in Jaas config");
-    assertEquals(keytab,
-        entries[0].getOptions().get("keyTab"),
+    assertEquals(keytab, entries[0].getOptions().get("keyTab"),
         "Validate that expected keytab is set in Jaas config");
   }
 }

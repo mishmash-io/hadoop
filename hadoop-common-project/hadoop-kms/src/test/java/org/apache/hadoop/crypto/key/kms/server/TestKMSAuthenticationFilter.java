@@ -24,17 +24,17 @@ import org.apache.hadoop.security.token.delegation.web
 import org.apache.hadoop.security.token.delegation.web
     .PseudoDelegationTokenAuthenticationHandler;
 import org.junit.jupiter.api.Test;
+import java.util.Properties;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-
-import java.util.Properties;
 
 /**
  * Test KMS Authentication Filter.
  */
 public class TestKMSAuthenticationFilter {
 
-  @Test public void testConfiguration() throws Exception {
+  @Test
+  public void testConfiguration() throws Exception {
     Configuration conf = new Configuration();
     conf.set("hadoop.kms.authentication.type", "simple");
 

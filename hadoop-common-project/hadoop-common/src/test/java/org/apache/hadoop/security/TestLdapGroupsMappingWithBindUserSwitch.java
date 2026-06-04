@@ -26,6 +26,7 @@ import org.apache.hadoop.security.alias.CredentialProvider;
 import org.apache.hadoop.security.alias.CredentialProviderFactory;
 import org.apache.hadoop.security.alias.JavaKeyStoreProvider;
 import org.apache.hadoop.test.GenericTestUtils;
+import org.junit.jupiter.api.Test;
 
 import javax.naming.AuthenticationException;
 import javax.naming.NamingException;

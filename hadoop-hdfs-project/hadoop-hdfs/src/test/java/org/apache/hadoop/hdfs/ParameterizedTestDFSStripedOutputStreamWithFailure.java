@@ -17,12 +17,11 @@
  */
 package org.apache.hadoop.hdfs;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import org.junit.jupiter.api.Timeout;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.MethodSource;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.junit.jupiter.api.Timeout;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -40,6 +39,8 @@ public class ParameterizedTestDFSStripedOutputStreamWithFailure extends
   public static final Logger LOG = LoggerFactory.getLogger(
       ParameterizedTestDFSStripedOutputStreamWithFailure.class);
 
+  private int base;
+
   public static Collection<Object[]> data() {
     List<Object[]> parameters = new ArrayList<>();
     for (int i = 0; i <= 10; i++) {
@@ -48,10 +49,15 @@ public class ParameterizedTestDFSStripedOutputStreamWithFailure extends
     return parameters;
   }
 
-  @MethodSource("data")
+  public void initParameterizedTestDFSStripedOutputStreamWithFailure(int pBase) {
+    this.base = pBase;
+  }
+
   @ParameterizedTest
-  @Timeout(value = 240000, unit = TimeUnit.MILLISECONDS)
-  public void runTestWithSingleFailure(int base) {
+  @MethodSource("data")
+  @Timeout(value = 240)
+  public void runTestWithSingleFailure(int pBase) {
+    initParameterizedTestDFSStripedOutputStreamWithFailure(pBase);
     assumeTrue(base >= 0);
     if (base > lengths.size()) {
       base = base % lengths.size();

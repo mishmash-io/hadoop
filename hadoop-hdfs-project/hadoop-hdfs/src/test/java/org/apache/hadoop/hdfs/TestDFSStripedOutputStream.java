@@ -18,7 +18,9 @@
 package org.apache.hadoop.hdfs;
 
 import static org.apache.hadoop.hdfs.client.HdfsClientConfigKeys.Write.RECOVER_LEASE_ON_CLOSE_EXCEPTION_KEY;
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.fail;
 import static org.mockito.Mockito.doThrow;
 
 import java.io.ByteArrayInputStream;
@@ -49,10 +51,10 @@ import org.apache.hadoop.test.GenericTestUtils;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.Timeout;
 import org.slf4j.event.Level;
+import org.junit.jupiter.api.Timeout;
 
-@Timeout(value=300000, unit=TimeUnit.MILLISECONDS)
+@Timeout(300)
 public class TestDFSStripedOutputStream {
   public static final Logger LOG = LoggerFactory.getLogger(
       TestDFSStripedOutputStream.class);
@@ -202,11 +204,9 @@ public class TestDFSStripedOutputStream {
     final byte[] bytes = StripedFileTestUtil.generateBytes(blockSize *
         dataBlocks * 3 + cellSize * dataBlocks + cellSize + 123);
     try (FSDataOutputStream os = fs.create(new Path("/ec-file-1"))) {
-      assertFalse(
-          os.hasCapability(StreamCapability.HFLUSH.getValue()),
+      assertFalse(os.hasCapability(StreamCapability.HFLUSH.getValue()),
           "DFSStripedOutputStream should not have hflush() capability yet!");
-      assertFalse(
-          os.hasCapability(StreamCapability.HSYNC.getValue()),
+      assertFalse(os.hasCapability(StreamCapability.HSYNC.getValue()),
           "DFSStripedOutputStream should not have hsync() capability yet!");
       try (InputStream is = new ByteArrayInputStream(bytes)) {
         IOUtils.copyBytes(is, os, bytes.length);
@@ -299,8 +299,7 @@ public class TestDFSStripedOutputStream {
       try {
         waitForFileClosed("/testExceptionInCloseECFileWithoutRecoverLease");
       } catch (TimeoutException e) {
-        assertFalse(
-            isFileClosed("/testExceptionInCloseECFileWithoutRecoverLease"));
+        assertFalse(isFileClosed("/testExceptionInCloseECFileWithoutRecoverLease"));
       }
     }
   }

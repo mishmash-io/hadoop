@@ -36,7 +36,7 @@ import org.apache.hadoop.io.IOUtils;
 import org.apache.hadoop.util.functional.RemoteIterators;
 import org.apache.hadoop.util.functional.FutureIO;
 
-import org.assertj.core.api.Assertions;
+import org.junit.jupiter.api.Assertions;
 import org.opentest4j.TestAbortedException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -65,11 +65,12 @@ import java.util.concurrent.TimeoutException;
 import static org.apache.hadoop.fs.CommonConfigurationKeysPublic.IO_FILE_BUFFER_SIZE_DEFAULT;
 import static org.apache.hadoop.fs.CommonConfigurationKeysPublic.IO_FILE_BUFFER_SIZE_KEY;
 import static org.apache.hadoop.util.functional.RemoteIterators.foreach;
+import static org.assertj.core.api.Assertions.assertThat;
 
 /**
  * Utilities used across test cases.
  */
-public class ContractTestUtils extends org.junit.jupiter.api.Assertions {
+public class ContractTestUtils extends Assertions {
 
   private static final Logger LOG =
       LoggerFactory.getLogger(ContractTestUtils.class);
@@ -100,8 +101,7 @@ public class ContractTestUtils extends org.junit.jupiter.api.Assertions {
     if (expected == null) {
       assertNull(val, "Non null property " + key + " = " + val);
     } else {
-      assertEquals(expected, val,
-                   "property " + key + " = " + val);
+      assertEquals(expected, val, "property " + key + " = " + val);
     }
   }
 
@@ -186,7 +186,7 @@ public class ContractTestUtils extends org.junit.jupiter.api.Assertions {
       int len, int buffersize, boolean overwrite, boolean useBuilder)
       throws IOException {
     assertTrue(src.length >= len,
-      "Not enough data in source array to write " + len + " bytes");
+        "Not enough data in source array to write " + len + " bytes");
     FSDataOutputStream out;
     if (useBuilder) {
       out = fs.createFile(path)
@@ -341,7 +341,7 @@ public class ContractTestUtils extends org.junit.jupiter.api.Assertions {
                                        byte[] received,
                                        int len) {
     assertEquals(len, received.length,
-                 "Number of bytes read != number written");
+        "Number of bytes read != number written");
     int errors = 0;
     int firstErrorByte = -1;
     for (int i = 0; i < len; i++) {
@@ -570,14 +570,14 @@ public class ContractTestUtils extends org.junit.jupiter.api.Assertions {
   public static void downgrade(String message, Throwable failure) {
     LOG.warn("Downgrading test " + message, failure);
     TestAbortedException ave =
-        new TestAbortedException(message, failure);
+        new TestAbortedException(null, failure);
     throw ave;
   }
 
   /**
    * report an overridden test as unsupported.
    * @param message message to use in the text
-   * @throws AssumptionViolatedException always
+   * @throws TestAbortedException always
    */
   public static void unsupported(String message) {
     skip(message);
@@ -586,11 +586,21 @@ public class ContractTestUtils extends org.junit.jupiter.api.Assertions {
   /**
    * report a test has been skipped for some reason.
    * @param message message to use in the text
-   * @throws AssumptionViolatedException always
+   * @throws TestAbortedException always
    */
   public static void skip(String message) {
     LOG.info("Skipping: {}", message);
     throw new TestAbortedException(message);
+  }
+
+  /**
+   * Fail with an exception that was received.
+   * @param text text to use in the exception
+   * @param thrown a (possibly null) throwable to init the cause with
+   * @throws AssertionError with the text and throwable -always
+   */
+  public static Object fail(String text, Throwable thrown) {
+    throw new AssertionError(text, thrown);
   }
 
   /**
@@ -603,8 +613,7 @@ public class ContractTestUtils extends org.junit.jupiter.api.Assertions {
   public static void assertFileHasLength(FileSystem fs, Path path,
                                          int expected) throws IOException {
     FileStatus status = fs.getFileStatus(path);
-    assertEquals(expected,
-        status.getLen(),
+    assertEquals(expected, status.getLen(),
         "Wrong file length of file " + path + " status: " + status);
   }
 
@@ -627,7 +636,7 @@ public class ContractTestUtils extends org.junit.jupiter.api.Assertions {
    */
   public static void assertIsDirectory(FileStatus fileStatus) {
     assertTrue(fileStatus.isDirectory(),
-               "Should be a directory -but isn't: " + fileStatus);
+        "Should be a directory -but isn't: " + fileStatus);
   }
 
   /**
@@ -954,9 +963,9 @@ public class ContractTestUtils extends org.junit.jupiter.api.Assertions {
   public static void assertIsFile(Path filename, FileStatus status) {
     String fileInfo = filename + "  " + status;
     assertFalse(status.isDirectory(),
-                "File claims to be a directory " + fileInfo);
+        "File claims to be a directory " + fileInfo);
     assertFalse(status.isSymlink(),
-                "File claims to be a symlink " + fileInfo);
+        "File claims to be a symlink " + fileInfo);
   }
 
   /**
@@ -1122,8 +1131,7 @@ public class ContractTestUtils extends org.junit.jupiter.api.Assertions {
       }
     }
     assertTrue(found,
-               "Path " + subdir
-                      + " not found in directory " + dir + ":" + builder);
+        "Path " + subdir + " not found in directory " + dir + ":" + builder);
   }
 
   /**
@@ -1167,7 +1175,7 @@ public class ContractTestUtils extends org.junit.jupiter.api.Assertions {
       }
     }
     assertFalse(mismatch,
-                "File content of file is not as expected at offset " + idx);
+        "File content of file is not as expected at offset " + idx);
   }
 
   /**
@@ -1242,7 +1250,7 @@ public class ContractTestUtils extends org.junit.jupiter.api.Assertions {
       int o = readOffset + i;
       final byte orig = originalData[o];
       final byte current = data.get();
-      Assertions.assertThat(current)
+      assertThat(current)
           .describedAs("%s with read offset %d: data[0x%02X] != DATASET[0x%02X]",
                       operation, o, i, current)
           .isEqualTo(orig);
@@ -1709,16 +1717,16 @@ public class ContractTestUtils extends org.junit.jupiter.api.Assertions {
     if (shouldHaveCapabilities != null) {
       for (String shouldHaveCapability : shouldHaveCapabilities) {
         assertTrue(source.hasCapability(shouldHaveCapability),
-                "Should have capability: " + shouldHaveCapability
-                + " in " + source);
+            "Should have capability: " + shouldHaveCapability
+            + " in " + source);
       }
     }
 
     if (shouldNotHaveCapabilities != null) {
       for (String shouldNotHaveCapability : shouldNotHaveCapabilities) {
         assertFalse(source.hasCapability(shouldNotHaveCapability),
-                "Should not have capability: " + shouldNotHaveCapability
-                + " in " + source);
+            "Should not have capability: " + shouldNotHaveCapability
+            + " in " + source);
       }
     }
   }
@@ -1766,8 +1774,8 @@ public class ContractTestUtils extends org.junit.jupiter.api.Assertions {
     for (String shouldHaveCapability: capabilities) {
       assertTrue(source.hasPathCapability(path, shouldHaveCapability),
           "Should have capability: " + shouldHaveCapability
-              + " under " + path
-              + " in " + source);
+          + " under " + path
+          + " in " + source);
     }
   }
 
@@ -1787,7 +1795,7 @@ public class ContractTestUtils extends org.junit.jupiter.api.Assertions {
     for (String shouldHaveCapability: capabilities) {
       assertFalse(source.hasPathCapability(path, shouldHaveCapability),
           "Path  must not support capability: " + shouldHaveCapability
-              + " under " + path);
+          + " under " + path);
     }
   }
 
@@ -1961,10 +1969,10 @@ public class ContractTestUtils extends org.junit.jupiter.api.Assertions {
      */
     private String dump() {
       StringBuilder sb = new StringBuilder(toString());
-      sb.append("\nFiles:");
+      sb.append("\nDirectories:");
       directories.forEach(p ->
           sb.append("\n  \"").append(p.toString()));
-      sb.append("\nDirectories:");
+      sb.append("\nFiles:");
       files.forEach(p ->
           sb.append("\n  \"").append(p.toString()));
       return sb.toString();
@@ -2041,13 +2049,13 @@ public class ContractTestUtils extends org.junit.jupiter.api.Assertions {
     public void assertFieldsEquivalent(String fieldname,
         TreeScanResults that,
         List<Path> ours, List<Path> theirs) {
-      Assertions.assertThat(ours).
+      assertThat(ours).
           describedAs("list of %s", fieldname)
           .doesNotHaveDuplicates();
-      Assertions.assertThat(theirs).
+      assertThat(theirs).
           describedAs("list of %s in %s", fieldname, that)
           .doesNotHaveDuplicates();
-      Assertions.assertThat(ours)
+      assertThat(ours)
           .describedAs("Elements of %s", fieldname)
           .containsExactlyInAnyOrderElementsOf(theirs);
 

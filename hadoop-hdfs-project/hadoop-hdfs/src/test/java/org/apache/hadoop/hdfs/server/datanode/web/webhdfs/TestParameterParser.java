@@ -27,8 +27,13 @@ import org.apache.hadoop.hdfs.web.resources.NamenodeAddressParam;
 import org.apache.hadoop.hdfs.web.resources.OffsetParam;
 import org.apache.hadoop.security.token.Token;
 import org.apache.hadoop.test.GenericTestUtils;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.fail;
+
 import io.netty.handler.codec.http.QueryStringDecoder;
 
 import java.io.IOException;
@@ -51,7 +56,7 @@ public class TestParameterParser {
       + DelegationParam.NAME + "=" + token.encodeToUrlString());
     ParameterParser testParser = new ParameterParser(decoder, conf);
     final Token<DelegationTokenIdentifier> tok2 = testParser.delegationToken();
-    Assertions.assertTrue(HAUtilClient.isTokenForLogicalUri(tok2));
+    assertTrue(HAUtilClient.isTokenForLogicalUri(tok2));
   }
 
   @Test
@@ -60,7 +65,7 @@ public class TestParameterParser {
     QueryStringDecoder decoder = new QueryStringDecoder(
             WebHdfsHandler.WEBHDFS_PREFIX + "/test");
     ParameterParser testParser = new ParameterParser(decoder, conf);
-    Assertions.assertNull(testParser.delegationToken());
+    assertNull(testParser.delegationToken());
   }
 
   @Test
@@ -72,7 +77,7 @@ public class TestParameterParser {
     QueryStringDecoder decoder = new QueryStringDecoder(
       WebHdfsHandler.WEBHDFS_PREFIX + ESCAPED_PATH);
     ParameterParser testParser = new ParameterParser(decoder, conf);
-    Assertions.assertEquals(EXPECTED_PATH, testParser.path());
+    assertEquals(EXPECTED_PATH, testParser.path());
   }
 
   @Test
@@ -85,8 +90,7 @@ public class TestParameterParser {
     EnumSet<CreateFlag> actual = testParser.createFlag();
     EnumSet<CreateFlag> expected = EnumSet.of(CreateFlag.APPEND,
         CreateFlag.SYNC_BLOCK);
-    Assertions.assertEquals(expected.toString(), actual.toString());
-
+    assertEquals(expected.toString(), actual.toString());
 
     final String path1 = "/test1?createflag=append";
     decoder = new QueryStringDecoder(
@@ -95,14 +99,14 @@ public class TestParameterParser {
 
     actual = testParser.createFlag();
     expected = EnumSet.of(CreateFlag.APPEND);
-    Assertions.assertEquals(expected, actual);
+    assertEquals(expected, actual);
 
     final String path2 = "/test1";
     decoder = new QueryStringDecoder(
         WebHdfsHandler.WEBHDFS_PREFIX + path2);
     testParser = new ParameterParser(decoder, conf);
     actual = testParser.createFlag();
-    Assertions.assertEquals(0, actual.size());
+    assertEquals(0, actual.size());
 
     final String path3 = "/test1?createflag=create,overwrite";
     decoder = new QueryStringDecoder(
@@ -111,15 +115,14 @@ public class TestParameterParser {
     actual = testParser.createFlag();
     expected = EnumSet.of(CreateFlag.CREATE, CreateFlag
         .OVERWRITE);
-    Assertions.assertEquals(expected.toString(), actual.toString());
-
+    assertEquals(expected.toString(), actual.toString());
 
     final String path4 = "/test1?createflag=";
     decoder = new QueryStringDecoder(
         WebHdfsHandler.WEBHDFS_PREFIX + path4);
     testParser = new ParameterParser(decoder, conf);
     actual = testParser.createFlag();
-    Assertions.assertEquals(0, actual.size());
+    assertEquals(0, actual.size());
 
     //Incorrect value passed to createflag
     try {
@@ -155,14 +158,14 @@ public class TestParameterParser {
     final long X = 42;
 
     long offset = new OffsetParam(Long.toString(X)).getOffset();
-    Assertions.assertEquals(X, offset, "OffsetParam: ");
+    assertEquals(X, offset, "OffsetParam: ");
 
     offset = new OffsetParam((String) null).getOffset();
-    Assertions.assertEquals(0, offset, "OffsetParam with null should have defaulted to 0");
+    assertEquals(0, offset, "OffsetParam with null should have defaulted to 0");
 
     try {
       offset = new OffsetParam("abc").getValue();
-      Assertions.fail("OffsetParam with nondigit value should have thrown IllegalArgumentException");
+      fail("OffsetParam with nondigit value should have thrown IllegalArgumentException");
     } catch (IllegalArgumentException iae) {
       // Ignore
     }

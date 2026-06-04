@@ -20,10 +20,16 @@ package org.apache.hadoop.metrics2.impl;
 
 import java.util.List;
 
-import static org.mockito.Mockito.*;
+import org.junit.jupiter.api.Test;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+
+import static org.mockito.Mockito.eq;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
+
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
-import org.mockito.junit.jupiter.MockitoExtension;
 
 import org.apache.hadoop.metrics2.MetricsVisitor;
 import org.apache.hadoop.metrics2.AbstractMetric;
@@ -32,8 +38,7 @@ import static org.apache.hadoop.metrics2.lib.Interns.*;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import org.apache.hadoop.metrics2.lib.MetricsRegistry;
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.junit.jupiter.MockitoExtension;
 
 /**
  * Test the metric visitor interface

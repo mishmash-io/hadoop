@@ -73,7 +73,8 @@ public class TestArrayWritable {
     arrayWritable.set(elements);
     Object array = arrayWritable.toArray();
   
-    assertTrue(array instanceof Text[], "TestArrayWritable testArrayWritableToArray error!!! ");
+    assertTrue(array instanceof Text[],
+        "TestArrayWritable testArrayWritableToArray error!!! ");
     Text[] destElements = (Text[]) array;
   
     for (int i = 0; i < elements.length; i++) {
@@ -101,7 +102,7 @@ public class TestArrayWritable {
     assertEquals(Text.class, arrayWritable.getValueClass(),
         "testArrayWritableStringConstructor class error!!!");
     assertArrayEquals(original, arrayWritable.toStrings(),
-      "testArrayWritableStringConstructor toString error!!!");
+        "testArrayWritableStringConstructor toString error!!!");
   }
   
 }

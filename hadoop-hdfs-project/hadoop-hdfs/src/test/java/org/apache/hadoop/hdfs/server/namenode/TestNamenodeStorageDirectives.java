@@ -43,7 +43,9 @@ import java.util.concurrent.TimeoutException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /**
  * Test to ensure that the StorageType and StorageID sent from Namenode
@@ -192,7 +194,7 @@ public class TestNamenodeStorageDirectives {
    * @throws IOException
    */
   @Test
-  @Timeout(value = 120000, unit = TimeUnit.MILLISECONDS)
+  @Timeout(value = 120)
   public void testTargetStorageTypes() throws ReconfigurationException,
       InterruptedException, TimeoutException, IOException {
     // DISK and not anything else.
@@ -312,7 +314,7 @@ public class TestNamenodeStorageDirectives {
   }
 
   @Test
-  @Timeout(value = 60000, unit = TimeUnit.MILLISECONDS)
+  @Timeout(value = 60)
   public void testStorageIDBlockPlacementSpecific()
       throws ReconfigurationException, InterruptedException, TimeoutException,
       IOException {

@@ -28,12 +28,10 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.Timeout;
 import org.mockito.Mockito;
 
-import java.util.concurrent.TimeUnit;
-
 /**
  * Test class for @DefaultImpersonationProvider
  */
-@Timeout(value=10000, unit=TimeUnit.MILLISECONDS)
+@Timeout(10)
 public class TestDefaultImpersonationProvider {
 
   private String proxyUser;

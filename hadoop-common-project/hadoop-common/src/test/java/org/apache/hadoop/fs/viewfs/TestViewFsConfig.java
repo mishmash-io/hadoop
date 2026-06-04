@@ -29,22 +29,25 @@ import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.Path;
 import org.junit.jupiter.api.Test;
 import org.apache.hadoop.fs.FileAlreadyExistsException;
+import org.junit.jupiter.api.Test;
+
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 public class TestViewFsConfig {
 
   @Test
   public void testInvalidConfig() throws IOException, URISyntaxException {
-    Configuration conf = new Configuration();
-    ConfigUtil.setIsNestedMountPointSupported(conf, false);
-    ConfigUtil.addLink(conf, "/internalDir/linkToDir2",
-        new Path("file:///dir2").toUri());
-    ConfigUtil.addLink(conf, "/internalDir/linkToDir2/linkToDir3",
-        new Path("file:///dir3").toUri());
+    assertThrows(FileAlreadyExistsException.class, ()-> {
+      Configuration conf = new Configuration();
+      ConfigUtil.setIsNestedMountPointSupported(conf, false);
+      ConfigUtil.addLink(conf, "/internalDir/linkToDir2",
+          new Path("file:///dir2").toUri());
+      ConfigUtil.addLink(conf, "/internalDir/linkToDir2/linkToDir3",
+          new Path("file:///dir3").toUri());
 
-    class Foo {
-    }
+      class Foo {
+      }
 
-    assertThrows(FileAlreadyExistsException.class, () -> {
       new InodeTree<Foo>(conf, null, null, false) {
 
         @Override

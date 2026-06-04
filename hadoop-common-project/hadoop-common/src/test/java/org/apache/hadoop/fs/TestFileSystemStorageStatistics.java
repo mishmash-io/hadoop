@@ -20,8 +20,10 @@ package org.apache.hadoop.fs;
 
 import org.apache.commons.lang3.RandomUtils;
 import org.apache.hadoop.fs.StorageStatistics.LongStatistic;
+
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+
 import org.junit.jupiter.api.Timeout;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -31,12 +33,15 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
 
 import java.util.Iterator;
-import java.util.concurrent.TimeUnit;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
 
 /**
  * This tests basic operations of {@link FileSystemStorageStatistics} class.
  */
-@Timeout(value=10, unit=TimeUnit.SECONDS)
+@Timeout(10)
 public class TestFileSystemStorageStatistics {
   private static final Logger LOG = LoggerFactory.getLogger(
       TestFileSystemStorageStatistics.class);

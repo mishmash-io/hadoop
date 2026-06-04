@@ -31,7 +31,9 @@ import org.apache.hadoop.hdfs.server.blockmanagement.DatanodeStatistics;
 import org.apache.hadoop.hdfs.server.protocol.SlowDiskReports;
 import static org.apache.hadoop.test.MetricsAsserts.getLongCounter;
 import static org.apache.hadoop.test.MetricsAsserts.getMetrics;
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.any;
 import static org.mockito.Mockito.anyBoolean;
 import static org.mockito.Mockito.anyInt;
@@ -75,7 +77,7 @@ import java.util.function.Supplier;
 /**
  * Test suite covering lifeline protocol handling in the DataNode.
  */
-@Timeout(value=60000, unit=TimeUnit.MILLISECONDS)
+@Timeout(60)
 public class TestDataNodeLifeline {
 
   private static final Logger LOG = LoggerFactory.getLogger(
@@ -193,14 +195,11 @@ public class TestDataNodeLifeline {
     // poll DataNode tracking information.  Thanks to the lifeline, we expect
     // that the DataNode always stays alive, and never goes stale or dead.
     while (!lifelinesSent.await(1, SECONDS)) {
-      assertEquals(1,
-          namesystem.getNumLiveDataNodes(),
+      assertEquals(1, namesystem.getNumLiveDataNodes(),
           "Expect DataNode to be kept alive by lifeline.");
-      assertEquals(0,
-          namesystem.getNumDeadDataNodes(),
+      assertEquals(0, namesystem.getNumDeadDataNodes(),
           "Expect DataNode not marked dead due to lifeline.");
-      assertEquals(0,
-          namesystem.getNumStaleDataNodes(),
+      assertEquals(0, namesystem.getNumStaleDataNodes(),
           "Expect DataNode not marked stale due to lifeline.");
       // add a new volume on the next heartbeat
       cluster.getDataNodes().get(0).reconfigurePropertyImpl(
@@ -223,8 +222,8 @@ public class TestDataNodeLifeline {
     // numLifelines, guaranteed by waiting on the latch.  There is a small
     // possibility of extra lifeline calls depending on timing, so we allow
     // slack in the assertion.
-    assertTrue(getLongCounter("LifelinesNumOps", getMetrics(metrics.name())) >=
-            numLifelines,
+    assertTrue(getLongCounter("LifelinesNumOps",
+            getMetrics(metrics.name())) >= numLifelines,
         "Expect metrics to count at least " + numLifelines + " calls.");
   }
 
@@ -253,14 +252,11 @@ public class TestDataNodeLifeline {
     // poll DataNode tracking information.  We expect that the DataNode always
     // stays alive, and never goes stale or dead.
     while (!heartbeatsSent.await(1, SECONDS)) {
-      assertEquals(1,
-          namesystem.getNumLiveDataNodes(),
+      assertEquals(1, namesystem.getNumLiveDataNodes(),
           "Expect DataNode to be kept alive by lifeline.");
-      assertEquals(0,
-          namesystem.getNumDeadDataNodes(),
+      assertEquals(0, namesystem.getNumDeadDataNodes(),
           "Expect DataNode not marked dead due to lifeline.");
-      assertEquals(0,
-          namesystem.getNumStaleDataNodes(),
+      assertEquals(0, namesystem.getNumStaleDataNodes(),
           "Expect DataNode not marked stale due to lifeline.");
     }
 
@@ -276,8 +272,7 @@ public class TestDataNodeLifeline {
         any());
 
     // Also verify no lifeline calls through metrics.
-    assertEquals(0,
-        getLongCounter("LifelinesNumOps", getMetrics(metrics.name())),
+    assertEquals(0, getLongCounter("LifelinesNumOps", getMetrics(metrics.name())),
         "Expect metrics to count no lifeline calls.");
   }
 
@@ -287,11 +282,11 @@ public class TestDataNodeLifeline {
     assertTrue(initialCapacity > 0);
     dn.setHeartbeatsDisabledForTests(true);
     cluster.setDataNodesDead();
-    assertEquals(0, cluster
-        .getNamesystem(0).getCapacityTotal(), "Capacity should be 0 after all DNs dead");
+    assertEquals(0, cluster.getNamesystem(0).getCapacityTotal(),
+        "Capacity should be 0 after all DNs dead");
     bpsa.sendLifelineForTests();
-    assertEquals(0, cluster
-        .getNamesystem(0).getCapacityTotal(), "Lifeline should be ignored for dead node");
+    assertEquals(0, cluster.getNamesystem(0).getCapacityTotal(),
+        "Lifeline should be ignored for dead node");
     // Wait for re-registration and heartbeat
     dn.setHeartbeatsDisabledForTests(false);
     final DatanodeDescriptor dnDesc = cluster.getNamesystem(0).getBlockManager()
@@ -303,8 +298,7 @@ public class TestDataNodeLifeline {
         return dnDesc.isAlive() && dnDesc.isHeartbeatedSinceRegistration();
       }
     }, 100, 5000);
-    assertEquals(initialCapacity,
-        cluster.getNamesystem(0).getCapacityTotal(),
+    assertEquals(initialCapacity, cluster.getNamesystem(0).getCapacityTotal(),
         "Capacity should include only live capacity");
   }
 

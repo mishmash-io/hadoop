@@ -90,50 +90,50 @@ public class TestCryptoStreamsForLocalFS extends CryptoStreamsTestBase {
   @Disabled("ChecksumFSInputChecker doesn't support ByteBuffer read")
   @Override
   @Test
-  @Timeout(value=10000, unit=TimeUnit.MILLISECONDS)
+  @Timeout(value = 10)
   public void testByteBufferRead() throws Exception {}
 
   @Disabled("Wrapped stream doesn't support ByteBufferPositionedReadable")
   @Override
   @Test
-  @Timeout(value=10000, unit=TimeUnit.MILLISECONDS)
+  @Timeout(value = 10)
   public void testPositionedReadWithByteBuffer() throws IOException {}
 
   @Disabled("Wrapped stream doesn't support ByteBufferPositionedReadable")
   @Override
   @Test
-  @Timeout(value=10000, unit=TimeUnit.MILLISECONDS)
+  @Timeout(value = 10)
   public void testByteBufferReadFully() throws Exception {}
   
   @Disabled("ChecksumFSOutputSummer doesn't support Syncable")
   @Override
   @Test
-  @Timeout(value=10000, unit=TimeUnit.MILLISECONDS)
+  @Timeout(value = 10)
   public void testSyncable() throws IOException {}
 
   @Disabled("Wrapped stream doesn't support ByteBufferPositionedReadable")
   @Override
   @Test
-  @Timeout(value=10000, unit=TimeUnit.MILLISECONDS)
+  @Timeout(value = 10)
   public void testByteBufferPread() throws IOException {}
   
   @Disabled("ChecksumFSInputChecker doesn't support ByteBuffer read")
   @Override
   @Test
-  @Timeout(value=10000, unit=TimeUnit.MILLISECONDS)
+  @Timeout(value = 10)
   public void testCombinedOp() throws Exception {}
   
   @Disabled("ChecksumFSInputChecker doesn't support enhanced ByteBuffer access")
   @Override
   @Test
-  @Timeout(value=10000, unit=TimeUnit.MILLISECONDS)
+  @Timeout(value = 10)
   public void testHasEnhancedByteBufferAccess() throws Exception {
   }
   
   @Disabled("ChecksumFSInputChecker doesn't support seekToNewSource")
   @Override
   @Test
-  @Timeout(value=10000, unit=TimeUnit.MILLISECONDS)
+  @Timeout(value = 10)
   public void testSeekToNewSource() throws Exception {
   }
 

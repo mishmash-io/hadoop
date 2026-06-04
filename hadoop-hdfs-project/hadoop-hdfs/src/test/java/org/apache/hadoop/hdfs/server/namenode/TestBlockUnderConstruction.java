@@ -17,7 +17,9 @@
  */
 package org.apache.hadoop.hdfs.server.namenode;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.io.IOException;
 import java.util.List;
@@ -87,8 +89,7 @@ public class TestBlockUnderConstruction {
                                 boolean isFileOpen) throws IOException {
     FSNamesystem ns = cluster.getNamesystem();
     final INodeFile inode = INodeFile.valueOf(ns.dir.getINode(file), file);
-    assertTrue(inode.isUnderConstruction() == isFileOpen,
-        "File " + inode.toString() +
+    assertTrue(inode.isUnderConstruction() == isFileOpen, "File " + inode.toString() +
         " isUnderConstruction = " + inode.isUnderConstruction() +
         " expected to be " + isFileOpen);
     BlockInfo[] blocks = inode.getBlocks();
@@ -100,8 +101,7 @@ public class TestBlockUnderConstruction {
     // all blocks but the last two should be regular blocks
     for(; idx < blocks.length - 2; idx++) {
       curBlock = blocks[idx];
-      assertTrue(curBlock.isComplete(),
-          "Block is not complete: " + curBlock);
+      assertTrue(curBlock.isComplete(), "Block is not complete: " + curBlock);
       assertTrue(ns.getBlockManager().getStoredBlock(curBlock) == curBlock,
           "Block is not in BlocksMap: " + curBlock);
     }
@@ -113,10 +113,9 @@ public class TestBlockUnderConstruction {
       assertTrue((isFileOpen && curBlock.isComplete()) ||
           (!isFileOpen && !curBlock.isComplete() == 
             (curBlock.getBlockUCState() ==
-              BlockUCState.COMMITTED)),
-          "Block " + curBlock +
-          " isUnderConstruction = " + inode.isUnderConstruction() +
-          " expected to be " + isFileOpen);
+                  BlockUCState.COMMITTED)),
+          "Block " + curBlock + " isUnderConstruction = " + inode.isUnderConstruction()
+              + " expected to be " + isFileOpen);
       assertTrue(ns.getBlockManager().getStoredBlock(curBlock) == curBlock,
           "Block is not in BlocksMap: " + curBlock);
     }
@@ -125,8 +124,7 @@ public class TestBlockUnderConstruction {
     // If the file is open, the last block may be complete or not. 
     curBlock = blocks[idx]; // last block
     if (!isFileOpen) {
-      assertTrue(curBlock.isComplete(),
-          "Block " + curBlock + ", isFileOpen = " + isFileOpen);
+      assertTrue(curBlock.isComplete(), "Block " + curBlock + ", isFileOpen = " + isFileOpen);
     }
     assertTrue(ns.getBlockManager().getStoredBlock(curBlock) == curBlock,
         "Block is not in BlocksMap: " + curBlock);

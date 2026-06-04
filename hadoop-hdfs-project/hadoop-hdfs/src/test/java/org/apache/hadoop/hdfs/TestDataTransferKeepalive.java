@@ -23,7 +23,10 @@ import static org.apache.hadoop.hdfs.client.HdfsClientConfigKeys.DFS_CLIENT_SOCK
 import static org.apache.hadoop.hdfs.DFSConfigKeys.DFS_DATANODE_SOCKET_REUSE_KEEPALIVE_DEFAULT;
 import static org.apache.hadoop.hdfs.DFSConfigKeys.DFS_DATANODE_SOCKET_REUSE_KEEPALIVE_KEY;
 import static org.apache.hadoop.hdfs.client.HdfsClientConfigKeys.DFS_DATANODE_SOCKET_WRITE_TIMEOUT_KEY;
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.fail;
 
 import java.io.InputStream;
 import java.util.concurrent.TimeUnit;
@@ -79,7 +82,7 @@ public class TestDataTransferKeepalive {
    * its configured keepalive timeout.
    */
   @Test
-  @Timeout(value = 30000, unit = TimeUnit.MILLISECONDS)
+  @Timeout(value = 30)
   public void testDatanodeRespectsKeepAliveTimeout() throws Exception {
     Configuration clientConf = new Configuration(conf);
     // Set a client socket cache expiry time much longer than 
@@ -125,7 +128,7 @@ public class TestDataTransferKeepalive {
    * Test that the client respects its keepalive timeout.
    */
   @Test
-  @Timeout(value = 30000, unit = TimeUnit.MILLISECONDS)
+  @Timeout(value = 30)
   public void testClientResponsesKeepAliveTimeout() throws Exception {
     Configuration clientConf = new Configuration(conf);
     // Set a client socket cache expiry time much shorter than 
@@ -167,7 +170,7 @@ public class TestDataTransferKeepalive {
    * chunks and the transceiver should die, even if it has a long keepalive.
    */
   @Test
-  @Timeout(value = 300000, unit = TimeUnit.MILLISECONDS)
+  @Timeout(value = 300)
   public void testSlowReader() throws Exception {
     // Set a client socket cache expiry time much longer than 
     // the datanode-side expiration time.
@@ -205,9 +208,9 @@ public class TestDataTransferKeepalive {
 
     IOUtils.closeStream(stm);
   }
-
+  
   @Test
-  @Timeout(value = 30000, unit = TimeUnit.MILLISECONDS)
+  @Timeout(value = 30)
   public void testManyClosedSocketsInCache() throws Exception {
     // Make a small file
     Configuration clientConf = new Configuration(conf);

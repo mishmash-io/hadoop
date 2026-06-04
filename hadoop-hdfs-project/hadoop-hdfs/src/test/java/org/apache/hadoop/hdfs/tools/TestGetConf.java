@@ -27,8 +27,11 @@ import static org.apache.hadoop.hdfs.DFSConfigKeys.DFS_NAMENODE_SHARED_EDITS_DIR
 import static org.apache.hadoop.hdfs.DFSConfigKeys.DFS_NAMESERVICES;
 import static org.apache.hadoop.hdfs.DFSConfigKeys.DFS_HA_NAMENODES_KEY_PREFIX;
 
-import static org.junit.jupiter.api.Assertions.*;
-
+import static org.junit.jupiter.api.Assertions.assertArrayEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.PrintStream;
@@ -53,6 +56,9 @@ import org.apache.hadoop.hdfs.tools.GetConf.Command;
 import org.apache.hadoop.hdfs.tools.GetConf.CommandHandler;
 import org.apache.hadoop.hdfs.util.HostsFileWriter;
 import org.apache.hadoop.net.NetUtils;
+import org.apache.hadoop.util.ToolRunner;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.Timeout;
 
 import org.apache.hadoop.thirdparty.com.google.common.base.Joiner;
 import org.apache.hadoop.util.cli.ToolRunner;
@@ -148,7 +154,7 @@ public class TestGetConf {
       int ret = ToolRunner.run(new GetConf(conf, out, out), args);
       out.flush();
       System.err.println("Output: " + o.toString());
-      assertEquals(success, ret == 0, "Expected " + (success?"success":"failure") +
+      assertEquals(success, ret == 0, "Expected " + (success ? "success" : "failure") +
           " for args: " + Joiner.on(" ").join(args) + "\n" +
           "Output: " + o.toString());
       return o.toString();
@@ -249,7 +255,7 @@ public class TestGetConf {
    * Test empty configuration
    */
   @Test
-  @Timeout(value = 10000, unit = TimeUnit.MILLISECONDS)
+  @Timeout(value = 10)
   public void testEmptyConf() throws Exception {
     HdfsConfiguration conf = new HdfsConfiguration(false);
     // Verify getting addresses fails
@@ -273,7 +279,7 @@ public class TestGetConf {
    * Test invalid argument to the tool
    */
   @Test
-  @Timeout(value = 10000, unit = TimeUnit.MILLISECONDS)
+  @Timeout(value = 10)
   public void testInvalidArgument() throws Exception {
     HdfsConfiguration conf = new HdfsConfiguration();
     String[] args = {"-invalidArgument"};
@@ -286,7 +292,7 @@ public class TestGetConf {
    * configuration with no federation
    */
   @Test
-  @Timeout(value = 10000, unit = TimeUnit.MILLISECONDS)
+  @Timeout(value = 10)
   public void testNonFederation() throws Exception {
     HdfsConfiguration conf = new HdfsConfiguration(false);
   
@@ -322,7 +328,7 @@ public class TestGetConf {
    * of setup.
    */
   @Test
-  @Timeout(value = 10000, unit = TimeUnit.MILLISECONDS)
+  @Timeout(value = 10)
   public void testFederation() throws Exception {
     final int nsCount = 10;
     HdfsConfiguration conf = new HdfsConfiguration(false);
@@ -367,7 +373,7 @@ public class TestGetConf {
    * @throws Exception
    */
   @Test
-  @Timeout(value = 10000, unit = TimeUnit.MILLISECONDS)
+  @Timeout(value = 10)
   public void testGetJournalNodes() throws Exception {
 
     final int nsCount = 3;
@@ -492,8 +498,9 @@ public class TestGetConf {
    ** Test for unknown journal node host exception.
   */
   @Test
-  @Timeout(value = 10000, unit = TimeUnit.MILLISECONDS)
-  public void testUnknownJournalNodeHost() {
+  @Timeout(value = 10)
+  public void testUnknownJournalNodeHost()
+      throws URISyntaxException, IOException {
     assertThrows(UnknownHostException.class, () -> {
       String journalsBaseUri = "qjournal://jn1:8020;jn2:8020;jn3:8020";
       HdfsConfiguration conf = new HdfsConfiguration(false);
@@ -507,8 +514,9 @@ public class TestGetConf {
    ** Test for malformed journal node urisyntax exception.
   */
   @Test
-  @Timeout(value = 10000, unit = TimeUnit.MILLISECONDS)
-  public void testJournalNodeUriError() {
+  @Timeout(value = 10)
+  public void testJournalNodeUriError()
+      throws URISyntaxException, IOException {
     assertThrows(URISyntaxException.class, () -> {
       final int nsCount = 3;
       String journalsBaseUri = "qjournal://jn0 :8020;jn1:8020;jn2:8020";
@@ -521,7 +529,7 @@ public class TestGetConf {
   }
 
   @Test
-  @Timeout(value = 10000, unit = TimeUnit.MILLISECONDS)
+  @Timeout(value = 10)
   public void testGetSpecificKey() throws Exception {
     HdfsConfiguration conf = new HdfsConfiguration();
     conf.set("mykey", " myval ");
@@ -529,9 +537,9 @@ public class TestGetConf {
     String toolResult = runTool(conf, args, true);
     assertEquals(String.format("myval%n"), toolResult);
   }
-
+  
   @Test
-  @Timeout(value = 10000, unit = TimeUnit.MILLISECONDS)
+  @Timeout(value = 10)
   public void testExtraArgsThrowsError() throws Exception {
     HdfsConfiguration conf = new HdfsConfiguration();
     conf.set("mykey", "myval");
@@ -545,7 +553,7 @@ public class TestGetConf {
    * {@link Command#SECONDARY} and {@link Command#NNRPCADDRESSES}
    */
   @Test
-  @Timeout(value = 10000, unit = TimeUnit.MILLISECONDS)
+  @Timeout(value = 10)
   public void testTool() throws Exception {
     HdfsConfiguration conf = new HdfsConfiguration(false);
     for (Command cmd : Command.values()) {

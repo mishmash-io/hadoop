@@ -31,10 +31,16 @@ import java.util.concurrent.TimeoutException;
 
 import org.apache.hadoop.test.GenericTestUtils;
 import org.apache.hadoop.util.FakeTimer;
+import org.apache.hadoop.util.concurrent.SubjectInheritingThread;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import java.util.function.Supplier;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.fail;
 
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.CommonConfigurationKeys;
@@ -287,8 +293,7 @@ public class TestGroupsCaching {
     FakeunPrivilegedGroupMapping.invoked = false;
     userGroups = groups.getGroups("user2");
     assertTrue(expected.equals(userGroups), "groups not correct");
-    assertFalse(
-        FakeunPrivilegedGroupMapping.invoked,
+    assertFalse(FakeunPrivilegedGroupMapping.invoked,
         "group lookup done for unprivileged user");
 
   }
@@ -406,10 +411,10 @@ public class TestGroupsCaching {
     FakeGroupMapping.clearBlackList();
     FakeGroupMapping.setGetGroupsDelayMs(100);
 
-    ArrayList<Thread> threads = new ArrayList<Thread>();
+    ArrayList<SubjectInheritingThread> threads = new ArrayList<SubjectInheritingThread>();
     for (int i = 0; i < 10; i++) {
-      threads.add(new Thread() {
-        public void run() {
+      threads.add(new SubjectInheritingThread() {
+        public void work() {
           try {
             assertEquals(2, groups.getGroups("me").size());
           } catch (IOException e) {
@@ -451,10 +456,10 @@ public class TestGroupsCaching {
     timer.advance(400 * 1000);
     Thread.sleep(100);
 
-    ArrayList<Thread> threads = new ArrayList<Thread>();
+    ArrayList<SubjectInheritingThread> threads = new ArrayList<SubjectInheritingThread>();
     for (int i = 0; i < 10; i++) {
-      threads.add(new Thread() {
-        public void run() {
+      threads.add(new SubjectInheritingThread() {
+        public void work() {
           try {
             assertEquals(2, groups.getGroups("me").size());
           } catch (IOException e) {

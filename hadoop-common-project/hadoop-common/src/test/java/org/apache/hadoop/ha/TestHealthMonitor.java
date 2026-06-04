@@ -81,7 +81,7 @@ public class TestHealthMonitor {
   }
 
   @Test
-  @Timeout(value=15000, unit=TimeUnit.MILLISECONDS)
+  @Timeout(value = 15)
   public void testMonitor() throws Exception {
     LOG.info("Mocking bad health check, waiting for UNHEALTHY");
     svc.isHealthy = false;
@@ -116,7 +116,7 @@ public class TestHealthMonitor {
    * sees an uncaught exception in its thread.
    */
   @Test
-  @Timeout(value=15000, unit=TimeUnit.MILLISECONDS)
+  @Timeout(value = 15)
   public void testHealthMonitorDies() throws Exception {
     LOG.info("Mocking RTE in health monitor, waiting for FAILED");
     throwOOMEOnCreate = true;
@@ -133,7 +133,7 @@ public class TestHealthMonitor {
    * @throws Exception
    */
   @Test
-  @Timeout(value=15000, unit=TimeUnit.MILLISECONDS)
+  @Timeout(value = 15)
   public void testCallbackThrowsRTE() throws Exception {
     hm.addCallback(new Callback() {
       @Override

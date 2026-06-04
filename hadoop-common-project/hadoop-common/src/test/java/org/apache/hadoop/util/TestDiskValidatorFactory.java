@@ -17,6 +17,8 @@
  */
 package org.apache.hadoop.util;
 
+import org.junit.jupiter.api.Test;
+
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
@@ -43,8 +45,8 @@ public class TestDiskValidatorFactory {
     assertEquals(diskValidator.getClass(), BasicDiskValidator.class,
         "Fail to create the correct instance.");
 
-    assertNotNull(DiskValidatorFactory.INSTANCES.get(BasicDiskValidator.class),
-        "Fail to cache the object");
+    assertNotNull(DiskValidatorFactory.INSTANCES.
+        get(BasicDiskValidator.class), "Fail to cache the object");
   }
 
   /**

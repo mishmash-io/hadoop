@@ -35,11 +35,6 @@ import static org.apache.hadoop.util.Preconditions.checkArgument;
 public final class PutObjectOptions {
 
   /**
-   * Can the PUT operation skip marker deletion?
-   */
-  private final boolean keepMarkers;
-
-  /**
    * Storage class, if not null.
    */
   private final String storageClass;
@@ -61,7 +56,6 @@ public final class PutObjectOptions {
 
   /**
    * Constructor.
-   * @param keepMarkers Can the PUT operation skip marker deletion?
    * @param storageClass Storage class, if not null.
    * @param headers Headers; may be null.
    * @param writeObjectFlags flags for writing
@@ -69,12 +63,10 @@ public final class PutObjectOptions {
    *                      MUST not be empty if etag overwrite flag is set.
    */
   public PutObjectOptions(
-      final boolean keepMarkers,
       @Nullable final String storageClass,
       @Nullable final Map<String, String> headers,
       final EnumSet<WriteObjectFlags> writeObjectFlags,
       @Nullable final String etagOverwrite) {
-    this.keepMarkers = keepMarkers;
     this.storageClass = storageClass;
     this.headers = headers;
     this.writeObjectFlags = writeObjectFlags;
@@ -120,14 +112,6 @@ public final class PutObjectOptions {
   }
 
   /**
-   * Get the marker retention flag.
-   * @return true if markers are to be retained.
-   */
-  public boolean isKeepMarkers() {
-    return keepMarkers;
-  }
-
-  /**
    * Headers for the put/post request.
    * @return headers or null.
    */
@@ -142,55 +126,28 @@ public final class PutObjectOptions {
   @Override
   public String toString() {
     return "PutObjectOptions{" +
-        "keepMarkers=" + keepMarkers +
-        ", storageClass='" + storageClass + '\'' +
+        "storageClass='" + storageClass + '\'' +
         ", headers=" + headers +
         ", writeObjectFlags=" + writeObjectFlags +
         ", etagOverwrite='" + etagOverwrite + '\'' +
         '}';
   }
+
   /**
    * Empty options.
    */
   private static final PutObjectOptions EMPTY_OPTIONS = new PutObjectOptions(
-      true,
       null,
       null,
       EnumSet.noneOf(WriteObjectFlags.class),
       null);
-  
-  private static final PutObjectOptions KEEP_DIRS = EMPTY_OPTIONS;
 
-  private static final PutObjectOptions DELETE_DIRS = new PutObjectOptions(
-      false,
-      null,
-      null,
-      EnumSet.noneOf(WriteObjectFlags.class),
-      null);
-  
-  
-  /**
-   * Get the options to keep directories.
-   * @return an instance which keeps dirs
-   */
-  public static PutObjectOptions keepingDirs() {
-    return KEEP_DIRS;
-  }
-
-  /**
-   * Get the options to delete directory markers.
-   * @return an instance which deletes dirs
-   */
-  public static PutObjectOptions deletingDirs() {
-    return DELETE_DIRS;
-  }
-
-  /**
+    /**
    * Get the default options.
    * @return an instance with no storage class or headers.
    */
   public static PutObjectOptions defaultOptions() {
-    return keepingDirs();
+    return EMPTY_OPTIONS;
   }
 
 }

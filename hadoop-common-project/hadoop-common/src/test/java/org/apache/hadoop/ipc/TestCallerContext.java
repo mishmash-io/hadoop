@@ -76,10 +76,10 @@ public class TestCallerContext {
 
   @Test
   public void testNewBuilder() {
-    Configuration conf = new Configuration();
-    // Set illegal separator.
-    conf.set(HADOOP_CALLER_CONTEXT_SEPARATOR_KEY, "\t");
     assertThrows(IllegalArgumentException.class, () -> {
+      Configuration conf = new Configuration();
+      // Set illegal separator.
+      conf.set(HADOOP_CALLER_CONTEXT_SEPARATOR_KEY, "\t");
       CallerContext.Builder builder = new CallerContext.Builder(null, conf);
       builder.build();
     });

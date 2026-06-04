@@ -19,10 +19,12 @@
 package org.apache.hadoop.hdfs.server.namenode;
 
 
-import static org.junit.jupiter.api.Assertions.*;
-
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import java.io.IOException;
 import java.util.EnumSet;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.apache.hadoop.conf.Configuration;
@@ -34,6 +36,7 @@ import org.apache.hadoop.hdfs.protocol.LocatedBlock;
 import org.apache.hadoop.hdfs.protocol.LocatedBlocks;
 import org.apache.hadoop.hdfs.server.blockmanagement.DatanodeStorageInfo;
 import org.apache.hadoop.hdfs.server.protocol.NamenodeProtocols;
+import org.apache.hadoop.hdfs.util.RwLockMode;
 import org.apache.hadoop.io.EnumSetWritable;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
@@ -90,7 +93,7 @@ public class TestAddBlockRetry {
     // start first addBlock()
     LOG.info("Starting first addBlock for " + src);
     LocatedBlock[] onRetryBlock = new LocatedBlock[1];
-    ns.readLock();
+    ns.readLock(RwLockMode.GLOBAL);
     FSDirWriteFileOp.ValidateAddBlockResult r;
     FSPermissionChecker pc = Mockito.mock(FSPermissionChecker.class);
     try {
@@ -98,7 +101,7 @@ public class TestAddBlockRetry {
                                             HdfsConstants.GRANDFATHER_INODE_ID,
                                             "clientName", null, onRetryBlock);
     } finally {
-      ns.readUnlock();
+      ns.readUnlock(RwLockMode.GLOBAL, "validateAddBlock");
     }
     DatanodeStorageInfo targets[] = FSDirWriteFileOp.chooseTargetForNewBlock(
         ns.getBlockManager(), src, null, null, null, r);
@@ -108,21 +111,20 @@ public class TestAddBlockRetry {
     LOG.info("Starting second addBlock for " + src);
     nn.addBlock(src, "clientName", null, null,
                 HdfsConstants.GRANDFATHER_INODE_ID, null, null);
-    assertTrue(checkFileProgress(src, false),
-               "Penultimate block must be complete");
+    assertTrue(checkFileProgress(src, false), "Penultimate block must be complete");
     LocatedBlocks lbs = nn.getBlockLocations(src, 0, Long.MAX_VALUE);
     assertEquals(1, lbs.getLocatedBlocks().size(), "Must be one block");
     LocatedBlock lb2 = lbs.get(0);
     assertEquals(REPLICATION, lb2.getLocations().length, "Wrong replication");
 
     // continue first addBlock()
-    ns.writeLock();
+    ns.writeLock(RwLockMode.GLOBAL);
     LocatedBlock newBlock;
     try {
       newBlock = FSDirWriteFileOp.storeAllocatedBlock(ns, src,
           HdfsConstants.GRANDFATHER_INODE_ID, "clientName", null, targets);
     } finally {
-      ns.writeUnlock();
+      ns.writeUnlock(RwLockMode.GLOBAL, "testRetryAddBlockWhileInChooseTarget");
     }
     assertEquals(lb2.getBlock(), newBlock.getBlock(), "Blocks are not equal");
 
@@ -136,11 +138,11 @@ public class TestAddBlockRetry {
 
   boolean checkFileProgress(String src, boolean checkall) throws IOException {
     final FSNamesystem ns = cluster.getNamesystem();
-    ns.readLock();
+    ns.readLock(RwLockMode.GLOBAL);
     try {
       return ns.checkFileProgress(src, ns.dir.getINode(src).asFile(), checkall);
     } finally {
-      ns.readUnlock();
+      ns.readUnlock(RwLockMode.GLOBAL, "checkFileProgress");
     }
   }
 

@@ -17,17 +17,17 @@
  */
 package org.apache.hadoop.hdfs;
 
-import static org.junit.jupiter.api.Assumptions.assumeTrue;
 
 import java.io.File;
 
 import org.apache.hadoop.hdfs.client.HdfsClientConfigKeys;
 import org.apache.hadoop.net.unix.DomainSocket;
 import org.apache.hadoop.net.unix.TemporarySocketDirectory;
-
 import org.junit.jupiter.api.AfterAll;
-import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.BeforeAll;
+
+import static org.assertj.core.api.Assumptions.assumeThat;
 
 /**
  * This class tests short-circuit local reads without any FileInputStream or
@@ -68,7 +68,7 @@ public class TestParallelShortCircuitReadUnCached extends TestParallelReadUtil {
 
   @BeforeEach
   public void before() {
-    assumeTrue(DomainSocket.getLoadingFailureReason() == null);
+    assumeThat(DomainSocket.getLoadingFailureReason()).isNull();
   }
 
   @AfterAll

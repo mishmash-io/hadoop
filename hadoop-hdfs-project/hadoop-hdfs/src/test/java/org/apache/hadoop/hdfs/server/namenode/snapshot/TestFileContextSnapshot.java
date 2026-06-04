@@ -17,7 +17,9 @@
  */
 package org.apache.hadoop.hdfs.server.namenode.snapshot;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import org.apache.hadoop.conf.Configuration;
 
@@ -73,7 +75,7 @@ public class TestFileContextSnapshot {
   }
 
   @Test
-  @Timeout(value = 60000, unit = TimeUnit.MILLISECONDS)
+  @Timeout(value = 60)
   public void testCreateAndDeleteSnapshot() throws Exception {
     DFSTestUtil.createFile(dfs, filePath, BLOCKSIZE, REPLICATION, SEED);
     // disallow snapshot on dir
@@ -97,7 +99,7 @@ public class TestFileContextSnapshot {
    * Test FileStatus of snapshot file before/after rename
    */
   @Test
-  @Timeout(value = 60000, unit = TimeUnit.MILLISECONDS)
+  @Timeout(value = 60)
   public void testRenameSnapshot() throws Exception {
     DFSTestUtil.createFile(dfs, filePath, BLOCKSIZE, REPLICATION, SEED);
     dfs.allowSnapshot(snapRootPath);
@@ -122,6 +124,7 @@ public class TestFileContextSnapshot {
     assertFalse(statusBeforeRename.equals(statusAfterRename),
         "Filestatus of the snapshot matches");
     statusBeforeRename.setPath(statusAfterRename.getPath());
-    assertEquals(statusBeforeRename.toString(), statusAfterRename.toString(), "FileStatus of the snapshot mismatches!");
+    assertEquals(statusBeforeRename.toString(), statusAfterRename.toString(),
+        "FileStatus of the snapshot mismatches!");
   }
 }

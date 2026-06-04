@@ -18,7 +18,9 @@
 package org.apache.hadoop.hdfs;
 
 import static org.apache.hadoop.hdfs.DFSConfigKeys.*;
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.apache.hadoop.fs.CommonConfigurationKeys
     .IPC_CLIENT_CONNECT_MAX_RETRIES_ON_SASL_KEY;
 import static org.apache.hadoop.fs.CommonConfigurationKeysPublic
@@ -48,10 +50,10 @@ import org.apache.hadoop.security.SecurityUtil;
 import org.apache.hadoop.security.UserGroupInformation;
 import org.apache.hadoop.security.ssl.KeyStoreTestUtil;
 import org.apache.hadoop.util.Lists;
-import org.apache.hadoop.util.cli.ToolRunner;
+import org.apache.hadoop.util.ToolRunner;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.MethodOrderer.MethodName;
+import org.junit.jupiter.api.MethodOrderer;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestMethodOrder;
 
@@ -68,7 +70,7 @@ import java.util.concurrent.atomic.AtomicInteger;
  * This class tests Trash functionality in Encryption Zones with Kerberos
  * enabled.
  */
-@TestMethodOrder(MethodName.class)
+@TestMethodOrder(MethodOrderer.MethodName.class)
 public class TestTrashWithSecureEncryptionZones {
   private static HdfsConfiguration baseConf;
   private static File baseDir;
@@ -265,16 +267,16 @@ public class TestTrashWithSecureEncryptionZones {
         "/" + CURRENT);
     String trashPath = trashDir.toString() + encFile1.toString();
     Path deletedFile = verifyTrashLocationWithShellDelete(encFile1);
-    assertEquals(trashPath, deletedFile.toUri().getPath(), "Deleted file not at the expected trash location: " +
-        trashPath);
+    assertEquals(trashPath, deletedFile.toUri().getPath(),
+        "Deleted file not at the expected trash location: " + trashPath);
 
     //Verify Trash checkpoint outside the encryption zone when the whole
     // encryption zone is deleted and moved
     trashPath = fs.getHomeDirectory().toUri().getPath() + "/" + fs
         .TRASH_PREFIX + "/" + CURRENT + zone2;
     Path deletedDir = verifyTrashLocationWithShellDelete(zone2);
-    assertEquals(trashPath, deletedDir.toUri().getPath(), "Deleted zone not at the expected trash location: " +
-        trashPath);
+    assertEquals(trashPath, deletedDir.toUri().getPath(),
+        "Deleted zone not at the expected trash location: " + trashPath);
   }
 
   @Test
@@ -343,15 +345,13 @@ public class TestTrashWithSecureEncryptionZones {
     String[] argv1 = new String[]{"-rm", "-r", zone1.toString()};
     int res = ToolRunner.run(shell, argv1);
     assertEquals(0, res, "rm failed");
-    assertTrue(fs
-        .exists(trashDir1), "Empty directory not deleted even with -r : " + trashDir1);
+    assertTrue(fs.exists(trashDir1), "Empty directory not deleted even with -r : " + trashDir1);
 
     //Delete empty directory without -r option
     String[] argv2 = new String[]{"-rm", zone2.toString()};
     res = ToolRunner.run(shell, argv2);
     assertEquals(1, res, "rm on empty directory did not fail");
-    assertTrue(!fs.exists(
-        trashDir2), "Empty directory deleted without -r : " + trashDir2);
+    assertTrue(!fs.exists(trashDir2), "Empty directory deleted without -r : " + trashDir2);
   }
 
   @Test
@@ -398,8 +398,7 @@ public class TestTrashWithSecureEncryptionZones {
     cluster.waitActive();
     fs = cluster.getFileSystem();
 
-    assertTrue(fs.exists(trashFile), "On Namenode restart, file deleted from trash : " +
-        trashFile);
+    assertTrue(fs.exists(trashFile), "On Namenode restart, file deleted from trash : " + trashFile);
   }
 
   private Path verifyTrashLocationWithShellDelete(Path path)
@@ -408,8 +407,7 @@ public class TestTrashWithSecureEncryptionZones {
     final Path trashFile = new Path(shell.getCurrentTrashDir(path) + "/" +
         path);
     File deletedFile = new File(String.valueOf(trashFile));
-    assertFalse(deletedFile
-        .exists(), "File already present in Trash before delete");
+    assertFalse(deletedFile.exists(), "File already present in Trash before delete");
 
     DFSTestUtil.verifyDelete(shell, fs, path, trashFile, true);
     return trashFile;
@@ -421,8 +419,7 @@ public class TestTrashWithSecureEncryptionZones {
     assertEquals(0, res, "expunge failed");
 
     for (Path trashFile : trashFiles) {
-      assertFalse(fs
-          .exists(trashFile), "File exists in trash after expunge : " + trashFile);
+      assertFalse(fs.exists(trashFile), "File exists in trash after expunge : " + trashFile);
     }
   }
 

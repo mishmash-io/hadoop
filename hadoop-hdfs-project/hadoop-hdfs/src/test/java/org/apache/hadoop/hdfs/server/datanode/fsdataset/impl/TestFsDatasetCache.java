@@ -22,6 +22,7 @@ import org.apache.hadoop.hdfs.server.protocol.SlowDiskReports;
 import static org.apache.hadoop.test.MetricsAsserts.getMetrics;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.fail;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyBoolean;
 import static org.mockito.ArgumentMatchers.anyInt;
@@ -37,7 +38,6 @@ import java.util.Queue;
 import java.util.Set;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.ThreadLocalRandom;
-import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 
@@ -54,6 +54,7 @@ import org.apache.hadoop.hdfs.DFSConfigKeys;
 import org.apache.hadoop.hdfs.DFSTestUtil;
 import org.apache.hadoop.hdfs.DistributedFileSystem;
 import org.apache.hadoop.hdfs.HdfsConfiguration;
+import org.apache.hadoop.test.LogCapturingAppender;
 import org.apache.hadoop.hdfs.protocol.CacheDirectiveEntry;
 import org.apache.hadoop.hdfs.MiniDFSCluster;
 import org.apache.hadoop.hdfs.protocol.Block;
@@ -83,10 +84,14 @@ import org.apache.hadoop.io.nativeio.NativeIO.POSIX.CacheManipulator;
 import org.apache.hadoop.io.nativeio.NativeIO.POSIX.NoMlockCacheManipulator;
 import org.apache.hadoop.metrics2.MetricsRecordBuilder;
 import org.apache.hadoop.test.GenericTestUtils;
-import org.apache.hadoop.test.LogCapturingAppender;
 import org.apache.hadoop.test.MetricsAsserts;
-import org.junit.jupiter.api.*;
-
+import org.apache.log4j.Logger;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.Timeout;
 import org.slf4j.event.Level;
 
 import java.util.function.Supplier;
@@ -306,8 +311,7 @@ public class TestFsDatasetCache {
       dnMetrics = getMetrics(dn.getMetrics().name());
       long cmds = MetricsAsserts.getLongCounter("BlocksCached", dnMetrics);
       assertTrue(cmds > numCacheCommands,
-           "Expected more cache requests from the NN ("
-          + cmds + " <= " + numCacheCommands + ")");
+          "Expected more cache requests from the NN (" + cmds + " <= " + numCacheCommands + ")");
       numCacheCommands = cmds;
     }
 
@@ -319,15 +323,14 @@ public class TestFsDatasetCache {
               NUM_BLOCKS - 1 - i, fsd);
       dnMetrics = getMetrics(dn.getMetrics().name());
       long cmds = MetricsAsserts.getLongCounter("BlocksUncached", dnMetrics);
-      assertTrue(cmds > numUncacheCommands,
-           "Expected more uncache requests from the NN");
+      assertTrue(cmds > numUncacheCommands, "Expected more uncache requests from the NN");
       numUncacheCommands = cmds;
     }
     LOG.info("finishing testCacheAndUncacheBlock");
   }
 
   @Test
-  @Timeout(value = 600000, unit = TimeUnit.MILLISECONDS)
+  @Timeout(value = 600)
   public void testCacheAndUncacheBlockSimple() throws Exception {
     testCacheAndUncacheBlock();
   }
@@ -337,7 +340,7 @@ public class TestFsDatasetCache {
    * call.  This tests the ability of the NameNode to resend commands.
    */
   @Test
-  @Timeout(value = 600000, unit = TimeUnit.MILLISECONDS)
+  @Timeout(value = 600)
   public void testCacheAndUncacheBlockWithRetries() throws Exception {
     // We don't have to save the previous cacheManipulator
     // because it will be reinstalled by the @After function.
@@ -361,7 +364,7 @@ public class TestFsDatasetCache {
   }
 
   @Test
-  @Timeout(value = 600000, unit = TimeUnit.MILLISECONDS)
+  @Timeout(value = 600)
   public void testFilesExceedMaxLockedMemory() throws Exception {
     LOG.info("beginning testFilesExceedMaxLockedMemory");
 
@@ -405,15 +408,13 @@ public class TestFsDatasetCache {
         public Boolean get() {
           // check the log reported by FsDataSetCache
           // in the case that cache capacity is exceeded.
-          return log.stream()
-              .filter(m -> m != null && m.contains("could not reserve more bytes in the cache: "))
-              .findAny()
-              .isPresent();
+          int lines = appender.countLinesWithMessage(
+              "could not reserve more bytes in the cache: ");
+          return lines > 0;
         }
       }, 500, 30000);
       // Also check the metrics for the failure
-      assertTrue(fsd.getNumBlocksFailedToCache() > 0,
-          "Expected more than 0 failed cache attempts");
+      assertTrue(fsd.getNumBlocksFailedToCache() > 0, "Expected more than 0 failed cache attempts");
 
       // Uncache the n-1 files
       int curCachedBlocks = 16;
@@ -427,11 +428,11 @@ public class TestFsDatasetCache {
       LOG.info("finishing testFilesExceedMaxLockedMemory");
     } finally {
       LogCapturingAppender.stop(null);
-    }
+    } 
   }
 
   @Test
-  @Timeout(value = 600000, unit = TimeUnit.MILLISECONDS)
+  @Timeout(value = 600)
   public void testUncachingBlocksBeforeCachingFinishes() throws Exception {
     LOG.info("beginning testUncachingBlocksBeforeCachingFinishes");
     final int NUM_BLOCKS = 5;
@@ -464,7 +465,7 @@ public class TestFsDatasetCache {
         try {
           Thread.sleep(3000);
         } catch (InterruptedException e) {
-          Assertions.fail();
+          fail();
         }
       }
     });
@@ -486,7 +487,7 @@ public class TestFsDatasetCache {
   }
 
   @Test
-  @Timeout(value = 60000, unit = TimeUnit.MILLISECONDS)
+  @Timeout(value = 60)
   public void testUncacheUnknownBlock() throws Exception {
     // Create a file
     Path fileName = new Path("/testUncacheUnknownBlock");
@@ -507,13 +508,12 @@ public class TestFsDatasetCache {
   }
 
   @Test
-  @Timeout(value = 600000, unit = TimeUnit.MILLISECONDS)
+  @Timeout(value = 600)
   public void testPageRounder() throws Exception {
     // Write a small file
     Path fileName = new Path("/testPageRounder");
     final int smallBlocks = 512; // This should be smaller than the page size
-    assertTrue(PAGE_SIZE > smallBlocks,
-        "Page size should be greater than smallBlocks!");
+    assertTrue(PAGE_SIZE > smallBlocks, "Page size should be greater than smallBlocks!");
     final int numBlocks = 5;
     final int fileLen = smallBlocks * numBlocks;
     FSDataOutputStream out =
@@ -531,7 +531,7 @@ public class TestFsDatasetCache {
   }
 
   @Test
-  @Timeout(value = 60000, unit = TimeUnit.MILLISECONDS)
+  @Timeout(value = 60)
   public void testUncacheQuiesces() throws Exception {
     // Create a file
     Path fileName = new Path("/testUncacheQuiesces");
@@ -570,12 +570,12 @@ public class TestFsDatasetCache {
   }
 
   @Test
-  @Timeout(value = 60000, unit = TimeUnit.MILLISECONDS)
+  @Timeout(value = 60)
   public void testReCacheAfterUncache() throws Exception {
     final int TOTAL_BLOCKS_PER_CACHE =
         Ints.checkedCast(CACHE_CAPACITY / BLOCK_SIZE);
     BlockReaderTestUtil.enableHdfsCachingTracing();
-    Assertions.assertEquals(0, CACHE_CAPACITY % BLOCK_SIZE);
+    assertEquals(0, CACHE_CAPACITY % BLOCK_SIZE);
     
     // Create a small file
     final Path SMALL_FILE = new Path("/smallFile");
@@ -613,7 +613,7 @@ public class TestFsDatasetCache {
         .setPool("pool").setPath(SMALL_FILE).setReplication((short)1).build());
     Thread.sleep(10000);
     MetricsRecordBuilder dnMetrics = getMetrics(dn.getMetrics().name());
-    Assertions.assertEquals(TOTAL_BLOCKS_PER_CACHE,
+    assertEquals(TOTAL_BLOCKS_PER_CACHE,
         MetricsAsserts.getLongCounter("BlocksCached", dnMetrics));
     
     // Uncache the big file and verify that the small file can now be
@@ -637,7 +637,7 @@ public class TestFsDatasetCache {
           }
           LOG.info("directive " + shortCacheDirectiveId + " has been cached.");
         } catch (IOException e) {
-          Assertions.fail("unexpected exception" + e.toString());
+          fail("unexpected exception" + e.toString());
         }
         return true;
       }

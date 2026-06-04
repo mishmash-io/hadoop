@@ -32,10 +32,16 @@ import org.apache.hadoop.fs.Options.CreateOpts;
 import org.apache.hadoop.fs.Options.Rename;
 import org.apache.hadoop.fs.permission.FsPermission;
 import org.apache.hadoop.test.GenericTestUtils;
-import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.BeforeEach;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.fail;
+import static org.junit.jupiter.api.Assumptions.assumeTrue;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.Timeout;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.AfterEach;
 
 /**
  * Base test for symbolic links
@@ -93,14 +99,14 @@ public abstract class SymlinkBaseTest {
   }
 
   @Test
-  @Timeout(value=10000, unit=TimeUnit.MILLISECONDS)
+  @Timeout(value = 10)
   /** The root is not a symlink */
   public void testStatRoot() throws IOException {
     assertFalse(wrapper.getFileLinkStatus(new Path("/")).isSymlink());
   }
 
   @Test
-  @Timeout(value=10000, unit=TimeUnit.MILLISECONDS)
+  @Timeout(value = 10)
   /** Test setWorkingDirectory not resolves symlinks */
   public void testSetWDNotResolvesLinks() throws IOException {
     Path dir       = new Path(testBaseDir1());
@@ -111,7 +117,7 @@ public abstract class SymlinkBaseTest {
   }
 
   @Test
-  @Timeout(value=10000, unit=TimeUnit.MILLISECONDS)
+  @Timeout(value = 10)
   /** Test create a dangling link */
   public void testCreateDanglingLink() throws IOException {
     Path file = new Path("/noSuchFile");
@@ -127,7 +133,7 @@ public abstract class SymlinkBaseTest {
   }
 
   @Test
-  @Timeout(value=10000, unit=TimeUnit.MILLISECONDS)
+  @Timeout(value = 10)
   /** Test create a link to null and empty path */
   public void testCreateLinkToNullEmpty() throws IOException {
     Path link = new Path(testBaseDir1()+"/link");
@@ -146,7 +152,7 @@ public abstract class SymlinkBaseTest {
   }
 
   @Test
-  @Timeout(value=10000, unit=TimeUnit.MILLISECONDS)
+  @Timeout(value = 10)
   /** Create a link with createParent set */
   public void testCreateLinkCanCreateParent() throws IOException {
     Path file = new Path(testBaseDir1()+"/file");
@@ -165,7 +171,7 @@ public abstract class SymlinkBaseTest {
   }
 
   @Test
-  @Timeout(value=10000, unit=TimeUnit.MILLISECONDS)
+  @Timeout(value = 10)
   /** Try to create a directory given a path that refers to a symlink */
   public void testMkdirExistingLink() throws IOException {
     Path file = new Path(testBaseDir1() + "/targetFile");
@@ -185,7 +191,7 @@ public abstract class SymlinkBaseTest {
   }
 
   @Test
-  @Timeout(value=10000, unit=TimeUnit.MILLISECONDS)
+  @Timeout(value = 10)
   /** Try to create a file with parent that is a dangling link */
   public void testCreateFileViaDanglingLinkParent() throws IOException {
     Path dir  = new Path(testBaseDir1()+"/dangling");
@@ -204,7 +210,7 @@ public abstract class SymlinkBaseTest {
   }
 
   @Test
-  @Timeout(value=10000, unit=TimeUnit.MILLISECONDS)
+  @Timeout(value = 10)
   /** Delete a link */
   public void testDeleteLink() throws IOException {
     Path file = new Path(testBaseDir1()+"/file");
@@ -224,7 +230,7 @@ public abstract class SymlinkBaseTest {
   }
 
   @Test
-  @Timeout(value=10000, unit=TimeUnit.MILLISECONDS)
+  @Timeout(value = 10)
   /** Ensure open resolves symlinks */
   public void testOpenResolvesLinks() throws IOException {
     Path file = new Path(testBaseDir1()+"/noSuchFile");
@@ -240,7 +246,7 @@ public abstract class SymlinkBaseTest {
   }
 
   @Test
-  @Timeout(value=10000, unit=TimeUnit.MILLISECONDS)
+  @Timeout(value = 10)
   /** Stat a link to a file */
   public void testStatLinkToFile() throws IOException {
     Path file = new Path(testBaseDir1()+"/file");
@@ -265,7 +271,7 @@ public abstract class SymlinkBaseTest {
   }
 
   @Test
-  @Timeout(value=10000, unit=TimeUnit.MILLISECONDS)
+  @Timeout(value = 10)
   /** Stat a relative link to a file */
   public void testStatRelLinkToFile() throws IOException {
     assumeTrue(!"file".equals(getScheme()));
@@ -282,7 +288,7 @@ public abstract class SymlinkBaseTest {
   }
 
   @Test
-  @Timeout(value=10000, unit=TimeUnit.MILLISECONDS)
+  @Timeout(value = 10)
   /** Stat a link to a directory */
   public void testStatLinkToDir() throws IOException {
     Path dir  = new Path(testBaseDir1());
@@ -301,7 +307,7 @@ public abstract class SymlinkBaseTest {
   }
 
   @Test
-  @Timeout(value=10000, unit=TimeUnit.MILLISECONDS)
+  @Timeout(value = 10)
   /** Stat a dangling link */
   public void testStatDanglingLink() throws IOException {
     Path file = new Path("/noSuchFile");
@@ -312,7 +318,7 @@ public abstract class SymlinkBaseTest {
   }
 
   @Test
-  @Timeout(value=10000, unit=TimeUnit.MILLISECONDS)
+  @Timeout(value = 10)
   /** Stat a non-existant file */
   public void testStatNonExistentFiles() throws IOException {
     Path fileAbs = new Path("/doesNotExist");
@@ -331,7 +337,7 @@ public abstract class SymlinkBaseTest {
   }
 
   @Test
-  @Timeout(value=10000, unit=TimeUnit.MILLISECONDS)
+  @Timeout(value = 10)
   /** Test stat'ing a regular file and directory */
   public void testStatNonLinks() throws IOException {
     Path dir   = new Path(testBaseDir1());
@@ -352,7 +358,7 @@ public abstract class SymlinkBaseTest {
   }
 
   @Test
-  @Timeout(value=10000, unit=TimeUnit.MILLISECONDS)
+  @Timeout(value = 10)
   /** Test links that link to each other */
   public void testRecursiveLinks() throws IOException {
     Path link1 = new Path(testBaseDir1()+"/link1");
@@ -442,7 +448,7 @@ public abstract class SymlinkBaseTest {
   }
 
   @Test
-  @Timeout(value=10000, unit=TimeUnit.MILLISECONDS)
+  @Timeout(value = 10)
   /** Test creating a symlink using relative paths */
   public void testCreateLinkUsingRelPaths() throws IOException {
     Path fileAbs = new Path(testBaseDir1(), "file");
@@ -469,7 +475,7 @@ public abstract class SymlinkBaseTest {
   }
 
   @Test
-  @Timeout(value=10000, unit=TimeUnit.MILLISECONDS)
+  @Timeout(value = 10)
   /** Test creating a symlink using absolute paths */
   public void testCreateLinkUsingAbsPaths() throws IOException {
     Path fileAbs = new Path(testBaseDir1()+"/file");
@@ -497,7 +503,7 @@ public abstract class SymlinkBaseTest {
   }
 
   @Test
-  @Timeout(value=10000, unit=TimeUnit.MILLISECONDS)
+  @Timeout(value = 10)
   /**
    * Test creating a symlink using fully and partially qualified paths.
    * NB: For local fs this actually tests partially qualified paths,
@@ -531,7 +537,7 @@ public abstract class SymlinkBaseTest {
   }
 
   @Test
-  @Timeout(value=10000, unit=TimeUnit.MILLISECONDS)
+  @Timeout(value = 10)
   /**
    * Test creating a symlink using partially qualified paths, ie a scheme
    * but no authority and vice versa. We just test link targets here since
@@ -575,7 +581,7 @@ public abstract class SymlinkBaseTest {
   }
 
   @Test
-  @Timeout(value=10000, unit=TimeUnit.MILLISECONDS)
+  @Timeout(value = 10)
   /** Same as above but vice versa (authority but no scheme) */
   public void testCreateLinkUsingPartQualPath2() throws IOException {
     Path link         = new Path(testBaseDir1(), "linkToFile");
@@ -604,7 +610,7 @@ public abstract class SymlinkBaseTest {
   }
 
   @Test
-  @Timeout(value=10000, unit=TimeUnit.MILLISECONDS)
+  @Timeout(value = 10)
   /** Lstat and readlink on a normal file and directory */
   public void testLinkStatusAndTargetWithNonLink() throws IOException {
     Path schemeAuth = new Path(testURI().toString());
@@ -630,7 +636,7 @@ public abstract class SymlinkBaseTest {
   }
 
   @Test
-  @Timeout(value=10000, unit=TimeUnit.MILLISECONDS)
+  @Timeout(value = 10)
   /** Test create symlink to a directory */
   public void testCreateLinkToDirectory() throws IOException {
     Path dir1      = new Path(testBaseDir1());
@@ -645,7 +651,7 @@ public abstract class SymlinkBaseTest {
   }
 
   @Test
-  @Timeout(value=10000, unit=TimeUnit.MILLISECONDS)
+  @Timeout(value = 10)
   /** Test create and remove a file through a symlink */
   public void testCreateFileViaSymlink() throws IOException {
     Path dir         = new Path(testBaseDir1());
@@ -663,7 +669,7 @@ public abstract class SymlinkBaseTest {
   }
 
   @Test
-  @Timeout(value=10000, unit=TimeUnit.MILLISECONDS)
+  @Timeout(value = 10)
   /** Test make and delete directory through a symlink */
   public void testCreateDirViaSymlink() throws IOException {
     Path dir1          = new Path(testBaseDir1());
@@ -679,7 +685,7 @@ public abstract class SymlinkBaseTest {
   }
 
   @Test
-  @Timeout(value=10000, unit=TimeUnit.MILLISECONDS)
+  @Timeout(value = 10)
   /** Create symlink through a symlink */
   public void testCreateLinkViaLink() throws IOException {
     Path dir1        = new Path(testBaseDir1());
@@ -702,7 +708,7 @@ public abstract class SymlinkBaseTest {
   }
 
   @Test
-  @Timeout(value=10000, unit=TimeUnit.MILLISECONDS)
+  @Timeout(value = 10)
   /** Test create symlink to a directory */
   public void testListStatusUsingLink() throws IOException {
     Path file  = new Path(testBaseDir1(), "file");
@@ -723,7 +729,7 @@ public abstract class SymlinkBaseTest {
   }
 
   @Test
-  @Timeout(value=10000, unit=TimeUnit.MILLISECONDS)
+  @Timeout(value = 10)
   /** Test create symlink using the same path */
   public void testCreateLinkTwice() throws IOException {
     Path file = new Path(testBaseDir1(), "file");
@@ -739,7 +745,7 @@ public abstract class SymlinkBaseTest {
   }
 
   @Test
-  @Timeout(value=10000, unit=TimeUnit.MILLISECONDS)
+  @Timeout(value = 10)
   /** Test access via a symlink to a symlink */
   public void testCreateLinkToLink() throws IOException {
     Path dir1        = new Path(testBaseDir1());
@@ -758,7 +764,7 @@ public abstract class SymlinkBaseTest {
   }
 
   @Test
-  @Timeout(value=10000, unit=TimeUnit.MILLISECONDS)
+  @Timeout(value = 10)
   /** Can not create a file with path that refers to a symlink */
   public void testCreateFileDirExistingLink() throws IOException {
     Path file = new Path(testBaseDir1(), "file");
@@ -780,7 +786,7 @@ public abstract class SymlinkBaseTest {
   }
 
   @Test
-  @Timeout(value=10000, unit=TimeUnit.MILLISECONDS)
+  @Timeout(value = 10)
   /** Test deleting and recreating a symlink */
   public void testUseLinkAferDeleteLink() throws IOException {
     Path file = new Path(testBaseDir1(), "file");
@@ -800,7 +806,7 @@ public abstract class SymlinkBaseTest {
   }
 
   @Test
-  @Timeout(value=10000, unit=TimeUnit.MILLISECONDS)
+  @Timeout(value = 10)
   /** Test create symlink to . */
   public void testCreateLinkToDot() throws IOException {
     Path dir  = new Path(testBaseDir1());
@@ -818,7 +824,7 @@ public abstract class SymlinkBaseTest {
   }
 
   @Test
-  @Timeout(value=10000, unit=TimeUnit.MILLISECONDS)
+  @Timeout(value = 10)
   /** Test create symlink to .. */
   public void testCreateLinkToDotDot() throws IOException {
     Path file        = new Path(testBaseDir1(), "test/file");
@@ -834,7 +840,7 @@ public abstract class SymlinkBaseTest {
   }
 
   @Test
-  @Timeout(value=10000, unit=TimeUnit.MILLISECONDS)
+  @Timeout(value = 10)
   /** Test create symlink to ../file */
   public void testCreateLinkToDotDotPrefix() throws IOException {
     Path file = new Path(testBaseDir1(), "file");
@@ -849,7 +855,7 @@ public abstract class SymlinkBaseTest {
   }
 
   @Test
-  @Timeout(value=10000, unit=TimeUnit.MILLISECONDS)
+  @Timeout(value = 10)
   /** Test rename file using a path that contains a symlink. The rename should
    * work as if the path did not contain a symlink */
   public void testRenameFileViaSymlink() throws IOException {
@@ -867,7 +873,7 @@ public abstract class SymlinkBaseTest {
   }
 
   @Test
-  @Timeout(value=10000, unit=TimeUnit.MILLISECONDS)
+  @Timeout(value = 10)
   /** Test rename a file through a symlink but this time only the
    * destination path has an intermediate symlink. The rename should work
    * as if the path did not contain a symlink */
@@ -890,7 +896,7 @@ public abstract class SymlinkBaseTest {
   }
 
   @Test
-  @Timeout(value=10000, unit=TimeUnit.MILLISECONDS)
+  @Timeout(value = 10)
   /** Similar tests as the previous ones but rename a directory */
   public void testRenameDirViaSymlink() throws IOException {
     Path baseDir       = new Path(testBaseDir1());
@@ -908,7 +914,7 @@ public abstract class SymlinkBaseTest {
   }
 
   @Test
-  @Timeout(value=10000, unit=TimeUnit.MILLISECONDS)
+  @Timeout(value = 10)
   /** Similar tests as the previous ones but rename a symlink */
   public void testRenameSymlinkViaSymlink() throws IOException {
     Path baseDir        = new Path(testBaseDir1());
@@ -929,7 +935,7 @@ public abstract class SymlinkBaseTest {
   }
 
   @Test
-  @Timeout(value=10000, unit=TimeUnit.MILLISECONDS)
+  @Timeout(value = 10)
   /** Test rename a directory to a symlink to a directory */
   public void testRenameDirToSymlinkToDir() throws IOException {
     Path dir1      = new Path(testBaseDir1());
@@ -949,7 +955,7 @@ public abstract class SymlinkBaseTest {
   }
 
   @Test
-  @Timeout(value=10000, unit=TimeUnit.MILLISECONDS)
+  @Timeout(value = 10)
   /** Test rename a directory to a symlink to a file */
   public void testRenameDirToSymlinkToFile() throws IOException {
     Path dir1 = new Path(testBaseDir1());
@@ -969,7 +975,7 @@ public abstract class SymlinkBaseTest {
   }
 
   @Test
-  @Timeout(value=10000, unit=TimeUnit.MILLISECONDS)
+  @Timeout(value = 10)
   /** Test rename a directory to a dangling symlink */
   public void testRenameDirToDanglingSymlink() throws IOException {
     Path dir = new Path(testBaseDir1());
@@ -987,7 +993,7 @@ public abstract class SymlinkBaseTest {
   }
 
   @Test
-  @Timeout(value=10000, unit=TimeUnit.MILLISECONDS)
+  @Timeout(value = 10)
   /** Test rename a file to a symlink to a directory */
   public void testRenameFileToSymlinkToDir() throws IOException {
     Path file   = new Path(testBaseDir1(), "file");
@@ -1011,7 +1017,7 @@ public abstract class SymlinkBaseTest {
   }
 
   @Test
-  @Timeout(value=10000, unit=TimeUnit.MILLISECONDS)
+  @Timeout(value = 10)
   /** Test rename a file to a symlink to a file */
   public void testRenameFileToSymlinkToFile() throws IOException {
     Path file1 = new Path(testBaseDir1(), "file1");
@@ -1035,7 +1041,7 @@ public abstract class SymlinkBaseTest {
   }
 
   @Test
-  @Timeout(value=10000, unit=TimeUnit.MILLISECONDS)
+  @Timeout(value = 10)
   /** Test rename a file to a dangling symlink */
   public void testRenameFileToDanglingSymlink() throws IOException {
     /* NB: Local file system doesn't handle dangling links correctly
@@ -1060,7 +1066,7 @@ public abstract class SymlinkBaseTest {
   }
 
   @Test
-  @Timeout(value=10000, unit=TimeUnit.MILLISECONDS)
+  @Timeout(value = 10)
   /** Rename a symlink to a new non-existant name */
   public void testRenameSymlinkNonExistantDest() throws IOException {
     Path file  = new Path(testBaseDir1(), "file");
@@ -1076,7 +1082,7 @@ public abstract class SymlinkBaseTest {
   }
 
   @Test
-  @Timeout(value=10000, unit=TimeUnit.MILLISECONDS)
+  @Timeout(value = 10)
   /** Rename a symlink to a file that exists */
   public void testRenameSymlinkToExistingFile() throws IOException {
     Path file1 = new Path(testBaseDir1(), "file");
@@ -1099,7 +1105,7 @@ public abstract class SymlinkBaseTest {
   }
 
   @Test
-  @Timeout(value=10000, unit=TimeUnit.MILLISECONDS)
+  @Timeout(value = 10)
   /** Rename a symlink to a directory that exists */
   public void testRenameSymlinkToExistingDir() throws IOException {
     Path dir1   = new Path(testBaseDir1());
@@ -1133,7 +1139,7 @@ public abstract class SymlinkBaseTest {
   }
 
   @Test
-  @Timeout(value=10000, unit=TimeUnit.MILLISECONDS)
+  @Timeout(value = 10)
   /** Rename a symlink to itself */
   public void testRenameSymlinkToItself() throws IOException {
     Path file = new Path(testBaseDir1(), "file");
@@ -1157,7 +1163,7 @@ public abstract class SymlinkBaseTest {
   }
 
   @Test
-  @Timeout(value=10000, unit=TimeUnit.MILLISECONDS)
+  @Timeout(value = 10)
   /** Rename a symlink */
   public void testRenameSymlink() throws IOException {
     Path file  = new Path(testBaseDir1(), "file");
@@ -1179,7 +1185,7 @@ public abstract class SymlinkBaseTest {
   }
 
   @Test
-  @Timeout(value=10000, unit=TimeUnit.MILLISECONDS)
+  @Timeout(value = 10)
   /** Rename a symlink to the file it links to */
   public void testRenameSymlinkToFileItLinksTo() throws IOException {
     /* NB: The rename is not atomic, so file is deleted before renaming
@@ -1218,7 +1224,7 @@ public abstract class SymlinkBaseTest {
   }
 
   @Test
-  @Timeout(value=10000, unit=TimeUnit.MILLISECONDS)
+  @Timeout(value = 10)
   /** Rename a symlink to the directory it links to */
   public void testRenameSymlinkToDirItLinksTo() throws IOException {
     /* NB: The rename is not atomic, so dir is deleted before renaming
@@ -1257,7 +1263,7 @@ public abstract class SymlinkBaseTest {
   }
 
   @Test
-  @Timeout(value=10000, unit=TimeUnit.MILLISECONDS)
+  @Timeout(value = 10)
   /** Test rename the symlink's target */
   public void testRenameLinkTarget() throws IOException {
     Path file    = new Path(testBaseDir1(), "file");
@@ -1277,7 +1283,7 @@ public abstract class SymlinkBaseTest {
   }
 
   @Test
-  @Timeout(value=10000, unit=TimeUnit.MILLISECONDS)
+  @Timeout(value = 10)
   /** Test rename a file to path with destination that has symlink parent */
   public void testRenameFileWithDestParentSymlink() throws IOException {
     Path link  = new Path(testBaseDir1(), "link");
@@ -1316,7 +1322,7 @@ public abstract class SymlinkBaseTest {
   }
 
   @Test
-  @Timeout(value=10000, unit=TimeUnit.MILLISECONDS)
+  @Timeout(value = 10)
   /**
    * Create, write, read, append, rename, get the block locations,
    * checksums, and delete a file using a path with a symlink as an
@@ -1356,7 +1362,7 @@ public abstract class SymlinkBaseTest {
   }
 
   @Test
-  @Timeout(value=10000, unit=TimeUnit.MILLISECONDS)
+  @Timeout(value = 10)
   /**
    * Operate on a file using a path with an intermediate symlink where
    * the link target was specified as a fully qualified path.
@@ -1376,7 +1382,7 @@ public abstract class SymlinkBaseTest {
   }
 
   @Test
-  @Timeout(value=10000, unit=TimeUnit.MILLISECONDS)
+  @Timeout(value = 10)
   /**
    * Operate on a file using a path with an intermediate symlink where
    * the link target was specified as a relative path.
@@ -1407,7 +1413,7 @@ public abstract class SymlinkBaseTest {
   }
 
   @Test
-  @Timeout(value=10000, unit=TimeUnit.MILLISECONDS)
+  @Timeout(value = 10)
   /** Test create, list, and delete a directory through a symlink */
   public void testAccessDirViaSymlink() throws IOException {
     Path baseDir    = new Path(testBaseDir1());
@@ -1427,7 +1433,7 @@ public abstract class SymlinkBaseTest {
   }
 
   @Test
-  @Timeout(value=10000, unit=TimeUnit.MILLISECONDS)
+  @Timeout(value = 10)
   /** setTimes affects the target file not the link */
   public void testSetTimesSymlinkToFile() throws IOException {
     Path file = new Path(testBaseDir1(), "file");
@@ -1437,15 +1443,14 @@ public abstract class SymlinkBaseTest {
     long at = wrapper.getFileLinkStatus(link).getAccessTime();
     // the local file system may not support millisecond timestamps
     wrapper.setTimes(link, 2000L, 3000L);
-    assertTrue(
-        wrapper.getFileLinkStatus(link).getAccessTime() >= at,
+    assertTrue(wrapper.getFileLinkStatus(link).getAccessTime() >= at,
         "The atime of symlink should not be lesser after setTimes()");
     assertEquals(2000, wrapper.getFileStatus(file).getModificationTime());
     assertEquals(3000, wrapper.getFileStatus(file).getAccessTime());
   }
 
   @Test
-  @Timeout(value=10000, unit=TimeUnit.MILLISECONDS)
+  @Timeout(value = 10)
   /** setTimes affects the target directory not the link */
   public void testSetTimesSymlinkToDir() throws IOException {
     Path dir = new Path(testBaseDir1(), "dir");
@@ -1455,15 +1460,14 @@ public abstract class SymlinkBaseTest {
     long at = wrapper.getFileLinkStatus(link).getAccessTime();
     // the local file system may not support millisecond timestamps
     wrapper.setTimes(link, 2000L, 3000L);
-    assertTrue(
-        wrapper.getFileLinkStatus(link).getAccessTime() >= at,
+    assertTrue(wrapper.getFileLinkStatus(link).getAccessTime() >= at,
         "The atime of symlink should not be lesser after setTimes()");
     assertEquals(2000, wrapper.getFileStatus(dir).getModificationTime());
     assertEquals(3000, wrapper.getFileStatus(dir).getAccessTime());
   }
 
   @Test
-  @Timeout(value=10000, unit=TimeUnit.MILLISECONDS)
+  @Timeout(value = 10)
   /** setTimes does not affect the link even though target does not exist */
   public void testSetTimesDanglingLink() throws IOException {
     Path file = new Path("/noSuchFile");
@@ -1476,8 +1480,7 @@ public abstract class SymlinkBaseTest {
     } catch (IOException e) {
       // Expected
     }
-    assertTrue(
-        wrapper.getFileLinkStatus(link).getAccessTime() >= at,
+    assertTrue(wrapper.getFileLinkStatus(link).getAccessTime() >= at,
         "The atime of symlink should not be lesser after setTimes()");
   }
 }

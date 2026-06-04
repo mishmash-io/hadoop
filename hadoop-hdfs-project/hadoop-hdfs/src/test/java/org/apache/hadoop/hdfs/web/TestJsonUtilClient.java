@@ -20,6 +20,7 @@ package org.apache.hadoop.hdfs.web;
 import org.apache.hadoop.fs.BlockLocation;
 import org.apache.hadoop.fs.StorageType;
 import org.apache.hadoop.util.JsonSerialization;
+import org.junit.jupiter.api.Test;
 
 import java.util.ArrayList;
 

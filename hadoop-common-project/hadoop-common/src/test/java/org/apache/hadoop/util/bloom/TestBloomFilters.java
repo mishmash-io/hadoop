@@ -111,24 +111,18 @@ public class TestBloomFilters {
     Key key = new Key(new byte[] { 48, 48 });
 
     filter.add(key);
-    assertTrue(filter.membershipTest(key),
-        "CountingBloomFilter.membership error ");
-    assertTrue(filter.approximateCount(key) == 1,
-        "CountingBloomFilter.approximateCount error");
+    assertTrue(filter.membershipTest(key), "CountingBloomFilter.membership error ");
+    assertTrue(filter.approximateCount(key) == 1, "CountingBloomFilter.approximateCount error");
 
     filter.add(key);
-    assertTrue(filter.approximateCount(key) == 2,
-        "CountingBloomFilter.approximateCount error");
+    assertTrue(filter.approximateCount(key) == 2, "CountingBloomFilter.approximateCount error");
 
     filter.delete(key);
-    assertTrue(filter.membershipTest(key),
-        "CountingBloomFilter.membership error ");
+    assertTrue(filter.membershipTest(key), "CountingBloomFilter.membership error ");
 
     filter.delete(key);
-    assertFalse(filter.membershipTest(key),
-        "CountingBloomFilter.membership error ");
-    assertTrue(filter.approximateCount(key) == 0,
-        "CountingBloomFilter.approximateCount error");
+    assertFalse(filter.membershipTest(key), "CountingBloomFilter.membership error ");
+    assertTrue(filter.approximateCount(key) == 0, "CountingBloomFilter.approximateCount error");
 
     BloomFilterCommonTester.of(hashId, numInsertions)
         .withFilterInstance(filter)
@@ -185,8 +179,7 @@ public class TestBloomFilters {
         .get(hashId);
 
     if (falsePositives == null)
-      fail(String.format("false positives for hash %d not founded",
-          hashId));
+      fail(String.format("false positives for hash %d not founded", hashId));
 
     filter.addFalsePositive(falsePositives);
 
@@ -199,8 +192,7 @@ public class TestBloomFilters {
     }
 
     for (int i = 1 - digits.getStart(); i < numInsertions; i += 2) {
-      assertFalse(
-          filter.membershipTest(new Key(Integer.toString(i).getBytes())),
+      assertFalse(filter.membershipTest(new Key(Integer.toString(i).getBytes())),
           " testRetouchedBloomFilterAddFalsePositive error " + i);
     }
   }
@@ -258,6 +250,6 @@ public class TestBloomFilters {
     BitSet origBitSet = (BitSet) bf.bits.clone();
     bf.not();
     assertFalse(bf.bits.intersects(origBitSet),
-                "BloomFilter#not should have inverted all bits");
+        "BloomFilter#not should have inverted all bits");
   }
 }

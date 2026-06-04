@@ -20,7 +20,6 @@ package org.apache.hadoop.cli;
 
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-
 import org.apache.hadoop.cli.util.CLICommand;
 import org.apache.hadoop.cli.util.CommandExecutor.Result;
 import org.apache.hadoop.fs.CommonConfigurationKeysPublic;

@@ -22,8 +22,7 @@ import java.net.URI;
 import java.util.ArrayList;
 import java.util.EnumSet;
 
-import org.assertj.core.api.Assertions;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.CommonConfigurationKeysPublic;
@@ -43,6 +42,7 @@ import static org.apache.hadoop.fs.azurebfs.constants.FileSystemConfigurations.O
 import static org.apache.hadoop.fs.azurebfs.constants.InternalConstants.CAPABILITY_SAFE_READAHEAD;
 import static org.apache.hadoop.fs.azurebfs.services.AbfsErrors.ERR_INVALID_ABFS_STATE;
 import static org.apache.hadoop.test.LambdaTestUtils.intercept;
+import static org.assertj.core.api.Assertions.assertThat;
 
 /**
  * Test AzureBlobFileSystem initialization.
@@ -60,13 +60,9 @@ public class ITestFileSystemInitialization extends AbstractAbfsIntegrationTest {
 
     String scheme = this.getAuthType() == AuthType.SharedKey ? FileSystemUriSchemes.ABFS_SCHEME
             : FileSystemUriSchemes.ABFS_SECURE_SCHEME;
-    assertEquals(fs.getUri(),
-        new URI(scheme,
-            filesystem + "@" + accountName,
-            null,
-            null,
-            null));
-    assertNotNull("working directory", fs.getWorkingDirectory());
+    assertEquals(fs.getUri(), new URI(scheme,
+        filesystem + "@" + accountName, null, null, null));
+    assertNotNull(fs.getWorkingDirectory(), "working directory");
   }
 
   @Test
@@ -83,11 +79,8 @@ public class ITestFileSystemInitialization extends AbstractAbfsIntegrationTest {
 
     try(SecureAzureBlobFileSystem fs = (SecureAzureBlobFileSystem) FileSystem.newInstance(rawConfig)) {
       assertEquals(fs.getUri(), new URI(FileSystemUriSchemes.ABFS_SECURE_SCHEME,
-          filesystem + "@" + accountName,
-          null,
-          null,
-          null));
-      assertNotNull("working directory", fs.getWorkingDirectory());
+          filesystem + "@" + accountName, null, null, null));
+      assertNotNull(fs.getWorkingDirectory(), "working directory");
     }
   }
 
@@ -97,18 +90,18 @@ public class ITestFileSystemInitialization extends AbstractAbfsIntegrationTest {
 
     final Path p = new Path("}");
     // etags always present
-    Assertions.assertThat(fs.hasPathCapability(p, ETAGS_AVAILABLE))
+    assertThat(fs.hasPathCapability(p, ETAGS_AVAILABLE))
         .describedAs("path capability %s in %s", ETAGS_AVAILABLE, fs)
         .isTrue();
     // readahead always correct
-    Assertions.assertThat(fs.hasPathCapability(p, CAPABILITY_SAFE_READAHEAD))
+    assertThat(fs.hasPathCapability(p, CAPABILITY_SAFE_READAHEAD))
         .describedAs("path capability %s in %s", CAPABILITY_SAFE_READAHEAD, fs)
         .isTrue();
 
     // etags-over-rename and ACLs are either both true or both false.
     final boolean etagsAcrossRename = fs.hasPathCapability(p, ETAGS_PRESERVED_IN_RENAME);
     final boolean acls = fs.hasPathCapability(p, FS_ACLS);
-    Assertions.assertThat(etagsAcrossRename)
+    assertThat(etagsAcrossRename)
         .describedAs("capabilities %s=%s and %s=%s in %s",
             ETAGS_PRESERVED_IN_RENAME, etagsAcrossRename,
             FS_ACLS, acls, fs)
@@ -122,12 +115,12 @@ public class ITestFileSystemInitialization extends AbstractAbfsIntegrationTest {
   @Test
   public void testABFSCloseWithoutInit() throws Exception {
     AzureBlobFileSystem fs = new AzureBlobFileSystem();
-    Assertions.assertThat(fs.isClosed()).isTrue();
+    assertThat(fs.isClosed()).isTrue();
     fs.close();
     fs.initialize(this.getFileSystem().getUri(), getRawConfiguration());
-    Assertions.assertThat(fs.isClosed()).isFalse();
+    assertThat(fs.isClosed()).isFalse();
     fs.close();
-    Assertions.assertThat(fs.isClosed()).isTrue();
+    assertThat(fs.isClosed()).isTrue();
   }
 
   /**
@@ -138,7 +131,7 @@ public class ITestFileSystemInitialization extends AbstractAbfsIntegrationTest {
   @Test
   public void testABFSUninitializedFileSystem() throws Exception {
     AzureBlobFileSystem fs = new AzureBlobFileSystem();
-    Assertions.assertThat(fs.isClosed()).isTrue();
+    assertThat(fs.isClosed()).isTrue();
     Path testPath = new Path("testPath");
 
     intercept(IllegalStateException.class, ERR_INVALID_ABFS_STATE,

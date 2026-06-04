@@ -24,9 +24,12 @@ import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FSDataOutputStream;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hdfs.client.HdfsDataInputStream;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.Timeout;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.fail;
 
 /** Test the fileLength on cluster restarts */
 public class TestFileLengthOnClusterRestart {
@@ -35,7 +38,7 @@ public class TestFileLengthOnClusterRestart {
    * Datanodes not report to Namenode yet.
    */
   @Test
-  @Timeout(value = 120000, unit = TimeUnit.MILLISECONDS)
+  @Timeout(value = 120)
   public void testFileLengthWithHSyncAndClusterRestartWithOutDNsRegister()
       throws Exception {
     final Configuration conf = new HdfsConfiguration();
@@ -58,7 +61,7 @@ public class TestFileLengthOnClusterRestart {
       in = (HdfsDataInputStream) dfs.open(path, 1024);
       // Verify the length when we just restart NN. DNs will register
       // immediately.
-      Assertions.assertEquals(fileLength, in.getVisibleLength());
+      assertEquals(fileLength, in.getVisibleLength());
       cluster.shutdownDataNodes();
       cluster.restartNameNode(false);
       // This is just for ensuring NN started.
@@ -66,9 +69,9 @@ public class TestFileLengthOnClusterRestart {
 
       try {
         in = (HdfsDataInputStream) dfs.open(path);
-        Assertions.fail("Expected IOException");
+        fail("Expected IOException");
       } catch (IOException e) {
-        Assertions.assertTrue(e.getLocalizedMessage().indexOf(
+        assertTrue(e.getLocalizedMessage().indexOf(
             "Name node is in safe mode") >= 0);
       }
     } finally {

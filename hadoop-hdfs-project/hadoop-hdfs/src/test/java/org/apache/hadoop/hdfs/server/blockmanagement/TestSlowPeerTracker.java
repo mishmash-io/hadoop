@@ -35,14 +35,16 @@ import java.io.IOException;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
 
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.core.Is.is;
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.assertj.core.api.Assertions.assertThat;
 
 /**
  * Tests for {@link SlowPeerTracker}.
+ * Set a timeout for every test case.
  */
-@Timeout(value=300000, unit=TimeUnit.MILLISECONDS)
+@Timeout(300)
 public class TestSlowPeerTracker {
   private static final Logger LOG = LoggerFactory.getLogger(TestSlowPeerTracker.class);
 
@@ -76,10 +78,10 @@ public class TestSlowPeerTracker {
     tracker.addReport("node3", "node1", new OutlierMetrics(0.0, 0.0, 0.0, 2.1));
     tracker.addReport("node3", "node2", new OutlierMetrics(0.0, 0.0, 0.0, 1.22));
 
-    assertThat(tracker.getReportsForAllDataNodes().size(), is(2));
-    assertThat(tracker.getReportsForNode("node2").size(), is(1));
-    assertThat(tracker.getReportsForNode("node3").size(), is(2));
-    assertThat(tracker.getReportsForNode("node1").size(), is(0));
+    assertThat(tracker.getReportsForAllDataNodes().size()).isEqualTo(2);
+    assertThat(tracker.getReportsForNode("node2").size()).isEqualTo(1);
+    assertThat(tracker.getReportsForNode("node3").size()).isEqualTo(2);
+    assertThat(tracker.getReportsForNode("node1").size()).isEqualTo(0);
   }
 
   /**
@@ -93,7 +95,7 @@ public class TestSlowPeerTracker {
 
     // No reports should expire after 1ms.
     timer.advance(1);
-    assertThat(tracker.getReportsForAllDataNodes().size(), is(3));
+    assertThat(tracker.getReportsForAllDataNodes().size()).isEqualTo(3);
 
     // All reports should expire after REPORT_VALIDITY_MS.
     timer.advance(reportValidityMs);
@@ -113,8 +115,8 @@ public class TestSlowPeerTracker {
     tracker.addReport("node3", "node2", new OutlierMetrics(0.0, 0.0, 0.0, 1.222));
     timer.advance(reportValidityMs);
     tracker.addReport("node3", "node4", new OutlierMetrics(0.0, 0.0, 0.0, 1.20));
-    assertThat(tracker.getReportsForAllDataNodes().size(), is(1));
-    assertThat(tracker.getReportsForNode("node3").size(), is(1));
+    assertThat(tracker.getReportsForAllDataNodes().size()).isEqualTo(1);
+    assertThat(tracker.getReportsForNode("node3").size()).isEqualTo(1);
     assertEquals(1, tracker.getReportsForNode("node3").stream()
         .filter(e -> e.getReportingNode().equals("node4")).count());
   }
@@ -127,13 +129,13 @@ public class TestSlowPeerTracker {
     OutlierMetrics outlierMetrics1 = new OutlierMetrics(0.0, 0.0, 0.0, 2.1);
     tracker.addReport("node2", "node1", outlierMetrics1);
     timer.advance(reportValidityMs); // Expire the report.
-    assertThat(tracker.getReportsForAllDataNodes().size(), is(0));
+    assertThat(tracker.getReportsForAllDataNodes().size()).isEqualTo(0);
 
     // This should replace the expired report with a newer valid one.
     OutlierMetrics outlierMetrics2 = new OutlierMetrics(0.0, 0.0, 0.0, 0.001);
     tracker.addReport("node2", "node1", outlierMetrics2);
-    assertThat(tracker.getReportsForAllDataNodes().size(), is(1));
-    assertThat(tracker.getReportsForNode("node2").size(), is(1));
+    assertThat(tracker.getReportsForAllDataNodes().size()).isEqualTo(1);
+    assertThat(tracker.getReportsForNode("node2").size()).isEqualTo(1);
   }
 
   @Test
@@ -150,7 +152,7 @@ public class TestSlowPeerTracker {
     final Set<SlowPeerJsonReport> reports = getAndDeserializeJson();
 
     // And ensure its contents are what we expect.
-    assertThat(reports.size(), is(3));
+    assertThat(reports.size()).isEqualTo(3);
     assertTrue(isNodeInReports(reports, "node1"));
     assertTrue(isNodeInReports(reports, "node2"));
     assertTrue(isNodeInReports(reports, "node4"));
@@ -185,29 +187,39 @@ public class TestSlowPeerTracker {
     assertTrue(isNodeInReports(reports, "node5"));
     assertTrue(isNodeInReports(reports, "node6"));
 
-    assertEquals(1, reports.stream().filter(
-        e -> e.getSlowNode().equals("node1") && e.getSlowPeerLatencyWithReportingNodes().size() == 2
-            && e.getSlowPeerLatencyWithReportingNodes().first().getReportedLatency().equals(1.634)
-            && e.getSlowPeerLatencyWithReportingNodes().last().getReportedLatency().equals(2.3566))
+    assertEquals(1,
+        reports.stream().filter(e -> e.getSlowNode().equals("node1")
+                && e.getSlowPeerLatencyWithReportingNodes().size() == 2
+                && e.getSlowPeerLatencyWithReportingNodes().first()
+                .getReportedLatency().equals(1.634)
+                && e.getSlowPeerLatencyWithReportingNodes().last()
+                .getReportedLatency().equals(2.3566))
+            .count());
+
+    assertEquals(1,
+        reports.stream().filter(e -> e.getSlowNode().equals("node2")
+                && e.getSlowPeerLatencyWithReportingNodes().size() == 2
+                && e.getSlowPeerLatencyWithReportingNodes().first()
+                .getReportedLatency().equals(3.869)
+                && e.getSlowPeerLatencyWithReportingNodes().last()
+                .getReportedLatency().equals(4.1356))
+            .count());
+
+    assertEquals(1, reports.stream().filter(e -> e.getSlowNode().equals("node3")
+            && e.getSlowPeerLatencyWithReportingNodes().size() == 2
+            && e.getSlowPeerLatencyWithReportingNodes().first()
+            .getReportedLatency().equals(1.73057)
+            && e.getSlowPeerLatencyWithReportingNodes().last()
+            .getReportedLatency().equals(2.4956730))
         .count());
 
-    assertEquals(1, reports.stream().filter(
-        e -> e.getSlowNode().equals("node2") && e.getSlowPeerLatencyWithReportingNodes().size() == 2
-            && e.getSlowPeerLatencyWithReportingNodes().first().getReportedLatency().equals(3.869)
-            && e.getSlowPeerLatencyWithReportingNodes().last().getReportedLatency().equals(4.1356))
+    assertEquals(1, reports.stream().filter(e -> e.getSlowNode().equals("node6")
+            && e.getSlowPeerLatencyWithReportingNodes().size() == 2
+            && e.getSlowPeerLatencyWithReportingNodes().first()
+            .getReportedLatency().equals(1.29475656)
+            && e.getSlowPeerLatencyWithReportingNodes().last()
+            .getReportedLatency().equals(2.37464))
         .count());
-
-    assertEquals(1, reports.stream().filter(
-        e -> e.getSlowNode().equals("node3") && e.getSlowPeerLatencyWithReportingNodes().size() == 2
-            && e.getSlowPeerLatencyWithReportingNodes().first().getReportedLatency().equals(1.73057)
-            && e.getSlowPeerLatencyWithReportingNodes().last().getReportedLatency()
-            .equals(2.4956730)).count());
-
-    assertEquals(1, reports.stream().filter(
-        e -> e.getSlowNode().equals("node6") && e.getSlowPeerLatencyWithReportingNodes().size() == 2
-            && e.getSlowPeerLatencyWithReportingNodes().first().getReportedLatency()
-            .equals(1.29475656) && e.getSlowPeerLatencyWithReportingNodes().last()
-            .getReportedLatency().equals(2.37464)).count());
   }
 
   @Test

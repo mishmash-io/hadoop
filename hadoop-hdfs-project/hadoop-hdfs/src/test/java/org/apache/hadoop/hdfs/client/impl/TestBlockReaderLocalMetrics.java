@@ -31,6 +31,9 @@ import static org.apache.hadoop.test.MetricsAsserts.getMetrics;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import org.apache.hadoop.util.FakeTimer;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.Timeout;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyLong;
 
@@ -71,7 +74,7 @@ public class TestBlockReaderLocalMetrics {
   }
 
   @Test
-  @Timeout(value = 300_000, unit = TimeUnit.MILLISECONDS)
+  @Timeout(value = 300)
   public void testSlowShortCircuitReadsStatsRecorded() throws IOException,
       InterruptedException, TimeoutException {
 
@@ -116,7 +119,7 @@ public class TestBlockReaderLocalMetrics {
   }
 
   @Test
-  @Timeout(value = 300_000, unit = TimeUnit.MILLISECONDS)
+  @Timeout(value = 300)
   public void testMutlipleBlockReaderIoProviderStats() throws IOException,
       InterruptedException, TimeoutException {
 
@@ -175,7 +178,7 @@ public class TestBlockReaderLocalMetrics {
   }
 
   @Test
-  @Timeout(value = 300_000, unit = TimeUnit.MILLISECONDS)
+  @Timeout(value = 300)
   public void testSlowShortCircuitReadsAverageLatencyValue() throws IOException,
       InterruptedException, TimeoutException {
 

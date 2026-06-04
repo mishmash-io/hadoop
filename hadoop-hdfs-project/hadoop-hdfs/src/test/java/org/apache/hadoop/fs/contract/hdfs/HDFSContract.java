@@ -74,7 +74,7 @@ public class HDFSContract extends AbstractFSContract {
   public void init() throws IOException {
     super.init();
     Assertions.assertTrue(isSupported(ContractOptions.IS_CASE_SENSITIVE, false),
-                      "contract options not loaded");
+        "contract options not loaded");
   }
 
   @Override

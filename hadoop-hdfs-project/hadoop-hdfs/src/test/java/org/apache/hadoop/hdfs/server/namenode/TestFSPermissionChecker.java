@@ -32,13 +32,16 @@ import static org.apache.hadoop.fs.permission.FsAction.READ_WRITE;
 import static org.apache.hadoop.fs.permission.FsAction.WRITE;
 import static org.apache.hadoop.fs.permission.FsAction.WRITE_EXECUTE;
 import static org.apache.hadoop.hdfs.server.namenode.AclTestHelpers.aclEntry;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.fail;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.mock;
 
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 import java.util.function.LongFunction;
 
@@ -53,7 +56,6 @@ import org.apache.hadoop.hdfs.server.namenode.FSDirectory.DirOp;
 import org.apache.hadoop.hdfs.server.namenode.snapshot.Snapshot;
 import org.apache.hadoop.security.AccessControlException;
 import org.apache.hadoop.security.UserGroupInformation;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.invocation.InvocationOnMock;
@@ -422,10 +424,9 @@ public class TestFSPermissionChecker {
         path + ", access = " + access);
     } catch (AccessControlException e) {
       assertTrue(e.getMessage().contains(user.getUserName().toString()),
-              "Permission denied messages must carry the username");
-      assertTrue(e.getMessage().contains(
-                  new Path(path).getParent().toUri().getPath()),
-              "Permission denied messages must carry the path parent");
+          "Permission denied messages must carry the username");
+      assertTrue(e.getMessage().contains(new Path(path).getParent().toUri().getPath()),
+          "Permission denied messages must carry the path parent");
     }
   }
 
@@ -434,7 +435,7 @@ public class TestFSPermissionChecker {
     PermissionStatus permStatus = PermissionStatus.createImmutable(owner, group,
       FsPermission.createImmutable(perm));
     INodeDirectory inodeDirectory = new INodeDirectory(
-      HdfsConstants.GRANDFATHER_INODE_ID, name.getBytes("UTF-8"), permStatus, 0L);
+        HdfsConstants.GRANDFATHER_INODE_ID, name.getBytes(StandardCharsets.UTF_8), permStatus, 0L);
     parent.addChild(inodeDirectory);
     return inodeDirectory;
   }
@@ -444,8 +445,8 @@ public class TestFSPermissionChecker {
     PermissionStatus permStatus = PermissionStatus.createImmutable(owner, group,
       FsPermission.createImmutable(perm));
     INodeFile inodeFile = new INodeFile(HdfsConstants.GRANDFATHER_INODE_ID,
-      name.getBytes("UTF-8"), permStatus, 0L, 0L, null, REPLICATION,
-      PREFERRED_BLOCK_SIZE);
+        name.getBytes(StandardCharsets.UTF_8), permStatus, 0L, 0L, null,
+        REPLICATION, PREFERRED_BLOCK_SIZE);
     parent.addChild(inodeFile);
     return inodeFile;
   }
@@ -461,7 +462,7 @@ public class TestFSPermissionChecker {
     final String m1 = FSPermissionChecker.runCheckPermission(
         () -> FSPermissionChecker.LOG.info("Fast runner"),
         checkAccessControlEnforcerSlowness);
-    Assertions.assertNull(m1);
+    assertNull(m1);
 
     final String m2 = FSPermissionChecker.runCheckPermission(() -> {
       FSPermissionChecker.LOG.info("Slow runner");
@@ -472,6 +473,6 @@ public class TestFSPermissionChecker {
         throw new IllegalStateException(e);
       }
     }, checkAccessControlEnforcerSlowness);
-    Assertions.assertNotNull(m2);
+    assertNotNull(m2);
   }
 }

@@ -18,7 +18,9 @@
 
 package org.apache.hadoop.hdfs;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertArrayEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.io.File;
 import java.io.IOException;
@@ -42,6 +44,7 @@ import org.apache.hadoop.hdfs.server.namenode.FSNamesystem;
 import org.apache.hadoop.io.IOUtils;
 import org.apache.hadoop.test.GenericTestUtils;
 import org.apache.hadoop.test.PathUtils;
+import org.junit.jupiter.api.Test;
 import org.slf4j.event.Level;
 
 import org.junit.jupiter.api.Test;
@@ -127,8 +130,7 @@ public class TestPersistBlocks {
       // Check that the file has no less bytes than before the restart
       // This would mean that blocks were successfully persisted to the log
       FileStatus status = fs.getFileStatus(FILE_PATH);
-      assertTrue(status.getLen() >= len,
-          "Length too short: " + status.getLen());
+      assertTrue(status.getLen() >= len, "Length too short: " + status.getLen());
       
       // And keep writing (ensures that leases are also persisted correctly)
       stream.write(DATA_AFTER_RESTART);

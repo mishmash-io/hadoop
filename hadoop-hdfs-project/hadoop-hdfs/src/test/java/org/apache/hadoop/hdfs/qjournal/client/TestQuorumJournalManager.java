@@ -24,7 +24,11 @@ import static org.apache.hadoop.hdfs.qjournal.QJMTestUtil.writeSegment;
 import static org.apache.hadoop.hdfs.qjournal.QJMTestUtil.writeTxns;
 import static org.apache.hadoop.hdfs.qjournal.client.SpyQJournalUtil.spyGetJournaledEdits;
 import static org.apache.hadoop.hdfs.qjournal.client.TestQuorumJournalManagerUnit.futureThrows;
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.fail;
 import static org.mockito.ArgumentMatchers.eq;
 import java.io.Closeable;
 import java.io.File;
@@ -45,9 +49,11 @@ import java.util.concurrent.atomic.AtomicInteger;
 import org.apache.hadoop.hdfs.server.common.Util;
 import org.apache.hadoop.hdfs.server.protocol.RemoteEditLogManifest;
 import org.apache.hadoop.net.MockDomainNameResolver;
+import org.apache.hadoop.test.TestName;
 import org.apache.hadoop.thirdparty.com.google.common.util.concurrent.ListenableFuture;
 import org.apache.hadoop.thirdparty.com.google.common.util.concurrent.SettableFuture;
 import org.apache.hadoop.util.Lists;
+import org.junit.jupiter.api.extension.RegisterExtension;
 import org.mockito.stubbing.Answer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -68,7 +74,10 @@ import org.apache.hadoop.hdfs.server.namenode.NameNodeLayoutVersion;
 import org.apache.hadoop.io.IOUtils;
 import org.apache.hadoop.ipc.ProtobufRpcEngine2;
 import org.apache.hadoop.test.GenericTestUtils;
-import org.junit.jupiter.api.*;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.Timeout;
 import org.mockito.Mockito;
 import org.mockito.stubbing.Stubber;
 
@@ -93,15 +102,12 @@ public class TestQuorumJournalManager {
     GenericTestUtils.setLogLevel(ProtobufRpcEngine2.LOG, Level.TRACE);
   }
 
-  
-  public String name;
+  @SuppressWarnings("checkstyle:VisibilityModifier")
+  @RegisterExtension
+  public TestName name = new TestName();
 
   @BeforeEach
-  public void setup(TestInfo testInfo) throws Exception {
-    Optional<Method> testMethod = testInfo.getTestMethod();
-    if (testMethod.isPresent()) {
-      this.name = testMethod.get().getName();
-    }
+  public void setup() throws Exception {
     conf = new Configuration();
     if (! name.equals("testSelectThreadCounts")) {
       // Don't retry connections - it just slows down the tests.
@@ -806,9 +812,9 @@ public class TestQuorumJournalManager {
       qjm.close();
     }
   }
-
+  
   @Test
-  @Timeout(value = 20000, unit = TimeUnit.MILLISECONDS)
+  @Timeout(value = 20)
   public void testCrashBetweenSyncLogAndPersistPaxosData() throws Exception {
     JournalFaultInjector faultInjector =
         JournalFaultInjector.instance = Mockito.mock(JournalFaultInjector.class);

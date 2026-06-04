@@ -66,7 +66,7 @@ public class TestZKFailoverControllerStress extends ClientBaseWithFixes {
    * configured amount of time, via expiring their ZK sessions.
    */
   @Test
-  @Timeout(value=(STRESS_RUNTIME_SECS + EXTRA_TIMEOUT_SECS), unit=TimeUnit.SECONDS)
+  @Timeout(STRESS_RUNTIME_SECS + EXTRA_TIMEOUT_SECS)
   public void testExpireBackAndForth() throws Exception {
     cluster.start();
     long st = Time.now();
@@ -93,7 +93,7 @@ public class TestZKFailoverControllerStress extends ClientBaseWithFixes {
    * generate fatal exceptions.
    */
   @Test
-  @Timeout(value=(STRESS_RUNTIME_SECS + EXTRA_TIMEOUT_SECS), unit=TimeUnit.SECONDS)
+  @Timeout(STRESS_RUNTIME_SECS + EXTRA_TIMEOUT_SECS)
   public void testRandomExpirations() throws Exception {
     cluster.start();
     long st = Time.now();
@@ -121,7 +121,7 @@ public class TestZKFailoverControllerStress extends ClientBaseWithFixes {
    * 50ms, to trigger the retry code and failures to become active.
    */
   @Test
-  @Timeout(value=(STRESS_RUNTIME_SECS + EXTRA_TIMEOUT_SECS), unit=TimeUnit.SECONDS)
+  @Timeout(STRESS_RUNTIME_SECS + EXTRA_TIMEOUT_SECS)
   public void testRandomHealthAndDisconnects() throws Exception {
     long runFor = STRESS_RUNTIME_SECS * 1000;
     Mockito.doAnswer(new RandomlyThrow(0))

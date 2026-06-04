@@ -39,6 +39,7 @@ import org.apache.hadoop.hdfs.server.protocol.DatanodeRegistration;
 import org.apache.hadoop.hdfs.server.protocol.NamenodeProtocols;
 import org.apache.hadoop.test.GenericTestUtils;
 import org.apache.hadoop.util.VersionInfo;
+import org.junit.jupiter.api.Test;
 
 import java.util.function.Supplier;
 
@@ -49,6 +50,7 @@ import java.security.Permission;
 import java.util.concurrent.TimeoutException;
 
 import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assumptions.assumeTrue;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
 
@@ -80,8 +82,13 @@ public class TestDatanodeRegistration {
   @Test
   public void testDNSLookups() throws Exception {
     MonitorDNS sm = new MonitorDNS();
-    System.setSecurityManager(sm);
-    
+    try {
+      System.setSecurityManager(sm);
+    } catch (UnsupportedOperationException e) {
+      assumeTrue(false,
+          "Test is skipped because SecurityManager cannot be set (JEP 411)");
+    }
+
     MiniDFSCluster cluster = null;
     try {
       HdfsConfiguration conf = new HdfsConfiguration();
@@ -210,7 +217,8 @@ public class TestDatanodeRegistration {
       rpcServer.registerDatanode(dnReg);
 
       report = client.datanodeReport(DatanodeReportType.ALL);
-      assertEquals(1, report.length, "Datanode with changed storage ID not recognized");
+      assertEquals(1, report.length,
+          "Datanode with changed storage ID not recognized");
     } finally {
       if (cluster != null) {
         cluster.shutdown();
@@ -242,6 +250,7 @@ public class TestDatanodeRegistration {
       doReturn(123).when(mockDnReg).getXferPort();
       doReturn("fake-storage-id").when(mockDnReg).getDatanodeUuid();
       doReturn(mockStorageInfo).when(mockDnReg).getStorageInfo();
+      doReturn("localhost").when(mockDnReg).getHostName();
       
       // Should succeed when software versions are the same.
       doReturn("3.0.0").when(mockDnReg).getSoftwareVersion();
@@ -296,6 +305,7 @@ public class TestDatanodeRegistration {
       doReturn(VersionInfo.getVersion()).when(mockDnReg).getSoftwareVersion();
       doReturn("127.0.0.1").when(mockDnReg).getIpAddr();
       doReturn(123).when(mockDnReg).getXferPort();
+      doReturn("localhost").when(mockDnReg).getHostName();
       rpcServer.registerDatanode(mockDnReg);
       
       // Should succeed when software versions are the same and CTimes are

@@ -19,14 +19,15 @@ import java.util.Random;
 import jakarta.servlet.ServletContext;
 
 import org.apache.curator.test.TestingServer;
-import org.apache.logging.log4j.Level;
-import org.apache.logging.log4j.core.config.Configurator;
+import org.apache.log4j.Level;
+import org.apache.log4j.LogManager;
 import org.junit.jupiter.api.AfterEach;
-import static org.junit.jupiter.api.Assertions.assertNull;
-import static org.junit.jupiter.api.Assertions.assertArrayEquals;
-import static org.junit.jupiter.api.Assertions.assertEquals;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+
+import static org.junit.jupiter.api.Assertions.assertArrayEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.timeout;
@@ -349,11 +350,11 @@ public class TestZKSignerSecretProvider {
       assertArrayEquals(allSecretsA[1], allSecretsB[1]);
       switch (order) {
         case 1:
-          assertArrayEquals(secretA4, allSecretsA[0]);
-          break;
+        assertArrayEquals(secretA4, allSecretsA[0]);
+        break;
         case 2:
-          assertArrayEquals(secretB4, allSecretsA[0]);
-          break;
+        assertArrayEquals(secretB4, allSecretsA[0]);
+        break;
       }
     } finally {
       secretProviderB.destroy();

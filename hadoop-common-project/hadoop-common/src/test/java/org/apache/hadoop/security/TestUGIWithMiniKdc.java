@@ -65,7 +65,7 @@ public class TestUGIWithMiniKdc {
   }
 
   @Test
-  @Timeout(value=120000, unit=TimeUnit.MILLISECONDS)
+  @Timeout(value = 120)
   public void testAutoRenewalThreadRetryWithKdc() throws Exception {
     GenericTestUtils.setLogLevel(UserGroupInformation.LOG, Level.DEBUG);
     final Configuration conf = new Configuration();

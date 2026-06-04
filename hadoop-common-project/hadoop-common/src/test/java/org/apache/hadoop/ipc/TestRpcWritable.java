@@ -32,6 +32,9 @@ import org.apache.hadoop.util.Time;
 import org.junit.jupiter.api.Test;
 import org.apache.hadoop.thirdparty.protobuf.Message;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
 public class TestRpcWritable {//extends TestRpcBase {
 
   static Writable writable = new LongWritable(Time.now());

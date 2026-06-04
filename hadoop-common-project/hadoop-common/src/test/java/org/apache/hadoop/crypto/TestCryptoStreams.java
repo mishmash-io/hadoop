@@ -469,7 +469,7 @@ public class TestCryptoStreams extends CryptoStreamsTestBase {
    * the underlying streams.
    */
   @Test
-  @Timeout(value=120000, unit=TimeUnit.MILLISECONDS)
+  @Timeout(value = 120)
   public void testHasCapability() throws Exception {
     // verify hasCapability returns what FakeOutputStream is set up for
     CryptoOutputStream cos =

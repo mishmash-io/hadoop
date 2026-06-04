@@ -20,8 +20,16 @@ package org.apache.hadoop.metrics2.source;
 
 import org.apache.hadoop.metrics2.impl.MetricsCollectorImpl;
 import org.apache.hadoop.util.GcTimeMonitor;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.Test;
 
-import static org.mockito.Mockito.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.fail;
+import static org.mockito.Mockito.anyInt;
+import static org.mockito.Mockito.anyFloat;
+import static org.mockito.Mockito.eq;
+import static org.mockito.Mockito.verify;
 import static org.apache.hadoop.test.MetricsAsserts.*;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -34,19 +42,17 @@ import org.apache.hadoop.service.ServiceOperations;
 import org.apache.hadoop.service.ServiceStateException;
 import org.apache.hadoop.test.GenericTestUtils;
 import org.apache.hadoop.util.JvmPauseMonitor;
-import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.Test;
+import org.apache.hadoop.util.concurrent.SubjectInheritingThread;
 import org.junit.jupiter.api.Timeout;
 
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
-import java.util.concurrent.TimeUnit;
 
 import static org.apache.hadoop.metrics2.source.JvmMetricsInfo.*;
 import static org.apache.hadoop.metrics2.impl.MsInfo.*;
 
-@Timeout(value=30000, unit=TimeUnit.MILLISECONDS)
+@Timeout(30)
 public class TestJvmMetrics {
 
   private JvmPauseMonitor pauseMonitor;
@@ -294,11 +300,11 @@ public class TestJvmMetrics {
     }
   }
 
-  static class TestThread extends Thread {
+  static class TestThread extends SubjectInheritingThread {
     private volatile boolean exit = false;
     private boolean exited = false;
     @Override
-    public void run() {
+    public void work() {
       while (!exit) {
         try {
           Thread.sleep(1000);

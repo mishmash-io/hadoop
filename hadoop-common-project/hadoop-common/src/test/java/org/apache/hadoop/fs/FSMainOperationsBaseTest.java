@@ -30,15 +30,13 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.net.URI;
 
-
-
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.Options.Rename;
 import org.apache.hadoop.fs.permission.FsPermission;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.slf4j.LoggerFactory;
+import org.eclipse.jetty.util.log.Log;
 
 /**
  * <p>
@@ -188,7 +186,7 @@ public abstract class FSMainOperationsBaseTest extends FileSystemTestHelper {
     absoluteDir = getTestRootPath(fSys, "nonexistingPath");
     try {
       fSys.setWorkingDirectory(absoluteDir);
-      Assert.fail("cd to non existing dir should have failed");
+      fail("cd to non existing dir should have failed");
     } catch (Exception e) {
       // Exception as expected
     }
@@ -352,7 +350,7 @@ public abstract class FSMainOperationsBaseTest extends FileSystemTestHelper {
     // listStatus with filters returns empty correctly
     FileStatus[] filteredPaths = fSys.listStatus(
         getTestRootPath(fSys, "test"), TEST_X_FILTER);
-    assertEquals(0,filteredPaths.length);
+    assertEquals(0, filteredPaths.length);
     
   }
   
@@ -373,7 +371,7 @@ public abstract class FSMainOperationsBaseTest extends FileSystemTestHelper {
     // should return 2 paths ("/test/hadoop/axa" and "/test/hadoop/axx")
     FileStatus[] filteredPaths = fSys.listStatus(
         getTestRootPath(fSys, "test/hadoop"), TEST_X_FILTER);
-    assertEquals(2,filteredPaths.length);
+    assertEquals(2, filteredPaths.length);
     assertTrue(containsTestRootPath(getTestRootPath(fSys,
         TEST_DIR_AXA), filteredPaths));
     assertTrue(containsTestRootPath(getTestRootPath(fSys,
@@ -505,7 +503,7 @@ public abstract class FSMainOperationsBaseTest extends FileSystemTestHelper {
     FileStatus[] filteredPaths = fSys.globStatus(
         getTestRootPath(fSys, "test/hadoop/?"),
         DEFAULT_FILTER);
-    assertEquals(0,filteredPaths.length);
+    assertEquals(0, filteredPaths.length);
   }
   
   @Test
@@ -609,7 +607,7 @@ public abstract class FSMainOperationsBaseTest extends FileSystemTestHelper {
     FileStatus[] filteredPaths = fSys.globStatus(
         getTestRootPath(fSys, "test/hadoop/?"),
         TEST_X_FILTER);
-    assertEquals(0,filteredPaths.length);
+    assertEquals(0, filteredPaths.length);
   }
   
   @Test
@@ -805,7 +803,7 @@ public abstract class FSMainOperationsBaseTest extends FileSystemTestHelper {
       rename(src, dst, false, false, false, Rename.NONE);
       fail("Should throw FileNotFoundException");
     } catch (IOException e) {
-      LoggerFactory.getLogger(FSMainOperationsBaseTest.class).info("XXX", e);
+      Log.getLog().info("XXX", e);
       assertTrue(unwrapException(e) instanceof FileNotFoundException);
     }
 
@@ -1007,17 +1005,13 @@ public abstract class FSMainOperationsBaseTest extends FileSystemTestHelper {
     fSys.mkdirs(dst.getParent());
     
     rename(src, dst, true, false, true, options);
-    assertFalse( 
-        exists(fSys, getTestRootPath(fSys, "test/hadoop/dir/file1")),
-        "Nested file1 exists");
-    assertFalse(
-        exists(fSys, getTestRootPath(fSys, "test/hadoop/dir/subdir/file2")),
+    assertFalse(exists(fSys, getTestRootPath(fSys,
+        "test/hadoop/dir/file1")), "Nested file1 exists");
+    assertFalse(exists(fSys, getTestRootPath(fSys, "test/hadoop/dir/subdir/file2")),
         "Nested file2 exists");
-    assertTrue(
-        exists(fSys, getTestRootPath(fSys, "test/new/newdir/file1")),
+    assertTrue(exists(fSys, getTestRootPath(fSys, "test/new/newdir/file1")),
         "Renamed nested file1 exists");
-    assertTrue( 
-        exists(fSys, getTestRootPath(fSys, "test/new/newdir/subdir/file2")),
+    assertTrue(exists(fSys, getTestRootPath(fSys, "test/new/newdir/subdir/file2")),
         "Renamed nested exists");
   }
 
@@ -1127,7 +1121,7 @@ public abstract class FSMainOperationsBaseTest extends FileSystemTestHelper {
     FSDataInputStream in = fSys.open(src);
     InputStream is = in.getWrappedStream();
     in.close();
-    assertNotNull(is);  
+    assertNotNull(is);
   }
   
   @Test
@@ -1140,8 +1134,7 @@ public abstract class FSMainOperationsBaseTest extends FileSystemTestHelper {
     fSys.initialize(new URI("file:///"), conf);
     writeFile(fSys, fileToFS);
     if (fSys.exists(crcFileAtLFS))
-      assertTrue(fSys.delete(crcFileAtLFS, true),
-                 "CRC files not deleted");
+      assertTrue(fSys.delete(crcFileAtLFS, true), "CRC files not deleted");
     fSys.copyToLocalFile(false, fileToFS, fileToLFS, true);
     assertFalse(fSys.exists(crcFileAtLFS), "CRC files are created");
   }

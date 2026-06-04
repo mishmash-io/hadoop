@@ -32,7 +32,6 @@ import org.apache.hadoop.http.HttpServer2;
 import org.apache.hadoop.security.UserGroupInformation;
 import org.apache.hadoop.security.authentication.util.KerberosName;
 import org.apache.hadoop.security.authorize.AccessControlList;
-
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 

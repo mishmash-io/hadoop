@@ -22,8 +22,9 @@ import java.util.function.Supplier;
 import org.apache.hadoop.fs.StorageType;
 import org.apache.hadoop.hdfs.protocol.DatanodeInfo.DatanodeInfoBuilder;
 import org.apache.hadoop.hdfs.server.blockmanagement.DatanodeStorageInfo;
-
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
@@ -52,8 +53,10 @@ import org.apache.hadoop.hdfs.server.namenode.FSNamesystem;
 import org.apache.hadoop.hdfs.server.namenode.NameNode;
 import org.apache.hadoop.hdfs.server.protocol.DatanodeRegistration;
 import org.apache.hadoop.hdfs.server.protocol.DatanodeStorage;
+import org.apache.hadoop.hdfs.util.RwLockMode;
 import org.apache.hadoop.test.GenericTestUtils;
 import org.apache.hadoop.test.PathUtils;
+import org.junit.jupiter.api.Test;
 import org.slf4j.Logger;
 
 import org.junit.jupiter.api.Test;
@@ -94,8 +97,8 @@ public class TestFileCorruption {
               new ExtendedBlock(bpid, brr)).deleteData();
         }
       }
-      assertTrue(util.checkFiles(fs, "/srcdat"),
-                 "Corrupted replicas not handled properly.");
+      assertTrue(
+                util.checkFiles(fs, "/srcdat"), "Corrupted replicas not handled properly.");
       util.cleanup(fs, "/srcdat");
     } finally {
       if (cluster != null) { cluster.shutdown(); }
@@ -159,13 +162,13 @@ public class TestFileCorruption {
       DatanodeRegistration dnR = InternalDataNodeTestUtils.
         getDNRegistrationForBP(dataNode, blk.getBlockPoolId());
       FSNamesystem ns = cluster.getNamesystem();
-      ns.writeLock();
+      ns.writeLock(RwLockMode.BM);
       try {
         cluster.getNamesystem().getBlockManager().findAndMarkBlockAsCorrupt(blk,
             new DatanodeInfoBuilder().setNodeID(dnR).build(), "TEST",
             "STORAGE_ID");
       } finally {
-        ns.writeUnlock();
+        ns.writeUnlock(RwLockMode.BM, "testArrayOutOfBoundsException");
       }
       
       // open the file
@@ -210,16 +213,16 @@ public class TestFileCorruption {
       FSNamesystem ns = cluster.getNamesystem();
       //fail the storage on that node which has the block
       try {
-        ns.writeLock();
+        ns.writeLock(RwLockMode.BM);
         updateAllStorages(bm);
       } finally {
-        ns.writeUnlock();
+        ns.writeUnlock(RwLockMode.BM, "testCorruptionWithDiskFailure");
       }
-      ns.writeLock();
+      ns.writeLock(RwLockMode.BM);
       try {
         markAllBlocksAsCorrupt(bm, blk);
       } finally {
-        ns.writeUnlock();
+        ns.writeUnlock(RwLockMode.BM, "testCorruptionWithDiskFailure");
       }
 
       // open the file

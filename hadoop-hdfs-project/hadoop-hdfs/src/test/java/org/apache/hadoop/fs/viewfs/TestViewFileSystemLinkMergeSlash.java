@@ -34,12 +34,16 @@ import org.apache.hadoop.hdfs.DistributedFileSystem;
 import org.apache.hadoop.hdfs.MiniDFSCluster;
 import org.apache.hadoop.hdfs.MiniDFSNNTopology;
 import org.apache.hadoop.test.GenericTestUtils;
-import org.junit.jupiter.api.*;
-
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.fail;
 
 import javax.security.auth.login.LoginException;
 
@@ -187,8 +191,7 @@ public class TestViewFileSystemLinkMergeSlash extends ViewFileSystemBaseTest {
           + "mount table.");
     } catch (IOException e) {
       assertTrue(e.getMessage().contains(expectedErrorMsg1) || e.getMessage()
-              .contains(expectedErrorMsg2),
-          "Unexpected error message: " + e.getMessage());
+              .contains(expectedErrorMsg2), "Unexpected error message: " + e.getMessage());
     }
   }
 
@@ -221,7 +224,8 @@ public class TestViewFileSystemLinkMergeSlash extends ViewFileSystemBaseTest {
         LINK_MERGE_SLASH_CLUSTER_1_NAME, "/", null, null);
     FileSystem fs = FileSystem.get(viewFsUri, conf);
     FileSystem[] childFs = fs.getChildFileSystems();
-    Assertions.assertEquals(1, childFs.length, "Unexpected number of child filesystems!");
-    Assertions.assertEquals(DistributedFileSystem.class, childFs[0].getClass(), "Unexpected child filesystem!");
+    assertEquals(1, childFs.length, "Unexpected number of child filesystems!");
+    assertEquals(DistributedFileSystem.class, childFs[0].getClass(),
+        "Unexpected child filesystem!");
   }
 }

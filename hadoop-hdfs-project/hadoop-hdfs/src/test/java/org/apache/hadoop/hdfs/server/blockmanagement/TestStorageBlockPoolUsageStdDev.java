@@ -30,7 +30,6 @@ import org.apache.hadoop.hdfs.server.datanode.DataNode;
 import org.apache.hadoop.hdfs.server.namenode.FSNamesystem;
 import org.apache.hadoop.hdfs.server.protocol.StorageReport;
 import org.eclipse.jetty.util.ajax.JSON;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -38,6 +37,8 @@ import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.util.ArrayList;
 import java.util.Map;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 public class TestStorageBlockPoolUsageStdDev {
   private final static int NUM_DATANODES = 5;
@@ -137,23 +138,23 @@ public class TestStorageBlockPoolUsageStdDev {
     // When multiple values are operated on in different order,
     // the results may be inconsistent, so we only take two decimal
     // points to assert.
-    Assertions.assertEquals(
+    assertEquals(
         Util.getBlockPoolUsedPercentStdDev(storageReportsDn0),
         (double) info.get(dn0.getDisplayName()).get("blockPoolUsedPercentStdDev"),
         0.01d);
-    Assertions.assertEquals(
+    assertEquals(
         Util.getBlockPoolUsedPercentStdDev(storageReportsDn1),
         (double) info.get(dn1.getDisplayName()).get("blockPoolUsedPercentStdDev"),
         0.01d);
-    Assertions.assertEquals(
+    assertEquals(
         Util.getBlockPoolUsedPercentStdDev(storageReportsDn2),
         (double) info.get(dn2.getDisplayName()).get("blockPoolUsedPercentStdDev"),
         0.01d);
-    Assertions.assertEquals(
+    assertEquals(
         Util.getBlockPoolUsedPercentStdDev(storageReportsDn3),
         (double) info.get(dn3.getDisplayName()).get("blockPoolUsedPercentStdDev"),
         0.01d);
-    Assertions.assertEquals(
+    assertEquals(
         Util.getBlockPoolUsedPercentStdDev(storageReportsDn4),
         (double) info.get(dn4.getDisplayName()).get("blockPoolUsedPercentStdDev"),
         0.01d);

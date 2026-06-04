@@ -51,8 +51,10 @@ import org.apache.hadoop.hdfs.server.namenode.NNStorage.NameNodeDirType;
 import org.apache.hadoop.hdfs.server.protocol.NamespaceInfo;
 import org.apache.hadoop.io.nativeio.NativeIO;
 import org.apache.hadoop.io.nativeio.NativeIOException;
-import org.apache.hadoop.util.VersionInfo;
 import org.apache.hadoop.util.cli.ToolRunner;
+import org.apache.hadoop.util.VersionInfo;
+import org.apache.hadoop.util.concurrent.SubjectInheritingThread;
+
 import org.apache.hadoop.util.Preconditions;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -848,8 +850,8 @@ public abstract class Storage extends StorageInfo {
           deleteDir(curTmp);
         }
         rename(curDir, curTmp);
-        new Thread("Async Delete Current.tmp") {
-          public void run() {
+        new SubjectInheritingThread("Async Delete Current.tmp") {
+          public void work() {
             try {
               deleteDir(curTmp);
             } catch (IOException e) {

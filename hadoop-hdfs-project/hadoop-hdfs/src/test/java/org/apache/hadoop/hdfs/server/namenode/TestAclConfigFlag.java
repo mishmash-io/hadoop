@@ -23,6 +23,8 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.apache.hadoop.fs.permission.AclEntryScope.*;
 import static org.apache.hadoop.fs.permission.AclEntryType.*;
 import static org.apache.hadoop.fs.permission.FsAction.*;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.Path;
@@ -60,54 +62,58 @@ public class TestAclConfigFlag {
   public void testModifyAclEntries() throws Exception {
     initCluster(true, false);
     fs.mkdirs(PATH);
-    expectException(() ->
+    expectException(() -> {
       fs.modifyAclEntries(PATH, Lists.newArrayList(
-        aclEntry(DEFAULT, USER, "foo", READ_WRITE)))
-    );
+          aclEntry(DEFAULT, USER, "foo", READ_WRITE)));
+    });
   }
 
   @Test
   public void testRemoveAclEntries() throws Exception {
     initCluster(true, false);
     fs.mkdirs(PATH);
-    expectException(() ->
+    expectException(() -> {
       fs.removeAclEntries(PATH, Lists.newArrayList(
-        aclEntry(DEFAULT, USER, "foo", READ_WRITE)))
-    );
+          aclEntry(DEFAULT, USER, "foo", READ_WRITE)));
+    });
   }
 
   @Test
   public void testRemoveDefaultAcl() throws Exception {
     initCluster(true, false);
     fs.mkdirs(PATH);
-    expectException(() ->
+    expectException(() -> {
       fs.removeAclEntries(PATH, Lists.newArrayList(
-        aclEntry(DEFAULT, USER, "foo", READ_WRITE)))
-    );
+          aclEntry(DEFAULT, USER, "foo", READ_WRITE)));
+    });
   }
 
   @Test
   public void testRemoveAcl() throws Exception {
     initCluster(true, false);
     fs.mkdirs(PATH);
-    expectException(() -> fs.removeAcl(PATH));
+    expectException(() -> {
+      fs.removeAcl(PATH);
+    });
   }
 
   @Test
   public void testSetAcl() throws Exception {
     initCluster(true, false);
     fs.mkdirs(PATH);
-    expectException(() -> 
+    expectException(() -> {
       fs.setAcl(PATH, Lists.newArrayList(
-        aclEntry(DEFAULT, USER, "foo", READ_WRITE)))
-    );
+          aclEntry(DEFAULT, USER, "foo", READ_WRITE)));
+    });
   }
 
   @Test
   public void testGetAclStatus() throws Exception {
     initCluster(true, false);
     fs.mkdirs(PATH);
-    expectException(() -> fs.getAclStatus(PATH));
+    expectException(() -> {
+      fs.getAclStatus(PATH);
+    });
   }
 
   @Test
@@ -141,9 +147,9 @@ public class TestAclConfigFlag {
    * We expect an AclException, and we want the exception text to state the
    * configuration key that controls ACL support.
    */
-  private void expectException(Executable exe) {
-   Throwable exception = assertThrows(AclException.class, exe);
-    assertTrue(exception.getMessage().contains(DFSConfigKeys.DFS_NAMENODE_ACLS_ENABLED_KEY));
+  private void expectException(Executable exec) {
+    AclException ex = assertThrows(AclException.class, exec);
+    assertTrue(ex.getMessage().contains(DFSConfigKeys.DFS_NAMENODE_ACLS_ENABLED_KEY));
   }
 
   /**

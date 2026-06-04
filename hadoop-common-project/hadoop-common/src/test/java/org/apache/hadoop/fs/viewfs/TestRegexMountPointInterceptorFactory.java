@@ -17,9 +17,9 @@
  */
 package org.apache.hadoop.fs.viewfs;
 
-import static org.junit.jupiter.api.Assertions.assertTrue;
-
 import org.junit.jupiter.api.Test;
+
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /**
  * Test Regex Mount Point Interceptor Factory.

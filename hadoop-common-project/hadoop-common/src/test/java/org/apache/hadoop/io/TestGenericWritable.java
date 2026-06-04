@@ -31,6 +31,10 @@ import org.apache.hadoop.conf.Configurable;
 import org.apache.hadoop.conf.Configuration;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.fail;
 
 /**
  * TestCase for {@link GenericWritable} class.
@@ -102,7 +106,7 @@ public class TestGenericWritable {
       super.readFields(in);
       //needs a configuration parameter
       assertEquals(CONF_TEST_VALUE, getConf().get(CONF_TEST_KEY),
-          "Configuration is not set for the wrapped object"); 
+          "Configuration is not set for the wrapped object");
     }
     @Override
     public void write(DataOutput out) throws IOException {

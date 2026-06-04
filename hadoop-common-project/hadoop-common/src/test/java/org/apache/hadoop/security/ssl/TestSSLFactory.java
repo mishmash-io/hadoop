@@ -32,6 +32,14 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.fail;
 import static org.apache.hadoop.security.ssl.SSLFactory.SSL_CLIENT_CONF_KEY;
 import static org.apache.hadoop.security.ssl.SSLFactory.SSL_REQUIRE_CLIENT_CERT_KEY;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNotSame;
+import static org.junit.jupiter.api.Assertions.assertNotEquals;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.fail;
 
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileUtil;
@@ -41,8 +49,8 @@ import org.apache.hadoop.security.alias.JavaKeyStoreProvider;
 import org.apache.hadoop.test.GenericTestUtils;
 import org.apache.hadoop.util.StringUtils;
 import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -157,18 +165,18 @@ public class TestSSLFactory {
 
   @Test
   public void clientMode() throws Exception {
-    Configuration conf = createConfiguration(false, true);
-    SSLFactory sslFactory = new SSLFactory(SSLFactory.Mode.CLIENT, conf);
-    try {
-      sslFactory.init();
-      assertNotNull(sslFactory.createSSLSocketFactory());
-      assertNotNull(sslFactory.getHostnameVerifier());
-      assertThrows(IllegalStateException.class, () -> {
+    assertThrows(IllegalStateException.class, () -> {
+      Configuration conf = createConfiguration(false, true);
+      SSLFactory sslFactory = new SSLFactory(SSLFactory.Mode.CLIENT, conf);
+      try {
+        sslFactory.init();
+        assertNotNull(sslFactory.createSSLSocketFactory());
+        assertNotNull(sslFactory.getHostnameVerifier());
         sslFactory.createSSLServerSocketFactory();
-      });
-    } finally {
-      sslFactory.destroy();
-    }
+      } finally {
+        sslFactory.destroy();
+      }
+    });
   }
 
   private void serverMode(boolean clientCert, boolean socket) throws Exception {
@@ -191,30 +199,23 @@ public class TestSSLFactory {
 
   @Test
   public void serverModeWithoutClientCertsSocket() throws Exception {
-    assertThrows(IllegalStateException.class, () -> {
-      serverMode(false, true);
-    });
+    assertThrows(IllegalStateException.class,
+        () -> serverMode(false, true));
   }
 
   @Test
   public void serverModeWithClientCertsSocket() throws Exception {
-    assertThrows(IllegalStateException.class, () -> {
-      serverMode(true, true);
-    });
+    assertThrows(IllegalStateException.class, () -> serverMode(true, true));
   }
 
   @Test
   public void serverModeWithoutClientCertsVerifier() throws Exception {
-    assertThrows(IllegalStateException.class, () -> {
-      serverMode(false, false);
-    });
+    assertThrows(IllegalStateException.class, () -> serverMode(false, false));
   }
 
   @Test
   public void serverModeWithClientCertsVerifier() throws Exception {
-    assertThrows(IllegalStateException.class, () -> {
-      serverMode(true, false);
-    });
+    assertThrows(IllegalStateException.class, ()-> serverMode(true, false));
   }
 
   private void runDelegatedTasks(SSLEngineResult result, SSLEngine engine)
@@ -372,16 +373,16 @@ public class TestSSLFactory {
 
   @Test
   public void invalidHostnameVerifier() throws Exception {
-    Configuration conf = createConfiguration(false, true);
-    conf.set(SSLFactory.SSL_HOSTNAME_VERIFIER_KEY, "foo");
-    SSLFactory sslFactory = new SSLFactory(SSLFactory.Mode.CLIENT, conf);
-    try {
-      assertThrows(GeneralSecurityException.class, () -> {
+    assertThrows(GeneralSecurityException.class, () -> {
+      Configuration conf = createConfiguration(false, true);
+      conf.set(SSLFactory.SSL_HOSTNAME_VERIFIER_KEY, "foo");
+      SSLFactory sslFactory = new SSLFactory(SSLFactory.Mode.CLIENT, conf);
+      try {
         sslFactory.init();
-      });
-    } finally {
-      sslFactory.destroy();
-    }
+      } finally {
+        sslFactory.destroy();
+      }
+    });
   }
 
   @Test

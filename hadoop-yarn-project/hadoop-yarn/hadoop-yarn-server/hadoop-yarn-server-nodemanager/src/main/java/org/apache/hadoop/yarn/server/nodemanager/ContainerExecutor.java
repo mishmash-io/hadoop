@@ -68,6 +68,7 @@ import org.apache.hadoop.yarn.server.nodemanager.executor.LocalizerStartContext;
 import org.apache.hadoop.yarn.server.nodemanager.util.ProcessIdFileReader;
 import org.apache.hadoop.util.Shell;
 import org.apache.hadoop.util.StringUtils;
+import org.apache.hadoop.util.concurrent.SubjectInheritingThread;
 
 import static org.apache.hadoop.yarn.server.nodemanager.containermanager.launcher.ContainerLaunch.CONTAINER_PRE_LAUNCH_STDERR;
 import static org.apache.hadoop.yarn.server.nodemanager.containermanager.launcher.ContainerLaunch.CONTAINER_PRE_LAUNCH_STDOUT;
@@ -171,9 +172,10 @@ public abstract class ContainerExecutor implements Configurable {
    *            for starting a localizer.
    * @throws IOException for most application init failures
    * @throws InterruptedException if application init thread is halted by NM
+   * @throws ConfigurationException if config error was found
    */
   public abstract void startLocalizer(LocalizerStartContext ctx)
-    throws IOException, InterruptedException;
+      throws IOException, InterruptedException, ConfigurationException;
 
   /**
    * Prepare the container prior to the launch environment being written.
@@ -850,7 +852,7 @@ public abstract class ContainerExecutor implements Configurable {
    * This class will signal a target container after a specified delay.
    * @see #signalContainer
    */
-  public static class DelayedProcessKiller extends Thread {
+  public static class DelayedProcessKiller extends SubjectInheritingThread {
     private final Container container;
     private final String user;
     private final String pid;
@@ -882,7 +884,7 @@ public abstract class ContainerExecutor implements Configurable {
     }
 
     @Override
-    public void run() {
+    public void work() {
       try {
         Thread.sleep(delay);
         containerExecutor.signalContainer(new ContainerSignalContext.Builder()

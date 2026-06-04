@@ -22,6 +22,8 @@ import static org.apache.hadoop.hdfs.client.HdfsClientConfigKeys.DFS_WEBHDFS_RES
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.apache.hadoop.hdfs.DFSConfigKeys.DFS_DATANODE_HTTPSERVER_FILTER_HANDLERS;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.io.IOException;
@@ -39,8 +41,6 @@ import org.apache.hadoop.io.IOUtils;
 import org.apache.hadoop.net.NetUtils;
 
 import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.function.Executable;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.MethodSource;
 
@@ -62,11 +62,12 @@ public class TestWebHdfsWithRestCsrfPreventionFilter {
   private MiniDFSCluster cluster;
   private FileSystem fs, webhdfs;
 
-  public void initTestWebHdfsWithRestCsrfPreventionFilter(boolean nnRestCsrf,
-      boolean dnRestCsrf, boolean clientRestCsrf) {
-    this.nnRestCsrf = nnRestCsrf;
-    this.dnRestCsrf = dnRestCsrf;
-    this.clientRestCsrf = clientRestCsrf;
+  public void initTestWebHdfsWithRestCsrfPreventionFilter(boolean pNnRestCsrf,
+      boolean pDnRestCsrf, boolean pClientRestCsrf) throws Exception {
+    this.nnRestCsrf = pNnRestCsrf;
+    this.dnRestCsrf = pDnRestCsrf;
+    this.clientRestCsrf = pClientRestCsrf;
+    before();
   }
 
   public static Iterable<Object[]> data() {
@@ -81,7 +82,6 @@ public class TestWebHdfsWithRestCsrfPreventionFilter {
         {false, false, true}});
   }
 
-  @BeforeEach
   public void before() throws Exception {
     Configuration nnConf = new Configuration();
     nnConf.setBoolean(DFS_WEBHDFS_REST_CSRF_ENABLED_KEY, nnRestCsrf);
@@ -118,12 +118,16 @@ public class TestWebHdfsWithRestCsrfPreventionFilter {
 
   @MethodSource("data")
   @ParameterizedTest
-  public void testCreate(boolean nnRestCsrf, boolean dnRestCsrf, boolean clientRestCsrf) throws Exception {
-    initTestWebHdfsWithRestCsrfPreventionFilter(nnRestCsrf, dnRestCsrf, clientRestCsrf);
+  public void testCreate(boolean pNnRestCsrf, boolean pDnRestCsrf, boolean pClientRestCsrf)
+      throws Exception {
+    initTestWebHdfsWithRestCsrfPreventionFilter(pNnRestCsrf, pDnRestCsrf, pClientRestCsrf);
     // create is a HTTP PUT that redirects from NameNode to DataNode, so we
     // expect CSRF prevention on either server to block an unconfigured client.
     if ((nnRestCsrf || dnRestCsrf) && !clientRestCsrf) {
-      expectException(() -> assertTrue(webhdfs.createNewFile(FILE)));
+      IOException ex = assertThrows(IOException.class, () -> {
+        assertTrue(webhdfs.createNewFile(FILE));
+      });
+      assertTrue(ex.getMessage().contains("Missing Required Header"));
     } else {
       assertTrue(webhdfs.createNewFile(FILE));
     }
@@ -131,14 +135,18 @@ public class TestWebHdfsWithRestCsrfPreventionFilter {
 
   @MethodSource("data")
   @ParameterizedTest
-  public void testDelete(boolean nnRestCsrf, boolean dnRestCsrf, boolean clientRestCsrf) throws Exception {
-    initTestWebHdfsWithRestCsrfPreventionFilter(nnRestCsrf, dnRestCsrf, clientRestCsrf);
+  public void testDelete(boolean pNnRestCsrf, boolean pDnRestCsrf, boolean pClientRestCsrf)
+      throws Exception {
+    initTestWebHdfsWithRestCsrfPreventionFilter(pNnRestCsrf, pDnRestCsrf, pClientRestCsrf);
     DFSTestUtil.createFile(fs, FILE, 1024, (short)1, 0L);
     // delete is an HTTP DELETE that executes solely within the NameNode as a
     // metadata operation, so we expect CSRF prevention configured on the
     // NameNode to block an unconfigured client.
     if (nnRestCsrf && !clientRestCsrf) {
-      expectException(() -> assertTrue(webhdfs.delete(FILE, false)));
+      IOException ex = assertThrows(IOException.class, () -> {
+        assertTrue(webhdfs.delete(FILE, false));
+      });
+      assertTrue(ex.getMessage().contains("Missing Required Header"));
     } else {
       assertTrue(webhdfs.delete(FILE, false));
     }
@@ -146,8 +154,9 @@ public class TestWebHdfsWithRestCsrfPreventionFilter {
 
   @MethodSource("data")
   @ParameterizedTest
-  public void testGetFileStatus(boolean nnRestCsrf, boolean dnRestCsrf, boolean clientRestCsrf) throws Exception {
-    initTestWebHdfsWithRestCsrfPreventionFilter(nnRestCsrf, dnRestCsrf, clientRestCsrf);
+  public void testGetFileStatus(boolean pNnRestCsrf, boolean pDnRestCsrf, boolean pClientRestCsrf)
+      throws Exception {
+    initTestWebHdfsWithRestCsrfPreventionFilter(pNnRestCsrf, pDnRestCsrf, pClientRestCsrf);
     // getFileStatus is an HTTP GET, not subject to CSRF prevention, so we
     // expect it to succeed always, regardless of CSRF configuration.
     assertNotNull(webhdfs.getFileStatus(new Path("/")));
@@ -155,27 +164,26 @@ public class TestWebHdfsWithRestCsrfPreventionFilter {
 
   @MethodSource("data")
   @ParameterizedTest
-  public void testTruncate(boolean nnRestCsrf, boolean dnRestCsrf, boolean clientRestCsrf) throws Exception {
-    initTestWebHdfsWithRestCsrfPreventionFilter(nnRestCsrf, dnRestCsrf, clientRestCsrf);
+  public void testTruncate(boolean pNnRestCsrf, boolean pDnRestCsrf, boolean pClientRestCsrf)
+      throws Exception {
+    initTestWebHdfsWithRestCsrfPreventionFilter(pNnRestCsrf, pDnRestCsrf, pClientRestCsrf);
     DFSTestUtil.createFile(fs, FILE, 1024, (short)1, 0L);
     // truncate is an HTTP POST that executes solely within the NameNode as a
     // metadata operation, so we expect CSRF prevention configured on the
     // NameNode to block an unconfigured client.
     if (nnRestCsrf && !clientRestCsrf) {
-      expectException(() -> {
-        assertTrue(webhdfs.hasPathCapability(FILE, CommonPathCapabilities.FS_TRUNCATE),
+      IOException ex = assertThrows(IOException.class, () -> {
+        assertTrue(
+            webhdfs.hasPathCapability(FILE, CommonPathCapabilities.FS_TRUNCATE),
             "WebHdfs supports truncate");
         assertTrue(webhdfs.truncate(FILE, 0L));
       });
+      assertTrue(ex.getMessage().contains("Missing Required Header"));
     } else {
-      assertTrue(webhdfs.hasPathCapability(FILE, CommonPathCapabilities.FS_TRUNCATE),
+      assertTrue(
+          webhdfs.hasPathCapability(FILE, CommonPathCapabilities.FS_TRUNCATE),
           "WebHdfs supports truncate");
       assertTrue(webhdfs.truncate(FILE, 0L));
     }
-  }
-
-  private void expectException(Executable exe) {
-    Throwable exception = assertThrows(IOException.class, exe);
-    assertTrue(exception.getMessage().contains("Missing Required Header"));
   }
 }

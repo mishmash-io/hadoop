@@ -47,7 +47,6 @@ import org.apache.hadoop.test.PathUtils;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.Timeout;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -81,7 +80,7 @@ public class TestMiniDFSCluster {
    * @throws Throwable on a failure
    */
   @Test
-  @Timeout(value = 100000, unit = TimeUnit.MILLISECONDS)
+  @Timeout(value = 100)
   public void testClusterWithoutSystemProperties() throws Throwable {
     String oldPrp = System.getProperty(MiniDFSCluster.PROP_TEST_BUILD_DATA);
     System.clearProperty(MiniDFSCluster.PROP_TEST_BUILD_DATA);
@@ -103,7 +102,7 @@ public class TestMiniDFSCluster {
    * Tests storage capacity setting still effective after cluster restart.
    */
   @Test
-  @Timeout(value = 100000, unit = TimeUnit.MILLISECONDS)
+  @Timeout(value = 100)
   public void testClusterSetStorageCapacity() throws Throwable {
 
     final Configuration conf = new HdfsConfiguration();
@@ -217,7 +216,7 @@ public class TestMiniDFSCluster {
   }
 
   @Test
-  @Timeout(value = 100000, unit = TimeUnit.MILLISECONDS)
+  @Timeout(value = 100)
   public void testIsClusterUpAfterShutdown() throws Throwable {
     Configuration conf = new HdfsConfiguration();
     File testDataCluster4 = new File(testDataPath, CLUSTER_4);
@@ -236,7 +235,7 @@ public class TestMiniDFSCluster {
 
   /** MiniDFSCluster should not clobber dfs.datanode.hostname if requested */
   @Test
-  @Timeout(value = 100000, unit = TimeUnit.MILLISECONDS)
+  @Timeout(value = 100)
   public void testClusterSetDatanodeHostname() throws Throwable {
     assumeTrue(System.getProperty("os.name").startsWith("Linux"));
     Configuration conf = new HdfsConfiguration();
@@ -247,8 +246,7 @@ public class TestMiniDFSCluster {
           .numDataNodes(1)
           .checkDataNodeHostConfig(true)
           .build()) {
-      assertEquals("MYHOST",
-          cluster5.getDataNodes().get(0).getDatanodeId().getHostName(),
+      assertEquals("MYHOST", cluster5.getDataNodes().get(0).getDatanodeId().getHostName(),
           "DataNode hostname config not respected");
     }
   }
@@ -265,8 +263,8 @@ public class TestMiniDFSCluster {
       ArrayList<DataNode> dataNodes = cluster.getDataNodes();
       // Check the number of directory in DN's
       for (int i = 0; i < storageType.length; i++) {
-        assertEquals(DataNode.getStorageLocations(dataNodes.get(i).getConf())
-            .size(), storageType[i].length);
+        assertEquals(DataNode.getStorageLocations(dataNodes.get(i).getConf()).size(),
+            storageType[i].length);
       }
     }
   }
@@ -312,18 +310,18 @@ public class TestMiniDFSCluster {
           DFSUtil.addKeySuffixes(DFS_NAMENODE_HTTP_ADDRESS_KEY, "ns1", "nn1"));
 
       for(NameNodeInfo nnInfo : cluster.getNameNodeInfos()) {
-        assertEquals(ns0nn0, nnInfo.conf.get(
-            DFSUtil.addKeySuffixes(
-            DFS_NAMENODE_HTTP_ADDRESS_KEY, "ns0", "nn0")));
-        assertEquals(ns0nn1, nnInfo.conf.get(
-            DFSUtil.addKeySuffixes(
-            DFS_NAMENODE_HTTP_ADDRESS_KEY, "ns0", "nn1")));
-        assertEquals(ns1nn0, nnInfo.conf.get(
-            DFSUtil.addKeySuffixes(
-            DFS_NAMENODE_HTTP_ADDRESS_KEY, "ns1", "nn0")));
-        assertEquals(ns1nn1, nnInfo.conf.get(
-            DFSUtil.addKeySuffixes(
-            DFS_NAMENODE_HTTP_ADDRESS_KEY, "ns1", "nn1")));
+        assertEquals(ns0nn0,
+            nnInfo.conf.get(
+                DFSUtil.addKeySuffixes(DFS_NAMENODE_HTTP_ADDRESS_KEY, "ns0", "nn0")));
+        assertEquals(ns0nn1,
+            nnInfo.conf.get(
+                DFSUtil.addKeySuffixes(DFS_NAMENODE_HTTP_ADDRESS_KEY, "ns0", "nn1")));
+        assertEquals(ns1nn0,
+            nnInfo.conf.get(
+                DFSUtil.addKeySuffixes(DFS_NAMENODE_HTTP_ADDRESS_KEY, "ns1", "nn0")));
+        assertEquals(ns1nn1,
+            nnInfo.conf.get(
+                DFSUtil.addKeySuffixes(DFS_NAMENODE_HTTP_ADDRESS_KEY, "ns1", "nn1")));
       }
 
       // Shutdown namenodes individually.

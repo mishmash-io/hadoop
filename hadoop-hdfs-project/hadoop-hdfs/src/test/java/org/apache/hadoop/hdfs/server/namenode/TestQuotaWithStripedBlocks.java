@@ -32,7 +32,6 @@ import org.apache.hadoop.hdfs.protocol.ExtendedBlock;
 import org.apache.hadoop.hdfs.protocol.HdfsConstants;
 import org.apache.hadoop.io.IOUtils;
 import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.Timeout;
@@ -40,10 +39,12 @@ import org.junit.jupiter.api.Timeout;
 import java.io.IOException;
 import java.util.concurrent.TimeUnit;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+
 /**
  * Make sure we correctly update the quota usage with the striped blocks.
  */
-@Timeout(value=300000, unit=TimeUnit.MILLISECONDS)
+@Timeout(300)
 public class TestQuotaWithStripedBlocks {
   private int blockSize;
   private ErasureCodingPolicy ecPolicy;
@@ -122,8 +123,8 @@ public class TestQuotaWithStripedBlocks {
       final long diskUsed = dirNode.getDirectoryWithQuotaFeature()
           .getSpaceConsumed().getTypeSpaces().get(StorageType.DISK);
       // When we add a new block we update the quota using the full block size.
-      Assertions.assertEquals(blockSize * groupSize, spaceUsed);
-      Assertions.assertEquals(blockSize * groupSize, diskUsed);
+      assertEquals(blockSize * groupSize, spaceUsed);
+      assertEquals(blockSize * groupSize, diskUsed);
 
       dfs.getClient().getNamenode().complete(file.toString(),
           dfs.getClient().getClientName(), previous, fileNode.getId());
@@ -133,10 +134,8 @@ public class TestQuotaWithStripedBlocks {
       final long actualDiskUsed = dirNode.getDirectoryWithQuotaFeature()
           .getSpaceConsumed().getTypeSpaces().get(StorageType.DISK);
       // In this case the file's real size is cell size * block group size.
-      Assertions.assertEquals(cellSize * groupSize,
-          actualSpaceUsed);
-      Assertions.assertEquals(cellSize * groupSize,
-          actualDiskUsed);
+      assertEquals(cellSize * groupSize, actualSpaceUsed);
+      assertEquals(cellSize * groupSize, actualDiskUsed);
     } finally {
       IOUtils.cleanupWithLogger(null, out);
     }

@@ -92,7 +92,7 @@ public class TestStoragePolicySatisfyAdminCommands {
   }
 
   @Test
-  @Timeout(value = 30000, unit = TimeUnit.MILLISECONDS)
+  @Timeout(value = 30)
   public void testStoragePolicySatisfierCommand() throws Exception {
     final String file = "/testStoragePolicySatisfierCommand";
     DFSTestUtil.createFile(dfs, new Path(file), SIZE, REPL, 0);
@@ -114,7 +114,7 @@ public class TestStoragePolicySatisfyAdminCommands {
   }
 
   @Test
-  @Timeout(value = 30000, unit = TimeUnit.MILLISECONDS)
+  @Timeout(value = 30)
   public void testStoragePolicySatisfierCommandWithURI() throws Exception {
     final String file = "/testStoragePolicySatisfierCommandURI";
     DFSTestUtil.createFile(dfs, new Path(file), SIZE, REPL, 0);

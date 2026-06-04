@@ -23,7 +23,10 @@ import org.apache.hadoop.hdfs.server.datanode.DataNodeFaultInjector;
 
 import static org.apache.hadoop.hdfs.DFSConfigKeys.DFS_DATANODE_PMEM_CACHE_DIRS_KEY;
 import static org.apache.hadoop.test.MetricsAsserts.getMetrics;
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.fail;
 
 import java.io.File;
 import java.io.IOException;
@@ -52,8 +55,12 @@ import org.apache.hadoop.io.nativeio.NativeIO.POSIX.NoMlockCacheManipulator;
 import org.apache.hadoop.metrics2.MetricsRecordBuilder;
 import org.apache.hadoop.test.GenericTestUtils;
 import org.apache.hadoop.test.MetricsAsserts;
-import org.junit.jupiter.api.*;
-
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.Timeout;
 import org.slf4j.event.Level;
 
 import java.util.function.Supplier;
@@ -204,12 +211,12 @@ public class TestCacheByPmemMappableBlockLoader {
   }
 
   @Test
-  @Timeout(value = 60000, unit = TimeUnit.MILLISECONDS)
+  @Timeout(value = 60)
   public void testCacheAndUncache() throws Exception {
     final int maxCacheBlocksNum =
         Ints.checkedCast(CACHE_CAPACITY / BLOCK_SIZE);
     BlockReaderTestUtil.enableHdfsCachingTracing();
-    Assertions.assertEquals(0, CACHE_CAPACITY % BLOCK_SIZE);
+    assertEquals(0, CACHE_CAPACITY % BLOCK_SIZE);
     assertEquals(CACHE_CAPACITY, cacheManager.getCacheCapacity());
     // DRAM cache is expected to be disabled.
     assertEquals(0L, cacheManager.getMemCacheCapacity());

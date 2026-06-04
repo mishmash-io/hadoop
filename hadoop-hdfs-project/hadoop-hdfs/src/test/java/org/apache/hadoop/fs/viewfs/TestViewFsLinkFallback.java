@@ -18,7 +18,12 @@
 package org.apache.hadoop.fs.viewfs;
 
 import static org.apache.hadoop.fs.CreateFlag.CREATE;
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.fail;
 
 import java.io.FileNotFoundException;
 import java.io.IOException;
@@ -45,7 +50,10 @@ import org.apache.hadoop.hdfs.MiniDFSCluster;
 import org.apache.hadoop.hdfs.MiniDFSNNTopology;
 import org.apache.hadoop.security.token.Token;
 import org.apache.hadoop.test.LambdaTestUtils;
-import org.junit.jupiter.api.*;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
 
 /**
  * Test for viewfs with LinkFallback mount table entries.
@@ -310,7 +318,7 @@ public class TestViewFsLinkFallback {
       // attempt to create in fallback.
       vfs.mkdir(nextLevelToInternalDir, FsPermission.getDirDefault(),
           false);
-      Assertions.fail("It should throw IOE when fallback fs not available.");
+      fail("It should throw IOE when fallback fs not available.");
     } catch (IOException e) {
       cluster.restartNameNodes();
       // should succeed when fallback fs is back to normal.
@@ -407,18 +415,16 @@ public class TestViewFsLinkFallback {
    * existing file on fallback's file on root.
    */
   @Test
-  public void testCreateFileOnRootWithFallbackWithFileAlreadyExist() {
+  public void testCreateFileOnRootWithFallbackWithFileAlreadyExist()
+      throws Exception {
     assertThrows(FileAlreadyExistsException.class, () -> {
       Configuration conf = new Configuration();
       Path fallbackTarget = new Path(targetTestRoot, "fallbackDir");
       Path testFile = new Path(fallbackTarget, "test.file");
-      // pre-creating test file in fallback.
       fsTarget.create(testFile).close();
-
       ConfigUtil.addLink(conf, "/user1/hive/",
           new Path(targetTestRoot.toString()).toUri());
       ConfigUtil.addLinkFallback(conf, fallbackTarget.toUri());
-
       AbstractFileSystem vfs =
           AbstractFileSystem.get(viewFsDefaultClusterUri, conf);
       Path vfsTestFile = new Path("/test.file");
@@ -432,16 +438,15 @@ public class TestViewFsLinkFallback {
    * Tests the creating of a file where the path is same as mount link path.
    */
   @Test
-  public void testCreateFileWhereThePathIsSameAsItsMountLinkPath() {
+  public void testCreateFileWhereThePathIsSameAsItsMountLinkPath()
+      throws Exception {
     assertThrows(FileAlreadyExistsException.class, () -> {
       Configuration conf = new Configuration();
       Path fallbackTarget = new Path(targetTestRoot, "fallbackDir");
       fsTarget.mkdirs(fallbackTarget);
-
       ConfigUtil.addLink(conf, "/user1/hive/",
           new Path(targetTestRoot.toString()).toUri());
       ConfigUtil.addLinkFallback(conf, fallbackTarget.toUri());
-
       AbstractFileSystem vfs =
           AbstractFileSystem.get(viewFsDefaultClusterUri, conf);
       Path vfsTestDir = new Path("/user1/hive");
@@ -456,7 +461,8 @@ public class TestViewFsLinkFallback {
    * dir path should fail.
    */
   @Test
-  public void testCreateFileSameAsInternalDirPath() {
+  public void testCreateFileSameAsInternalDirPath()
+      throws Exception {
     assertThrows(FileAlreadyExistsException.class, () -> {
       Configuration conf = new Configuration();
       Path fallbackTarget = new Path(targetTestRoot, "fallbackDir");
@@ -464,7 +470,6 @@ public class TestViewFsLinkFallback {
       ConfigUtil.addLink(conf, "/user1/hive/",
           new Path(targetTestRoot.toString()).toUri());
       ConfigUtil.addLinkFallback(conf, fallbackTarget.toUri());
-
       AbstractFileSystem vfs =
           AbstractFileSystem.get(viewFsDefaultClusterUri, conf);
       Path vfsTestDir = new Path("/user1");
@@ -588,7 +593,7 @@ public class TestViewFsLinkFallback {
     fs.rename(src, dst, Options.Rename.OVERWRITE);
     LambdaTestUtils
         .intercept(FileNotFoundException.class, () -> fs.getFileStatus(src));
-    Assertions.assertNotNull(fs.getFileStatus(dst));
+    assertNotNull(fs.getFileStatus(dst));
   }
 
 }

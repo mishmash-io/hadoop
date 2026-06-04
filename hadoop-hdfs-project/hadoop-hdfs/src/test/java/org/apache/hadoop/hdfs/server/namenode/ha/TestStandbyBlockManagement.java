@@ -35,10 +35,11 @@ import org.apache.hadoop.hdfs.MiniDFSCluster;
 import org.apache.hadoop.hdfs.MiniDFSNNTopology;
 import org.apache.hadoop.hdfs.server.blockmanagement.BlockManagerTestUtil;
 import org.apache.hadoop.hdfs.server.namenode.NameNode;
-import org.slf4j.event.Level;
-
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.Timeout;
+import org.slf4j.event.Level;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 /**
  * Makes sure that standby doesn't do the unnecessary block management such as
@@ -56,7 +57,7 @@ public class TestStandbyBlockManagement {
   }
 
   @Test
-  @Timeout(value = 60000, unit = TimeUnit.MILLISECONDS)
+  @Timeout(value = 60)
   public void testInvalidateBlock() throws Exception {
     Configuration conf = new Configuration();
     HAUtil.setAllowStandbyReads(conf, true);
@@ -89,15 +90,13 @@ public class TestStandbyBlockManagement {
       nn1.getRpcServer().rollEditLog();
 
       // standby nn doesn't need to invalidate blocks.
-      assertEquals(0,
-          nn2.getNamesystem().getBlockManager().getPendingDeletionBlocksCount());
+      assertEquals(0, nn2.getNamesystem().getBlockManager().getPendingDeletionBlocksCount());
 
       cluster.triggerHeartbeats();
       cluster.triggerBlockReports();
 
       // standby nn doesn't need to invalidate blocks.
-      assertEquals(0,
-          nn2.getNamesystem().getBlockManager().getPendingDeletionBlocksCount());
+      assertEquals(0, nn2.getNamesystem().getBlockManager().getPendingDeletionBlocksCount());
 
     } finally {
       cluster.shutdown();
@@ -110,7 +109,7 @@ public class TestStandbyBlockManagement {
    * @throws Exception
    */
   @Test
-  @Timeout(value = 60000, unit = TimeUnit.MILLISECONDS)
+  @Timeout(value = 60)
   public void testNotHandleRedundantReplica() throws Exception {
     Configuration conf = new Configuration();
     HAUtil.setAllowStandbyReads(conf, true);

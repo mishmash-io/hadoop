@@ -50,10 +50,13 @@ import org.apache.hadoop.hdfs.server.namenode.IllegalReservedPathException;
 import org.apache.hadoop.test.GenericTestUtils;
 import org.apache.hadoop.test.LogCapturingAppender;
 import org.apache.hadoop.util.StringUtils;
-
+import org.apache.log4j.Logger;
 import org.junit.jupiter.api.Test;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.fail;
 
 /**
  * This tests data transfer protocol handling in the Datanode. It sends
@@ -337,14 +340,9 @@ public class TestDFSUpgradeFromImage {
       if (!msg.contains("Failed to load FSImage file")) {
         throw ioe;
       }
-      long md5failures = thrown.stream()
-          .filter(
-            t -> t.getMessage() != null
-                   && t.getMessage().contains(" is corrupt with MD5 checksum of "))
-          .count();
+      int md5failures = appender.countExceptionsWithMessage(
+          " is corrupt with MD5 checksum of ");
       assertEquals(1, md5failures, "Upgrade did not fail with bad MD5");
-    } finally {
-      LogCapturingAppender.stop(null);
     }
   }
 
@@ -408,7 +406,8 @@ public class TestDFSUpgradeFromImage {
         for (String s: expected) {
           assertTrue(found.contains(s), "Did not find expected path " + s);
         }
-        assertEquals(found.size(), expected.length, "Found an unexpected path while listing filesystem");
+        assertEquals(found.size(), expected.length,
+            "Found an unexpected path while listing filesystem");
       }
     } finally {
       if (cluster != null) {
@@ -471,7 +470,8 @@ public class TestDFSUpgradeFromImage {
         for (String s: expected) {
           assertTrue(found.contains(s), "Did not find expected path " + s);
         }
-        assertEquals(found.size(), expected.length, "Found an unexpected path while listing filesystem");
+        assertEquals(found.size(), expected.length,
+            "Found an unexpected path while listing filesystem");
       }
     } finally {
       if (cluster != null) {
@@ -565,7 +565,8 @@ public class TestDFSUpgradeFromImage {
         for (String s: expected) {
           assertTrue(found.contains(s), "Did not find expected path " + s);
         }
-        assertEquals(found.size(), expected.length, "Found an unexpected path while listing filesystem");
+        assertEquals(found.size(), expected.length,
+            "Found an unexpected path while listing filesystem");
       }
     } finally {
       if (cluster != null) {

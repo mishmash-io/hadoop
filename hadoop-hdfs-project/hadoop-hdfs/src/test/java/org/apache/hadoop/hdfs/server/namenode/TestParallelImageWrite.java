@@ -18,7 +18,9 @@
 
 package org.apache.hadoop.hdfs.server.namenode;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.io.File;
 import java.util.Collections;
@@ -35,7 +37,6 @@ import org.apache.hadoop.hdfs.MiniDFSCluster;
 import org.apache.hadoop.hdfs.protocol.HdfsConstants.SafeModeAction;
 import org.apache.hadoop.hdfs.server.common.Storage.StorageDirectory;
 import org.apache.hadoop.hdfs.server.namenode.NNStorage.NameNodeDirType;
-
 import org.junit.jupiter.api.Test;
 
 /**
@@ -68,8 +69,7 @@ public class TestParallelImageWrite {
       String[] nameNodeDirs = conf.getStrings(
           DFSConfigKeys.DFS_NAMENODE_NAME_DIR_KEY, new String[] {});
       numNamenodeDirs = nameNodeDirs.length;
-      assertTrue(numNamenodeDirs != 0, 
-          "failed to get number of Namenode StorageDirs");
+      assertTrue(numNamenodeDirs != 0, "failed to get number of Namenode StorageDirs");
       FileSystem fs = cluster.getFileSystem();
       files.createFiles(fs, dir);
 
@@ -92,8 +92,7 @@ public class TestParallelImageWrite {
           .numDataNodes(NUM_DATANODES).build();
       fsn = cluster.getNamesystem();
       FileSystem fs = cluster.getFileSystem();
-      assertTrue(files.checkFiles(fs, dir),
-                 "Filesystem corrupted after restart.");
+      assertTrue(files.checkFiles(fs, dir), "Filesystem corrupted after restart.");
 
       final FileStatus newrootstatus = fs.getFileStatus(rootpath);
       assertEquals(rootmtime, newrootstatus.getModificationTime());
@@ -114,8 +113,8 @@ public class TestParallelImageWrite {
       cluster.getNameNodeRpc().saveNamespace(0, 0);
       final String checkAfterModify = checkImages(fsn, numNamenodeDirs);
       assertFalse(checkAfterRestart.equals(checkAfterModify),
-          "Modified namespace should change fsimage contents. " +
-          "was: " + checkAfterRestart + " now: " + checkAfterModify);
+          "Modified namespace should change fsimage contents. " + "was: " + checkAfterRestart
+              + " now: " + checkAfterModify);
       fsn.setSafeMode(SafeModeAction.SAFEMODE_LEAVE);
       files.cleanup(fs, dir);
     } finally {
@@ -138,9 +137,10 @@ public class TestParallelImageWrite {
   throws Exception {    
     NNStorage stg = fsn.getFSImage().getStorage();
     //any failed StorageDirectory is removed from the storageDirs list
-    assertEquals(numImageDirs, stg.getNumStorageDirs(NameNodeDirType.IMAGE), "Some StorageDirectories failed Upgrade");
-    assertTrue(numImageDirs > 1, "Not enough fsimage copies in MiniDFSCluster " + 
-        "to test parallel write");
+    assertEquals(numImageDirs, stg.getNumStorageDirs(NameNodeDirType.IMAGE),
+        "Some StorageDirectories failed Upgrade");
+    assertTrue(numImageDirs > 1,
+        "Not enough fsimage copies in MiniDFSCluster " + "to test parallel write");
 
     // List of "current/" directory from each SD
     List<File> dirs = FSImageTestUtil.getCurrentDirs(stg, NameNodeDirType.IMAGE);

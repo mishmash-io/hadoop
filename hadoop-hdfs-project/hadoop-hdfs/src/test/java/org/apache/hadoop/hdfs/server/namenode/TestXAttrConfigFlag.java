@@ -32,6 +32,9 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.function.Executable;
 
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
 /**
  * Tests that the configuration flag that controls support for XAttrs is off
  * and causes all attempted operations related to XAttrs to fail.  The
@@ -102,9 +105,9 @@ public class TestXAttrConfigFlag {
    * We expect an IOException, and we want the exception text to state the
    * configuration key that controls XAttr support.
    */
-  private void expectException(Executable exe) {
-    Throwable exception = assertThrows(IOException.class, exe);
-    assertTrue(exception.getMessage().contains(DFSConfigKeys.DFS_NAMENODE_XATTRS_ENABLED_KEY));
+  private void expectException(Executable exec) {
+    IOException ex = assertThrows(IOException.class, exec);
+    assertTrue(ex.getMessage().contains(DFSConfigKeys.DFS_NAMENODE_XATTRS_ENABLED_KEY));
   }
 
   /**

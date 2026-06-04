@@ -34,6 +34,9 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
+import org.junit.jupiter.api.Test;
+import org.apache.hadoop.fs.FileStatus;
+import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.fs.permission.FsPermission;
 import org.junit.jupiter.api.Test;
 import org.slf4j.Logger;
@@ -84,8 +87,7 @@ public class TestFileStatus {
     int iterator = 0;
     for (FileStatus fs : tests) {
       dest.readFields(in);
-      assertEquals(dest, fs,
-          "Different FileStatuses in iteration " + iterator);
+      assertEquals(dest, fs, "Different FileStatuses in iteration " + iterator);
       iterator++;
     }
   }

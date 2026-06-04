@@ -18,7 +18,9 @@
 package org.apache.hadoop.hdfs;
 
 import static org.apache.hadoop.fs.CommonConfigurationKeysPublic.IPC_CLIENT_CONNECT_MAX_RETRIES_KEY;
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.fail;
 import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
@@ -46,10 +48,10 @@ import org.apache.hadoop.hdfs.server.namenode.INodeFile;
 import org.apache.hadoop.hdfs.server.namenode.LeaseExpiredException;
 import org.apache.hadoop.hdfs.server.protocol.NamenodeProtocols;
 import org.apache.hadoop.test.GenericTestUtils;
+import org.apache.hadoop.util.concurrent.SubjectInheritingThread;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.Timeout;
-
 import org.slf4j.event.Level;
 
 /* File Append tests for HDFS-200 & HDFS-142, specifically focused on:
@@ -144,7 +146,7 @@ public class TestFileAppend4 {
    * the lease from another thread.
    */
   @Test
-  @Timeout(value = 60000, unit = TimeUnit.MILLISECONDS)
+  @Timeout(value = 60)
   public void testRecoverFinalizedBlock() throws Throwable {
     cluster = new MiniDFSCluster.Builder(conf).numDataNodes(5).build();
  
@@ -165,9 +167,9 @@ public class TestFileAppend4 {
       // write 1/2 block
       AppendTestUtil.write(stm, 0, 4096);
       final AtomicReference<Throwable> err = new AtomicReference<Throwable>();
-      Thread t = new Thread() { 
+      SubjectInheritingThread t = new SubjectInheritingThread() {
           @Override
-          public void run() {
+          public void work() {
             try {
               stm.close();
             } catch (Throwable t) {
@@ -215,7 +217,7 @@ public class TestFileAppend4 {
    * call completeFile
    */
   @Test
-  @Timeout(value = 60000, unit = TimeUnit.MILLISECONDS)
+  @Timeout(value = 60)
   public void testCompleteOtherLeaseHoldersFile() throws Throwable {
     cluster = new MiniDFSCluster.Builder(conf).numDataNodes(5).build();
  
@@ -237,9 +239,9 @@ public class TestFileAppend4 {
       // write 1/2 block
       AppendTestUtil.write(stm, 0, 4096);
       final AtomicReference<Throwable> err = new AtomicReference<Throwable>();
-      Thread t = new Thread() { 
+      SubjectInheritingThread t = new SubjectInheritingThread() {
           @Override
-          public void run() {
+          public void work() {
             try {
               stm.close();
             } catch (Throwable t) {
@@ -294,7 +296,7 @@ public class TestFileAppend4 {
    * Test the updation of NeededReplications for the Appended Block
    */
   @Test
-  @Timeout(value = 60000, unit = TimeUnit.MILLISECONDS)
+  @Timeout(value = 60)
   public void testUpdateNeededReplicationsForAppendedFile() throws Exception {
     Configuration conf = new Configuration();
     MiniDFSCluster cluster = new MiniDFSCluster.Builder(conf).numDataNodes(1)
@@ -331,7 +333,7 @@ public class TestFileAppend4 {
    * showing insufficient locations.
    */
   @Test
-  @Timeout(value = 60000, unit = TimeUnit.MILLISECONDS)
+  @Timeout(value = 60)
   public void testAppendInsufficientLocations() throws Exception {
     Configuration conf = new Configuration();
 

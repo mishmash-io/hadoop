@@ -28,6 +28,9 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.concurrent.TimeUnit;
 
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.Timeout;
 import org.apache.commons.lang3.SystemUtils;
 import org.apache.hadoop.fs.FileUtil;
 import org.apache.hadoop.fs.Path;
@@ -51,7 +54,7 @@ public class TestSharedFileDescriptorFactory {
   }
 
   @Test
-  @Timeout(value=10000, unit=TimeUnit.MILLISECONDS)
+  @Timeout(value = 10)
   public void testReadAndWrite() throws Exception {
     File path = new File(TEST_BASE, "testReadAndWrite");
     path.mkdirs();
@@ -76,7 +79,7 @@ public class TestSharedFileDescriptorFactory {
   }
   
   @Test
-  @Timeout(value=10000, unit=TimeUnit.MILLISECONDS)
+  @Timeout(value = 10)
   public void testCleanupRemainders() throws Exception {
     assumeTrue(NativeIO.isAvailable());
     assumeTrue(SystemUtils.IS_OS_UNIX);
@@ -98,7 +101,7 @@ public class TestSharedFileDescriptorFactory {
   }
   
   @Test
-  @Timeout(value=60000, unit=TimeUnit.MILLISECONDS)
+  @Timeout(value = 60)
   public void testDirectoryFallbacks() throws Exception {
     File nonExistentPath = new File(TEST_BASE, "nonexistent");
     File permissionDeniedPath = new File("/");

@@ -71,7 +71,7 @@ public class TestSnapshotListing {
    * Test listing snapshots under a snapshottable directory
    */
   @Test
-  @Timeout(value = 15000, unit = TimeUnit.MILLISECONDS)
+  @Timeout(value = 15)
   public void testListSnapshots() throws Exception {
     final Path snapshotsPath = new Path(dir, ".snapshot");
     FileStatus[] stats = null;

@@ -25,7 +25,6 @@ import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
-
 import org.junit.jupiter.api.Test;
 
 /**
@@ -72,7 +71,7 @@ public class TestRestartDFS {
       cluster = new MiniDFSCluster.Builder(conf).numDataNodes(4).format(false).build(); 
       FileSystem fs = cluster.getFileSystem();
       assertTrue(files.checkFiles(fs, dir),
-                 "Filesystem corrupted after restart.");
+          "Filesystem corrupted after restart.");
 
       final FileStatus newrootstatus = fs.getFileStatus(rootpath);
       assertEquals(rootmtime, newrootstatus.getModificationTime());
@@ -96,7 +95,7 @@ public class TestRestartDFS {
       cluster = new MiniDFSCluster.Builder(conf).numDataNodes(4).format(false).build();
       FileSystem fs = cluster.getFileSystem();
       assertTrue(files.checkFiles(fs, dir),
-                 "Filesystem corrupted after restart.");
+          "Filesystem corrupted after restart.");
 
       final FileStatus newrootstatus = fs.getFileStatus(rootpath);
       assertEquals(rootmtime, newrootstatus.getModificationTime());

@@ -27,7 +27,6 @@ import org.apache.hadoop.hdfs.protocol.ExtendedBlock;
 import org.apache.hadoop.hdfs.protocol.LocatedBlock;
 import org.apache.hadoop.hdfs.server.namenode.FSNamesystem;
 import org.apache.hadoop.util.Time;
-
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.Timeout;
 import org.mockito.Mockito;
@@ -66,7 +65,7 @@ public class TestSortLocatedBlock {
    * (d4 -> d3 -> d1 -> d2 -> d0).
    */
   @Test
-  @Timeout(value = 30000, unit = TimeUnit.MILLISECONDS)
+  @Timeout(value = 30)
   public void testWithStaleDatanodes() throws IOException {
     long blockID = Long.MAX_VALUE;
     int totalDns = 5;
@@ -119,8 +118,7 @@ public class TestSortLocatedBlock {
     assertEquals(locs[1].getIpAddr(), locations[2].getIpAddr());
     // decommissioned
     assertEquals(true,
-        decommissionedNodes.contains(locations[3])
-        && decommissionedNodes.contains(locations[4]));
+        decommissionedNodes.contains(locations[3]) && decommissionedNodes.contains(locations[4]));
   }
 
   /**
@@ -135,7 +133,7 @@ public class TestSortLocatedBlock {
    * d6 -> d5 -> d4 -> d3 -> d2 -> d1 -> d0
    */
   @Test
-  @Timeout(value = 30000, unit = TimeUnit.MILLISECONDS)
+  @Timeout(value = 30)
   public void testAviodStaleAndSlowDatanodes() throws IOException {
     DatanodeManager dm = mockDatanodeManager(true, true);
     DatanodeInfo[] locs = mockDatanodes(dm);
@@ -182,7 +180,7 @@ public class TestSortLocatedBlock {
    * (d6 <-> d5) -> (d4 <-> d3) -> d2 -> d1 -> d0
    */
   @Test
-  @Timeout(value = 30000, unit = TimeUnit.MILLISECONDS)
+  @Timeout(value = 30)
   public void testAviodStaleDatanodes() throws IOException {
     DatanodeManager dm = mockDatanodeManager(true, false);
     DatanodeInfo[] locs = mockDatanodes(dm);
@@ -231,7 +229,7 @@ public class TestSortLocatedBlock {
    * (d6 -> d4) -> (d5 <-> d3) -> d2 -> d1 -> d0
    */
   @Test
-  @Timeout(value = 30000, unit = TimeUnit.MILLISECONDS)
+  @Timeout(value = 30)
   public void testAviodSlowDatanodes() throws IOException {
     DatanodeManager dm = mockDatanodeManager(false, true);
     DatanodeInfo[] locs = mockDatanodes(dm);
@@ -280,7 +278,7 @@ public class TestSortLocatedBlock {
    * (d6 <-> d5 <-> d4 <-> d3) -> d2 -> d1 -> d0
    */
   @Test
-  @Timeout(value = 30000, unit = TimeUnit.MILLISECONDS)
+  @Timeout(value = 30)
   public void testWithServiceComparator() throws IOException {
     DatanodeManager dm = mockDatanodeManager(false, false);
     DatanodeInfo[] locs = mockDatanodes(dm);

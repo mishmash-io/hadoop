@@ -33,8 +33,8 @@ import org.apache.hadoop.hdfs.server.blockmanagement.BlockInfoStriped;
 import org.apache.hadoop.hdfs.server.blockmanagement.BlockManager;
 import org.apache.hadoop.hdfs.server.datanode.DataNode;
 import org.apache.hadoop.hdfs.server.datanode.SimulatedFSDataset;
+import org.apache.hadoop.hdfs.util.RwLockMode;
 import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
@@ -47,9 +47,10 @@ import java.util.List;
 import java.util.concurrent.TimeUnit;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-@Timeout(value=300000, unit=TimeUnit.MILLISECONDS)
+@Timeout(300)
 public class TestAddOverReplicatedStripedBlocks {
 
   private MiniDFSCluster cluster;
@@ -201,13 +202,15 @@ public class TestAddOverReplicatedStripedBlocks {
     // let a internal block be corrupt
     BlockManager bm = cluster.getNamesystem().getBlockManager();
     List<DatanodeInfo> infos = Arrays.asList(bg.getLocations());
+    cluster.stopDataNode(infos.get(0).getXferAddr());
     List<String> storages = Arrays.asList(bg.getStorageIDs());
-    cluster.getNamesystem().writeLock();
+    cluster.getNamesystem().writeLock(RwLockMode.BM);
     try {
       bm.findAndMarkBlockAsCorrupt(lbs.getLastLocatedBlock().getBlock(),
           infos.get(0), storages.get(0), "TEST");
     } finally {
-      cluster.getNamesystem().writeUnlock();
+      cluster.getNamesystem().writeUnlock(RwLockMode.BM,
+          "testProcessOverReplicatedAndCorruptStripedBlock");
     }
     assertEquals(1, bm.countNodes(bm.getStoredBlock(blockInfo))
         .corruptReplicas());
@@ -234,7 +237,7 @@ public class TestAddOverReplicatedStripedBlocks {
     for (byte index : bg.getBlockIndices()) {
       set.set(index);
     }
-    Assertions.assertFalse(set.get(0));
+    assertFalse(set.get(0));
     for (int i = 1; i < groupSize; i++) {
       assertTrue(set.get(i));
     }
@@ -291,7 +294,7 @@ public class TestAddOverReplicatedStripedBlocks {
     for (byte index : bg.getBlockIndices()) {
       set.set(index);
     }
-    Assertions.assertFalse(set.get(groupSize - 1));
+    assertFalse(set.get(groupSize - 1));
     for (int i = 0; i < groupSize - 1; i++) {
       assertTrue(set.get(i));
     }

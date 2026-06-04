@@ -27,9 +27,7 @@ import java.io.PrintWriter;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
-import org.apache.hadoop.fs.shell.FsShell;
 import org.apache.hadoop.util.cli.ToolRunner;
-
 import org.junit.jupiter.api.Test;
 
 public class TestDFSShellGenericOptions {
@@ -105,7 +103,7 @@ public class TestDFSShellGenericOptions {
       fs = FileSystem.get(DFSUtilClient.getNNUri(
           DFSUtilClient.getNNAddress(namenode)), shell.getConf());
       assertTrue(fs.isDirectory(new Path("/data")),
-                 "Directory does not get created");
+          "Directory does not get created");
       fs.delete(new Path("/data"), true);
     } catch (Exception e) {
       System.err.println(e.getMessage());

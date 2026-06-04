@@ -42,7 +42,12 @@ import org.apache.hadoop.hdfs.server.blockmanagement.HostConfigManager;
 import org.apache.hadoop.hdfs.util.HostsFileWriter;
 import org.apache.hadoop.net.StaticMapping;
 import org.apache.hadoop.test.GenericTestUtils;
-import org.junit.jupiter.api.*;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.Timeout;
+
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /**
  * End-to-end test case for upgrade domain
@@ -201,13 +206,13 @@ public class TestUpgradeDomainBlockPlacementPolicy {
         }
       }
       for (DatanodeID datanodeID : expectedDatanodeIDs) {
-        Assertions.assertTrue(locs.contains(datanodeID));
+        assertTrue(locs.contains(datanodeID));
       }
     }
   }
 
   @Test
-  @Timeout(value = 300000, unit = TimeUnit.MILLISECONDS)
+  @Timeout(value = 300)
   public void testPlacementAfterDecommission() throws Exception {
     final long fileSize = FILE_SIZE;
     final String testFile = "/testfile-afterdecomm";
@@ -255,7 +260,7 @@ public class TestUpgradeDomainBlockPlacementPolicy {
           cluster.getNamesystem().getBlockManager()
               .getBlockPlacementPolicy()
               .verifyBlockPlacement(block.getLocations(), REPLICATION_FACTOR);
-      Assertions.assertTrue(status.isPlacementPolicySatisfied());
+      assertTrue(status.isPlacementPolicySatisfied());
     }
   }
 }

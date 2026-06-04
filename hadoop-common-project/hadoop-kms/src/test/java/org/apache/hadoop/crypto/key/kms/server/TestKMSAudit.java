@@ -17,29 +17,28 @@
  */
 package org.apache.hadoop.crypto.key.kms.server;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertTrue;
-import static org.junit.jupiter.api.Assertions.fail;
-
 import java.io.IOException;
 import java.net.URISyntaxException;
 import java.util.List;
-import java.util.concurrent.TimeUnit;
 
 import org.apache.commons.lang3.reflect.FieldUtils;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.crypto.key.kms.server.KMS.KMSOp;
 import org.apache.hadoop.security.UserGroupInformation;
 import org.apache.hadoop.test.GenericTestUtils;
-import org.apache.hadoop.test.LogCapturingAppender;
-import org.apache.logging.log4j.core.LoggerContext;
+import org.apache.hadoop.util.ThreadUtil;
+import org.apache.log4j.LogManager;
+import org.apache.log4j.PropertyConfigurator;
 import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.Timeout;
 
-@Timeout(value=180000, unit=TimeUnit.MILLISECONDS)
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.fail;
+
+@Timeout(180)
 public class TestKMSAudit {
 
   //private static LogCapturingAppender appender;
@@ -97,7 +96,10 @@ public class TestKMSAudit {
     kmsAudit.evictCacheForTesting();
     String out = getLogOutput();
     System.out.println(out);
-    boolean doesMatch = out.matches(
+    String cleanedOut =
+        out.replaceAll("fs\\.default\\.name in core-default\\.xml is deprecated\\. " +
+        "Instead, use fs\\.defaultFS", "");
+    boolean doesMatch = cleanedOut.matches(
         "OK\\[op=DECRYPT_EEK, key=k1, user=luser@REALM, accessCount=1, "
             + "interval=[^m]{1,4}ms\\] testmsg"
             // Not aggregated !!
@@ -135,11 +137,14 @@ public class TestKMSAudit {
     kmsAudit.evictCacheForTesting();
     String out = getLogOutput();
     System.out.println(out);
+    String cleanedOut =
+        out.replaceAll("fs\\.default\\.name in core-default\\.xml is deprecated\\. " +
+        "Instead, use fs\\.defaultFS", "");
 
     // The UNAUTHORIZED will trigger cache invalidation, which then triggers
     // the aggregated OK (accessCount=5). But the order of the UNAUTHORIZED and
     // the aggregated OK is arbitrary - no correctness concerns, but flaky here.
-    boolean doesMatch = out.matches(
+    boolean doesMatch = cleanedOut.matches(
         "UNAUTHORIZED\\[op=GENERATE_EEK, key=k2, user=luser@REALM\\] "
             + "OK\\[op=GENERATE_EEK, key=k3, user=luser@REALM, accessCount=1,"
             + " interval=[^m]{1,4}ms\\] testmsg"
@@ -148,7 +153,7 @@ public class TestKMSAudit {
             + "UNAUTHORIZED\\[op=GENERATE_EEK, key=k3, user=luser@REALM\\] "
             + "OK\\[op=GENERATE_EEK, key=k3, user=luser@REALM, accessCount=1,"
             + " interval=[^m]{1,4}ms\\] testmsg");
-    doesMatch = doesMatch || out.matches(
+    doesMatch = doesMatch || cleanedOut.matches(
         "UNAUTHORIZED\\[op=GENERATE_EEK, key=k2, user=luser@REALM\\] "
             + "OK\\[op=GENERATE_EEK, key=k3, user=luser@REALM, accessCount=1,"
             + " interval=[^m]{1,4}ms\\] testmsg"

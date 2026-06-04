@@ -1621,7 +1621,7 @@ public class DFSUtil {
    * @param alias name of the credential to retreive
    * @return String credential value or null
    */
-  static String getPassword(Configuration conf, String alias) {
+  public static String getPassword(Configuration conf, String alias) {
     String password = null;
     try {
       char[] passchars = conf.getPassword(alias);
@@ -1716,11 +1716,11 @@ public class DFSUtil {
   }
 
   /**
-   * Return a HttpServer.Builder that the journalnode / namenode / secondary
+   * Return a HttpServer.Builder that the journalnode / namenode / secondary / router / balancer
    * namenode can use to initialize their HTTP / HTTPS server.
    *
    */
-  public static HttpServer2.Builder httpServerTemplateForNNAndJN(
+  public static HttpServer2.Builder getHttpServerTemplate(
       Configuration conf, final InetSocketAddress httpAddr,
       final InetSocketAddress httpsAddr, String name, String spnegoUserNameKey,
       String spnegoKeytabFileKey) throws IOException {

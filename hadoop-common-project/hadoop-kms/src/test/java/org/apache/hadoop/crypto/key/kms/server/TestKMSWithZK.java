@@ -17,6 +17,8 @@
  */
 package org.apache.hadoop.crypto.key.kms.server;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+
 import org.apache.curator.test.TestingServer;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.crypto.key.kms.KMSRESTConstants;
@@ -26,8 +28,6 @@ import org.apache.hadoop.security.authentication.server.AuthenticationFilter;
 import org.apache.hadoop.security.authentication.util.server.ZKSignerSecretProvider;
 import org.apache.hadoop.security.token.delegation.web.DelegationTokenAuthenticatedURL;
 import org.junit.jupiter.api.Test;
-
-import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import java.io.File;
 import java.net.HttpURLConnection;

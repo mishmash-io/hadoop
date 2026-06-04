@@ -13,10 +13,11 @@
  */
 package org.apache.hadoop.security.authentication.util.server;
 
-import java.util.Properties;
-import org.apache.hadoop.security.authentication.server.AuthenticationFilter;
 import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+
+import java.util.Properties;
+import org.apache.hadoop.security.authentication.server.AuthenticationFilter;
 import org.junit.jupiter.api.Test;
 
 public class TestStringSignerSecretProvider {

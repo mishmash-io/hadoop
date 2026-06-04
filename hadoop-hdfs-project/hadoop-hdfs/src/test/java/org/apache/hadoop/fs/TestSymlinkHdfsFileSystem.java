@@ -37,20 +37,20 @@ public class TestSymlinkHdfsFileSystem extends TestSymlinkHdfs {
   @Override
   @Disabled("FileSystem adds missing authority in absolute URIs")
   @Test
-  @Timeout(value = 10000, unit = TimeUnit.MILLISECONDS)
+  @Timeout(value = 10)
   public void testCreateWithPartQualPathFails() throws IOException {}
 
   @Disabled("FileSystem#create creates parent directories," +
       " so dangling links to directories are created")
   @Override
   @Test
-  @Timeout(value = 10000, unit = TimeUnit.MILLISECONDS)
+  @Timeout(value = 10)
   public void testCreateFileViaDanglingLinkParent() throws IOException {}
 
   // Additional tests for DFS-only methods
 
   @Test
-  @Timeout(value = 10000, unit = TimeUnit.MILLISECONDS)
+  @Timeout(value = 10)
   public void testRecoverLease() throws IOException {
     Path dir  = new Path(testBaseDir1());
     Path file = new Path(testBaseDir1(), "file");
@@ -64,7 +64,7 @@ public class TestSymlinkHdfsFileSystem extends TestSymlinkHdfs {
   }
 
   @Test
-  @Timeout(value = 10000, unit = TimeUnit.MILLISECONDS)
+  @Timeout(value = 10)
   public void testIsFileClosed() throws IOException {
     Path dir  = new Path(testBaseDir1());
     Path file = new Path(testBaseDir1(), "file");
@@ -78,7 +78,7 @@ public class TestSymlinkHdfsFileSystem extends TestSymlinkHdfs {
   }
 
   @Test
-  @Timeout(value = 10000, unit = TimeUnit.MILLISECONDS)
+  @Timeout(value = 10)
   public void testConcat() throws Exception {
     Path dir  = new Path(testBaseDir1());
     Path link = new Path(testBaseDir1(), "link");
@@ -97,7 +97,7 @@ public class TestSymlinkHdfsFileSystem extends TestSymlinkHdfs {
   }
 
   @Test
-  @Timeout(value = 10000, unit = TimeUnit.MILLISECONDS)
+  @Timeout(value = 10)
   public void testSnapshot() throws Exception {
     Path dir  = new Path(testBaseDir1());
     Path link = new Path(testBaseDir1(), "link");

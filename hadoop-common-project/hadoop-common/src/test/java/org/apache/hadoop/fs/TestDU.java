@@ -21,7 +21,6 @@ import org.apache.hadoop.util.Shell;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assumptions.assumeFalse;
 
@@ -91,9 +90,7 @@ public class TestDU {
     long duSize = du.getUsed();
     du.close();
 
-    assertTrue(
-        duSize >= writtenSize &&
-        writtenSize <= (duSize + slack),
+    assertTrue(duSize >= writtenSize && writtenSize <= (duSize + slack),
         "Invalid on-disk size");
 
     //test with 0 interval, will not launch thread
@@ -102,9 +99,7 @@ public class TestDU {
     duSize = du.getUsed();
     du.close();
 
-    assertTrue(
-        duSize >= writtenSize &&
-        writtenSize <= (duSize + slack),
+    assertTrue(duSize >= writtenSize && writtenSize <= (duSize + slack),
         "Invalid on-disk size");
 
     //test without launching thread
@@ -112,9 +107,7 @@ public class TestDU {
     du.init();
     duSize = du.getUsed();
 
-    assertTrue(
-        duSize >= writtenSize &&
-        writtenSize <= (duSize + slack),
+    assertTrue(duSize >= writtenSize && writtenSize <= (duSize + slack),
         "Invalid on-disk size");
   }
 

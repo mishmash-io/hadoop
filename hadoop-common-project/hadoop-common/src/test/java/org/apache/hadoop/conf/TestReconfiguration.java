@@ -22,14 +22,13 @@ import java.util.function.Supplier;
 import org.apache.hadoop.test.GenericTestUtils;
 import org.apache.hadoop.util.Lists;
 import org.apache.hadoop.util.Time;
-import org.junit.jupiter.api.BeforeEach;
+import org.apache.hadoop.util.concurrent.SubjectInheritingThread;
+import org.apache.hadoop.conf.ReconfigurationUtil.PropertyChange;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.Timeout;
-import org.apache.hadoop.conf.ReconfigurationUtil.PropertyChange;
+import org.junit.jupiter.api.BeforeEach;
 
-import static org.hamcrest.CoreMatchers.containsString;
-import static org.hamcrest.CoreMatchers.is;
-import static org.hamcrest.MatcherAssert.assertThat;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNull;
@@ -90,8 +89,7 @@ public class TestReconfiguration {
     Collection<ReconfigurationUtil.PropertyChange> changes = 
       ReconfigurationUtil.getChangedProperties(conf2, conf1);
 
-    assertTrue(changes.size() == 3,
-               "expected 3 changed properties but got " + changes.size());
+    assertEquals(3, changes.size(), "expected 3 changed properties but got " + changes.size());
 
     boolean changeFound = false;
     boolean unsetFound = false;
@@ -110,8 +108,7 @@ public class TestReconfiguration {
       } 
     }
     
-    assertTrue(changeFound && unsetFound && setFound,
-               "not all changes have been applied");
+    assertTrue(changeFound && unsetFound && setFound, "not all changes have been applied");
   }
 
   /**
@@ -165,40 +162,28 @@ public class TestReconfiguration {
   public void testReconfigure() {
     ReconfigurableDummy dummy = new ReconfigurableDummy(conf1);
 
-    assertTrue(dummy.getConf().get(PROP1).equals(VAL1),
-               PROP1 + " set to wrong value ");
-    assertTrue(dummy.getConf().get(PROP2).equals(VAL1),
-               PROP2 + " set to wrong value ");
-    assertTrue(dummy.getConf().get(PROP3).equals(VAL1),
-               PROP3 + " set to wrong value ");
-    assertTrue(dummy.getConf().get(PROP4) == null,
-               PROP4 + " set to wrong value ");
-    assertTrue(dummy.getConf().get(PROP5) == null,
-               PROP5 + " set to wrong value ");
+    assertEquals(VAL1, dummy.getConf().get(PROP1), PROP1 + " set to wrong value ");
+    assertEquals(VAL1, dummy.getConf().get(PROP2), PROP2 + " set to wrong value ");
+    assertEquals(VAL1, dummy.getConf().get(PROP3), PROP3 + " set to wrong value ");
+    assertNull(dummy.getConf().get(PROP4), PROP4 + " set to wrong value ");
+    assertNull(dummy.getConf().get(PROP5), PROP5 + " set to wrong value ");
 
-    assertTrue(dummy.isPropertyReconfigurable(PROP1),
-               PROP1 + " should be reconfigurable ");
-    assertTrue(dummy.isPropertyReconfigurable(PROP2),
-               PROP2 + " should be reconfigurable ");
-    assertFalse(dummy.isPropertyReconfigurable(PROP3),
-                PROP3 + " should not be reconfigurable ");
-    assertTrue(dummy.isPropertyReconfigurable(PROP4),
-               PROP4 + " should be reconfigurable ");
-    assertFalse(dummy.isPropertyReconfigurable(PROP5),
-                PROP5 + " should not be reconfigurable ");
+    assertTrue(dummy.isPropertyReconfigurable(PROP1), PROP1 + " should be reconfigurable ");
+    assertTrue(dummy.isPropertyReconfigurable(PROP2), PROP2 + " should be reconfigurable ");
+    assertFalse(dummy.isPropertyReconfigurable(PROP3), PROP3 + " should not be reconfigurable ");
+    assertTrue(dummy.isPropertyReconfigurable(PROP4), PROP4 + " should be reconfigurable ");
+    assertFalse(dummy.isPropertyReconfigurable(PROP5), PROP5 + " should not be reconfigurable ");
 
     // change something to the same value as before
     {
       boolean exceptionCaught = false;
       try {
         dummy.reconfigureProperty(PROP1, VAL1);
-        assertTrue(dummy.getConf().get(PROP1).equals(VAL1),
-                   PROP1 + " set to wrong value ");
+        assertEquals(VAL1, dummy.getConf().get(PROP1), PROP1 + " set to wrong value ");
       } catch (ReconfigurationException e) {
         exceptionCaught = true;
       }
-      assertFalse(exceptionCaught,
-                  "received unexpected exception");
+      assertFalse(exceptionCaught, "received unexpected exception");
     }
 
     // change something to null
@@ -206,13 +191,11 @@ public class TestReconfiguration {
       boolean exceptionCaught = false;
       try {
         dummy.reconfigureProperty(PROP1, null);
-        assertTrue(dummy.getConf().get(PROP1) == null,
-                   PROP1 + "set to wrong value ");
+        assertNull(dummy.getConf().get(PROP1), PROP1 + "set to wrong value ");
       } catch (ReconfigurationException e) {
         exceptionCaught = true;
       }
-      assertFalse(exceptionCaught,
-                  "received unexpected exception");
+      assertFalse(exceptionCaught, "received unexpected exception");
     }
 
     // change something to a different value than before
@@ -220,13 +203,11 @@ public class TestReconfiguration {
       boolean exceptionCaught = false;
       try {
         dummy.reconfigureProperty(PROP1, VAL2);
-        assertTrue(dummy.getConf().get(PROP1).equals(VAL2),
-                   PROP1 + "set to wrong value ");
+        assertEquals(VAL2, dummy.getConf().get(PROP1), PROP1 + "set to wrong value ");
       } catch (ReconfigurationException e) {
         exceptionCaught = true;
       }
-      assertFalse(exceptionCaught,
-                  "received unexpected exception");
+      assertFalse(exceptionCaught, "received unexpected exception");
     }
 
     // set unset property to null
@@ -234,13 +215,11 @@ public class TestReconfiguration {
       boolean exceptionCaught = false;
       try {
         dummy.reconfigureProperty(PROP4, null);
-        assertTrue(dummy.getConf().get(PROP4) == null,
-                   PROP4 + "set to wrong value ");
+        assertNull(dummy.getConf().get(PROP4), PROP4 + "set to wrong value ");
       } catch (ReconfigurationException e) {
         exceptionCaught = true;
       }
-      assertFalse(exceptionCaught,
-                  "received unexpected exception");
+      assertFalse(exceptionCaught, "received unexpected exception");
     }
 
     // set unset property
@@ -248,13 +227,11 @@ public class TestReconfiguration {
       boolean exceptionCaught = false;
       try {
         dummy.reconfigureProperty(PROP4, VAL1);
-        assertTrue(dummy.getConf().get(PROP4).equals(VAL1),
-                   PROP4 + "set to wrong value ");
+        assertEquals(VAL1, dummy.getConf().get(PROP4), PROP4 + "set to wrong value ");
       } catch (ReconfigurationException e) {
         exceptionCaught = true;
       }
-      assertFalse(exceptionCaught,
-                  "received unexpected exception");
+      assertFalse(exceptionCaught, "received unexpected exception");
     }
 
     // try to set unset property to null (not reconfigurable)
@@ -265,8 +242,7 @@ public class TestReconfiguration {
       } catch (ReconfigurationException e) {
         exceptionCaught = true;
       }
-      assertTrue(exceptionCaught,
-                 "did not receive expected exception");
+      assertTrue(exceptionCaught, "did not receive expected exception");
     }
 
     // try to set unset property to value (not reconfigurable)
@@ -277,8 +253,7 @@ public class TestReconfiguration {
       } catch (ReconfigurationException e) {
         exceptionCaught = true;
       }
-      assertTrue(exceptionCaught,
-                 "did not receive expected exception");
+      assertTrue(exceptionCaught, "did not receive expected exception");
     }
 
     // try to change property to value (not reconfigurable)
@@ -289,8 +264,7 @@ public class TestReconfiguration {
       } catch (ReconfigurationException e) {
         exceptionCaught = true;
       }
-      assertTrue(exceptionCaught,
-                 "did not receive expected exception");
+      assertTrue(exceptionCaught, "did not receive expected exception");
     }
 
     // try to change property to null (not reconfigurable)
@@ -301,8 +275,7 @@ public class TestReconfiguration {
       } catch (ReconfigurationException e) {
         exceptionCaught = true;
       }
-      assertTrue(exceptionCaught,
-                 "did not receive expected exception");
+      assertTrue(exceptionCaught, "did not receive expected exception");
     }
   }
 
@@ -313,7 +286,7 @@ public class TestReconfiguration {
   public void testThread() throws ReconfigurationException { 
     ReconfigurableDummy dummy = new ReconfigurableDummy(conf1);
     assertTrue(dummy.getConf().get(PROP1).equals(VAL1));
-    Thread dummyThread = new Thread(dummy);
+    Thread dummyThread = new SubjectInheritingThread(dummy);
     dummyThread.start();
     try {
       Thread.sleep(500);
@@ -331,17 +304,14 @@ public class TestReconfiguration {
       }
     }
 
-    assertFalse(dummyThread.isAlive(),
-                "dummy thread should not be alive");
+    assertFalse(dummyThread.isAlive(), "dummy thread should not be alive");
     dummy.running = false;
     try {
       dummyThread.join();
     } catch (InterruptedException ignore) {
       // do nothing
     }
-    assertTrue(dummy.getConf().get(PROP1).equals(VAL2),
-               PROP1 + " is set to wrong value");
-    
+    assertTrue(dummy.getConf().get(PROP1).equals(VAL2), PROP1 + " is set to wrong value");
   }
 
   private static class AsyncReconfigurableDummy extends ReconfigurableBase {
@@ -423,10 +393,10 @@ public class TestReconfiguration {
       if (change.prop.equals("name1")) {
         assertFalse(result.getValue().isPresent());
       } else if (change.prop.equals("name2")) {
-        assertThat(result.getValue().get(),
-            containsString("Property name2 is not reconfigurable"));
+        assertThat(result.getValue().get()).
+            contains("Property name2 is not reconfigurable");
       } else if (change.prop.equals("name3")) {
-        assertThat(result.getValue().get(), containsString("io exception"));
+        assertThat(result.getValue().get()).contains("io exception");
       } else {
         fail("Unknown property: " + change.prop);
       }
@@ -434,7 +404,7 @@ public class TestReconfiguration {
   }
 
   @Test
-  @Timeout(value=30000, unit=TimeUnit.MILLISECONDS)
+  @Timeout(value = 30)
   public void testStartReconfigurationFailureDueToExistingRunningTask()
       throws InterruptedException, IOException {
     AsyncReconfigurableDummy dummy = spy(new AsyncReconfigurableDummy(conf1));
@@ -491,7 +461,7 @@ public class TestReconfiguration {
    * @throws IOException
    */
   @Test
-  @Timeout(value=300000, unit=TimeUnit.MILLISECONDS)
+  @Timeout(value = 300)
   public void testConfIsUpdatedOnSuccess() throws ReconfigurationException {
     final String property = "FOO";
     final String value1 = "value1";
@@ -506,7 +476,7 @@ public class TestReconfiguration {
         conf, newConf, Arrays.asList(property));
 
     reconfigurable.reconfigureProperty(property, value2);
-    assertThat(reconfigurable.getConf().get(property), is(value2));
+    assertThat(reconfigurable.getConf().get(property)).isEqualTo(value2);
   }
 
   /**
@@ -515,7 +485,7 @@ public class TestReconfiguration {
    * @throws IOException
    */
   @Test
-  @Timeout(value=300000, unit=TimeUnit.MILLISECONDS)
+  @Timeout(value = 300)
   public void testConfIsUpdatedOnSuccessAsync() throws ReconfigurationException,
       TimeoutException, InterruptedException, IOException {
     final String property = "FOO";
@@ -538,7 +508,7 @@ public class TestReconfiguration {
         return reconfigurable.getReconfigurationTaskStatus().stopped();
       }
     }, 100, 60000);
-    assertThat(reconfigurable.getConf().get(property), is(value2));
+    assertThat(reconfigurable.getConf().get(property)).isEqualTo(value2);
   }
 
   /**
@@ -547,7 +517,7 @@ public class TestReconfiguration {
    * @throws IOException
    */
   @Test
-  @Timeout(value=300000, unit=TimeUnit.MILLISECONDS)
+  @Timeout(value = 300)
   public void testConfIsUnset() throws ReconfigurationException {
     final String property = "FOO";
     final String value1 = "value1";
@@ -569,7 +539,7 @@ public class TestReconfiguration {
    * @throws IOException
    */
   @Test
-  @Timeout(value=300000, unit=TimeUnit.MILLISECONDS)
+  @Timeout(value = 300)
   public void testConfIsUnsetAsync() throws ReconfigurationException,
       IOException, TimeoutException, InterruptedException {
     final String property = "FOO";

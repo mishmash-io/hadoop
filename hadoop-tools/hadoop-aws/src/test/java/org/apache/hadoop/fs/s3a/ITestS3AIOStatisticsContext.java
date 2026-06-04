@@ -24,7 +24,9 @@ import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutorService;
 
 import org.assertj.core.api.Assertions;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FSDataInputStream;
@@ -36,6 +38,7 @@ import org.apache.hadoop.fs.statistics.StoreStatisticNames;
 import org.apache.hadoop.fs.statistics.IOStatisticsContext;
 import org.apache.hadoop.fs.statistics.impl.IOStatisticsContextImpl;
 import org.apache.hadoop.util.concurrent.HadoopExecutors;
+import org.apache.hadoop.util.concurrent.SubjectInheritingThread;
 import org.apache.hadoop.util.functional.CloseableTaskPoolSubmitter;
 import org.apache.hadoop.util.functional.TaskPool;
 
@@ -76,6 +79,7 @@ public class ITestS3AIOStatisticsContext extends AbstractS3ATestBase {
     return configuration;
   }
 
+  @BeforeEach
   @Override
   public void setup() throws Exception {
     super.setup();
@@ -84,6 +88,7 @@ public class ITestS3AIOStatisticsContext extends AbstractS3ATestBase {
 
   }
 
+  @AfterEach
   @Override
   public void teardown() throws Exception {
     if (executor != null) {
@@ -160,8 +165,8 @@ public class ITestS3AIOStatisticsContext extends AbstractS3ATestBase {
    * @return thread context
    */
   private static IOStatisticsContext getAndResetThreadStatisticsContext() {
-    assertTrue("thread-level IOStatistics should be enabled by default",
-        IOStatisticsContext.enabled());
+    assertTrue(IOStatisticsContext.enabled(),
+        "thread-level IOStatistics should be enabled by default");
     IOStatisticsContext context =
         IOStatisticsContext.getCurrentIOStatisticsContext();
     context.reset();
@@ -452,7 +457,7 @@ public class ITestS3AIOStatisticsContext extends AbstractS3ATestBase {
    * If constructed with an IOStatisticsContext then
    * that context is switched to before performing the IO.
    */
-  private class TestWorkerThread extends Thread implements Runnable {
+  private class TestWorkerThread extends SubjectInheritingThread implements Runnable {
     private final Path workerThreadPath;
 
     private final IOStatisticsContext ioStatisticsContext;
@@ -470,7 +475,7 @@ public class ITestS3AIOStatisticsContext extends AbstractS3ATestBase {
     }
 
     @Override
-    public void run() {
+    public void work() {
       // Setting the worker thread's name.
       Thread.currentThread().setName("worker thread");
       S3AFileSystem fs = getFileSystem();

@@ -17,10 +17,8 @@
  */
 package org.apache.hadoop.hdfs.tools;
 
-import static org.hamcrest.CoreMatchers.containsString;
-import static org.hamcrest.MatcherAssert.assertThat;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
-
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
@@ -42,9 +40,9 @@ import org.apache.hadoop.hdfs.DistributedFileSystem;
 import org.apache.hadoop.hdfs.MiniDFSCluster;
 import org.apache.hadoop.test.PathUtils;
 import org.apache.hadoop.util.Lists;
-import org.apache.hadoop.util.cli.ToolRunner;
+import org.apache.hadoop.util.ToolRunner;
+
 import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -85,7 +83,7 @@ public class TestViewFileSystemOverloadSchemeWithDFSAdmin {
     defaultFSURI =
         URI.create(conf.get(CommonConfigurationKeys.FS_DEFAULT_NAME_KEY));
     localTargetDir = new File(TEST_ROOT_DIR, "/root/");
-    Assertions.assertEquals(HDFS_SCHEME, defaultFSURI.getScheme()); // hdfs scheme.
+    assertEquals(HDFS_SCHEME, defaultFSURI.getScheme()); // hdfs scheme.
   }
 
   @AfterEach
@@ -126,13 +124,13 @@ public class TestViewFileSystemOverloadSchemeWithDFSAdmin {
   private void assertErrMsg(String errorMsg, int line) {
     final List<String> errList = Lists.newArrayList();
     scanIntoList(err, errList);
-    assertThat(errList.get(line), containsString(errorMsg));
+    assertThat(errList.get(line)).contains(errorMsg);
   }
 
   private void assertOutMsg(String outMsg, int line) {
     final List<String> errList = Lists.newArrayList();
     scanIntoList(out, errList);
-    assertThat(errList.get(line), containsString(outMsg));
+    assertThat(errList.get(line)).contains(outMsg);
   }
 
   /**

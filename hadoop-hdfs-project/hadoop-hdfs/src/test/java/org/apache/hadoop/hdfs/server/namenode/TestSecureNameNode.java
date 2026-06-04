@@ -17,8 +17,11 @@
 
 package org.apache.hadoop.hdfs.server.namenode;
 
-import static org.junit.jupiter.api.Assertions.*;
-
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import java.io.IOException;
 import java.lang.management.ManagementFactory;
 import java.security.PrivilegedExceptionAction;
@@ -33,7 +36,6 @@ import org.apache.hadoop.hdfs.MiniDFSCluster;
 import org.apache.hadoop.hdfs.protocol.datatransfer.sasl.SaslDataTransferTestCase;
 import org.apache.hadoop.security.UserGroupInformation;
 import org.apache.hadoop.security.UserGroupInformation.AuthenticationMethod;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import javax.management.MBeanServer;
 import javax.management.ObjectName;
@@ -78,9 +80,9 @@ public class TestSecureNameNode extends SaslDataTransferTestCase {
         Path tmp = new Path("/tmp/alpha");
         fs.mkdirs(tmp);
         assertNotNull(fs.listStatus(tmp));
+        assertEquals(AuthenticationMethod.KERBEROS,
+            ugi.getAuthenticationMethod());
       });
-      assertEquals(AuthenticationMethod.KERBEROS,
-          ugi.getAuthenticationMethod());
     } finally {
       if (cluster != null) {
         cluster.shutdown();
@@ -98,12 +100,12 @@ public class TestSecureNameNode extends SaslDataTransferTestCase {
    */
   @Test
   public void testKerberosHdfsBlockTokenInconsistencyNNStartup() throws Exception {
-    HdfsConfiguration conf = createSecureConfig(
-        "authentication,privacy");
-    conf.setBoolean(DFSConfigKeys.DFS_BLOCK_ACCESS_TOKEN_ENABLE_KEY, false);
-    Exception e = assertThrows(IOException.class, () -> {
+    IOException exception = assertThrows(IOException.class, () -> {
       MiniDFSCluster dfsCluster = null;
+      HdfsConfiguration conf = createSecureConfig(
+          "authentication,privacy");
       try {
+        conf.setBoolean(DFSConfigKeys.DFS_BLOCK_ACCESS_TOKEN_ENABLE_KEY, false);
         dfsCluster = new MiniDFSCluster.Builder(conf).numDataNodes(1).build();
         dfsCluster.waitActive();
       } finally {
@@ -111,8 +113,9 @@ public class TestSecureNameNode extends SaslDataTransferTestCase {
           dfsCluster.shutdown();
         }
       }
+      return;
     });
-    assertTrue(e.getMessage().contains("Security is enabled but block access tokens"));
+    assertTrue(exception.getMessage().contains("Security is enabled but block access tokens"));
   }
 
   /**
@@ -140,8 +143,8 @@ public class TestSecureNameNode extends SaslDataTransferTestCase {
 
       boolean securityEnabled = (boolean) mbs.getAttribute(mxbeanName,
               "SecurityEnabled");
-      Assertions.assertFalse(securityEnabled);
-      Assertions.assertEquals(namenode.isSecurityEnabled(), securityEnabled);
+      assertFalse(securityEnabled);
+      assertEquals(namenode.isSecurityEnabled(), securityEnabled);
     }
 
     // get attribute "SecurityEnabled" with secure configuration
@@ -156,8 +159,8 @@ public class TestSecureNameNode extends SaslDataTransferTestCase {
 
       boolean securityEnabled = (boolean) mbs.getAttribute(mxbeanName,
               "SecurityEnabled");
-      Assertions.assertTrue(securityEnabled);
-      Assertions.assertEquals(namenode.isSecurityEnabled(), securityEnabled);
+      assertTrue(securityEnabled);
+      assertEquals(namenode.isSecurityEnabled(), securityEnabled);
     }
   }
 

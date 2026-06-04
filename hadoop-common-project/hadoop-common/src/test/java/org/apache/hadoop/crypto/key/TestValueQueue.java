@@ -24,18 +24,29 @@ import java.io.IOException;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Queue;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.TimeoutException;
 import java.util.concurrent.TimeUnit;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.apache.commons.lang3.reflect.FieldUtils;
 import org.apache.hadoop.crypto.key.kms.ValueQueue;
 import org.apache.hadoop.crypto.key.kms.ValueQueue.QueueRefiller;
 import org.apache.hadoop.crypto.key.kms.ValueQueue.SyncGenerationPolicy;
 import org.apache.hadoop.test.GenericTestUtils;
+import org.apache.hadoop.thirdparty.com.google.common.cache.LoadingCache;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.Timeout;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.mockito.Mockito.doThrow;
+import static org.mockito.Mockito.spy;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
 
 
 public class TestValueQueue {
@@ -82,7 +93,7 @@ public class TestValueQueue {
    * Verifies that Queue is initially filled to "numInitValues"
    */
   @Test
-  @Timeout(value=30000, unit=TimeUnit.MILLISECONDS)
+  @Timeout(value = 30)
   public void testInitFill() throws Exception {
     MockFiller filler = new MockFiller();
     ValueQueue<String> vq =
@@ -97,7 +108,7 @@ public class TestValueQueue {
    * Verifies that Queue is initialized (Warmed-up) for provided keys
    */
   @Test
-  @Timeout(value=30000, unit=TimeUnit.MILLISECONDS)
+  @Timeout(value = 30)
   public void testWarmUp() throws Exception {
     MockFiller filler = new MockFiller();
     ValueQueue<String> vq =
@@ -117,11 +128,47 @@ public class TestValueQueue {
   }
 
   /**
+   * Verifies that Queue is initialized (Warmed-up) for partial keys.
+   */
+  @Test
+  @Timeout(value = 30)
+  public void testPartialWarmUp() throws Exception {
+    MockFiller filler = new MockFiller();
+    ValueQueue<String> vq =
+        new ValueQueue<>(10, 0.5f, 30000, 1,
+            SyncGenerationPolicy.ALL, filler);
+
+    @SuppressWarnings("unchecked")
+    LoadingCache<String, LinkedBlockingQueue<KeyProviderCryptoExtension.EncryptedKeyVersion>> kq =
+        (LoadingCache<String, LinkedBlockingQueue<KeyProviderCryptoExtension.EncryptedKeyVersion>>)
+            FieldUtils.getField(ValueQueue.class, "keyQueues", true).get(vq);
+
+    LoadingCache<String, LinkedBlockingQueue<KeyProviderCryptoExtension.EncryptedKeyVersion>>
+        kqSpy = spy(kq);
+    doThrow(new ExecutionException(new Exception())).when(kqSpy).get("k2");
+    FieldUtils.writeField(vq, "keyQueues", kqSpy, true);
+
+    assertThrows(IOException.class, () -> vq.initializeQueuesForKeys("k1", "k2", "k3"));
+    verify(kqSpy, times(1)).get("k2");
+
+    FillInfo[] fillInfos =
+        {filler.getTop(), filler.getTop(), filler.getTop()};
+    assertEquals(5, fillInfos[0].num);
+    assertEquals(5, fillInfos[1].num);
+    assertNull(fillInfos[2]);
+
+    assertEquals(new HashSet<>(Arrays.asList("k1", "k3")),
+        new HashSet<>(Arrays.asList(fillInfos[0].key,
+            fillInfos[1].key)));
+    vq.shutdown();
+  }
+
+  /**
    * Verifies that the refill task is executed after "checkInterval" if
    * num values below "lowWatermark"
    */
   @Test
-  @Timeout(value=30000, unit=TimeUnit.MILLISECONDS)
+  @Timeout(value = 30)
   public void testRefill() throws Exception {
     MockFiller filler = new MockFiller();
     ValueQueue<String> vq =
@@ -144,7 +191,7 @@ public class TestValueQueue {
    * num values above "lowWatermark"
    */
   @Test
-  @Timeout(value=30000, unit=TimeUnit.MILLISECONDS)
+  @Timeout(value = 30)
   public void testNoRefill() throws Exception {
     MockFiller filler = new MockFiller();
     ValueQueue<String> vq =
@@ -169,7 +216,7 @@ public class TestValueQueue {
     } catch (TimeoutException ignored) {
       // This is the correct outcome - no refill is expected
     }
-    assertNull(filler.getTop());
+    assertEquals(null, filler.getTop());
     vq.shutdown();
   }
 
@@ -177,8 +224,8 @@ public class TestValueQueue {
    * Verify getAtMost when SyncGeneration Policy = ALL
    */
   @Test
-  @Timeout(value=30000, unit=TimeUnit.MILLISECONDS)
-  public void testgetAtMostPolicyALL() throws Exception {
+  @Timeout(value = 30)
+  public void testGetAtMostPolicyALL() throws Exception {
     MockFiller filler = new MockFiller();
     final ValueQueue<String> vq =
         new ValueQueue<String>(10, 0.1f, 30000, 1,
@@ -207,10 +254,8 @@ public class TestValueQueue {
     // Synchronous call:
     // 1. Synchronously fill returned list
     // 2. Start another async task to fill the queue in the cache
-    assertEquals(10, vq.getAtMost("k1", 10).size(),
-        "Failed in sync call.");
-    assertEquals(10, filler.getTop().num,
-        "Sync call filler got wrong number.");
+    assertEquals(10, vq.getAtMost("k1", 10).size(), "Failed in sync call.");
+    assertEquals(10, filler.getTop().num, "Sync call filler got wrong number.");
 
     // Wait for the async task to finish
     waitForRefill(vq, "k1", 10);
@@ -219,14 +264,11 @@ public class TestValueQueue {
 
     // Drain completely after filled by the async thread
     vq.drain("k1");
-    assertEquals(0, vq.getSize("k1"),
-        "Failed to drain completely after async.");
+    assertEquals(0, vq.getSize("k1"), "Failed to drain completely after async.");
 
     // Synchronous call
-    assertEquals(19, vq.getAtMost("k1", 19).size(),
-        "Failed to get all 19.");
-    assertEquals(19, filler.getTop().num,
-        "Failed in sync call.");
+    assertEquals(19, vq.getAtMost("k1", 19).size(), "Failed to get all 19.");
+    assertEquals(19, filler.getTop().num, "Failed in sync call.");
     vq.shutdown();
   }
 
@@ -234,7 +276,7 @@ public class TestValueQueue {
    * Verify getAtMost when SyncGeneration Policy = ALL
    */
   @Test
-  @Timeout(value=30000, unit=TimeUnit.MILLISECONDS)
+  @Timeout(value = 30)
   public void testgetAtMostPolicyATLEAST_ONE() throws Exception {
     MockFiller filler = new MockFiller();
     ValueQueue<String> vq =
@@ -268,7 +310,7 @@ public class TestValueQueue {
    * Verify getAtMost when SyncGeneration Policy = LOW_WATERMARK
    */
   @Test
-  @Timeout(value=30000, unit=TimeUnit.MILLISECONDS)
+  @Timeout(value = 30)
   public void testgetAtMostPolicyLOW_WATERMARK() throws Exception {
     MockFiller filler = new MockFiller();
     ValueQueue<String> vq =
@@ -299,7 +341,7 @@ public class TestValueQueue {
   }
 
   @Test
-  @Timeout(value=30000, unit=TimeUnit.MILLISECONDS)
+  @Timeout(value = 30)
   public void testDrain() throws Exception {
     MockFiller filler = new MockFiller();
     ValueQueue<String> vq =

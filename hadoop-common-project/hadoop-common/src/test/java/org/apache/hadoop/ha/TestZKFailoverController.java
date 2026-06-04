@@ -20,11 +20,16 @@ package org.apache.hadoop.ha;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.fail;
+import static org.mockito.ArgumentMatchers.same;
+import static org.mockito.Mockito.doReturn;
+import static org.mockito.Mockito.doThrow;
+import static org.mockito.Mockito.spy;
+import static org.mockito.Mockito.timeout;
+import static org.mockito.Mockito.verify;
 
 import java.net.InetSocketAddress;
 import java.security.NoSuchAlgorithmException;
 
-import java.util.concurrent.TimeUnit;
 import java.util.function.Supplier;
 import org.apache.hadoop.HadoopIllegalArgumentException;
 import org.apache.hadoop.conf.Configuration;
@@ -50,7 +55,7 @@ import org.junit.jupiter.api.Timeout;
 import org.mockito.Mockito;
 import org.slf4j.event.Level;
 
-@Timeout(value=3, unit=TimeUnit.MINUTES)
+@Timeout(180)
 public class TestZKFailoverController extends ClientBaseWithFixes {
   private Configuration conf;
   private MiniZKFCCluster cluster;
@@ -212,8 +217,8 @@ public class TestZKFailoverController extends ClientBaseWithFixes {
   @Test
   public void testWontRunWhenAutoFailoverDisabled() throws Exception {
     DummyHAService svc = cluster.getService(1);
-    svc = Mockito.spy(svc);
-    Mockito.doReturn(false).when(svc).isAutoFailoverEnabled();
+    svc = spy(svc);
+    doReturn(false).when(svc).isAutoFailoverEnabled();
     
     assertEquals(ZKFailoverController.ERR_CODE_AUTO_FAILOVER_NOT_ENABLED,
         runFC(svc, "-formatZK"));
@@ -249,8 +254,8 @@ public class TestZKFailoverController extends ClientBaseWithFixes {
    */
   @Test
   public void testFencingMustBeConfigured() throws Exception {
-    DummyHAService svc = Mockito.spy(cluster.getService(0));
-    Mockito.doThrow(new BadFencingConfigurationException("no fencing"))
+    DummyHAService svc = spy(cluster.getService(0));
+    doThrow(new BadFencingConfigurationException("no fencing"))
         .when(svc).checkFencingConfigured();
     // Format the base dir, should succeed
     assertEquals(0, runFC(svc, "-formatZK"));
@@ -285,7 +290,7 @@ public class TestZKFailoverController extends ClientBaseWithFixes {
     // Should fail back to svc0 at this point
     cluster.waitForHAState(0, HAServiceState.ACTIVE);
     // and fence svc1
-    Mockito.verify(svc1.fencer).fence(Mockito.same(svc1));
+    verify(svc1.fencer).fence(same(svc1));
   }
 
   /**
@@ -390,7 +395,7 @@ public class TestZKFailoverController extends ClientBaseWithFixes {
     cluster.waitForActiveLockHolder(null);
 
 
-    Mockito.verify(svc1.proxy, Mockito.timeout(2000).atLeastOnce())
+    verify(svc1.proxy, timeout(2000).atLeastOnce())
       .transitionToActive(Mockito.<StateChangeRequestInfo>any());
 
     cluster.waitForHAState(0, HAServiceState.INITIALIZING);

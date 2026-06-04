@@ -153,10 +153,8 @@ public class TestOfflineImageViewerForXAttr {
       assertEquals(HttpURLConnection.HTTP_OK, connection.getResponseCode());
       String content = IOUtils.toString(connection.getInputStream(), StandardCharsets.UTF_8);
 
-      assertTrue(content.contains("user.attr1"),
-          "Missing user.attr1 in response ");
-      assertTrue(content.contains("user.attr2"),
-          "Missing user.attr2 in response ");
+      assertTrue(content.contains("user.attr1"), "Missing user.attr1 in response ");
+      assertTrue(content.contains("user.attr2"), "Missing user.attr2 in response ");
     }
   }
 

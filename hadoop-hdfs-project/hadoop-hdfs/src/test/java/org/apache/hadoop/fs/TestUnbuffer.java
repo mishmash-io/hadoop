@@ -19,22 +19,19 @@ package org.apache.hadoop.fs;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-
 import org.apache.hadoop.conf.Configuration;
-
-import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.junit.jupiter.api.Assertions.assertTrue;
-
 import org.apache.hadoop.hdfs.DFSTestUtil;
 import org.apache.hadoop.hdfs.DistributedFileSystem;
 import org.apache.hadoop.hdfs.MiniDFSCluster;
 import org.apache.hadoop.hdfs.PeerCache;
 import org.apache.hadoop.hdfs.client.HdfsClientConfigKeys;
 import org.apache.hadoop.io.IOUtils;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public class TestUnbuffer {
   private static final Logger LOG =
@@ -73,19 +70,19 @@ public class TestUnbuffer {
       // Read a byte.  This will trigger the creation of a block reader.
       stream.seek(2);
       int b = stream.read();
-      Assertions.assertTrue(-1 != b);
+      assertTrue(-1 != b);
 
       // The Peer cache should start off empty.
       PeerCache cache = dfs.getClient().getClientContext().getPeerCache();
-      Assertions.assertEquals(0, cache.size());
+      assertEquals(0, cache.size());
 
       // Unbuffer should clear the block reader and return the socket to the
       // cache.
       stream.unbuffer();
       stream.seek(2);
-      Assertions.assertEquals(1, cache.size());
+      assertEquals(1, cache.size());
       int b2 = stream.read();
-      Assertions.assertEquals(b, b2);
+      assertEquals(b, b2);
     } finally {
       if (stream != null) {
         IOUtils.cleanupWithLogger(null, stream);
@@ -118,7 +115,7 @@ public class TestUnbuffer {
       for (int i = 0; i < NUM_OPENS; i++) {
         streams[i] = dfs.open(TEST_PATH);
         LOG.info("opening file " + i + "...");
-        Assertions.assertTrue(-1 != streams[i].read());
+        assertTrue(-1 != streams[i].read());
         streams[i].unbuffer();
       }
     } finally {
@@ -140,18 +137,20 @@ public class TestUnbuffer {
    */
   @Test
   public void testUnbufferException() {
-    Throwable exception = assertThrows(UnsupportedOperationException.class, () -> {
-      abstract class BuggyStream
-          extends FSInputStream
-          implements StreamCapabilities {
-      }
+    abstract class BuggyStream
+            extends FSInputStream
+            implements StreamCapabilities {
+    }
 
-      BuggyStream bs = Mockito.mock(BuggyStream.class);
-      Mockito.when(bs.hasCapability(Mockito.anyString())).thenReturn(true);
+    BuggyStream bs = Mockito.mock(BuggyStream.class);
+    Mockito.when(bs.hasCapability(Mockito.anyString())).thenReturn(true);
 
-      FSDataInputStream fs = new FSDataInputStream(bs);
-      fs.unbuffer();
-    });
-    assertTrue(exception.getMessage().contains(StreamCapabilitiesPolicy.CAN_UNBUFFER_NOT_IMPLEMENTED_MESSAGE));
+    UnsupportedOperationException exception = assertThrows(UnsupportedOperationException.class,
+        () -> {
+          FSDataInputStream fs = new FSDataInputStream(bs);
+          fs.unbuffer();
+        });
+    assertTrue(exception.getMessage().
+        contains(StreamCapabilitiesPolicy.CAN_UNBUFFER_NOT_IMPLEMENTED_MESSAGE));
   }
 }

@@ -109,16 +109,10 @@ public class TestFsShellReturnCode {
       FileStatus[] stats = fileSys.globStatus(new Path(files[i]));
       if (stats != null) {
         for (int j=0; j < stats.length; j++) {
-          assertEquals(
-              ((owner != null) ? "STUB-"+owner : oldStats[i][j].getOwner()),
-              stats[j].getOwner(),
-              "check owner of " + files[i]
-          );
-          assertEquals(
-              ((group != null) ? "STUB-"+group : oldStats[i][j].getGroup()),
-              stats[j].getGroup(),
-              "check group of " + files[i]
-          );        
+          assertEquals(((owner != null) ? "STUB-"+owner : oldStats[i][j].getOwner()),
+              stats[j].getOwner(), "check owner of " + files[i]);
+          assertEquals(((group != null) ? "STUB-"+group : oldStats[i][j].getGroup()),
+              stats[j].getGroup(), "check group of " + files[i]);
         }
       }
     }
@@ -134,7 +128,7 @@ public class TestFsShellReturnCode {
    * @throws Exception
    */
   @Test
-  @Timeout(value=30000, unit=TimeUnit.MILLISECONDS)
+  @Timeout(value = 30)
   public void testChmod() throws Exception {
     Path p1 = new Path(TEST_ROOT_DIR, "testChmod/fileExists");
 
@@ -191,7 +185,7 @@ public class TestFsShellReturnCode {
    * @throws Exception
    */
   @Test
-  @Timeout(value=30000, unit=TimeUnit.MILLISECONDS)
+  @Timeout(value = 30)
   public void testChown() throws Exception {
     Path p1 = new Path(TEST_ROOT_DIR, "testChown/fileExists");
 
@@ -248,7 +242,7 @@ public class TestFsShellReturnCode {
    * @throws Exception
    */
   @Test
-  @Timeout(value=30000, unit=TimeUnit.MILLISECONDS)
+  @Timeout(value = 30)
   public void testChgrp() throws Exception {
     Path p1 = new Path(TEST_ROOT_DIR, "testChgrp/fileExists");
 
@@ -294,7 +288,7 @@ public class TestFsShellReturnCode {
   }
   
   @Test
-  @Timeout(value=30000, unit=TimeUnit.MILLISECONDS)
+  @Timeout(value = 30)
   public void testGetWithInvalidSourcePathShouldNotDisplayNullInConsole()
       throws Exception {
     Configuration conf = new Configuration();
@@ -319,7 +313,8 @@ public class TestFsShellReturnCode {
       results = bytes.toString();
       assertEquals(1, run, "Return code should be 1");
       assertTrue(!results.contains("get: null"), " Null is coming when source path is invalid. ");
-      assertTrue(results.contains("get: `"+args[1]+"': No such file or directory"), " Not displaying the intended message ");
+      assertTrue(results.contains("get: `" + args[1] + "': No such file or directory"),
+          " Not displaying the intended message ");
     } finally {
       IOUtils.closeStream(out);
       System.setErr(oldErr);
@@ -327,7 +322,7 @@ public class TestFsShellReturnCode {
   }
   
   @Test
-  @Timeout(value=30000, unit=TimeUnit.MILLISECONDS)
+  @Timeout(value = 30)
   public void testRmWithNonexistentGlob() throws Exception {
     Configuration conf = new Configuration();
     FsShell shell = new FsShell();
@@ -349,7 +344,7 @@ public class TestFsShellReturnCode {
   }
 
   @Test
-  @Timeout(value=30000, unit=TimeUnit.MILLISECONDS)
+  @Timeout(value = 30)
   public void testRmForceWithNonexistentGlob() throws Exception {
     Configuration conf = new Configuration();
     FsShell shell = new FsShell();
@@ -369,7 +364,7 @@ public class TestFsShellReturnCode {
   }
 
   @Test
-  @Timeout(value=30000, unit=TimeUnit.MILLISECONDS)
+  @Timeout(value = 30)
   public void testInvalidDefaultFS() throws Exception {
     // if default fs doesn't exist or is invalid, but the path provided in 
     // arguments is valid - fsshell should work
@@ -401,7 +396,7 @@ public class TestFsShellReturnCode {
   }
   
   @Test
-  @Timeout(value=30000, unit=TimeUnit.MILLISECONDS)
+  @Timeout(value = 30)
   public void testInterrupt() throws Exception {
     MyFsShell shell = new MyFsShell();
     shell.setConf(new Configuration());

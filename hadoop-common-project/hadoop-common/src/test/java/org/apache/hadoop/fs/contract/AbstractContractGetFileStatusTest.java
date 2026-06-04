@@ -35,6 +35,8 @@ import org.apache.hadoop.fs.LocatedFileStatus;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.fs.PathFilter;
 import org.apache.hadoop.fs.RemoteIterator;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import static org.apache.hadoop.fs.contract.ContractTestUtils.*;
 import static org.apache.hadoop.test.LambdaTestUtils.intercept;
@@ -286,10 +288,8 @@ public abstract class AbstractContractGetFileStatusTest extends
     treeWalk.assertFieldsEquivalent("files", listing,
         treeWalk.getFiles(),
         listing.getFiles());
-    assertEquals(
-        count,
-        toListThroughNextCallsAlone(
-            fs.listFiles(tree.getBasePath(), true)).size(),
+    assertEquals(count, toListThroughNextCallsAlone(
+        fs.listFiles(tree.getBasePath(), true)).size(),
         "Size of status list through next() calls");
   }
 

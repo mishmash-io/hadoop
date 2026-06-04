@@ -19,7 +19,7 @@
 package org.apache.hadoop.fs.s3a.commit.files;
 
 import org.assertj.core.api.Assertions;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import software.amazon.awssdk.services.s3.model.CompletedPart;
 
 public class TestUploadEtag {

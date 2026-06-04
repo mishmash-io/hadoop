@@ -23,6 +23,7 @@ import org.apache.hadoop.hdfs.TestBlockStoragePolicy;
 import org.apache.hadoop.hdfs.server.namenode.FSNamesystem;
 import org.apache.hadoop.net.NetworkTopology;
 import org.apache.hadoop.test.GenericTestUtils.DelayAnswer;
+import org.junit.jupiter.api.Test;
 
 import java.util.ArrayList;
 
@@ -73,7 +74,7 @@ public class TestRedundancyMonitor {
       NetworkTopology clusterMap = replicator.clusterMap;
       NetworkTopology spyClusterMap = spy(clusterMap);
       replicator.clusterMap = spyClusterMap;
-      doAnswer(delayer).when(spyClusterMap).getNumOfRacks();
+      doAnswer(delayer).when(spyClusterMap).getNumOfNonEmptyRacks();
 
       ExecutorService pool = Executors.newFixedThreadPool(2);
 

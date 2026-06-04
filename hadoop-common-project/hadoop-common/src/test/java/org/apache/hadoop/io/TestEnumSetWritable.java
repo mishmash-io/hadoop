@@ -18,9 +18,11 @@
 
 package org.apache.hadoop.io;
 
+import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+
 
 import java.io.IOException;
 import java.util.EnumSet;
@@ -136,13 +138,10 @@ public class TestEnumSetWritable {
     EnumSetWritable<TestEnumSet> eset2 = new EnumSetWritable<TestEnumSet>(
         EnumSet.of(TestEnumSet.APPEND, TestEnumSet.CREATE), TestEnumSet.class);
     assertTrue(eset1.equals(eset2), "testEnumSetWritableEquals error !!!");
-    assertFalse(
-        eset1.equals(new EnumSetWritable<TestEnumSet>(EnumSet.of(
-            TestEnumSet.APPEND, TestEnumSet.CREATE, TestEnumSet.OVERWRITE),
-            TestEnumSet.class)),
-        "testEnumSetWritableEquals error !!!");
-    assertTrue(eset1
-        .getElementType().equals(TestEnumSet.class),
+    assertFalse(eset1.equals(new EnumSetWritable<TestEnumSet>(EnumSet.of(
+        TestEnumSet.APPEND, TestEnumSet.CREATE, TestEnumSet.OVERWRITE),
+        TestEnumSet.class)), "testEnumSetWritableEquals error !!!");
+    assertTrue(eset1.getElementType().equals(TestEnumSet.class),
         "testEnumSetWritableEquals getElementType error !!!");
   }
   

@@ -60,6 +60,7 @@ import org.apache.hadoop.hdfs.server.protocol.NamenodeProtocol;
 import org.apache.hadoop.ipc.RemoteException;
 import org.apache.hadoop.test.LambdaTestUtils;
 
+import org.junit.jupiter.api.Test;
 import org.slf4j.Logger;
 
 import org.junit.jupiter.api.Test;
@@ -79,7 +80,7 @@ public class TestGetBlocks {
 
   /**
    * Stop the heartbeat of a datanode in the MiniDFSCluster
-   * 
+   *
    * @param cluster
    *          The MiniDFSCluster
    * @param hostName
@@ -102,7 +103,7 @@ public class TestGetBlocks {
    * when stale nodes checking is enabled. Also test during the scenario when 1)
    * stale nodes checking is enabled, 2) a writing is going on, 3) a datanode
    * becomes stale happen simultaneously
-   * 
+   *
    * @throws Exception
    */
   @Test
@@ -122,8 +123,7 @@ public class TestGetBlocks {
     List<DatanodeDescriptor> nodeInfoList = cluster.getNameNode()
         .getNamesystem().getBlockManager().getDatanodeManager()
         .getDatanodeListForReport(DatanodeReportType.LIVE);
-    assertEquals(NUM_DATA_NODES,
-        nodeInfoList.size(),
+    assertEquals(NUM_DATA_NODES, nodeInfoList.size(),
         "Unexpected number of datanodes");
     FileSystem fileSys = cluster.getFileSystem();
     FSDataOutputStream stm = null;
@@ -537,7 +537,7 @@ public class TestGetBlocks {
     assertEquals(blockNum - count, blocks.length);
 
     // set all storage stale
-    bm0.getDatanodeManager().markAllDatanodesStale();
+    bm0.getDatanodeManager().markAllDatanodesStaleAndSetKeyUpdateIfNeed();
     blocks = namenode.getBlocks(
         dataNodes[0], fileLen*2, 0, 0, null).getBlocks();
     assertEquals(0, blocks.length);

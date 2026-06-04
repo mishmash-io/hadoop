@@ -35,7 +35,6 @@ import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
-import java.util.concurrent.TimeUnit;
 
 import static org.apache.hadoop.crypto.key.kms.KMSDelegationToken.TOKEN_KIND;
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -44,7 +43,7 @@ import static org.junit.jupiter.api.Assertions.assertNull;
 /**
  * Unit test for {@link KMSClientProvider} class.
  */
-@Timeout(value=60000, unit=TimeUnit.MILLISECONDS)
+@Timeout(60)
 public class TestKMSClientProvider {
 
   public static final Logger LOG =

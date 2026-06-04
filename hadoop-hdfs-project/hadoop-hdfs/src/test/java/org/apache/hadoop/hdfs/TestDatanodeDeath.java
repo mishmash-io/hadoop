@@ -34,6 +34,8 @@ import org.apache.hadoop.hdfs.protocol.DatanodeInfo;
 import org.apache.hadoop.hdfs.server.datanode.DataNode;
 import org.apache.hadoop.hdfs.server.protocol.InterDatanodeProtocol;
 import org.apache.hadoop.test.GenericTestUtils;
+import org.apache.hadoop.util.concurrent.SubjectInheritingThread;
+import org.junit.jupiter.api.Test;
 import org.slf4j.event.Level;
 
 import org.junit.jupiter.api.Test;
@@ -62,7 +64,7 @@ public class TestDatanodeDeath {
   //
   // an object that does a bunch of transactions
   //
-  static class Workload extends Thread {
+  static class Workload extends SubjectInheritingThread {
     private final short replication;
     private final int numberOfFiles;
     private final int id;
@@ -82,7 +84,7 @@ public class TestDatanodeDeath {
 
     // create a bunch of files. Write to them and then verify.
     @Override
-    public void run() {
+    public void work() {
       System.out.println("Workload starting ");
       for (int i = 0; i < numberOfFiles; i++) {
         Path filename = new Path(id + "." + i);
@@ -149,9 +151,8 @@ public class TestDatanodeDeath {
     int attempt = 0;
 
     long len = fileSys.getFileStatus(name).getLen();
-    assertTrue(len == filesize, 
-               name + " should be of size " + filesize +
-               " but found to be of size " + len);
+    assertTrue(len == filesize, name + " should be of size " + filesize +
+        " but found to be of size " + len);
 
     // wait till all full blocks are confirmed by the datanodes.
     while (!done) {
@@ -199,8 +200,8 @@ public class TestDatanodeDeath {
 
   private static void checkData(byte[] actual, int from, byte[] expected, String message) {
     for (int idx = 0; idx < actual.length; idx++) {
-      assertEquals(actual[idx], expected[from+idx], message+" byte "+(from+idx)+" differs. expected "+
-                        expected[from+idx]+" actual "+actual[idx]);
+      assertEquals(actual[idx], expected[from + idx], message + " byte " + (from + idx) +
+          " differs. expected " + expected[from + idx] + " actual " + actual[idx]);
       actual[idx] = 0;
     }
   }
@@ -212,7 +213,7 @@ public class TestDatanodeDeath {
    * a block do not get killed (otherwise the file will be corrupt and the
    * test will fail).
    */
-  class Modify extends Thread {
+  class Modify extends SubjectInheritingThread {
     volatile boolean running;
     final MiniDFSCluster cluster;
     final Configuration conf;
@@ -224,7 +225,7 @@ public class TestDatanodeDeath {
     }
 
     @Override
-    public void run() {
+    public void work() {
 
       while (running) {
         try {

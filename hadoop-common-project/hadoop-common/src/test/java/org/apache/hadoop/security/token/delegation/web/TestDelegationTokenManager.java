@@ -29,6 +29,7 @@ import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.security.UserGroupInformation;
 import org.apache.hadoop.security.token.Token;
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.MethodSource;
 
@@ -37,13 +38,20 @@ public class TestDelegationTokenManager {
   private static final long DAY_IN_SECS = 86400;
 
   public static Collection<Object[]> headers() {
-    return Arrays.asList(new Object[][] { { false }, { true } });
+    return Arrays.asList(new Object[][]{{false}, {true}});
+  }
+
+  private boolean enableZKKey;
+
+  public void initTestDelegationTokenManager(boolean pEnableZKKey) {
+    this.enableZKKey = pEnableZKKey;
   }
 
   @SuppressWarnings("unchecked")
   @ParameterizedTest
   @MethodSource("headers")
-  public void testDTManager(boolean enableZKKey) throws Exception {
+  public void testDTManager(boolean pEnableZKKey) throws Exception {
+    initTestDelegationTokenManager(pEnableZKKey);
     Configuration conf = new Configuration(false);
     conf.setLong(DelegationTokenManager.UPDATE_INTERVAL, DAY_IN_SECS);
     conf.setLong(DelegationTokenManager.MAX_LIFETIME, DAY_IN_SECS);
@@ -56,17 +64,17 @@ public class TestDelegationTokenManager {
     Token<DelegationTokenIdentifier> token =
         (Token<DelegationTokenIdentifier>) tm.createToken(
             UserGroupInformation.getCurrentUser(), "foo");
-    assertNotNull(token);
+    Assertions.assertNotNull(token);
     tm.verifyToken(token);
-    assertTrue(tm.renewToken(token, "foo") > System.currentTimeMillis());
+    Assertions.assertTrue(tm.renewToken(token, "foo") > System.currentTimeMillis());
     tm.cancelToken(token, "foo");
     try {
       tm.verifyToken(token);
-      fail();
+      Assertions.fail();
     } catch (IOException ex) {
       //NOP
     } catch (Exception ex) {
-      fail(ex);
+      Assertions.fail();
     }
     tm.destroy();
   }

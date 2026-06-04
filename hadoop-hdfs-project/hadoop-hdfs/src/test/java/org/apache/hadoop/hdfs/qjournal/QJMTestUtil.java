@@ -17,7 +17,10 @@
  */
 package org.apache.hadoop.hdfs.qjournal;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.io.Closeable;
 import java.io.File;
@@ -125,9 +128,8 @@ public abstract class QJMTestUtil {
       
       FSEditLogOp op = stream.readOp();
       while (op == null) {
-        assertTrue(iter.hasNext(),
-            "Expected to find txid " + expected + ", " +
-            "but no more streams available to read from");
+        assertTrue(iter.hasNext(), "Expected to find txid "
+            + expected + ", " + "but no more streams available to read from");
         stream = iter.next();
         op = stream.readOp();
       }
@@ -151,8 +153,8 @@ public abstract class QJMTestUtil {
         count++;
       }
     }
-    assertTrue(count >= cluster.getQuorumSize(),
-        "File " + fname + " should exist in a quorum of dirs");
+    assertTrue(count >= cluster.getQuorumSize(), "File "
+        + fname + " should exist in a quorum of dirs");
   }
 
   public static long recoverAndReturnLastTxn(QuorumJournalManager qjm)

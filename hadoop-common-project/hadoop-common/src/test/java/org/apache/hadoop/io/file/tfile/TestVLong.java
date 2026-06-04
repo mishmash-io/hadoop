@@ -21,13 +21,14 @@ package org.apache.hadoop.io.file.tfile;
 import java.io.IOException;
 import java.util.Random;
 
+import org.junit.jupiter.api.AfterEach;
+
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FSDataInputStream;
 import org.apache.hadoop.fs.FSDataOutputStream;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.test.GenericTestUtils;
-import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -65,8 +66,9 @@ public class TestVLong {
       Utils.writeVLong(out, i);
     }
     out.close();
-    assertEquals((1 << Byte.SIZE) + 96, fs.getFileStatus(path).getLen(),
-        "Incorrect encoded size");
+    assertEquals((1 << Byte.SIZE) + 96, fs
+        .getFileStatus(
+        path).getLen(), "Incorrect encoded size");
 
     FSDataInputStream in = fs.open(path);
     for (int i = Byte.MIN_VALUE; i <= Byte.MAX_VALUE; ++i) {
@@ -97,39 +99,33 @@ public class TestVLong {
     long size = writeAndVerify(0);
     assertEquals((1 << Short.SIZE) * 2
         + ((1 << Byte.SIZE) - 40)
-        * (1 << Byte.SIZE) - 128 - 32, size,
-        "Incorrect encoded size");
+        * (1 << Byte.SIZE) - 128 - 32, size, "Incorrect encoded size");
   }
 
   @Test
   public void testVLong3Bytes() throws IOException {
     long size = writeAndVerify(Byte.SIZE);
     assertEquals((1 << Short.SIZE) * 3
-        + ((1 << Byte.SIZE) - 32) * (1 << Byte.SIZE) - 40 - 1, size,
-        "Incorrect encoded size");
+        + ((1 << Byte.SIZE) - 32) * (1 << Byte.SIZE) - 40 - 1, size, "Incorrect encoded size");
   }
 
   @Test
   public void testVLong4Bytes() throws IOException {
     long size = writeAndVerify(Byte.SIZE * 2);
     assertEquals((1 << Short.SIZE) * 4
-        + ((1 << Byte.SIZE) - 16) * (1 << Byte.SIZE) - 32 - 2, size,
-        "Incorrect encoded size");
+        + ((1 << Byte.SIZE) - 16) * (1 << Byte.SIZE) - 32 - 2, size, "Incorrect encoded size");
   }
 
   @Test
   public void testVLong5Bytes() throws IOException {
     long size = writeAndVerify(Byte.SIZE * 3);
-     assertEquals((1 << Short.SIZE) * 6 - 256
-        - 16 - 3, size,
-        "Incorrect encoded size");
+    assertEquals((1 << Short.SIZE) * 6 - 256 - 16 - 3, size, "Incorrect encoded size");
   }
 
   private void verifySixOrMoreBytes(int bytes) throws IOException {
     long size = writeAndVerify(Byte.SIZE * (bytes - 2));
     assertEquals((1 << Short.SIZE)
-        * (bytes + 1) - 256 - bytes + 1, size,
-        "Incorrect encoded size");
+        * (bytes + 1) - 256 - bytes + 1, size, "Incorrect encoded size");
   }
 
   @Test

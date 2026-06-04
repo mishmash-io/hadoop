@@ -18,21 +18,23 @@
 package org.apache.hadoop.hdfs.server.namenode;
 
 import static org.apache.hadoop.test.GenericTestUtils.assertExceptionContains;
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.fail;
 
 import org.apache.hadoop.hdfs.server.common.HdfsServerConstants;
 
 import java.util.concurrent.TimeUnit;
 import org.apache.hadoop.hdfs.server.common.HdfsServerConstants.RollingUpgradeStartupOption;
 import org.apache.hadoop.hdfs.server.common.HdfsServerConstants.StartupOption;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.Timeout;
 
 public class TestNameNodeOptionParsing {
 
   @Test
-  @Timeout(value = 10000, unit = TimeUnit.MILLISECONDS)
+  @Timeout(value = 10)
   public void testUpgrade() {
     StartupOption opt = null;
     // UPGRADE is set, but nothing else
@@ -107,7 +109,7 @@ public class TestNameNodeOptionParsing {
   }
 
   @Test
-  @Timeout(value = 10000, unit = TimeUnit.MILLISECONDS)
+  @Timeout(value = 10)
   public void testRollingUpgrade() {
     {
       final String[] args = {"-rollingUpgrade"};
@@ -135,7 +137,7 @@ public class TestNameNodeOptionParsing {
       final String[] args = {"-rollingUpgrade", "foo"};
       try {
         NameNode.parseArguments(args);
-        Assertions.fail();
+        fail();
       } catch(IllegalArgumentException iae) {
         // the exception is expected.
       }

@@ -18,7 +18,9 @@
 package org.apache.hadoop.fs;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.inOrder;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 import java.io.DataInput;
 import java.io.DataOutput;
@@ -56,15 +58,11 @@ public class TestContentSummary {
         spaceConsumed(spaceConsumed).spaceQuota(spaceQuota).build();
     assertEquals(length, contentSummary.getLength(), "getLength");
     assertEquals(fileCount, contentSummary.getFileCount(), "getFileCount");
-    assertEquals(directoryCount,
-        contentSummary.getDirectoryCount(),
-        "getDirectoryCount");
+    assertEquals(directoryCount, contentSummary.getDirectoryCount(), "getDirectoryCount");
     assertEquals(quota, contentSummary.getQuota(), "getQuota");
     assertEquals(spaceConsumed,
-        contentSummary.getSpaceConsumed(),
-        "getSpaceConsumed");
-    assertEquals(spaceQuota, contentSummary.getSpaceQuota(),
-        "getSpaceQuota");
+        contentSummary.getSpaceConsumed(), "getSpaceConsumed");
+    assertEquals(spaceQuota, contentSummary.getSpaceQuota(), "getSpaceQuota");
   }
 
   // check the constructor with quota information
@@ -80,8 +78,7 @@ public class TestContentSummary {
     assertEquals(length, contentSummary.getLength(), "getLength");
     assertEquals(fileCount, contentSummary.getFileCount(), "getFileCount");
     assertEquals(directoryCount,
-        contentSummary.getDirectoryCount(),
-        "getDirectoryCount");
+        contentSummary.getDirectoryCount(), "getDirectoryCount");
     assertEquals(-1, contentSummary.getQuota(), "getQuota");
     assertEquals(length, contentSummary.getSpaceConsumed(), "getSpaceConsumed");
     assertEquals(-1, contentSummary.getSpaceQuota(), "getSpaceQuota");
@@ -133,13 +130,9 @@ public class TestContentSummary {
     contentSummary.readFields(in);
     assertEquals(length, contentSummary.getLength(), "getLength");
     assertEquals(fileCount, contentSummary.getFileCount(), "getFileCount");
-    assertEquals(directoryCount,
-        contentSummary.getDirectoryCount(),
-        "getDirectoryCount");
+    assertEquals(directoryCount, contentSummary.getDirectoryCount(), "getDirectoryCount");
     assertEquals(quota, contentSummary.getQuota(), "getQuota");
-    assertEquals(spaceConsumed,
-        contentSummary.getSpaceConsumed(),
-        "getSpaceConsumed");
+    assertEquals(spaceConsumed, contentSummary.getSpaceConsumed(), "getSpaceConsumed");
     assertEquals(spaceQuota, contentSummary.getSpaceQuota(), "getSpaceQuota");
   }
 

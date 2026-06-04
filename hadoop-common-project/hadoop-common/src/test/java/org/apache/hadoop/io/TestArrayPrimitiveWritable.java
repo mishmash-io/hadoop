@@ -26,8 +26,11 @@ import java.io.*;
 import java.util.Arrays;
 
 import org.apache.hadoop.util.StringUtils;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.BeforeEach;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.fail;
 
 
 /** Unit tests for {@link ArrayPrimitiveWritable} */
@@ -80,10 +83,8 @@ public class TestArrayPrimitiveWritable {
     //validate data structures and values
     assertEquals(expectedResultSet.length, resultSet.length);
     for (int x = 0; x < resultSet.length; x++) {
-      assertEquals(
-          expectedResultSet[x].getClass().getComponentType(), 
-          resultSet[x].getClass().getComponentType(),
-          "ComponentType of array " + x);
+      assertEquals(expectedResultSet[x].getClass().getComponentType(),
+          resultSet[x].getClass().getComponentType(), "ComponentType of array " + x);
     }
     assertTrue(Arrays.deepEquals(expectedResultSet, resultSet),
         "In and Out arrays didn't match values");
@@ -117,8 +118,7 @@ public class TestArrayPrimitiveWritable {
     apwi.readFields(in);
     assertEquals(int.class, apw.getComponentType(),
         "The ArrayPrimitiveWritable.Internal component type was corrupted");
-    assertTrue(Arrays.equals(i, (int[])(apwi.get())),
-        "The int[] written by ObjectWritable as "
+    assertTrue(Arrays.equals(i, (int[])(apwi.get())), "The int[] written by ObjectWritable as "
         + "ArrayPrimitiveWritable.Internal was corrupted");
     
     //Read the APW object as written by ObjectWritable, but

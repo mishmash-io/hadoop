@@ -95,7 +95,7 @@ public class TestDebugAdmin {
   }
 
   @Test
-  @Timeout(value = 60000, unit = TimeUnit.MILLISECONDS)
+  @Timeout(value = 60)
   public void testRecoverLease() throws Exception {
     cluster = new MiniDFSCluster.Builder(conf).numDataNodes(1).build();
     cluster.waitActive();
@@ -110,7 +110,7 @@ public class TestDebugAdmin {
   }
 
   @Test
-  @Timeout(value = 60000, unit = TimeUnit.MILLISECONDS)
+  @Timeout(value = 60)
   public void testVerifyMetaCommand() throws Exception {
     cluster = new MiniDFSCluster.Builder(conf).numDataNodes(1).build();
     cluster.waitActive();
@@ -140,7 +140,7 @@ public class TestDebugAdmin {
   }
 
   @Test
-  @Timeout(value = 60000, unit = TimeUnit.MILLISECONDS)
+  @Timeout(value = 60)
   public void testComputeMetaCommand() throws Exception {
     cluster = new MiniDFSCluster.Builder(conf).numDataNodes(1).build();
     cluster.waitActive();
@@ -183,7 +183,7 @@ public class TestDebugAdmin {
   }
 
   @Test
-  @Timeout(value = 60000, unit = TimeUnit.MILLISECONDS)
+  @Timeout(value = 60)
   public void testRecoverLeaseforFileNotFound() throws Exception {
     cluster = new MiniDFSCluster.Builder(conf).numDataNodes(1).build();
     cluster.waitActive();
@@ -193,7 +193,7 @@ public class TestDebugAdmin {
   }
 
   @Test
-  @Timeout(value = 60000, unit = TimeUnit.MILLISECONDS)
+  @Timeout(value = 60)
   public void testVerifyECCommand() throws Exception {
     final ErasureCodingPolicy ecPolicy = SystemErasureCodingPolicies.getByID(
         SystemErasureCodingPolicies.RS_3_2_POLICY_ID);

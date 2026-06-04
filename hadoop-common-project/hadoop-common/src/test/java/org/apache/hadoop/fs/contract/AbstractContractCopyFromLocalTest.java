@@ -25,6 +25,9 @@ import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.Test;
+
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
 import org.apache.hadoop.fs.FileAlreadyExistsException;
@@ -70,8 +73,7 @@ public abstract class AbstractContractCopyFromLocalTest extends
 
     FileSystem fs = getFileSystem();
     FileStatus status = fs.getFileStatus(dest);
-    assertEquals(
-        message.getBytes(ASCII).length, status.getLen(),
+    assertEquals(message.getBytes(ASCII).length, status.getLen(),
         "File length not equal " + status);
     assertFileTextEquals(dest, message);
   }
@@ -332,8 +334,7 @@ public abstract class AbstractContractCopyFromLocalTest extends
 
   private void assertFileTextEquals(Path path, String expected)
       throws IOException {
-    assertEquals(
-        expected, IOUtils.toString(getFileSystem().open(path), ASCII),
+    assertEquals(expected, IOUtils.toString(getFileSystem().open(path), ASCII),
         "Wrong data in " + path);
   }
 }

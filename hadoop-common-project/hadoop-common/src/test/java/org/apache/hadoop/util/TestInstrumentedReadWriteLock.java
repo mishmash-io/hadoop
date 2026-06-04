@@ -25,6 +25,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 
+import org.apache.hadoop.util.concurrent.SubjectInheritingThread;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInfo;
 import org.junit.jupiter.api.Timeout;
@@ -44,9 +45,9 @@ public class TestInstrumentedReadWriteLock {
    * @throws Exception
    */
   @Test
-  @Timeout(value=10000, unit=TimeUnit.MILLISECONDS)
-  public void testWriteLock(TestInfo info) throws Exception {
-    String testname = info.getDisplayName();
+  @Timeout(value = 10)
+  public void testWriteLock(TestInfo testInfo) throws Exception {
+    String testname = testInfo.getDisplayName();
     final ThreadLocal<Boolean> locked = new ThreadLocal<Boolean>();
     locked.set(Boolean.FALSE);
     InstrumentedReadWriteLock readWriteLock = new InstrumentedReadWriteLock(
@@ -69,17 +70,17 @@ public class TestInstrumentedReadWriteLock {
     final AutoCloseableLock readLock = new AutoCloseableLock(
         readWriteLock.readLock());
     try (AutoCloseableLock lock = writeLock.acquire()) {
-      Thread competingWriteThread = new Thread() {
+      Thread competingWriteThread = new SubjectInheritingThread() {
         @Override
-        public void run() {
+        public void work() {
           assertFalse(writeLock.tryLock());
         }
       };
       competingWriteThread.start();
       competingWriteThread.join();
-      Thread competingReadThread = new Thread() {
+      Thread competingReadThread = new SubjectInheritingThread() {
         @Override
-        public void run() {
+        public void work() {
           assertFalse(readLock.tryLock());
         };
       };
@@ -95,9 +96,9 @@ public class TestInstrumentedReadWriteLock {
    * @throws Exception
    */
   @Test
-  @Timeout(value=10000, unit=TimeUnit.MILLISECONDS)
-  public void testReadLock(TestInfo info) throws Exception {
-    String testname = info.getDisplayName();
+  @Timeout(value = 10)
+  public void testReadLock(TestInfo testInfo) throws Exception {
+    String testname = testInfo.getDisplayName();
     InstrumentedReadWriteLock readWriteLock = new InstrumentedReadWriteLock(
         true, testname, LOG, 2000, 300);
     final AutoCloseableLock readLock = new AutoCloseableLock(
@@ -105,18 +106,18 @@ public class TestInstrumentedReadWriteLock {
     final AutoCloseableLock writeLock = new AutoCloseableLock(
         readWriteLock.writeLock());
     try (AutoCloseableLock lock = readLock.acquire()) {
-      Thread competingReadThread = new Thread() {
+      SubjectInheritingThread competingReadThread = new SubjectInheritingThread() {
         @Override
-        public void run() {
+        public void work() {
           assertTrue(readLock.tryLock());
           readLock.release();
         }
       };
       competingReadThread.start();
       competingReadThread.join();
-      Thread competingWriteThread = new Thread() {
+      SubjectInheritingThread competingWriteThread = new SubjectInheritingThread() {
         @Override
-        public void run() {
+        public void work() {
           assertFalse(writeLock.tryLock());
         }
       };
@@ -130,9 +131,9 @@ public class TestInstrumentedReadWriteLock {
    * @throws Exception
    */
   @Test
-  @Timeout(value=10000, unit=TimeUnit.MILLISECONDS)
-  public void testReadLockLongHoldingReport(TestInfo info) throws Exception {
-    String testname = info.getDisplayName();
+  @Timeout(value = 10)
+  public void testReadLockLongHoldingReport(TestInfo testInfo) throws Exception {
+    String testname = testInfo.getDisplayName();
     final AtomicLong time = new AtomicLong(0);
     Timer mclock = new Timer() {
       @Override
@@ -186,9 +187,9 @@ public class TestInstrumentedReadWriteLock {
    * @throws Exception
    */
   @Test
-  @Timeout(value=10000, unit=TimeUnit.MILLISECONDS)
-  public void testWriteLockLongHoldingReport(TestInfo info) throws Exception {
-    String testname = info.getDisplayName();
+  @Timeout(value = 10)
+  public void testWriteLockLongHoldingReport(TestInfo testInfo) throws Exception {
+    String testname = testInfo.getDisplayName();
     final AtomicLong time = new AtomicLong(0);
     Timer mclock = new Timer() {
       @Override
@@ -241,9 +242,9 @@ public class TestInstrumentedReadWriteLock {
    * Tests the warning when the write lock is held longer than threshold.
    */
   @Test
-  @Timeout(value=10000, unit=TimeUnit.MILLISECONDS)
-  public void testWriteLockLongHoldingReportWithReentrant(TestInfo info) {
-    String testname = info.getDisplayName();
+  @Timeout(value = 10)
+  public void testWriteLockLongHoldingReportWithReentrant(TestInfo testInfo) {
+    String testname = testInfo.getDisplayName();
     final AtomicLong time = new AtomicLong(0);
     Timer mclock = new Timer() {
       @Override
@@ -302,9 +303,9 @@ public class TestInstrumentedReadWriteLock {
    * Tests the warning when the read lock is held longer than threshold.
    */
   @Test
-  @Timeout(value=10000, unit=TimeUnit.MILLISECONDS)
-  public void testReadLockLongHoldingReportWithReentrant(TestInfo info) {
-    String testname = info.getDisplayName();
+  @Timeout(value = 10)
+  public void testReadLockLongHoldingReportWithReentrant(TestInfo testInfo) {
+    String testname = testInfo.getDisplayName();
     final AtomicLong time = new AtomicLong(0);
     Timer mclock = new Timer() {
       @Override

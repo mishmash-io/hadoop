@@ -23,8 +23,9 @@ import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 
 import org.assertj.core.api.Assertions;
-import org.junit.Ignore;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Disabled;
+import org.junit.jupiter.api.Test;
 import software.amazon.awssdk.services.s3.model.S3Exception;
 
 import org.apache.commons.io.IOUtils;
@@ -101,6 +102,7 @@ public class ITestS3APutIfMatchAndIfNoneMatch extends AbstractS3ATestBase {
   }
 
   @Override
+  @BeforeEach
   public void setup() throws Exception {
     super.setup();
     Configuration conf = getFileSystem().getConf();
@@ -579,7 +581,7 @@ public class ITestS3APutIfMatchAndIfNoneMatch extends AbstractS3ATestBase {
     expectPreconditionFailure(stream2::close);
   }
 
-  @Ignore("conditional_write statistics not yet fully implemented")
+  @Disabled("conditional_write statistics not yet fully implemented")
   @Test
   public void testConditionalWriteStatisticsWithoutIfNoneMatch() throws Throwable {
     FileSystem fs = getFileSystem();
@@ -625,7 +627,7 @@ public class ITestS3APutIfMatchAndIfNoneMatch extends AbstractS3ATestBase {
     verifyStatisticCounterValue(statistics.getIOStatistics(), Statistic.CONDITIONAL_CREATE_FAILED.getSymbol(), 0);
   }
 
-  @Ignore("conditional_write statistics not yet fully implemented")
+  @Disabled("conditional_write statistics not yet fully implemented")
   @Test
   public void testConditionalWriteStatisticsWithIfNoneMatch() throws Throwable {
     FileSystem fs = getFileSystem();

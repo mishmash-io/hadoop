@@ -43,16 +43,15 @@ import java.util.*;
 import java.util.concurrent.TimeUnit;
 
 import static org.apache.hadoop.hdfs.DFSConfigKeys.DFS_PROTECTED_SUBDIRECTORIES_ENABLE;
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.core.Is.is;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.apache.hadoop.fs.CommonConfigurationKeysPublic.FS_PROTECTED_DIRECTORIES;
+import static org.assertj.core.api.Assertions.assertThat;
 
 /**
  * Verify that the dfs.namenode.protected.directories setting is respected.
  */
-@Timeout(value=300000, unit=TimeUnit.MILLISECONDS)
+@Timeout(300)
 public class TestProtectedDirectories {
   static final Logger LOG = LoggerFactory.getLogger(
       TestProtectedDirectories.class);
@@ -237,17 +236,21 @@ public class TestProtectedDirectories {
 
     FSDirectory fsDirectory = nn.getNamesystem().getFSDirectory();
     // verify change
-    assertEquals(protectedPathsNew, fsDirectory.getProtectedDirectories(), String.format("%s has wrong value", FS_PROTECTED_DIRECTORIES));
+    assertEquals(protectedPathsNew, fsDirectory.getProtectedDirectories(),
+        String.format("%s has wrong value", FS_PROTECTED_DIRECTORIES));
 
-    assertEquals(protectedPathsStrNew, nn.getConf().get(FS_PROTECTED_DIRECTORIES), String.format("%s has wrong value", FS_PROTECTED_DIRECTORIES));
+    assertEquals(protectedPathsStrNew, nn.getConf().get(FS_PROTECTED_DIRECTORIES),
+        String.format("%s has wrong value", FS_PROTECTED_DIRECTORIES));
 
     // revert to default
     nn.reconfigureProperty(FS_PROTECTED_DIRECTORIES, null);
 
     // verify default
-    assertEquals(new TreeSet<String>(), fsDirectory.getProtectedDirectories(), String.format("%s has wrong value", FS_PROTECTED_DIRECTORIES));
+    assertEquals(new TreeSet<String>(), fsDirectory.getProtectedDirectories(),
+        String.format("%s has wrong value", FS_PROTECTED_DIRECTORIES));
 
-    assertEquals(null, nn.getConf().get(FS_PROTECTED_DIRECTORIES), String.format("%s has wrong value", FS_PROTECTED_DIRECTORIES));
+    assertEquals(null, nn.getConf().get(FS_PROTECTED_DIRECTORIES),
+        String.format("%s has wrong value", FS_PROTECTED_DIRECTORIES));
   }
 
   @Test
@@ -263,16 +266,15 @@ public class TestProtectedDirectories {
         FileSystem fs = cluster.getFileSystem();
         for (Path path : testMatrixEntry.getAllPathsToBeDeleted()) {
           final long countBefore = cluster.getNamesystem().getFilesTotal();
-          assertThat(
-              testMatrixEntry + ": Testing whether " + path + " can be deleted",
-              deletePath(fs, path),
-              is(testMatrixEntry.canPathBeDeleted(path)));
+          assertThat(deletePath(fs, path))
+              .as(testMatrixEntry + ": Testing whether " + path + " can be deleted")
+              .isEqualTo(testMatrixEntry.canPathBeDeleted(path));
           final long countAfter = cluster.getNamesystem().getFilesTotal();
 
           if (!testMatrixEntry.canPathBeDeleted(path)) {
-            assertThat(
-                "Either all paths should be deleted or none",
-                countAfter, is(countBefore));
+            assertThat(countAfter)
+                .as("Either all paths should be deleted or none")
+                .isEqualTo(countBefore);
           }
         }
       } finally {
@@ -295,10 +297,10 @@ public class TestProtectedDirectories {
         FileSystem fs = cluster.getFileSystem();
         for (Path path : testMatrixEntry.getAllPathsToBeDeleted()) {
           assertThat(
-              testMatrixEntry + ": Testing whether " + path +
-                  " can be moved to trash",
-              moveToTrash(fs, path, conf),
-              is(testMatrixEntry.canPathBeDeleted(path)));
+              moveToTrash(fs, path, conf))
+              .as(testMatrixEntry + ": Testing whether " + path +
+                  " can be moved to trash")
+              .isEqualTo(testMatrixEntry.canPathBeDeleted(path));
         }
       } finally {
         cluster.shutdown();
@@ -322,11 +324,11 @@ public class TestProtectedDirectories {
         FileSystem fs = cluster.getFileSystem();
         for (Path srcPath : testMatrixEntry.getAllPathsToBeDeleted()) {
           assertThat(
-              testMatrixEntry + ": Testing whether "
-                  + srcPath + " can be renamed",
               renamePath(fs, srcPath,
-                  new Path(srcPath.toString() + "_renamed")),
-              is(testMatrixEntry.canPathBeRenamed(srcPath)));
+                  new Path(srcPath.toString() + "_renamed")))
+              .as(testMatrixEntry + ": Testing whether "
+                  + srcPath + " can be renamed")
+              .isEqualTo(testMatrixEntry.canPathBeRenamed(srcPath));
         }
       } finally {
         cluster.shutdown();
@@ -349,11 +351,11 @@ public class TestProtectedDirectories {
         FileSystem fs = cluster.getFileSystem();
         for (Path srcPath : testMatrixEntry.getAllPathsToBeDeleted()) {
           assertThat(
-                  testMatrixEntry + ": Testing whether "
-                          + srcPath + " can be renamed",
-                  renamePath(fs, srcPath,
-                          new Path(srcPath.toString() + "_renamed")),
-                  is(testMatrixEntry.canPathBeRenamed(srcPath)));
+              renamePath(fs, srcPath,
+                  new Path(srcPath.toString() + "_renamed")))
+              .as(testMatrixEntry + ": Testing whether "
+                  + srcPath + " can be renamed")
+              .isEqualTo(testMatrixEntry.canPathBeRenamed(srcPath));
         }
       } finally {
         cluster.shutdown();
@@ -377,10 +379,10 @@ public class TestProtectedDirectories {
         FileSystem fs = cluster.getFileSystem();
         for (Path srcPath : testMatrixEntry.getAllPathsToBeDeleted()) {
           assertThat(
-              testMatrixEntry + ": Testing whether "
-                  + srcPath + " can be moved to trash",
-              moveToTrash(fs, srcPath, conf),
-              is(testMatrixEntry.canPathBeRenamed(srcPath)));
+              moveToTrash(fs, srcPath, conf))
+              .as(testMatrixEntry + ": Testing whether "
+                  + srcPath + " can be moved to trash")
+              .isEqualTo(moveToTrash(fs, srcPath, conf));
         }
       } finally {
         cluster.shutdown();
@@ -403,17 +405,16 @@ public class TestProtectedDirectories {
         FileSystem fs = cluster.getFileSystem();
         for (Path path : testMatrixEntry.getAllPathsToBeDeleted()) {
           final long countBefore = cluster.getNamesystem().getFilesTotal();
-          assertThat(
-                  testMatrixEntry + ": Testing whether "
-                          + path + " can be deleted",
-                  deletePath(fs, path),
-                  is(testMatrixEntry.canPathBeDeleted(path)));
+          assertThat(deletePath(fs, path))
+              .as(testMatrixEntry + ": Testing whether "
+                  + path + " can be deleted")
+              .isEqualTo(testMatrixEntry.canPathBeDeleted(path));
           final long countAfter = cluster.getNamesystem().getFilesTotal();
 
           if (!testMatrixEntry.canPathBeDeleted(path)) {
-            assertThat(
-                    "Either all paths should be deleted or none",
-                    countAfter, is(countBefore));
+            assertThat(countAfter)
+                .as("Either all paths should be deleted or none")
+                .isEqualTo(countBefore);
           }
         }
       } finally {
@@ -433,8 +434,8 @@ public class TestProtectedDirectories {
         CommonConfigurationKeys.FS_PROTECTED_DIRECTORIES,
         "/foo//bar");
     Collection<String> paths = FSDirectory.parseProtectedDirectories(conf);
-    assertThat(paths.size(), is(1));
-    assertThat(paths.iterator().next(), is("/foo/bar"));
+    assertThat(paths.size()).isEqualTo(1);
+    assertThat(paths.iterator().next()).isEqualTo("/foo/bar");
   }
 
   /**
@@ -464,8 +465,8 @@ public class TestProtectedDirectories {
         CommonConfigurationKeys.FS_PROTECTED_DIRECTORIES,
         "/foo/../bar/");
     Collection<String> paths = FSDirectory.parseProtectedDirectories(conf);
-    assertThat(paths.size(), is(1));
-    assertThat(paths.iterator().next(), is("/bar"));   
+    assertThat(paths.size()).isEqualTo(1);
+    assertThat(paths.iterator().next()).isEqualTo("/bar");
   }
 
   /**
@@ -477,8 +478,8 @@ public class TestProtectedDirectories {
     conf.set(
         CommonConfigurationKeys.FS_PROTECTED_DIRECTORIES, "/");
     Collection<String> paths = FSDirectory.parseProtectedDirectories(conf);
-    assertThat(paths.size(), is(1));
-    assertThat(paths.iterator().next(), is("/"));
+    assertThat(paths.size()).isEqualTo(1);
+    assertThat(paths.iterator().next()).isEqualTo("/");
   }
 
   /**
@@ -492,8 +493,9 @@ public class TestProtectedDirectories {
         CommonConfigurationKeys.FS_PROTECTED_DIRECTORIES,
         "hdfs://foo/,/.reserved/foo");
     Collection<String> paths = FSDirectory.parseProtectedDirectories(conf);
-    assertThat("Unexpected directories " + paths,
-        paths.size(), is(0));
+    assertThat(paths.size())
+        .as("Unexpected directories " + paths)
+        .isEqualTo(0);
   }
 
   /**

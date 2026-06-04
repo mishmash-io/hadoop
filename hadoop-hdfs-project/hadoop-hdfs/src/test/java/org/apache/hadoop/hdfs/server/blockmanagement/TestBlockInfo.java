@@ -18,13 +18,17 @@
 package org.apache.hadoop.hdfs.server.blockmanagement;
 
 import static org.apache.hadoop.hdfs.server.namenode.INodeId.INVALID_INODE_ID;
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.core.Is.is;
-import static org.junit.jupiter.api.Assertions.*;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.Random;
+
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
@@ -36,8 +40,6 @@ import org.apache.hadoop.hdfs.protocol.Block;
 import org.apache.hadoop.hdfs.server.blockmanagement.DatanodeStorageInfo.AddBlockResult;
 import org.apache.hadoop.hdfs.server.common.GenerationStamp;
 import org.apache.hadoop.hdfs.server.protocol.DatanodeStorage;
-
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 
@@ -57,9 +59,9 @@ public class TestBlockInfo {
     BlockInfo blockInfo = new BlockInfoContiguous((short) 3);
     BlockCollection bc = Mockito.mock(BlockCollection.class);
     blockInfo.setBlockCollectionId(1000);
-    Assertions.assertFalse(blockInfo.isDeleted());
+    assertFalse(blockInfo.isDeleted());
     blockInfo.setBlockCollectionId(INVALID_INODE_ID);
-    Assertions.assertTrue(blockInfo.isDeleted());
+    assertTrue(blockInfo.isDeleted());
   }
 
   @Test
@@ -71,8 +73,8 @@ public class TestBlockInfo {
 
     boolean added = blockInfo.addStorage(storage, blockInfo);
 
-    Assertions.assertTrue(added);
-    Assertions.assertEquals(storage, blockInfo.getStorageInfo(0));
+    assertTrue(added);
+    assertEquals(storage, blockInfo.getStorageInfo(0));
   }
 
   @Test
@@ -82,9 +84,9 @@ public class TestBlockInfo {
     DatanodeStorageInfo providedStorage = mock(DatanodeStorageInfo.class);
     when(providedStorage.getStorageType()).thenReturn(StorageType.PROVIDED);
     boolean added = blockInfo.addStorage(providedStorage, blockInfo);
-    Assertions.assertTrue(added);
-    Assertions.assertEquals(providedStorage, blockInfo.getStorageInfo(0));
-    Assertions.assertTrue(blockInfo.isProvided());
+    assertTrue(added);
+    assertEquals(providedStorage, blockInfo.getStorageInfo(0));
+    assertTrue(blockInfo.isProvided());
   }
 
   @Test
@@ -96,16 +98,16 @@ public class TestBlockInfo {
     when(diskStorage.getDatanodeDescriptor()).thenReturn(mockDN);
     when(diskStorage.getStorageType()).thenReturn(StorageType.DISK);
     boolean added = blockInfo.addStorage(diskStorage, blockInfo);
-    Assertions.assertTrue(added);
-    Assertions.assertEquals(diskStorage, blockInfo.getStorageInfo(0));
-    Assertions.assertFalse(blockInfo.isProvided());
+    assertTrue(added);
+    assertEquals(diskStorage, blockInfo.getStorageInfo(0));
+    assertFalse(blockInfo.isProvided());
 
     // now add provided storage
     DatanodeStorageInfo providedStorage = mock(DatanodeStorageInfo.class);
     when(providedStorage.getStorageType()).thenReturn(StorageType.PROVIDED);
     added = blockInfo.addStorage(providedStorage, blockInfo);
-    Assertions.assertTrue(added);
-    Assertions.assertTrue(blockInfo.isProvided());
+    assertTrue(added);
+    assertTrue(blockInfo.isProvided());
   }
 
   @Test
@@ -128,16 +130,15 @@ public class TestBlockInfo {
     // Try to move one of the blocks to a different storage.
     boolean added =
         storage2.addBlock(blockInfos[NUM_BLOCKS / 2]) == AddBlockResult.ADDED;
-    assertThat(added, is(false));
-    assertThat(blockInfos[NUM_BLOCKS/2].getStorageInfo(0), is(storage2));
+    assertThat(added).isEqualTo(false);
+    assertThat(blockInfos[NUM_BLOCKS / 2].getStorageInfo(0)).isEqualTo(storage2);
   }
 
   @Test
-  public void testAddStorageWithDifferentBlock() {
+  public void testAddStorageWithDifferentBlock() throws Exception {
     assertThrows(IllegalArgumentException.class, () -> {
       BlockInfo blockInfo1 = new BlockInfoContiguous(new Block(1000L), (short) 3);
       BlockInfo blockInfo2 = new BlockInfoContiguous(new Block(1001L), (short) 3);
-
       final DatanodeStorageInfo storage = DFSTestUtil.createDatanodeStorageInfo(
           "storageID", "127.0.0.1");
       blockInfo1.addStorage(storage, blockInfo2);
@@ -164,8 +165,8 @@ public class TestBlockInfo {
       dd.addBlock(blockInfoList.get(i));
 
       // index of the datanode should be 0
-      assertEquals(0, blockInfoList.get(i)
-          .findStorageInfo(dd), "Find datanode should be 0");
+      assertEquals(0, blockInfoList.get(i).findStorageInfo(dd),
+          "Find datanode should be 0");
     }
 
     // list length should be equal to the number of blocks we inserted
@@ -186,7 +187,8 @@ public class TestBlockInfo {
       curIndex = blockInfoList.get(i).findStorageInfo(dd);
       headIndex = dd.moveBlockToHead(blockInfoList.get(i), curIndex, headIndex);
       // the moved element must be at the head of the list
-      assertEquals(blockInfoList.get(i), dd.getBlockListHeadForTesting(), "Block should be at the head of the list now.");
+      assertEquals(blockInfoList.get(i), dd.getBlockListHeadForTesting(),
+          "Block should be at the head of the list now.");
     }
 
     // move head of the list to the head - this should not change the list
@@ -196,8 +198,8 @@ public class TestBlockInfo {
     curIndex = 0;
     headIndex = 0;
     dd.moveBlockToHead(temp, curIndex, headIndex);
-    assertEquals(
-        temp, dd.getBlockListHeadForTesting(), "Moving head to the head of the list shopuld not change the list");
+    assertEquals(temp, dd.getBlockListHeadForTesting(),
+        "Moving head to the head of the list shopuld not change the list");
 
     // check all elements of the list against the original blockInfoList
     LOG.info("Checking elements of the list...");
@@ -217,7 +219,8 @@ public class TestBlockInfo {
       curIndex = blockInfoList.get(j).findStorageInfo(dd);
       headIndex = dd.moveBlockToHead(blockInfoList.get(j), curIndex, headIndex);
       // the moved element must be at the head of the list
-      assertEquals(blockInfoList.get(j), dd.getBlockListHeadForTesting(), "Block should be at the head of the list now.");
+      assertEquals(blockInfoList.get(j), dd.getBlockListHeadForTesting(),
+          "Block should be at the head of the list now.");
     }
   }
 }

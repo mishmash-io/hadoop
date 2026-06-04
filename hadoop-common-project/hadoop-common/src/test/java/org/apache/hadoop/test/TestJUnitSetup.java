@@ -18,11 +18,11 @@
 
 package org.apache.hadoop.test;
 
-import static org.junit.jupiter.api.Assertions.fail;
-
 import org.junit.jupiter.api.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import static org.junit.jupiter.api.Assertions.fail;
 
 public class TestJUnitSetup {
   public static final Logger LOG =

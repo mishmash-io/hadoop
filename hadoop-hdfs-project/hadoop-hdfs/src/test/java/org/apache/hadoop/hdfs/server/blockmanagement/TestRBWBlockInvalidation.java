@@ -50,6 +50,8 @@ import org.apache.hadoop.hdfs.server.namenode.ha.HATestUtil;
 import org.apache.hadoop.hdfs.server.namenode.ha.TestDNFencing.RandomDeleterPolicy;
 import org.apache.hadoop.io.IOUtils;
 import org.apache.hadoop.test.GenericTestUtils;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.Timeout;
 
 import java.util.function.Supplier;
 
@@ -74,7 +76,7 @@ public class TestRBWBlockInvalidation {
    * schedule replication for one more replica for that under replicated block.
    */
   @Test
-  @Timeout(value = 600000, unit = TimeUnit.MILLISECONDS)
+  @Timeout(value = 600)
   public void testBlockInvalidationWhenRBWReplicaMissedInDN()
       throws IOException, InterruptedException {
     // This test cannot pass on Windows due to file locking enforcement.  It will
@@ -117,8 +119,8 @@ public class TestRBWBlockInvalidation {
         }
         Thread.sleep(100);
       }
-      assertEquals(1, liveReplicas, "There should be less than 2 replicas in the "
-          + "liveReplicasMap");
+      assertEquals(1, liveReplicas,
+          "There should be less than 2 replicas in the " + "liveReplicasMap");
       
       while (true) {
         if ((liveReplicas =
@@ -152,7 +154,7 @@ public class TestRBWBlockInvalidation {
    * delete good replicas instead of the bad replicas.
    */
   @Test
-  @Timeout(value = 120000, unit = TimeUnit.MILLISECONDS)
+  @Timeout(value = 120)
   public void testRWRInvalidation() throws Exception {
     Configuration conf = new HdfsConfiguration();
 

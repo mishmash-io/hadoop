@@ -35,6 +35,7 @@ import org.apache.hadoop.io.IOUtils;
 
 import org.junit.jupiter.api.Test;
 import static org.apache.hadoop.test.GenericTestUtils.assertExceptionContains;
+import org.junit.jupiter.api.Test;
 
 public class TestUpdatePipelineWithSnapshots {
   

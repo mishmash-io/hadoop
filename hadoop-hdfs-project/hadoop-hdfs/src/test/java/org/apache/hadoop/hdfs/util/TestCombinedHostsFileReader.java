@@ -21,16 +21,30 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import java.io.File;
 import java.io.FileWriter;
+import java.io.IOException;
+import java.util.concurrent.Callable;
 
 import org.apache.hadoop.hdfs.protocol.DatanodeAdminProperties;
 import org.apache.hadoop.test.GenericTestUtils;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.MethodOrderer;
+import org.junit.jupiter.api.Order;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.TestMethodOrder;
+import org.mockito.invocation.InvocationOnMock;
+import org.mockito.stubbing.Answer;
+import org.mockito.Mock;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.mockito.Mockito.when;
+import org.mockito.MockitoAnnotations;
 
 /**
  * Test for JSON based HostsFileReader.
  */
+@TestMethodOrder(MethodOrderer.OrderAnnotation.class)
 public class TestCombinedHostsFileReader {
 
   // Using /test/build/data/tmp directory to store temporary files
@@ -44,15 +58,18 @@ public class TestCombinedHostsFileReader {
   private final File legacyFile =
       new File(TESTCACHEDATADIR, "legacy.dfs.hosts.json");
 
+  @Mock
+  private Callable<DatanodeAdminProperties[]> callable;
+
   @BeforeEach
   public void setUp() throws Exception {
+    MockitoAnnotations.initMocks(this);
   }
 
   @AfterEach
   public void tearDown() throws Exception {
     // Delete test file after running tests
     newFile.delete();
-
   }
 
   /*
@@ -86,5 +103,54 @@ public class TestCombinedHostsFileReader {
     DatanodeAdminProperties[] all =
         CombinedHostsFileReader.readFile(newFile.getAbsolutePath());
     assertEquals(0, all.length);
+  }
+
+  /*
+   * When timeout is enabled, test for success when reading file within timeout
+   * limits
+   */
+  @Test
+  public void testReadFileWithTimeoutSuccess() throws Exception {
+
+    DatanodeAdminProperties[] all = CombinedHostsFileReader.readFileWithTimeout(
+        jsonFile.getAbsolutePath(), 1000);
+    assertEquals(7, all.length);
+  }
+
+  /*
+   * When timeout is enabled, test for IOException when reading file exceeds
+   * timeout limits
+   */
+  @Test
+  public void testReadFileWithTimeoutTimeoutException() throws Exception {
+    when(callable.call()).thenAnswer(new Answer<Void>() {
+      @Override
+      public Void answer(InvocationOnMock invocation) throws Throwable {
+        Thread.sleep(2000);
+        return null;
+      }
+    });
+    assertThrows(IOException.class, () -> {
+      CombinedHostsFileReader.readFileWithTimeout(
+          jsonFile.getAbsolutePath(), 1);
+    });
+  }
+
+  /*
+   * When timeout is enabled, test for IOException when execution is interrupted
+   */
+  @Order(1)
+  @Test
+  public void testReadFileWithTimeoutInterruptedException() throws Exception {
+    when(callable.call()).thenAnswer(new Answer<Void>() {
+      @Override
+      public Void answer(InvocationOnMock invocation) throws Throwable {
+        throw new InterruptedException();
+      }
+    });
+    assertThrows(IOException.class, () -> {
+      CombinedHostsFileReader.readFileWithTimeout(
+          jsonFile.getAbsolutePath(), 1);
+    });
   }
 }

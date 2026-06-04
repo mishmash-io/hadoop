@@ -16,7 +16,10 @@
  * limitations under the License.
  */
 package org.apache.hadoop.hdfs;
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.fail;
 
 import java.io.IOException;
 import java.util.Arrays;
@@ -36,8 +39,12 @@ import org.apache.hadoop.hdfs.server.namenode.LeaseManager;
 import org.apache.hadoop.io.IOUtils;
 import org.apache.hadoop.test.GenericTestUtils;
 import org.apache.hadoop.util.StringUtils;
-import org.junit.jupiter.api.*;
-
+import org.apache.hadoop.util.concurrent.SubjectInheritingThread;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Disabled;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.Timeout;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.slf4j.event.Level;
@@ -120,9 +127,8 @@ public class TestFileConcurrentReader {
     IOUtils.readFully(inputStream, buffer, 0, numBytes);
     inputStream.close();
 
-    assertTrue(
-      validateSequentialBytes(buffer, 0, numBytes),
-      "unable to validate bytes"
+    assertTrue(validateSequentialBytes(buffer, 0, numBytes),
+        "unable to validate bytes"
     );
   }
 
@@ -150,7 +156,7 @@ public class TestFileConcurrentReader {
    * Test that that writes to an incomplete block are available to a reader
    */
   @Test
-  @Timeout(value = 30000, unit = TimeUnit.MILLISECONDS)
+  @Timeout(value = 30)
   public void testUnfinishedBlockRead()
       throws IOException {
     // create a new file in the root, write data, do no close
@@ -174,7 +180,7 @@ public class TestFileConcurrentReader {
    * for partial chunks.
    */
   @Test
-  @Timeout(value = 30000, unit = TimeUnit.MILLISECONDS)
+  @Timeout(value = 30)
   public void testUnfinishedBlockPacketBufferOverrun() throws IOException {
     // check that / exists
     Path path = new Path("/");
@@ -201,7 +207,7 @@ public class TestFileConcurrentReader {
   // new blocks.  This makes it almost 100% sure we can reproduce
   // case of client getting a DN that hasn't yet created the blocks
   @Test
-  @Timeout(value = 30000, unit = TimeUnit.MILLISECONDS)
+  @Timeout(value = 30)
   public void testImmediateReadOfNewFile()
       throws IOException {
     final int blockSize = 64 * 1024;
@@ -217,7 +223,7 @@ public class TestFileConcurrentReader {
     final AtomicReference<String> errorMessage = new AtomicReference<String>();
     final FSDataOutputStream out = fileSystem.create(file);
     
-    final Thread writer = new Thread(new Runnable() {
+    final Thread writer = new SubjectInheritingThread(new Runnable() {
       @Override
       public void run() {
         try {
@@ -237,7 +243,7 @@ public class TestFileConcurrentReader {
       }
     });
     
-    Thread opener = new Thread(new Runnable() {
+    Thread opener = new SubjectInheritingThread(new Runnable() {
       @Override
       public void run() {
         try {
@@ -279,13 +285,13 @@ public class TestFileConcurrentReader {
   // for some reason, using tranferTo evokes the race condition more often
   // so test separately
   @Test
-  @Timeout(value = 30000, unit = TimeUnit.MILLISECONDS)
+  @Timeout(value = 30)
   public void testUnfinishedBlockCRCErrorTransferTo() throws IOException {
     runTestUnfinishedBlockCRCError(true, SyncType.SYNC, DEFAULT_WRITE_SIZE);
   }
 
   @Test
-  @Timeout(value = 30000, unit = TimeUnit.MILLISECONDS)
+  @Timeout(value = 30)
   public void testUnfinishedBlockCRCErrorTransferToVerySmallWrite()
       throws IOException {
     runTestUnfinishedBlockCRCError(true, SyncType.SYNC, SMALL_WRITE_SIZE);
@@ -299,13 +305,13 @@ public class TestFileConcurrentReader {
   }
 
   @Test
-  @Timeout(value = 30000, unit = TimeUnit.MILLISECONDS)
+  @Timeout(value = 30)
   public void testUnfinishedBlockCRCErrorNormalTransfer() throws IOException {
     runTestUnfinishedBlockCRCError(false, SyncType.SYNC, DEFAULT_WRITE_SIZE);
   }
 
   @Test
-  @Timeout(value = 30000, unit = TimeUnit.MILLISECONDS)
+  @Timeout(value = 30)
   public void testUnfinishedBlockCRCErrorNormalTransferVerySmallWrite()
       throws IOException {
     runTestUnfinishedBlockCRCError(false, SyncType.SYNC, SMALL_WRITE_SIZE);
@@ -342,7 +348,7 @@ public class TestFileConcurrentReader {
     final AtomicBoolean writerStarted = new AtomicBoolean(false);
     final AtomicBoolean error = new AtomicBoolean(false);
 
-    final Thread writer = new Thread(new Runnable() {
+    final Thread writer = new SubjectInheritingThread(new Runnable() {
       @Override
       public void run() {
         try {
@@ -375,7 +381,7 @@ public class TestFileConcurrentReader {
         }
       }
     });
-    Thread tailer = new Thread(new Runnable() {
+    Thread tailer = new SubjectInheritingThread(new Runnable() {
       @Override
       public void run() {
         try {
@@ -410,9 +416,7 @@ public class TestFileConcurrentReader {
       writer.join();
       tailer.join();
 
-      assertFalse(
-        error.get(), "error occurred, see log above"
-      );
+      assertFalse(error.get(), "error occurred, see log above");
     } catch (InterruptedException e) {
       LOG.info("interrupted waiting for writer or tailer to complete");
 

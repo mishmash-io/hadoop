@@ -19,7 +19,8 @@
 package org.apache.hadoop.fs.s3a;
 
 import org.assertj.core.api.Assertions;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import software.amazon.awssdk.services.s3.model.MultipartUpload;
 
 import org.apache.hadoop.conf.Configuration;
@@ -56,6 +57,7 @@ public class ITestS3AMultipartUtils extends AbstractS3ATestBase {
   }
 
   @Override
+  @BeforeEach
   public void setup() throws Exception {
     super.setup();
     assumeMultipartUploads(getFileSystem().getConf());

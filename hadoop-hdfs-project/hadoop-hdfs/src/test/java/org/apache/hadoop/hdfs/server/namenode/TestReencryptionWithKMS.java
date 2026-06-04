@@ -35,6 +35,8 @@ import java.io.FileWriter;
 import java.io.Writer;
 import java.util.UUID;
 
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
 /**
  * Test class for re-encryption with minikms.
  */

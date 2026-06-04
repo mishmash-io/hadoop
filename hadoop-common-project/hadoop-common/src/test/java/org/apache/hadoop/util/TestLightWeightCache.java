@@ -27,6 +27,9 @@ import java.util.Random;
 
 import org.junit.jupiter.api.Test;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
 /** Testing {@link LightWeightCache} */
 public class TestLightWeightCache {
   private static final long starttime = Time.now();

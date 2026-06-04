@@ -72,7 +72,7 @@ public class TestSecureIOUtils {
   }
 
   @Test
-  @Timeout(value=10000, unit=TimeUnit.MILLISECONDS)
+  @Timeout(value = 10)
   public void testReadUnrestricted() throws IOException {
     SecureIOUtils.openForRead(testFilePathIs, null, null).close();
     SecureIOUtils.openFSDataInputStream(testFilePathFadis, null, null).close();
@@ -80,7 +80,7 @@ public class TestSecureIOUtils {
   }
 
   @Test
-  @Timeout(value=10000, unit=TimeUnit.MILLISECONDS)
+  @Timeout(value = 10)
   public void testReadCorrectlyRestrictedWithSecurity() throws IOException {
     SecureIOUtils
         .openForRead(testFilePathIs, realOwner, realGroup).close();
@@ -91,7 +91,7 @@ public class TestSecureIOUtils {
   }
 
   @Test
-  @Timeout(value=10000, unit=TimeUnit.MILLISECONDS)
+  @Timeout(value = 10)
   public void testReadIncorrectlyRestrictedWithSecurity() throws IOException {
     // this will only run if libs are available
     assumeTrue(NativeIO.isAvailable());
@@ -135,7 +135,7 @@ public class TestSecureIOUtils {
   }
 
   @Test
-  @Timeout(value=10000, unit=TimeUnit.MILLISECONDS)
+  @Timeout(value = 10)
   public void testCreateForWrite() throws IOException {
     try {
       SecureIOUtils.createForWrite(testFilePathIs, 0777);

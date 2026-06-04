@@ -24,14 +24,13 @@ import java.util.List;
 import java.util.StringTokenizer;
 
 import org.apache.hadoop.test.GenericTestUtils;
-
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.apache.hadoop.fs.permission.FsPermission;
 import org.apache.hadoop.security.UserGroupInformation;
 import org.apache.hadoop.util.Shell;
 import org.apache.hadoop.util.StringUtils;
-import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
 import org.slf4j.event.Level;
 
 import static org.apache.hadoop.fs.FileContextTestHelper.*;
@@ -52,7 +51,7 @@ import static org.junit.jupiter.api.Assertions.fail;
  * test and override {@link #setUp()} to initialize the <code>fc</code> 
  * {@link FileContext} instance variable.
  * 
- * Since this a junit 4 you can also do a single setup before 
+ * Since this a junit 4+ you can also do a single setup before
  * the start of any tests.
  * E.g.
  *     @BeforeClass   public static void clusterSetupAtBegining()
@@ -158,12 +157,12 @@ public abstract class FileContextPermissionBase {
     try {
       String g0 = groups.get(0);
       fc.setOwner(f, null, g0);
-      assertEquals(g0, fc.getFileStatus(f).getGroup());
+      assertEquals(fc.getFileStatus(f).getGroup(), g0);
 
       if (groups.size() > 1) {
         String g1 = groups.get(1);
         fc.setOwner(f, null, g1);
-        assertEquals(g1, fc.getFileStatus(f).getGroup());
+        assertEquals(fc.getFileStatus(f).getGroup(), g1);
       } else {
         System.out.println("Not testing changing the group since user " +
                            "belongs to only one group.");
@@ -193,7 +192,7 @@ public abstract class FileContextPermissionBase {
       }
       
     });
-    assertEquals("otherUser",newFc.getUgi().getUserName());
+    assertEquals(newFc.getUgi().getUserName(), "otherUser");
   }
 
   static List<String> getGroups() throws IOException {

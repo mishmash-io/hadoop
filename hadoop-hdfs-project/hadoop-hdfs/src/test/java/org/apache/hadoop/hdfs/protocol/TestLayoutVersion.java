@@ -17,9 +17,11 @@
  */
 package org.apache.hadoop.hdfs.protocol;
 
-import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.mockito.Mockito.*;
 
 import java.util.ArrayList;
 import java.util.EnumSet;
@@ -33,7 +35,6 @@ import org.apache.hadoop.hdfs.protocol.LayoutVersion.FeatureInfo;
 import org.apache.hadoop.hdfs.protocol.LayoutVersion.LayoutFeature;
 import org.apache.hadoop.hdfs.server.datanode.DataNodeLayoutVersion;
 import org.apache.hadoop.hdfs.server.namenode.NameNodeLayoutVersion;
-
 import org.junit.jupiter.api.Test;
 
 /**
@@ -132,10 +133,9 @@ public class TestLayoutVersion {
         NameNodeLayoutVersion.Feature.SNAPSHOT_MODIFICATION_TIME,
         NameNodeLayoutVersion.Feature.NVDIMM_SUPPORT);
     for (LayoutFeature f : compatibleFeatures) {
-      assertEquals(baseLV,
-          f.getInfo().getMinimumCompatibleLayoutVersion(),
-          String.format("Expected minimum compatible layout version " +
-          "%d for feature %s.", baseLV, f));
+      assertEquals(baseLV, f.getInfo().getMinimumCompatibleLayoutVersion(),
+          String.format("Expected minimum compatible layout version "
+              + "%d for feature %s.", baseLV, f));
     }
     List<LayoutFeature> features = new ArrayList<>();
     features.addAll(EnumSet.allOf(LayoutVersion.Feature.class));
@@ -144,8 +144,8 @@ public class TestLayoutVersion {
       if (!compatibleFeatures.contains(f)) {
         assertEquals(f.getInfo().getLayoutVersion(),
             f.getInfo().getMinimumCompatibleLayoutVersion(),
-            String.format("Expected feature %s to have minimum " +
-            "compatible layout version set to itself.", f));
+            String.format("Expected feature %s to have minimum "
+                + "compatible layout version set to itself.", f));
       }
     }
   }
@@ -163,9 +163,9 @@ public class TestLayoutVersion {
     for (LayoutFeature f : EnumSet.allOf(NameNodeLayoutVersion.Feature.class)) {
       if (prevF != null) {
         assertTrue(f.getInfo().getMinimumCompatibleLayoutVersion() <=
-            prevF.getInfo().getMinimumCompatibleLayoutVersion(),
+                prevF.getInfo().getMinimumCompatibleLayoutVersion(),
             String.format("Features %s and %s not listed in order of " +
-            "minimum compatible layout version.", prevF, f));
+                "minimum compatible layout version.", prevF, f));
       } else {
         prevF = f;
       }
@@ -204,10 +204,11 @@ public class TestLayoutVersion {
         .getLayoutVersion();
     int actualMinCompatLV = LayoutVersion.getMinimumCompatibleLayoutVersion(
         NameNodeLayoutVersion.Feature.values());
-    assertEquals(expectedMinCompatLV, actualMinCompatLV, "The minimum compatible layout version has changed.  " +
-        "Downgrade to prior versions is no longer possible.  Please either " +
-        "restore compatibility, or if the incompatibility is intentional, " +
-        "then update this assertion.");
+    assertEquals(expectedMinCompatLV, actualMinCompatLV,
+        "The minimum compatible layout version has changed.  " +
+            "Downgrade to prior versions is no longer possible.  Please either " +
+            "restore compatibility, or if the incompatibility is intentional, " +
+            "then update this assertion.");
   }
 
   /**
@@ -223,7 +224,7 @@ public class TestLayoutVersion {
     for (LayoutFeature  feature : ancestorSet) {
       assertTrue(NameNodeLayoutVersion.supports(feature, lv),
           "LV " + lv + " does nto support " + feature
-          + " supported by the ancestor LV " + info.getAncestorLayoutVersion());
+              + " supported by the ancestor LV " + info.getAncestorLayoutVersion());
     }
   }
   

@@ -20,6 +20,7 @@ package org.apache.hadoop.hdfs.tools;
 import org.apache.hadoop.fs.CommonConfigurationKeysPublic;
 import org.apache.hadoop.hdfs.web.WebHdfsConstants;
 import org.apache.hadoop.hdfs.web.WebHdfsTestUtil;
+import org.junit.jupiter.api.BeforeEach;
 
 import java.io.IOException;
 

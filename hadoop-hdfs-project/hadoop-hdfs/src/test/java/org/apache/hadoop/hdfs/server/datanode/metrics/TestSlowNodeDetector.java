@@ -38,12 +38,15 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.concurrent.TimeUnit;
+
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /**
  * Unit tests for {@link OutlierDetector}.
+ * Set a timeout for every test case.
  */
-@Timeout(value=300000, unit=TimeUnit.MILLISECONDS)
+@Timeout(300)
 public class TestSlowNodeDetector {
   public static final Logger LOG =
       LoggerFactory.getLogger(TestSlowNodeDetector.class);
@@ -273,8 +276,8 @@ public class TestSlowNodeDetector {
 
       assertTrue(
           errorPercent < 0.001,
-          "Set " + inputList + "; Expected median: " +
-              expectedMedian + ", got: " + median);
+          "Set " + inputList + "; Expected median: "
+              + expectedMedian + ", got: " + median);
     }
   }
 
@@ -298,15 +301,15 @@ public class TestSlowNodeDetector {
 
         assertTrue(
             errorPercent < 0.001,
-            "Set " + entry.getKey() + "; Expected M.A.D.: " +
-                expectedMad + ", got: " + mad);
+            "Set " + entry.getKey() + "; Expected M.A.D.: "
+                + expectedMad + ", got: " + mad);
       } else {
         // For an input list of size 1, the MAD should be 0.0.
         final Double epsilon = 0.000001; // Allow for some FP math error.
         assertTrue(
             mad < epsilon,
-            "Set " + entry.getKey() + "; Expected M.A.D.: " +
-                expectedMad + ", got: " + mad);
+            "Set " + entry.getKey() + "; Expected M.A.D.: "
+                + expectedMad + ", got: " + mad);
       }
     }
   }
@@ -317,8 +320,9 @@ public class TestSlowNodeDetector {
    */
   @Test
   public void testMedianOfEmptyList() {
-    assertThrows(IllegalArgumentException.class, () ->
-      OutlierDetector.computeMedian(Collections.emptyList()));
+    assertThrows(IllegalArgumentException.class, () -> {
+      OutlierDetector.computeMedian(Collections.emptyList());
+    });
   }
 
   /**
@@ -327,7 +331,8 @@ public class TestSlowNodeDetector {
    */
   @Test
   public void testMadOfEmptyList() {
-    assertThrows(IllegalArgumentException.class, () ->
-      OutlierDetector.computeMedian(Collections.emptyList()));
+    assertThrows(IllegalArgumentException.class, () -> {
+      OutlierDetector.computeMedian(Collections.emptyList());
+    });
   }
 }

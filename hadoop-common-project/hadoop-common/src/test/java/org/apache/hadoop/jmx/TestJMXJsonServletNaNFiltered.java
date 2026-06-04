@@ -21,6 +21,10 @@ import java.net.URL;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
+
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.http.HttpServer2;
 import org.apache.hadoop.http.HttpServerFunctionalTest;
@@ -34,7 +38,8 @@ public class TestJMXJsonServletNaNFiltered extends HttpServerFunctionalTest {
   private static HttpServer2 server;
   private static URL baseUrl;
 
-  @BeforeAll public static void setup() throws Exception {
+  @BeforeAll
+  public static void setup() throws Exception {
     Configuration configuration = new Configuration();
     configuration.setBoolean(JMX_NAN_FILTER, true);
     server = createTestServer(configuration);
@@ -42,7 +47,8 @@ public class TestJMXJsonServletNaNFiltered extends HttpServerFunctionalTest {
     baseUrl = getServerURL(server);
   }
 
-  @AfterAll public static void cleanup() throws Exception {
+  @AfterAll
+  public static void cleanup() throws Exception {
     server.stop();
   }
 

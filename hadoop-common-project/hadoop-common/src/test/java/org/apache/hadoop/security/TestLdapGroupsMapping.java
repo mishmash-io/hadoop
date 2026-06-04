@@ -60,9 +60,12 @@ import org.apache.hadoop.security.alias.CredentialProvider;
 import org.apache.hadoop.security.alias.CredentialProviderFactory;
 import org.apache.hadoop.security.alias.JavaKeyStoreProvider;
 import org.apache.hadoop.test.GenericTestUtils;
+import org.apache.hadoop.util.concurrent.SubjectInheritingThread;
+
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.Timeout;
+
 import org.mockito.Mockito;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -352,7 +355,7 @@ public class TestLdapGroupsMapping extends TestLdapGroupsMappingBase {
     // let's make sure that a password that doesn't exist returns an
     // empty string as currently expected and used to trigger a call to
     // extract password
-    assertEquals("", mapping.getPassword(conf,"invalid-alias", ""));
+    assertEquals("", mapping.getPassword(conf, "invalid-alias", ""));
   }
 
   @Test
@@ -403,7 +406,7 @@ public class TestLdapGroupsMapping extends TestLdapGroupsMappingBase {
    * @throws InterruptedException
    */
   @Test
-  @Timeout(value=30000, unit=TimeUnit.MILLISECONDS)
+  @Timeout(value = 30)
   public void testLdapConnectionTimeout()
       throws IOException, InterruptedException {
     final int connectionTimeoutMs = 3 * 1000; // 3s
@@ -413,7 +416,7 @@ public class TestLdapGroupsMapping extends TestLdapGroupsMappingBase {
       // Below we create a LDAP server which will accept a client request;
       // but it will never reply to the bind (connect) request.
       // Client of this LDAP server is expected to get a connection timeout.
-      final Thread ldapServer = new Thread(new Runnable() {
+      final Thread ldapServer = new SubjectInheritingThread(new Runnable() {
         @Override
         public void run() {
           try {
@@ -458,7 +461,7 @@ public class TestLdapGroupsMapping extends TestLdapGroupsMappingBase {
    * @throws InterruptedException
    */
   @Test
-  @Timeout(value=30000, unit=TimeUnit.MILLISECONDS)
+  @Timeout(value = 30)
   public void testLdapReadTimeout() throws IOException, InterruptedException {
     final int readTimeoutMs = 4 * 1000; // 4s
     try (ServerSocket serverSock = new ServerSocket(0)) {
@@ -468,7 +471,7 @@ public class TestLdapGroupsMapping extends TestLdapGroupsMappingBase {
       // authenticate it successfully; but it will never reply to the following
       // query request.
       // Client of this LDAP server is expected to get a read timeout.
-      final Thread ldapServer = new Thread(new Runnable() {
+      final Thread ldapServer = new SubjectInheritingThread(new Runnable() {
         @Override
         public void run() {
           try {
@@ -514,7 +517,7 @@ public class TestLdapGroupsMapping extends TestLdapGroupsMappingBase {
    * @throws Exception
    */
   @Test
-  @Timeout(value=10000, unit=TimeUnit.MILLISECONDS)
+  @Timeout(value = 10)
   public void testSetConf() throws Exception {
     Configuration conf = getBaseConf(TEST_LDAP_URL);
     Configuration mockConf = Mockito.spy(conf);

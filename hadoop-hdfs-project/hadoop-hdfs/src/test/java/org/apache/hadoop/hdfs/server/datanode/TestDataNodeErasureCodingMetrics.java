@@ -38,11 +38,14 @@ import org.apache.hadoop.metrics2.MetricsRecordBuilder;
 import static org.apache.hadoop.test.MetricsAsserts.getLongCounter;
 import static org.apache.hadoop.test.MetricsAsserts.getLongCounterWithoutCheck;
 import static org.apache.hadoop.test.MetricsAsserts.getMetrics;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-import org.junit.jupiter.api.*;
-
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.Timeout;
 import java.io.IOException;
 import java.util.concurrent.TimeUnit;
 
@@ -88,65 +91,76 @@ public class TestDataNodeErasureCodingMetrics {
   }
 
   @Test
-  @Timeout(value = 120000, unit = TimeUnit.MILLISECONDS)
+  @Timeout(value = 120)
   public void testFullBlock() throws Exception {
-    Assertions.assertEquals(0, getLongMetric("EcReconstructionReadTimeMillis"));
-    Assertions.assertEquals(0, getLongMetric("EcReconstructionDecodingTimeMillis"));
-    Assertions.assertEquals(0, getLongMetric("EcReconstructionWriteTimeMillis"));
+    assertEquals(0, getLongMetric("EcReconstructionReadTimeMillis"));
+    assertEquals(0, getLongMetric("EcReconstructionDecodingTimeMillis"));
+    assertEquals(0, getLongMetric("EcReconstructionWriteTimeMillis"));
 
     doTest("/testEcMetrics", blockGroupSize, 0);
 
-    Assertions.assertEquals(1, getLongMetric("EcReconstructionTasks"), "EcReconstructionTasks should be ");
-    Assertions.assertEquals(0, getLongMetric("EcFailedReconstructionTasks"), "EcFailedReconstructionTasks should be ");
-    Assertions.assertTrue(getLongMetric("EcDecodingTimeNanos") > 0);
-    Assertions.assertEquals(blockGroupSize, getLongMetric("EcReconstructionBytesRead"), "EcReconstructionBytesRead should be ");
-    Assertions.assertEquals(blockSize, getLongMetric("EcReconstructionBytesWritten"), "EcReconstructionBytesWritten should be ");
-    Assertions.assertEquals(0, getLongMetricWithoutCheck("EcReconstructionRemoteBytesRead"), "EcReconstructionRemoteBytesRead should be ");
-    Assertions.assertTrue(getLongMetric("EcReconstructionReadTimeMillis") > 0);
-    Assertions.assertTrue(getLongMetric("EcReconstructionDecodingTimeMillis") > 0);
-    Assertions.assertTrue(getLongMetric("EcReconstructionWriteTimeMillis") > 0);
+    assertEquals(1, getLongMetric("EcReconstructionTasks"),
+        "EcReconstructionTasks should be ");
+    assertEquals(0, getLongMetric("EcFailedReconstructionTasks"),
+        "EcFailedReconstructionTasks should be ");
+    assertTrue(getLongMetric("EcDecodingTimeNanos") > 0);
+    assertEquals(blockGroupSize, getLongMetric("EcReconstructionBytesRead"),
+        "EcReconstructionBytesRead should be ");
+    assertEquals(blockSize, getLongMetric("EcReconstructionBytesWritten"),
+        "EcReconstructionBytesWritten should be ");
+    assertEquals(0, getLongMetricWithoutCheck("EcReconstructionRemoteBytesRead"),
+        "EcReconstructionRemoteBytesRead should be ");
+    assertTrue(getLongMetric("EcReconstructionReadTimeMillis") > 0);
+    assertTrue(getLongMetric("EcReconstructionDecodingTimeMillis") > 0);
+    assertTrue(getLongMetric("EcReconstructionWriteTimeMillis") > 0);
   }
 
   // A partial block, reconstruct the partial block
   @Test
-  @Timeout(value = 120000, unit = TimeUnit.MILLISECONDS)
+  @Timeout(value = 120)
   public void testReconstructionBytesPartialGroup1() throws Exception {
     final int fileLen = blockSize / 10;
     doTest("/testEcBytes", fileLen, 0);
 
-    Assertions.assertEquals(fileLen,  getLongMetric("EcReconstructionBytesRead"),  "EcReconstructionBytesRead should be ");
-    Assertions.assertEquals(fileLen, getLongMetric("EcReconstructionBytesWritten"), "EcReconstructionBytesWritten should be ");
-    Assertions.assertEquals(0, getLongMetricWithoutCheck("EcReconstructionRemoteBytesRead"), "EcReconstructionRemoteBytesRead should be ");
+    assertEquals(fileLen, getLongMetric("EcReconstructionBytesRead"),
+        "EcReconstructionBytesRead should be ");
+    assertEquals(fileLen, getLongMetric("EcReconstructionBytesWritten"),
+        "EcReconstructionBytesWritten should be ");
+    assertEquals(0, getLongMetricWithoutCheck("EcReconstructionRemoteBytesRead"),
+        "EcReconstructionRemoteBytesRead should be ");
   }
 
   // 1 full block + 5 partial block, reconstruct the full block
   @Test
-  @Timeout(value = 120000, unit = TimeUnit.MILLISECONDS)
+  @Timeout(value = 120)
   public void testReconstructionBytesPartialGroup2() throws Exception {
     final int fileLen = cellSize * dataBlocks + cellSize + cellSize / 10;
     doTest("/testEcBytes", fileLen, 0);
 
-    Assertions.assertEquals(cellSize * dataBlocks + cellSize + cellSize / 10,
-        getLongMetric("EcReconstructionBytesRead"),
-        "ecReconstructionBytesRead should be ");
-    Assertions.assertEquals(blockSize, getLongMetric("EcReconstructionBytesWritten"), "EcReconstructionBytesWritten should be ");
-    Assertions.assertEquals(0, getLongMetricWithoutCheck("EcReconstructionRemoteBytesRead"), "EcReconstructionRemoteBytesRead should be ");
+    assertEquals(cellSize * dataBlocks
+            + cellSize + cellSize / 10,
+        getLongMetric("EcReconstructionBytesRead"), "ecReconstructionBytesRead should be ");
+    assertEquals(blockSize, getLongMetric("EcReconstructionBytesWritten"),
+        "EcReconstructionBytesWritten should be ");
+    assertEquals(0, getLongMetricWithoutCheck("EcReconstructionRemoteBytesRead"),
+        "EcReconstructionRemoteBytesRead should be ");
   }
 
   // 1 full block + 5 partial block, reconstruct the partial block
   @Test
-  @Timeout(value = 120000, unit = TimeUnit.MILLISECONDS)
+  @Timeout(value = 120)
   public void testReconstructionBytesPartialGroup3() throws Exception {
     final int fileLen = cellSize * dataBlocks + cellSize + cellSize / 10;
     doTest("/testEcBytes", fileLen, 1);
 
-    Assertions.assertEquals(cellSize * dataBlocks + (cellSize / 10) * 2 ,
+    assertEquals(cellSize * dataBlocks + (cellSize / 10) * 2,
         getLongMetric("EcReconstructionBytesRead"),
         "ecReconstructionBytesRead should be ");
-    Assertions.assertEquals(cellSize + cellSize / 10,
+    assertEquals(cellSize + cellSize / 10,
         getLongMetric("EcReconstructionBytesWritten"),
         "ecReconstructionBytesWritten should be ");
-    Assertions.assertEquals(0, getLongMetricWithoutCheck("EcReconstructionRemoteBytesRead"), "EcReconstructionRemoteBytesRead should be ");
+    assertEquals(0, getLongMetricWithoutCheck("EcReconstructionRemoteBytesRead"),
+        "EcReconstructionRemoteBytesRead should be ");
   }
 
   private long getLongMetric(String metricName) {

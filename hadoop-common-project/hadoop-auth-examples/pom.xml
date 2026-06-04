@@ -20,11 +20,11 @@
   <parent>
     <groupId>org.apache.hadoop</groupId>
     <artifactId>hadoop-project</artifactId>
-    <version>3.4.3</version>
+    <version>3.5.0</version>
     <relativePath>../../hadoop-project</relativePath>
   </parent>
   <artifactId>hadoop-auth-examples</artifactId>
-  <version>3.4.3</version>
+  <version>3.5.0</version>
   <packaging>war</packaging>
 
   <name>Apache Hadoop Auth Examples</name>
@@ -32,8 +32,8 @@
 
   <dependencies>
     <dependency>
-      <groupId>javax.servlet</groupId>
-      <artifactId>javax.servlet-api</artifactId>
+      <groupId>jakarta.servlet</groupId>
+      <artifactId>jakarta.servlet-api</artifactId>
       <scope>provided</scope>
     </dependency>
     <dependency>

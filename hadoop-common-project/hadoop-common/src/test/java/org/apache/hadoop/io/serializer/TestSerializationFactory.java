@@ -21,9 +21,8 @@ import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.test.GenericTestUtils;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
-
-import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.CommonConfigurationKeys;
@@ -98,6 +97,6 @@ public class TestSerializationFactory {
     conf.set(CommonConfigurationKeys.IO_SERIALIZATIONS_KEY, " org.apache.hadoop.io.serializer.WritableSerialization ");
     SerializationFactory factory = new SerializationFactory(conf);
     assertNotNull(factory.getSerializer(LongWritable.class),
-      "Valid class must be returned");
+        "Valid class must be returned");
    }
 }

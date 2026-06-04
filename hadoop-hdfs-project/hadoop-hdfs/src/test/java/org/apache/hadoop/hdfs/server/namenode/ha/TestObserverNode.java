@@ -21,7 +21,10 @@ import static org.apache.hadoop.hdfs.DFSConfigKeys.DFS_NAMENODE_OBSERVER_ENABLED
 import static org.apache.hadoop.hdfs.DFSConfigKeys.DFS_NAMENODE_STATE_CONTEXT_ENABLED_KEY;
 import static org.apache.hadoop.hdfs.server.namenode.NameNodeAdapter.getServiceState;
 import static org.apache.hadoop.hdfs.server.namenode.ha.ObserverReadProxyProvider.*;
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.fail;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyBoolean;
 import static org.mockito.ArgumentMatchers.anyLong;
@@ -72,7 +75,11 @@ import org.apache.hadoop.test.GenericTestUtils;
 import org.apache.hadoop.test.LambdaTestUtils;
 import org.apache.hadoop.util.Time;
 import org.apache.hadoop.util.concurrent.HadoopExecutors;
-import org.junit.jupiter.api.*;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -111,14 +118,11 @@ public class TestObserverNode {
   @AfterEach
   public void cleanUp() throws IOException {
     dfs.delete(testPath, true);
-    assertEquals(HAServiceState.ACTIVE,
-        getServiceState(dfsCluster.getNameNode(0)),
+    assertEquals(HAServiceState.ACTIVE, getServiceState(dfsCluster.getNameNode(0)),
         "NN[0] should be active");
-    assertEquals(HAServiceState.STANDBY,
-        getServiceState(dfsCluster.getNameNode(1)),
+    assertEquals(HAServiceState.STANDBY, getServiceState(dfsCluster.getNameNode(1)),
         "NN[1] should be standby");
-    assertEquals(HAServiceState.OBSERVER,
-        getServiceState(dfsCluster.getNameNode(2)),
+    assertEquals(HAServiceState.OBSERVER, getServiceState(dfsCluster.getNameNode(2)),
         "NN[2] should be observer");
   }
 
@@ -235,8 +239,8 @@ public class TestObserverNode {
     // Verify that the NameNode is not in Observer state
     dfsCluster.waitNameNodeUp(nnIdx);
     assertTrue(dfsCluster.getNameNode(nnIdx).isStandbyState(),
-        "The NameNode started as Observer despite "
-        + DFS_NAMENODE_OBSERVER_ENABLED_KEY + " being false");
+        "The NameNode started as Observer despite " + DFS_NAMENODE_OBSERVER_ENABLED_KEY
+            + " being false");
 
     dfs.mkdir(testPath, FsPermission.getDefault());
     assertSentTo(0);
@@ -257,8 +261,8 @@ public class TestObserverNode {
     // Check that the NameNode is in Observer state
     dfsCluster.waitNameNodeUp(nnIdx);
     assertTrue(dfsCluster.getNameNode(nnIdx).isObserverState(),
-        "The NameNode did not start as Observer despite "
-        + DFS_NAMENODE_OBSERVER_ENABLED_KEY + " being true");
+        "The NameNode did not start as Observer despite " + DFS_NAMENODE_OBSERVER_ENABLED_KEY
+            + " being true");
 
     dfs.mkdir(testPath2, FsPermission.getDefault());
     assertSentTo(0);
@@ -559,16 +563,14 @@ public class TestObserverNode {
     dfsCluster.rollEditLogAndTail(0);
     // No Observers present, should still go to Active
     dfsCluster.transitionToStandby(2);
-    assertEquals(HAServiceState.STANDBY,
-        getServiceState(dfsCluster.getNameNode(2)),
+    assertEquals(HAServiceState.STANDBY, getServiceState(dfsCluster.getNameNode(2)),
         "NN[2] should be standby");
     newFs.open(testFile).close();
     assertSentTo(0);
     // Restore Observer
     int newObserver = 1;
     dfsCluster.transitionToObserver(newObserver);
-    assertEquals(HAServiceState.OBSERVER,
-        getServiceState(dfsCluster.getNameNode(newObserver)),
+    assertEquals(HAServiceState.OBSERVER, getServiceState(dfsCluster.getNameNode(newObserver)),
         "NN[" + newObserver + "] should be observer");
     long startTime = Time.monotonicNow();
     try {
@@ -665,12 +667,11 @@ public class TestObserverNode {
         dfsCluster.getNameNode(2).getFSImage().getLastAppliedOrWrittenTxId(),
         "Active and Observer stateIds don't match");
     for (int i = 0; i < numThreads; i++) {
-      assertTrue(clientStates[i].lastSeenStateId >= activStateId &&
-          clientStates[i].fnfe == null,
+      assertTrue(clientStates[i].lastSeenStateId >= activStateId && clientStates[i].fnfe == null,
           "Client #" + i
-          + " lastSeenStateId=" + clientStates[i].lastSeenStateId
-          + " activStateId=" + activStateId
-          + "\n" + clientStates[i].fnfe);
+              + " lastSeenStateId=" + clientStates[i].lastSeenStateId
+              + " activStateId=" + activStateId
+              + "\n" + clientStates[i].fnfe);
     }
 
     // Restore edit log

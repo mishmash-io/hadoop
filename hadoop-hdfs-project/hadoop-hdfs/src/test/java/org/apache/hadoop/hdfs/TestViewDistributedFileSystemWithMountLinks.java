@@ -25,10 +25,9 @@ import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.fs.viewfs.ConfigUtil;
 import org.apache.hadoop.fs.viewfs.TestViewFileSystemOverloadSchemeWithHdfsScheme;
 import org.apache.hadoop.fs.viewfs.ViewFsTestSetup;
-import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.Timeout;
+import org.junit.jupiter.api.BeforeEach;
 
 import java.io.IOException;
 import java.net.URI;
@@ -36,6 +35,8 @@ import java.util.concurrent.TimeUnit;
 
 import static org.apache.hadoop.fs.viewfs.Constants.CONFIG_VIEWFS_IGNORE_PORT_IN_MOUNT_TABLE_NAME;
 import static org.apache.hadoop.fs.viewfs.Constants.CONFIG_VIEWFS_IGNORE_PORT_IN_MOUNT_TABLE_NAME_DEFAULT;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public class TestViewDistributedFileSystemWithMountLinks extends
     TestViewFileSystemOverloadSchemeWithHdfsScheme {
@@ -60,13 +61,13 @@ public class TestViewDistributedFileSystemWithMountLinks extends
   }
 
   @Test
-  @Timeout(value = 30000, unit = TimeUnit.MILLISECONDS)
+  @Timeout(value = 30)
   public void testCreateOnRoot() throws Exception {
     testCreateOnRoot(true);
   }
 
   @Test
-  @Timeout(value = 30000, unit = TimeUnit.MILLISECONDS)
+  @Timeout(value = 30)
   public void testMountLinkWithNonExistentLink() throws Exception {
     testMountLinkWithNonExistentLink(false);
   }
@@ -150,14 +151,14 @@ public class TestViewDistributedFileSystemWithMountLinks extends
       dst = new Path("/InternalDirDoesNotExistInFallback/file");
       fs.create(src).close();
       // If fallback does not have same structure as internal, rename will fail.
-      Assertions.assertFalse(fs.rename(src, dst));
+      assertFalse(fs.rename(src, dst));
     }
   }
 
   private void verifyRename(FileSystem fs, Path src, Path dst)
       throws IOException {
     fs.rename(src, dst);
-    Assertions.assertFalse(fs.exists(src));
-    Assertions.assertTrue(fs.exists(dst));
+    assertFalse(fs.exists(src));
+    assertTrue(fs.exists(dst));
   }
 }

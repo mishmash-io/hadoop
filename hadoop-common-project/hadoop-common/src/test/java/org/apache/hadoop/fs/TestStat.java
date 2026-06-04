@@ -18,8 +18,8 @@
 package org.apache.hadoop.fs;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.fail;
 import static org.junit.jupiter.api.Assumptions.assumeTrue;
 
@@ -98,7 +98,7 @@ public class TestStat extends FileSystemTestHelper {
   }
 
   @Test
-  @Timeout(value=10000, unit=TimeUnit.MILLISECONDS)
+  @Timeout(value = 10)
   public void testStatLinux() throws Exception {
     String[] symlinks = new String[] {
         "6,symbolic link,1373584236,1373584236,777,andrew,andrew,`link' -> `target'",
@@ -114,7 +114,7 @@ public class TestStat extends FileSystemTestHelper {
   }
 
   @Test
-  @Timeout(value=10000, unit=TimeUnit.MILLISECONDS)
+  @Timeout(value = 10)
   public void testStatFreeBSD() throws Exception {
     String[] symlinks = new String[] {
         "6,Symbolic Link,1373508941,1373508941,120755,awang,awang,`link' -> `target'"
@@ -130,7 +130,7 @@ public class TestStat extends FileSystemTestHelper {
   }
 
   @Test
-  @Timeout(value=10000, unit=TimeUnit.MILLISECONDS)
+  @Timeout(value = 10)
   public void testStatFileNotFound() throws Exception {
     assumeTrue(Stat.isAvailable());
     try {
@@ -142,13 +142,13 @@ public class TestStat extends FileSystemTestHelper {
   }
 
   @Test
-  @Timeout(value=10000, unit=TimeUnit.MILLISECONDS)
+  @Timeout(value = 10)
   public void testStatEnvironment() throws Exception {
     assertEquals("C", stat.getEnvironment("LANG"));
   }
 
   @Test
-  @Timeout(value=10000, unit=TimeUnit.MILLISECONDS)
+  @Timeout(value = 10)
   public void testStat() throws Exception {
     assumeTrue(Stat.isAvailable());
     FileSystem fs = FileSystem.getLocal(new Configuration());

@@ -61,7 +61,7 @@ public class TestSshFenceByTcpPort {
         new InetSocketAddress("8.8.8.8", 1234));
 
   @Test
-  @Timeout(value=20000, unit=TimeUnit.MILLISECONDS)
+  @Timeout(value = 20)
   public void testFence() throws BadFencingConfigurationException {
     assumeTrue(isConfigured());
     Configuration conf = new Configuration();
@@ -79,7 +79,7 @@ public class TestSshFenceByTcpPort {
    * any exception
    */
   @Test
-  @Timeout(value=20000, unit=TimeUnit.MILLISECONDS)
+  @Timeout(value = 20)
   public void testConnectTimeout() throws BadFencingConfigurationException {
     Configuration conf = new Configuration();
     conf.setInt(SshFenceByTcpPort.CONF_CONNECT_TIMEOUT_KEY, 3000);

@@ -13,6 +13,10 @@
  */
 package org.apache.hadoop.security.authentication.client;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 import static org.apache.hadoop.security.authentication.server.MultiSchemeAuthenticationHandler.SCHEMES_PROPERTY;
 import static org.apache.hadoop.security.authentication.server.MultiSchemeAuthenticationHandler.AUTH_HANDLER_PROPERTY;
 import static org.apache.hadoop.security.authentication.server.AuthenticationFilter.AUTH_TYPE;
@@ -34,12 +38,9 @@ import org.apache.hadoop.security.authentication.server.AuthenticationFilter;
 import org.apache.hadoop.security.authentication.server.MultiSchemeAuthenticationHandler;
 import org.apache.hadoop.security.authentication.server.PseudoAuthenticationHandler;
 import org.apache.hadoop.security.authentication.server.KerberosAuthenticationHandler;
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertTrue;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.Timeout;
-import org.mockito.Mockito;
 
 import java.io.File;
 import java.net.HttpURLConnection;
@@ -94,6 +95,7 @@ public class TestKerberosAuthenticator extends KerberosSecurityTestcase {
   }
 
   @Test
+  @Timeout(value = 60)
   public void testFallbacktoPseudoAuthenticator() throws Exception {
     AuthenticatorTestCase auth = new AuthenticatorTestCase();
     Properties props = new Properties();
@@ -104,6 +106,7 @@ public class TestKerberosAuthenticator extends KerberosSecurityTestcase {
   }
 
   @Test
+  @Timeout(value = 60)
   public void testFallbacktoPseudoAuthenticatorAnonymous() throws Exception {
     AuthenticatorTestCase auth = new AuthenticatorTestCase();
     Properties props = new Properties();
@@ -114,6 +117,7 @@ public class TestKerberosAuthenticator extends KerberosSecurityTestcase {
   }
 
   @Test
+  @Timeout(value = 60)
   public void testNotAuthenticated() throws Exception {
     AuthenticatorTestCase auth = new AuthenticatorTestCase();
     AuthenticatorTestCase.setAuthenticationHandlerConfig(getAuthenticationHandlerConfiguration());
@@ -130,6 +134,7 @@ public class TestKerberosAuthenticator extends KerberosSecurityTestcase {
   }
 
   @Test
+  @Timeout(value = 60)
   public void testAuthentication() throws Exception {
     final AuthenticatorTestCase auth = new AuthenticatorTestCase();
     AuthenticatorTestCase.setAuthenticationHandlerConfig(
@@ -144,6 +149,7 @@ public class TestKerberosAuthenticator extends KerberosSecurityTestcase {
   }
 
   @Test
+  @Timeout(value = 60)
   public void testAuthenticationPost() throws Exception {
     final AuthenticatorTestCase auth = new AuthenticatorTestCase();
     AuthenticatorTestCase.setAuthenticationHandlerConfig(
@@ -158,6 +164,7 @@ public class TestKerberosAuthenticator extends KerberosSecurityTestcase {
   }
 
   @Test
+  @Timeout(value = 60)
   public void testAuthenticationHttpClient() throws Exception {
     final AuthenticatorTestCase auth = new AuthenticatorTestCase();
     AuthenticatorTestCase.setAuthenticationHandlerConfig(
@@ -172,6 +179,7 @@ public class TestKerberosAuthenticator extends KerberosSecurityTestcase {
   }
 
   @Test
+  @Timeout(value = 60)
   public void testAuthenticationHttpClientPost() throws Exception {
     final AuthenticatorTestCase auth = new AuthenticatorTestCase();
     AuthenticatorTestCase.setAuthenticationHandlerConfig(
@@ -186,6 +194,7 @@ public class TestKerberosAuthenticator extends KerberosSecurityTestcase {
   }
 
   @Test
+  @Timeout(value = 60)
   public void testNotAuthenticatedWithMultiAuthHandler() throws Exception {
     AuthenticatorTestCase auth = new AuthenticatorTestCase();
     AuthenticatorTestCase
@@ -205,6 +214,7 @@ public class TestKerberosAuthenticator extends KerberosSecurityTestcase {
   }
 
   @Test
+  @Timeout(value = 60)
   public void testAuthenticationWithMultiAuthHandler() throws Exception {
     final AuthenticatorTestCase auth = new AuthenticatorTestCase();
     AuthenticatorTestCase
@@ -219,6 +229,7 @@ public class TestKerberosAuthenticator extends KerberosSecurityTestcase {
   }
 
   @Test
+  @Timeout(value = 60)
   public void testAuthenticationHttpClientPostWithMultiAuthHandler()
       throws Exception {
     final AuthenticatorTestCase auth = new AuthenticatorTestCase();
@@ -234,6 +245,7 @@ public class TestKerberosAuthenticator extends KerberosSecurityTestcase {
   }
 
   @Test
+  @Timeout(value = 60)
   public void testWrapExceptionWithMessage() {
     IOException ex;
     ex = new IOException("Induced exception");
@@ -260,14 +272,15 @@ public class TestKerberosAuthenticator extends KerberosSecurityTestcase {
   }
 
   @Test
+  @Timeout(value = 60)
   public void testNegotiate() throws NoSuchMethodException, InvocationTargetException,
           IllegalAccessException, IOException {
     KerberosAuthenticator kerberosAuthenticator = new KerberosAuthenticator();
 
-    HttpURLConnection conn = Mockito.mock(HttpURLConnection.class);
-    Mockito.when(conn.getHeaderField(KerberosAuthenticator.WWW_AUTHENTICATE)).
+    HttpURLConnection conn = mock(HttpURLConnection.class);
+    when(conn.getHeaderField(KerberosAuthenticator.WWW_AUTHENTICATE)).
             thenReturn(KerberosAuthenticator.NEGOTIATE);
-    Mockito.when(conn.getResponseCode()).thenReturn(HttpURLConnection.HTTP_UNAUTHORIZED);
+    when(conn.getResponseCode()).thenReturn(HttpURLConnection.HTTP_UNAUTHORIZED);
 
     Method method = KerberosAuthenticator.class.getDeclaredMethod("isNegotiate",
             HttpURLConnection.class);
@@ -277,14 +290,15 @@ public class TestKerberosAuthenticator extends KerberosSecurityTestcase {
   }
 
   @Test
+  @Timeout(value = 60)
   public void testNegotiateLowerCase() throws NoSuchMethodException, InvocationTargetException,
           IllegalAccessException, IOException {
     KerberosAuthenticator kerberosAuthenticator = new KerberosAuthenticator();
 
-    HttpURLConnection conn = Mockito.mock(HttpURLConnection.class);
-    Mockito.when(conn.getHeaderField("www-authenticate"))
+    HttpURLConnection conn = mock(HttpURLConnection.class);
+    when(conn.getHeaderField("www-authenticate"))
             .thenReturn(KerberosAuthenticator.NEGOTIATE);
-    Mockito.when(conn.getResponseCode()).thenReturn(HttpURLConnection.HTTP_UNAUTHORIZED);
+    when(conn.getResponseCode()).thenReturn(HttpURLConnection.HTTP_UNAUTHORIZED);
 
     Method method = KerberosAuthenticator.class.getDeclaredMethod("isNegotiate",
             HttpURLConnection.class);
@@ -294,6 +308,7 @@ public class TestKerberosAuthenticator extends KerberosSecurityTestcase {
   }
 
   @Test
+  @Timeout(value = 60)
   public void testReadToken() throws NoSuchMethodException, IOException, IllegalAccessException,
           InvocationTargetException {
     KerberosAuthenticator kerberosAuthenticator = new KerberosAuthenticator();
@@ -301,9 +316,9 @@ public class TestKerberosAuthenticator extends KerberosSecurityTestcase {
 
     Base64 base64 = new Base64();
 
-    HttpURLConnection conn = Mockito.mock(HttpURLConnection.class);
-    Mockito.when(conn.getResponseCode()).thenReturn(HttpURLConnection.HTTP_UNAUTHORIZED);
-    Mockito.when(conn.getHeaderField(KerberosAuthenticator.WWW_AUTHENTICATE))
+    HttpURLConnection conn = mock(HttpURLConnection.class);
+    when(conn.getResponseCode()).thenReturn(HttpURLConnection.HTTP_UNAUTHORIZED);
+    when(conn.getHeaderField(KerberosAuthenticator.WWW_AUTHENTICATE))
             .thenReturn(KerberosAuthenticator.NEGOTIATE + " " +
                     Arrays.toString(base64.encode("foobar".getBytes())));
 
@@ -315,6 +330,7 @@ public class TestKerberosAuthenticator extends KerberosSecurityTestcase {
   }
 
   @Test
+  @Timeout(value = 60)
   public void testReadTokenLowerCase() throws NoSuchMethodException, IOException,
           IllegalAccessException, InvocationTargetException {
     KerberosAuthenticator kerberosAuthenticator = new KerberosAuthenticator();
@@ -322,9 +338,9 @@ public class TestKerberosAuthenticator extends KerberosSecurityTestcase {
 
     Base64 base64 = new Base64();
 
-    HttpURLConnection conn = Mockito.mock(HttpURLConnection.class);
-    Mockito.when(conn.getResponseCode()).thenReturn(HttpURLConnection.HTTP_UNAUTHORIZED);
-    Mockito.when(conn.getHeaderField("www-authenticate"))
+    HttpURLConnection conn = mock(HttpURLConnection.class);
+    when(conn.getResponseCode()).thenReturn(HttpURLConnection.HTTP_UNAUTHORIZED);
+    when(conn.getHeaderField("www-authenticate"))
             .thenReturn(KerberosAuthenticator.NEGOTIATE +
                     Arrays.toString(base64.encode("foobar".getBytes())));
 

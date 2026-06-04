@@ -33,19 +33,20 @@ import org.apache.hadoop.hdfs.HdfsConfiguration;
 import org.apache.hadoop.hdfs.MiniDFSCluster;
 import org.apache.hadoop.security.UserGroupInformation;
 import org.apache.hadoop.test.GenericTestUtils;
-import org.apache.hadoop.util.cli.ToolRunner;
+import org.apache.hadoop.util.ToolRunner;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.Timeout;
-
 import org.slf4j.LoggerFactory;
 import org.slf4j.event.Level;
 
 import java.io.File;
 import java.util.concurrent.TimeUnit;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.fail;
 
 /**
  * Test the behavior of nested encryption zones.
@@ -124,7 +125,7 @@ public class TestNestedEncryptionZones {
   }
 
   @Test
-  @Timeout(value = 60000, unit = TimeUnit.MILLISECONDS)
+  @Timeout(value = 60)
   public void testNestedEncryptionZones() throws Exception {
     initTopEZDirAndNestedEZDir(new Path(rootDir, "topEZ"));
     verifyEncryption();
@@ -169,7 +170,7 @@ public class TestNestedEncryptionZones {
   }
 
   @Test
-  @Timeout(value = 60000, unit = TimeUnit.MILLISECONDS)
+  @Timeout(value = 60)
   public void testNestedEZWithRoot() throws Exception {
     initTopEZDirAndNestedEZDir(rootDir);
     verifyEncryption();
@@ -193,7 +194,8 @@ public class TestNestedEncryptionZones {
 
     assertEquals(expectedTopEZTrash, topEZTrash, "Top ez trash should be " + expectedTopEZTrash);
     assertEquals(topEZTrash, rootTrash, "Root trash should be equal with TopEZFile trash");
-    assertEquals(expectedNestedEZTrash, nestedEZTrash, "Nested ez Trash should be " + expectedNestedEZTrash);
+    assertEquals(expectedNestedEZTrash, nestedEZTrash,
+        "Nested ez Trash should be " + expectedNestedEZTrash);
 
     // delete rename file and test trash
     FsShell shell = new FsShell(fs.getConf());
@@ -288,7 +290,8 @@ public class TestNestedEncryptionZones {
     assertEquals(true, fs.getFileStatus(topEZDir).isEncrypted(), "Top EZ dir is encrypted");
     assertEquals(true, fs.getFileStatus(nestedEZDir).isEncrypted(), "Nested EZ dir is encrypted");
     assertEquals(true, fs.getFileStatus(topEZFile).isEncrypted(), "Top zone file is encrypted");
-    assertEquals(true, fs.getFileStatus(nestedEZFile).isEncrypted(), "Nested zone file is encrypted");
+    assertEquals(true, fs.getFileStatus(nestedEZFile).isEncrypted(),
+        "Nested zone file is encrypted");
 
     DFSTestUtil.verifyFilesEqual(fs, topEZBaseFile, topEZFile, len);
     DFSTestUtil.verifyFilesEqual(fs, nestedEZBaseFile, nestedEZFile, len);

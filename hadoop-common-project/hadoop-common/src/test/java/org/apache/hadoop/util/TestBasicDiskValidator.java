@@ -17,6 +17,8 @@
  */
 package org.apache.hadoop.util;
 
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
 import org.apache.hadoop.util.DiskChecker.DiskErrorException;
 
 import static org.junit.jupiter.api.Assertions.assertTrue;

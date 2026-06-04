@@ -21,7 +21,9 @@ package org.apache.hadoop.hdfs.server.datanode;
 import org.apache.hadoop.hdfs.AppendTestUtil;
 import org.apache.hadoop.hdfs.server.namenode.NameNode;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.fail;
 import static org.mockito.ArgumentMatchers.anyList;
 import static org.mockito.ArgumentMatchers.any;
@@ -53,7 +55,9 @@ import java.util.concurrent.TimeoutException;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
 
+import org.apache.hadoop.test.TestName;
 import org.apache.hadoop.thirdparty.com.google.common.collect.Iterators;
+import org.junit.jupiter.api.extension.RegisterExtension;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.apache.hadoop.conf.Configuration;
@@ -94,8 +98,12 @@ import org.apache.hadoop.hdfs.server.protocol.ReplicaRecoveryInfo;
 import org.apache.hadoop.test.GenericTestUtils;
 import org.apache.hadoop.util.DataChecksum;
 import org.apache.hadoop.util.Time;
+import org.apache.hadoop.util.concurrent.SubjectInheritingThread;
 import org.slf4j.event.Level;
-import org.junit.jupiter.api.*;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.Timeout;
 import org.mockito.Mockito;
 import org.mockito.invocation.InvocationOnMock;
 import org.mockito.stubbing.Answer;
@@ -128,8 +136,9 @@ public class TestBlockRecovery {
   private final static ExtendedBlock block = new ExtendedBlock(POOL_ID,
       BLOCK_ID, BLOCK_LEN, GEN_STAMP);
 
-  
-  public String currentTestName;
+  @SuppressWarnings("checkstyle:VisibilityModifier")
+  @RegisterExtension
+  public TestName currentTestName = new TestName();
 
   private final int cellSize =
       StripedFileTestUtil.getDefaultECPolicy().getCellSize();
@@ -168,11 +177,7 @@ public class TestBlockRecovery {
    * @throws IOException
    */
   @BeforeEach
-  public void startUp(TestInfo testInfo) throws IOException, URISyntaxException {
-    Optional<Method> testMethod = testInfo.getTestMethod();
-    if (testMethod.isPresent()) {
-      this.currentTestName = testMethod.get().getName();
-    }
+  public void startUp() throws IOException, URISyntaxException {
     tearDownDone = false;
     conf = new HdfsConfiguration();
     conf.set(DFSConfigKeys.DFS_DATANODE_DATA_DIR_KEY, DATA_DIR);
@@ -229,8 +234,8 @@ public class TestBlockRecovery {
       @Override
       DatanodeProtocolClientSideTranslatorPB connectToNN(
           InetSocketAddress nnAddr) throws IOException {
-        Assertions.assertEquals(NN_ADDR, nnAddr);
-        return namenode;
+            assertEquals(NN_ADDR, nnAddr);
+            return namenode;
       }
     };
     // Trigger a heartbeat so that it acknowledges the NN as active.
@@ -260,8 +265,7 @@ public class TestBlockRecovery {
     } catch (InterruptedException e) {
       LOG.warn("InterruptedException while waiting to see active NN", e);
     }
-    Assertions.assertNotNull(dn.getAllBpOs().get(0).getActiveNN(),
-        "Failed to get ActiveNN");
+    assertNotNull(dn.getAllBpOs().get(0).getActiveNN(), "Failed to get ActiveNN");
   }
 
   /**
@@ -278,8 +282,7 @@ public class TestBlockRecovery {
       } finally {
         File dir = new File(DATA_DIR);
         if (dir.exists())
-          Assertions.assertTrue(
-              FileUtil.fullyDelete(dir), "Cannot delete data-node dirs");
+            assertTrue(FileUtil.fullyDelete(dir), "Cannot delete data-node dirs");
       }
       tearDownDone = true;
     }
@@ -319,8 +322,8 @@ public class TestBlockRecovery {
    * @throws IOException in case of an error
    */
   @Test
-  @Timeout(value = 60000, unit = TimeUnit.MILLISECONDS)
-  public void testFinalizedReplicas() throws IOException {
+  @Timeout(value = 60)
+  public void testFinalizedReplicas () throws IOException {
     if(LOG.isDebugEnabled()) {
       LOG.debug("Running " + GenericTestUtils.getMethodName());
     }
@@ -346,9 +349,9 @@ public class TestBlockRecovery {
 
     try {
       testSyncReplicas(replica1, replica2, dn1, dn2);
-      Assertions.fail("Two finalized replicas should not have different lengthes!");
+      fail("Two finalized replicas should not have different lengthes!");
     } catch (IOException e) {
-      Assertions.assertTrue(e.getMessage().startsWith(
+      assertTrue(e.getMessage().startsWith(
           "Inconsistent size of finalized replicas. "));
     }
   }
@@ -359,7 +362,7 @@ public class TestBlockRecovery {
    * @throws IOException in case of an error
    */
   @Test
-  @Timeout(value = 60000, unit = TimeUnit.MILLISECONDS)
+  @Timeout(value = 60)
   public void testFinalizedRbwReplicas() throws IOException {
     if(LOG.isDebugEnabled()) {
       LOG.debug("Running " + GenericTestUtils.getMethodName());
@@ -403,7 +406,7 @@ public class TestBlockRecovery {
    * @throws IOException in case of an error
    */
   @Test
-  @Timeout(value = 60000, unit = TimeUnit.MILLISECONDS)
+  @Timeout(value = 60)
   public void testFinalizedRwrReplicas() throws IOException {
     if (LOG.isDebugEnabled()) {
       LOG.debug("Running " + GenericTestUtils.getMethodName());
@@ -446,7 +449,7 @@ public class TestBlockRecovery {
    * @throws IOException in case of an error
    */
   @Test
-  @Timeout(value = 60000, unit = TimeUnit.MILLISECONDS)
+  @Timeout(value = 60)
   public void testRBWReplicas() throws IOException {
     if (LOG.isDebugEnabled()) {
       LOG.debug("Running " + GenericTestUtils.getMethodName());
@@ -472,7 +475,7 @@ public class TestBlockRecovery {
    * @throws IOException in case of an error
    */
   @Test
-  @Timeout(value = 60000, unit = TimeUnit.MILLISECONDS)
+  @Timeout(value = 60)
   public void testRBW_RWRReplicas() throws IOException {
     if(LOG.isDebugEnabled()) {
       LOG.debug("Running " + GenericTestUtils.getMethodName());
@@ -498,7 +501,7 @@ public class TestBlockRecovery {
    * @throws IOException in case of an error
    */
   @Test
-  @Timeout(value = 60000, unit = TimeUnit.MILLISECONDS)
+  @Timeout(value = 60)
   public void testRWRReplicas() throws IOException {
     if (LOG.isDebugEnabled()) {
       LOG.debug("Running " + GenericTestUtils.getMethodName());
@@ -537,7 +540,7 @@ public class TestBlockRecovery {
    *           in case of an error
    */
   @Test
-  @Timeout(value = 60000, unit = TimeUnit.MILLISECONDS)
+  @Timeout(value = 60)
   public void testRecoveryInProgressException()
       throws IOException, InterruptedException {
     if(LOG.isDebugEnabled()) {
@@ -563,7 +566,7 @@ public class TestBlockRecovery {
    *           in case of an error
    */
   @Test
-  @Timeout(value = 60000, unit = TimeUnit.MILLISECONDS)
+  @Timeout(value = 60)
   public void testErrorReplicas() throws IOException, InterruptedException {
     if(LOG.isDebugEnabled()) {
       LOG.debug("Running " + GenericTestUtils.getMethodName());
@@ -591,7 +594,7 @@ public class TestBlockRecovery {
    * @throws IOException in case of an error
    */
   @Test
-  @Timeout(value = 60000, unit = TimeUnit.MILLISECONDS)
+  @Timeout(value = 60)
   public void testZeroLenReplicas() throws IOException, InterruptedException {
     if(LOG.isDebugEnabled()) {
       LOG.debug("Running " + GenericTestUtils.getMethodName());
@@ -632,7 +635,7 @@ public class TestBlockRecovery {
    * @throws IOException in case of an error
    */
   @Test
-  @Timeout(value = 60000, unit = TimeUnit.MILLISECONDS)
+  @Timeout(value = 60)
   public void testFailedReplicaUpdate() throws IOException {
     if(LOG.isDebugEnabled()) {
       LOG.debug("Running " + GenericTestUtils.getMethodName());
@@ -655,7 +658,7 @@ public class TestBlockRecovery {
    * @throws IOException in case of an error
    */
   @Test
-  @Timeout(value = 60000, unit = TimeUnit.MILLISECONDS)
+  @Timeout(value = 60)
   public void testNoReplicaUnderRecovery() throws IOException {
     if(LOG.isDebugEnabled()) {
       LOG.debug("Running " + GenericTestUtils.getMethodName());
@@ -681,7 +684,7 @@ public class TestBlockRecovery {
    * @throws IOException in case of an error
    */
   @Test
-  @Timeout(value = 60000, unit = TimeUnit.MILLISECONDS)
+  @Timeout(value = 60)
   public void testNotMatchedReplicaID() throws IOException {
     if(LOG.isDebugEnabled()) {
       LOG.debug("Running " + GenericTestUtils.getMethodName());
@@ -717,7 +720,7 @@ public class TestBlockRecovery {
    * @throws Exception
    */
   @Test
-  @Timeout(value = 60000, unit = TimeUnit.MILLISECONDS)
+  @Timeout(value = 60)
   public void testRURReplicas() throws Exception {
     if (LOG.isDebugEnabled()) {
       LOG.debug("Running " + GenericTestUtils.getMethodName());
@@ -739,8 +742,9 @@ public class TestBlockRecovery {
     } catch (IOException e) {
       // expect IOException to be thrown here
       e.printStackTrace();
-      assertTrue(e.getMessage().contains("Found 1 replica(s) for block " + block +
-          " but none is in RWR or better state"),
+      assertTrue(
+          e.getMessage().contains(
+              "Found 1 replica(s) for block " + block + " but none is in RWR or better state"),
           "Wrong exception was thrown: " + e.getMessage());
       exceptionThrown = true;
     } finally {
@@ -749,7 +753,7 @@ public class TestBlockRecovery {
   }
 
   @Test
-  @Timeout(value = 60000, unit = TimeUnit.MILLISECONDS)
+  @Timeout(value = 60)
   public void testSafeLength() throws Exception {
     // hard coded policy to work with hard coded test suite
     ErasureCodingPolicy ecPolicy = StripedFileTestUtil.getDefaultECPolicy();
@@ -768,8 +772,7 @@ public class TestBlockRecovery {
             blockLengths[id], 0, null);
         syncList.put((long) id, new BlockRecord(null, null, rInfo));
       }
-      Assertions.assertEquals(safeLength,
-          recoveryTask.getSafeLength(syncList),
+      assertEquals(safeLength, recoveryTask.getSafeLength(syncList),
           "BLOCK_LENGTHS_SUITE[" + i + "]");
     }
   }
@@ -824,7 +827,7 @@ public class TestBlockRecovery {
   }
 
   @Test
-  @Timeout(value = 90000, unit = TimeUnit.MILLISECONDS)
+  @Timeout(value = 90)
   public void testInitReplicaRecoveryDoesNotHoldLock() throws Exception {
     testStopWorker(new TestStopWorkerRunnable() {
       @Override
@@ -846,7 +849,7 @@ public class TestBlockRecovery {
   }
 
   @Test
-  @Timeout(value = 90000, unit = TimeUnit.MILLISECONDS)
+  @Timeout(value = 90)
   public void testRecoverAppendDoesNotHoldLock() throws Exception {
     testStopWorker(new TestStopWorkerRunnable() {
       @Override
@@ -871,7 +874,7 @@ public class TestBlockRecovery {
   }
 
   @Test
-  @Timeout(value = 90000, unit = TimeUnit.MILLISECONDS)
+  @Timeout(value = 90)
   public void testRecoverCloseDoesNotHoldLock() throws Exception {
     testStopWorker(new TestStopWorkerRunnable() {
       @Override
@@ -905,8 +908,7 @@ public class TestBlockRecovery {
     // We need a long value for the data xceiver stop timeout.
     // Otherwise the timeout will trigger, and we will not have tested that
     // thread join was done locklessly.
-    Assertions.assertEquals(
-        TEST_STOP_WORKER_XCEIVER_STOP_TIMEOUT_MILLIS,
+    assertEquals(TEST_STOP_WORKER_XCEIVER_STOP_TIMEOUT_MILLIS,
         dn.getDnConf().getXceiverStopTimeout());
     final TestStopWorkerSemaphore progressParent =
       new TestStopWorkerSemaphore();
@@ -919,7 +921,7 @@ public class TestBlockRecovery {
     final RecoveringBlock recoveringBlock =
         Iterators.get(recoveringBlocks.iterator(), 0);
     final ExtendedBlock block = recoveringBlock.getBlock();
-    Thread slowWriterThread = new Thread(new Runnable() {
+    Thread slowWriterThread = new SubjectInheritingThread(new Runnable() {
       @Override
       public void run() {
         try {
@@ -946,7 +948,7 @@ public class TestBlockRecovery {
     progressParent.uninterruptiblyAcquire(60000);
 
     // Start a worker thread which will attempt to stop the writer.
-    Thread stopWriterThread = new Thread(new Runnable() {
+    Thread stopWriterThread = new SubjectInheritingThread(new Runnable() {
       @Override
       public void run() {
         try {
@@ -986,7 +988,7 @@ public class TestBlockRecovery {
     // unit test framework, so we have to do it manually here.
     String failureReason = failure.get();
     if (failureReason != null) {
-      Assertions.fail("Thread failure: " + failureReason);
+      fail("Thread failure: " + failureReason);
     }
   }
 

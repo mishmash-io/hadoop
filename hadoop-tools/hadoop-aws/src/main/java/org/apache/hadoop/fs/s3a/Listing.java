@@ -52,7 +52,6 @@ import java.util.StringJoiner;
 
 import static org.apache.hadoop.fs.s3a.Constants.S3N_FOLDER_SUFFIX;
 import static org.apache.hadoop.fs.s3a.Invoker.onceInTheFuture;
-import static org.apache.hadoop.fs.s3a.S3AUtils.ACCEPT_ALL;
 import static org.apache.hadoop.fs.s3a.S3AUtils.createFileStatus;
 import static org.apache.hadoop.fs.s3a.S3AUtils.maybeAddTrailingSlash;
 import static org.apache.hadoop.fs.s3a.S3AUtils.objectRepresentsDirectory;
@@ -78,6 +77,9 @@ public class Listing extends AbstractStoreOperation {
 
   static final FileStatusAcceptor ACCEPT_ALL_BUT_S3N =
       new AcceptAllButS3nDirs();
+
+  static final FileStatusAcceptor ACCEPT_ALL_OBJECTS =
+      new AcceptAllObjects();
 
   private final ListingOperationCallbacks listingOperationCallbacks;
 
@@ -132,7 +134,7 @@ public class Listing extends AbstractStoreOperation {
    * @throws IOException IO Problems
    */
   @Retries.RetryRaw
-  public FileStatusListingIterator createFileStatusListingIterator(
+  public RemoteIterator<S3AFileStatus> createFileStatusListingIterator(
       Path listPath,
       S3ListRequest request,
       PathFilter filter,
@@ -212,7 +214,7 @@ public class Listing extends AbstractStoreOperation {
                 .createListObjectsRequest(key,
                     delimiter,
                     span),
-            ACCEPT_ALL,
+            S3AUtils.ACCEPT_ALL,
             acceptor,
             span));
   }
@@ -263,7 +265,7 @@ public class Listing extends AbstractStoreOperation {
     return createFileStatusListingIterator(
         path,
         request,
-        ACCEPT_ALL,
+        S3AUtils.ACCEPT_ALL,
         new AcceptAllButSelfAndS3nDirs(path),
         span);
   }
@@ -728,7 +730,7 @@ public class Listing extends AbstractStoreOperation {
   static class AcceptFilesOnly implements FileStatusAcceptor {
     private final Path qualifiedPath;
 
-    public AcceptFilesOnly(Path qualifiedPath) {
+    AcceptFilesOnly(Path qualifiedPath) {
       this.qualifiedPath = qualifiedPath;
     }
 
@@ -784,6 +786,25 @@ public class Listing extends AbstractStoreOperation {
   }
 
   /**
+   * Accept all entries.
+   */
+  static class AcceptAllObjects implements FileStatusAcceptor {
+
+    public boolean accept(Path keyPath, S3Object s3Object) {
+      return true;
+    }
+
+    public boolean accept(Path keyPath, String prefix) {
+      return true;
+    }
+
+    public boolean accept(FileStatus status) {
+      return true;
+    }
+
+  }
+
+  /**
    * Accept all entries except the base path and those which map to S3N
    * pseudo directory markers.
    */
@@ -812,6 +833,52 @@ public class Listing extends AbstractStoreOperation {
     public boolean accept(Path keyPath, S3Object s3Object) {
       return !keyPath.equals(qualifiedPath) &&
           !s3Object.key().endsWith(S3N_FOLDER_SUFFIX);
+    }
+
+    /**
+     * Accept all prefixes except the one for the base path, "self".
+     * @param keyPath qualified path to the entry
+     * @param prefix common prefix in listing.
+     * @return true if the entry is accepted (i.e. that a status entry
+     * should be generated.
+     */
+    @Override
+    public boolean accept(Path keyPath, String prefix) {
+      return !keyPath.equals(qualifiedPath);
+    }
+
+    @Override
+    public boolean accept(FileStatus status) {
+      return (status != null) && !status.getPath().equals(qualifiedPath);
+    }
+  }
+
+  /**
+   * Accept all entries except the base path.
+   */
+  public static class AcceptAllButSelf implements FileStatusAcceptor {
+
+    /** Base path. */
+    private final Path qualifiedPath;
+
+    /**
+     * Constructor.
+     * @param qualifiedPath an already-qualified path.
+     */
+    public AcceptAllButSelf(Path qualifiedPath) {
+      this.qualifiedPath = qualifiedPath;
+    }
+
+    /**
+     * Reject a s3Object entry if the key path is the qualified Path.
+     * @param keyPath key path of the entry
+     * @param s3Object s3Object entry
+     * @return true if the entry is accepted (i.e. that a status entry
+     * should be generated.)
+     */
+    @Override
+    public boolean accept(Path keyPath, S3Object s3Object) {
+      return !keyPath.equals(qualifiedPath);
     }
 
     /**

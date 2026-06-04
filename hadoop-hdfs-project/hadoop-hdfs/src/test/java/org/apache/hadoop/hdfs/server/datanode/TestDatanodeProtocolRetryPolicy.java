@@ -18,6 +18,8 @@
 
 package org.apache.hadoop.hdfs.server.datanode;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
@@ -50,7 +52,10 @@ import org.apache.hadoop.hdfs.server.protocol.NNHAStatusHeartbeat;
 import org.apache.hadoop.hdfs.server.protocol.RegisterCommand;
 import org.apache.hadoop.test.GenericTestUtils;
 import org.slf4j.event.Level;
-import org.junit.jupiter.api.*;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.Timeout;
 import org.mockito.Mockito;
 import org.mockito.invocation.InvocationOnMock;
 import org.mockito.stubbing.Answer;
@@ -114,8 +119,8 @@ public class TestDatanodeProtocolRetryPolicy {
       } finally {
         File dir = new File(DATA_DIR);
         if (dir.exists())
-          Assertions.assertTrue(
-              FileUtil.fullyDelete(dir), "Cannot delete data-node dirs");
+          assertTrue(FileUtil.fullyDelete(dir),
+              "Cannot delete data-node dirs");
       }
       tearDownDone = true;
     }
@@ -152,7 +157,7 @@ public class TestDatanodeProtocolRetryPolicy {
    * 7. DatanodeProtocol.registerDatanode succeeds.
    */
   @Test
-  @Timeout(value = 60000, unit = TimeUnit.MILLISECONDS)
+  @Timeout(value = 60)
   public void testDatanodeRegistrationRetry() throws Exception {
     final DatanodeProtocolClientSideTranslatorPB namenode =
         mock(DatanodeProtocolClientSideTranslatorPB.class);
@@ -220,7 +225,7 @@ public class TestDatanodeProtocolRetryPolicy {
       @Override
       DatanodeProtocolClientSideTranslatorPB connectToNN(
           InetSocketAddress nnAddr) throws IOException {
-        Assertions.assertEquals(NN_ADDR, nnAddr);
+        assertEquals(NN_ADDR, nnAddr);
         return namenode;
       }
     };

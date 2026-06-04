@@ -23,7 +23,9 @@ import org.apache.hadoop.hdfs.shortcircuit.ShortCircuitShm.ShmId;
 import org.apache.hadoop.hdfs.shortcircuit.ShortCircuitShm.Slot;
 import org.apache.hadoop.io.nativeio.SharedFileDescriptorFactory;
 import org.apache.hadoop.test.GenericTestUtils;
-import org.junit.jupiter.api.*;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.Timeout;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -33,6 +35,11 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.concurrent.TimeUnit;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assumptions.assumeTrue;
+
 public class TestShortCircuitShm {
   public static final Logger LOG = LoggerFactory.getLogger(
       TestShortCircuitShm.class);
@@ -41,12 +48,12 @@ public class TestShortCircuitShm {
 
   @BeforeEach
   public void before() {
-    Assumptions.assumeTrue(null == 
+    assumeTrue(null ==
         SharedFileDescriptorFactory.getLoadingFailureReason());
   }
 
   @Test
-  @Timeout(value = 60000, unit = TimeUnit.MILLISECONDS)
+  @Timeout(value = 60)
   public void testStartupShutdown() throws Exception {
     File path = new File(TEST_BASE, "testStartupShutdown");
     path.mkdirs();
@@ -62,7 +69,7 @@ public class TestShortCircuitShm {
   }
 
   @Test
-  @Timeout(value = 60000, unit = TimeUnit.MILLISECONDS)
+  @Timeout(value = 60)
   public void testAllocateSlots() throws Exception {
     File path = new File(TEST_BASE, "testAllocateSlots");
     path.mkdirs();
@@ -83,17 +90,17 @@ public class TestShortCircuitShm {
     int slotIdx = 0;
     for (Iterator<Slot> iter = shm.slotIterator();
         iter.hasNext(); ) {
-      Assertions.assertTrue(slots.contains(iter.next()));
+      assertTrue(slots.contains(iter.next()));
     }
     for (Slot slot : slots) {
-      Assertions.assertFalse(slot.addAnchor());
-      Assertions.assertEquals(slotIdx++, slot.getSlotIdx());
+      assertFalse(slot.addAnchor());
+      assertEquals(slotIdx++, slot.getSlotIdx());
     }
     for (Slot slot : slots) {
       slot.makeAnchorable();
     }
     for (Slot slot : slots) {
-      Assertions.assertTrue(slot.addAnchor());
+      assertTrue(slot.addAnchor());
     }
     for (Slot slot : slots) {
       slot.removeAnchor();

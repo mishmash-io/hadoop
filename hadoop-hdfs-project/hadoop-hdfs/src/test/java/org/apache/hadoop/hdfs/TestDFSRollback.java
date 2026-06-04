@@ -19,7 +19,10 @@ package org.apache.hadoop.hdfs;
 
 import static org.apache.hadoop.hdfs.server.common.HdfsServerConstants.NodeType.DATA_NODE;
 import static org.apache.hadoop.hdfs.server.common.HdfsServerConstants.NodeType.NAME_NODE;
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.fail;
 
 import java.io.File;
 import java.io.IOException;
@@ -80,8 +83,7 @@ public class TestDFSRollback {
         FSImageTestUtil.assertReasonableNameCurrentDir(curDir);
         break;
       case DATA_NODE:
-        assertEquals(
-            UpgradeUtilities.checksumContents(nodeType, curDir, false),
+        assertEquals(UpgradeUtilities.checksumContents(nodeType, curDir, false),
             UpgradeUtilities.checksumMasterDataNodeContents());
         break;
       }
@@ -127,7 +129,7 @@ public class TestDFSRollback {
   void startBlockPoolShouldFail(StartupOption operation, String bpid)
       throws IOException {
     cluster.startDataNodes(conf, 1, false, operation, null); // should fail
-    assertFalse(cluster.getDataNodes().get(0).isBPServiceAlive(bpid), 
+    assertFalse(cluster.getDataNodes().get(0).isBPServiceAlive(bpid),
         "Block pool " + bpid + " should have failed to start");
   }
  

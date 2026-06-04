@@ -37,8 +37,6 @@ import org.apache.hadoop.io.IOUtils;
 import org.apache.hadoop.io.erasurecode.CodecUtil;
 import org.apache.hadoop.io.erasurecode.ErasureCoderOptions;
 import org.apache.hadoop.io.erasurecode.rawcoder.RawErasureEncoder;
-import org.junit.jupiter.api.Assertions;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -57,6 +55,12 @@ import java.util.Random;
 import java.util.Set;
 import java.util.concurrent.TimeoutException;
 import java.util.concurrent.atomic.AtomicInteger;
+
+import static org.junit.jupiter.api.Assertions.assertArrayEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.fail;
 
 public class StripedFileTestUtil {
   public static final Logger LOG =
@@ -110,10 +114,8 @@ public class StripedFileTestUtil {
           offset += target;
         }
         for (int i = 0; i < fileLength - startOffset; i++) {
-          assertEquals(expected[startOffset + i],
-              result[i],
-              "Byte at " + (startOffset + i) + " is different, "
-              + "the startOffset is " + startOffset);
+          assertEquals(expected[startOffset + i], result[i], "Byte at " + (startOffset + i) +
+              " is different, " + "the startOffset is " + startOffset);
         }
       }
     }
@@ -130,7 +132,7 @@ public class StripedFileTestUtil {
         readLen += ret;
       }
       assertEquals(fileLength, readLen, "The length of file should be the same to write size");
-      Assertions.assertArrayEquals(expected, result);
+      assertArrayEquals(expected, result);
     }
   }
 
@@ -147,7 +149,7 @@ public class StripedFileTestUtil {
         buf.clear();
       }
       assertEquals(fileLength, readLen, "The length of file should be the same to write size");
-      Assertions.assertArrayEquals(expected, result.array());
+      assertArrayEquals(expected, result.array());
     }
   }
 
@@ -187,14 +189,14 @@ public class StripedFileTestUtil {
       if (!(in.getWrappedStream() instanceof WebHdfsInputStream)) {
         try {
           in.seek(-1);
-          Assertions.fail("Should be failed if seek to negative offset");
+          fail("Should be failed if seek to negative offset");
         } catch (EOFException e) {
           // expected
         }
 
         try {
           in.seek(fileLength + 1);
-          Assertions.fail("Should be failed if seek after EOF");
+          fail("Should be failed if seek after EOF");
         } catch (EOFException e) {
           // expected
         }
@@ -208,7 +210,8 @@ public class StripedFileTestUtil {
     byte[] buf = new byte[writeBytes - pos];
     IOUtils.readFully(fsdis, buf, 0, buf.length);
     for (int i = 0; i < buf.length; i++) {
-      assertEquals(StripedFileTestUtil.getByte(pos + i), buf[i], "Byte at " + i + " should be the same");
+      assertEquals(StripedFileTestUtil.getByte(pos + i),
+          buf[i], "Byte at " + i + " should be the same");
     }
   }
 
@@ -226,7 +229,7 @@ public class StripedFileTestUtil {
       final DatanodeInfo[] datanodes = streamer.getNodes();
       if (datanodes != null) {
         assertEquals(1, datanodes.length);
-        Assertions.assertNotNull(datanodes[0]);
+        assertNotNull(datanodes[0]);
         return datanodes[0];
       }
       try {
@@ -378,13 +381,13 @@ public class StripedFileTestUtil {
     final int parityBlkNum = ecPolicy.getNumParityUnits();
     int index = 0;
     for (LocatedBlock firstBlock : lbs.getLocatedBlocks()) {
-      Assertions.assertTrue(firstBlock instanceof LocatedStripedBlock);
+      assertTrue(firstBlock instanceof LocatedStripedBlock);
 
       final long gs = firstBlock.getBlock().getGenerationStamp();
       final long oldGS = oldGSList != null ? oldGSList.get(index++) : -1L;
       final String s = "gs=" + gs + ", oldGS=" + oldGS;
       LOG.info(s);
-      Assertions.assertTrue(gs >= oldGS, s);
+      assertTrue(gs >= oldGS, s);
 
       LocatedBlock[] blocks = StripedBlockUtil.parseStripedBlockGroup(
           (LocatedStripedBlock) firstBlock, cellSize,
@@ -457,7 +460,7 @@ public class StripedFileTestUtil {
         for (int posInBlk = 0; posInBlk < actual.length; posInBlk++) {
           final long posInFile = StripedBlockUtil.offsetInBlkToOffsetInBG(
               cellSize, dataBlkNum, posInBlk, i) + groupPosInFile;
-          Assertions.assertTrue(posInFile < length);
+          assertTrue(posInFile < length);
           final byte expected = getByte(posInFile);
 
           if (killed) {
@@ -467,7 +470,7 @@ public class StripedFileTestUtil {
               String s = "expected=" + expected + " but actual=" + actual[posInBlk]
                   + ", posInFile=" + posInFile + ", posInBlk=" + posInBlk
                   + ". group=" + group + ", i=" + i;
-              Assertions.fail(s);
+              fail(s);
             }
           }
         }
@@ -508,13 +511,12 @@ public class StripedFileTestUtil {
     try {
       encoder.encode(dataBytes, expectedParityBytes);
     } catch (IOException e) {
-      Assertions.fail("Unexpected IOException: " + e.getMessage());
+      fail("Unexpected IOException: " + e.getMessage());
     }
     for (int i = 0; i < parityBytes.length; i++) {
       if (checkSet.contains(i + dataBytes.length)){
-        Assertions.assertArrayEquals(expectedParityBytes[i],
-            parityBytes[i],
-            "i=" + i);
+        assertArrayEquals(expectedParityBytes[i],
+            parityBytes[i], "i=" + i);
       }
     }
   }

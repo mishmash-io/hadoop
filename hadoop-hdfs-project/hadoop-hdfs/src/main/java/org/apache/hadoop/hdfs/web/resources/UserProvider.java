@@ -18,6 +18,7 @@
 package org.apache.hadoop.hdfs.web.resources;
 
 import java.io.IOException;
+import java.util.function.Supplier;
 
 import jakarta.servlet.ServletContext;
 import jakarta.servlet.http.HttpServletRequest;
@@ -30,17 +31,16 @@ import org.apache.hadoop.security.SecurityUtil;
 import org.apache.hadoop.security.UserGroupInformation;
 import org.apache.hadoop.security.UserGroupInformation.AuthenticationMethod;
 
-import org.glassfish.hk2.api.Factory;
-
 /** Inject user information to http operations. */
 @Provider
-public class UserProvider
-    implements Factory<UserGroupInformation> {
-  @Context HttpServletRequest request;
-  @Context ServletContext servletcontext;
+public class UserProvider implements Supplier<UserGroupInformation> {
+  @Context
+  private HttpServletRequest request;
 
-  @Override
-  public UserGroupInformation provide() {
+  @Context
+  private ServletContext servletcontext;
+
+  public UserGroupInformation get() {
     final Configuration conf = (Configuration) servletcontext
         .getAttribute(JspHelper.CURRENT_CONF);
     try {
@@ -50,10 +50,5 @@ public class UserProvider
       throw new SecurityException(
           SecurityUtil.FAILED_TO_GET_UGI_MSG_HEADER + " " + e, e);
     }
-  }
-
-  @Override
-  public void dispose(UserGroupInformation instance) {
-    // nothing to do  
   }
 }

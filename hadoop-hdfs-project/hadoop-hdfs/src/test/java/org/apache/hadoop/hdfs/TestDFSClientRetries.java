@@ -18,7 +18,10 @@
 package org.apache.hadoop.hdfs;
 
 import static org.apache.hadoop.hdfs.client.HdfsClientConfigKeys.DFS_CLIENT_SOCKET_TIMEOUT_KEY;
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.fail;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyBoolean;
 import static org.mockito.ArgumentMatchers.anyLong;
@@ -87,7 +90,7 @@ import org.apache.hadoop.security.UserGroupInformation;
 import org.apache.hadoop.test.GenericTestUtils;
 import org.apache.hadoop.util.StringUtils;
 import org.apache.hadoop.util.Time;
-import org.junit.jupiter.api.Assertions;
+import org.apache.hadoop.util.concurrent.SubjectInheritingThread;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.Timeout;
@@ -284,7 +287,7 @@ public class TestDFSClientRetries {
       os.close();
     } catch (Exception e) {
       assertTrue(e.getMessage().equals(exceptionMsg),
-           "Retries are not being stopped correctly: " + e.getMessage());
+          "Retries are not being stopped correctly: " + e.getMessage());
     }
   }
 
@@ -692,8 +695,8 @@ public class TestDFSClientRetries {
                                          blockSize);
       
       // verify that file exists in FS namespace
-      assertTrue(fs.getFileStatus(file1).isFile(), 
-                  file1 + " should be a file");
+      assertTrue(fs.getFileStatus(file1).isFile(),
+          file1 + " should be a file");
       System.out.println("Path : \"" + file1 + "\"");
       LOG.info("Path : \"" + file1 + "\"");
 
@@ -704,10 +707,10 @@ public class TestDFSClientRetries {
 
       // verify that file size has changed to the full size
       long len = fs.getFileStatus(file1).getLen();
-      
-      assertTrue(len == fileLen, 
-                  file1 + " should be of size " + fileLen +
-                 " but found to be of size " + len);
+
+      assertTrue(len == fileLen, file1 +
+          " should be of size " + fileLen +
+          " but found to be of size " + len);
       
       // read back and check data integrigy
       byte[] read_buf = new byte[fileLen];
@@ -727,7 +730,7 @@ public class TestDFSClientRetries {
       Counter counter = new Counter(0);
       for (int i = 0; i < threads; ++i ) {
         DFSClientReader reader = new DFSClientReader(file1, cluster, hash_sha, fileLen, counter);
-        readers[i] = new Thread(reader);
+        readers[i] = new SubjectInheritingThread(reader);
         readers[i].start();
       }
       
@@ -808,10 +811,10 @@ public class TestDFSClientRetries {
         fs.close();
 
         assertTrue(hash_sha.length == expected_sha.length,
-                   "hashed keys are not the same size");
+            "hashed keys are not the same size");
 
         assertTrue(Arrays.equals(hash_sha, expected_sha),
-                   "hashed keys are not equal");
+            "hashed keys are not equal");
         
         counter.inc(); // count this thread as successful
         
@@ -926,8 +929,7 @@ public class TestDFSClientRetries {
 
       ExtendedBlock block = DFSTestUtil.getFirstBlock(fs, path);
       int blockFilesCorrupted = cluster.corruptBlockOnDataNodes(block);
-      assertEquals(REPL_FACTOR,
-          blockFilesCorrupted,
+      assertEquals(REPL_FACTOR, blockFilesCorrupted,
           "All replicas not corrupted");
 
       InetSocketAddress nnAddr =
@@ -952,7 +954,7 @@ public class TestDFSClientRetries {
 
   /** Test client retry with namenode restarting. */
   @Test
-  @Timeout(value = 300000, unit = TimeUnit.MILLISECONDS)
+  @Timeout(value = 300)
   public void testNamenodeRestart() throws Exception {
     namenodeRestartTest(new Configuration(), false);
   }
@@ -1017,7 +1019,7 @@ public class TestDFSClientRetries {
       assertFalse(HdfsUtils.isHealthy(uri));
 
       //namenode is down, continue writing file4 in a thread
-      final Thread file4thread = new Thread(new Runnable() {
+      final Thread file4thread = new SubjectInheritingThread(new Runnable() {
         @Override
         public void run() {
           try {
@@ -1036,7 +1038,7 @@ public class TestDFSClientRetries {
       file4thread.start();
 
       //namenode is down, read the file in a thread
-      final Thread reader = new Thread(new Runnable() {
+      final Thread reader = new SubjectInheritingThread(new Runnable() {
         @Override
         public void run() {
           try {
@@ -1056,7 +1058,7 @@ public class TestDFSClientRetries {
 
       //namenode is down, create another file in a thread
       final Path file3 = new Path(dir, "file"); 
-      final Thread thread = new Thread(new Runnable() {
+      final Thread thread = new SubjectInheritingThread(new Runnable() {
         @Override
         public void run() {
           try {
@@ -1071,7 +1073,7 @@ public class TestDFSClientRetries {
       thread.start();
 
       //restart namenode in a new thread
-      new Thread(new Runnable() {
+      new SubjectInheritingThread(new Runnable() {
         @Override
         public void run() {
           try {
@@ -1107,12 +1109,13 @@ public class TestDFSClientRetries {
         final FSDataInputStream in = fs.open(file4);
         int count = 0;
         for(int r; (r = in.read()) != -1; count++) {
-          Assertions.assertEquals(bytes[count % bytes.length], (byte)r, String.format("count=%d", count));
+          assertEquals(bytes[count % bytes.length],
+              (byte) r, String.format("count=%d", count));
         }
         if (!isWebHDFS) {
-          Assertions.assertEquals(5 * bytes.length, count);
+          assertEquals(5 * bytes.length, count);
         } else {
-          Assertions.assertEquals(2 * bytes.length, count);
+          assertEquals(2 * bytes.length, count);
         }
         in.close();
       }
@@ -1123,7 +1126,7 @@ public class TestDFSClientRetries {
       assertFalse(HdfsUtils.isHealthy(uri));
       
       //leave safe mode in a new thread
-      new Thread(new Runnable() {
+      new SubjectInheritingThread(new Runnable() {
         @Override
         public void run() {
           try {
@@ -1274,7 +1277,7 @@ public class TestDFSClientRetries {
   }
 
   @Test
-  @Timeout(value = 120000, unit = TimeUnit.MILLISECONDS)
+  @Timeout(value = 120)
   public void testLeaseRenewAndDFSOutputStreamDeadLock() throws Exception {
     CountDownLatch testLatch = new CountDownLatch(1);
     DFSClientFaultInjector.set(new DFSClientFaultInjector() {
@@ -1304,7 +1307,7 @@ public class TestDFSClientRetries {
 
       out1.write(new byte[256]);
 
-      Thread closeThread = new Thread(new Runnable() {
+      Thread closeThread = new SubjectInheritingThread(new Runnable() {
         @Override public void run() {
           try {
             //1. trigger get LeaseRenewer lock

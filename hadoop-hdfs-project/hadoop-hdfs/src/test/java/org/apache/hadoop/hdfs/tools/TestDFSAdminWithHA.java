@@ -39,7 +39,10 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.Timeout;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.fail;
 
 public class TestDFSAdminWithHA {
 
@@ -144,7 +147,7 @@ public class TestDFSAdminWithHA {
   }
 
   @Test
-  @Timeout(value = 30000, unit = TimeUnit.MILLISECONDS)
+  @Timeout(value = 30)
   public void testSetSafeMode() throws Exception {
     setUpHaCluster(false);
     // Enter safemode
@@ -173,7 +176,7 @@ public class TestDFSAdminWithHA {
   }
 
   @Test
-  @Timeout(value = 30000, unit = TimeUnit.MILLISECONDS)
+  @Timeout(value = 30)
   public void testSaveNamespace() throws Exception {
     setUpHaCluster(false);
     // Safe mode should be turned ON in order to create namespace image.
@@ -189,7 +192,7 @@ public class TestDFSAdminWithHA {
   }
 
   @Test
-  @Timeout(value = 30000, unit = TimeUnit.MILLISECONDS)
+  @Timeout(value = 30)
   public void testSaveNamespaceNN1UpNN2Down() throws Exception {
     setUpHaCluster(false);
     // Safe mode should be turned ON in order to create namespace image.
@@ -208,7 +211,7 @@ public class TestDFSAdminWithHA {
   }
 
   @Test
-  @Timeout(value = 30000, unit = TimeUnit.MILLISECONDS)
+  @Timeout(value = 30)
   public void testSaveNamespaceNN1DownNN2Up() throws Exception {
     setUpHaCluster(false);
     // Safe mode should be turned ON in order to create namespace image.
@@ -227,7 +230,7 @@ public class TestDFSAdminWithHA {
   }
 
   @Test
-  @Timeout(value = 30000, unit = TimeUnit.MILLISECONDS)
+  @Timeout(value = 30)
   public void testSaveNamespaceNN1DownNN2Down() throws Exception {
     setUpHaCluster(false);
     // Safe mode should be turned ON in order to create namespace image.
@@ -246,7 +249,7 @@ public class TestDFSAdminWithHA {
   }
 
   @Test
-  @Timeout(value = 30000, unit = TimeUnit.MILLISECONDS)
+  @Timeout(value = 30)
   public void testRestoreFailedStorage() throws Exception {
     setUpHaCluster(false);
     int exitCode = admin.run(new String[] {"-restoreFailedStorage", "check"});
@@ -267,7 +270,7 @@ public class TestDFSAdminWithHA {
   }
 
   @Test
-  @Timeout(value = 30000, unit = TimeUnit.MILLISECONDS)
+  @Timeout(value = 30)
   public void testRestoreFailedStorageNN1UpNN2Down() throws Exception {
     setUpHaCluster(false);
     cluster.getDfsCluster().shutdownNameNode(1);
@@ -292,7 +295,7 @@ public class TestDFSAdminWithHA {
   }
 
   @Test
-  @Timeout(value = 30000, unit = TimeUnit.MILLISECONDS)
+  @Timeout(value = 30)
   public void testRestoreFailedStorageNN1DownNN2Up() throws Exception {
     setUpHaCluster(false);
     cluster.getDfsCluster().shutdownNameNode(0);
@@ -317,7 +320,7 @@ public class TestDFSAdminWithHA {
   }
 
   @Test
-  @Timeout(value = 30000, unit = TimeUnit.MILLISECONDS)
+  @Timeout(value = 30)
   public void testRestoreFailedStorageNN1DownNN2Down() throws Exception {
     setUpHaCluster(false);
     cluster.getDfsCluster().shutdownNameNode(0);
@@ -340,7 +343,7 @@ public class TestDFSAdminWithHA {
   }
 
   @Test
-  @Timeout(value = 30000, unit = TimeUnit.MILLISECONDS)
+  @Timeout(value = 30)
   public void testRefreshNodes() throws Exception {
     setUpHaCluster(false);
     int exitCode = admin.run(new String[] {"-refreshNodes"});
@@ -350,7 +353,7 @@ public class TestDFSAdminWithHA {
   }
 
   @Test
-  @Timeout(value = 30000, unit = TimeUnit.MILLISECONDS)
+  @Timeout(value = 30)
   public void testRefreshNodesNN1UpNN2Down() throws Exception {
     setUpHaCluster(false);
     cluster.getDfsCluster().shutdownNameNode(1);
@@ -362,7 +365,7 @@ public class TestDFSAdminWithHA {
   }
 
   @Test
-  @Timeout(value = 30000, unit = TimeUnit.MILLISECONDS)
+  @Timeout(value = 30)
   public void testRefreshNodesNN1DownNN2Up() throws Exception {
     setUpHaCluster(false);
     cluster.getDfsCluster().shutdownNameNode(0);
@@ -374,7 +377,7 @@ public class TestDFSAdminWithHA {
   }
 
   @Test
-  @Timeout(value = 30000, unit = TimeUnit.MILLISECONDS)
+  @Timeout(value = 30)
   public void testRefreshNodesNN1DownNN2Down() throws Exception {
     setUpHaCluster(false);
     cluster.getDfsCluster().shutdownNameNode(0);
@@ -386,7 +389,7 @@ public class TestDFSAdminWithHA {
   }
 
   @Test
-  @Timeout(value = 30000, unit = TimeUnit.MILLISECONDS)
+  @Timeout(value = 30)
   public void testSetBalancerBandwidth() throws Exception {
     setUpHaCluster(false);
     cluster.getDfsCluster().transitionToActive(0);
@@ -398,7 +401,7 @@ public class TestDFSAdminWithHA {
   }
 
   @Test
-  @Timeout(value = 30000, unit = TimeUnit.MILLISECONDS)
+  @Timeout(value = 30)
   public void testSetBalancerBandwidthNN1UpNN2Down() throws Exception {
     setUpHaCluster(false);
     cluster.getDfsCluster().shutdownNameNode(1);
@@ -410,7 +413,7 @@ public class TestDFSAdminWithHA {
   }
 
   @Test
-  @Timeout(value = 30000, unit = TimeUnit.MILLISECONDS)
+  @Timeout(value = 30)
   public void testSetBalancerBandwidthNN1DownNN2Up() throws Exception {
     setUpHaCluster(false);
     cluster.getDfsCluster().shutdownNameNode(0);
@@ -434,7 +437,7 @@ public class TestDFSAdminWithHA {
   }
 
   @Test
-  @Timeout(value = 30000, unit = TimeUnit.MILLISECONDS)
+  @Timeout(value = 30)
   public void testSetNegativeBalancerBandwidth() throws Exception {
     setUpHaCluster(false);
     int exitCode = admin.run(new String[] {"-setBalancerBandwidth", "-10"});
@@ -442,7 +445,7 @@ public class TestDFSAdminWithHA {
   }
 
   @Test
-  @Timeout(value = 30000, unit = TimeUnit.MILLISECONDS)
+  @Timeout(value = 30)
   public void testMetaSave() throws Exception {
     setUpHaCluster(false);
     cluster.getDfsCluster().transitionToActive(0);
@@ -457,7 +460,7 @@ public class TestDFSAdminWithHA {
   }
 
   @Test
-  @Timeout(value = 30000, unit = TimeUnit.MILLISECONDS)
+  @Timeout(value = 30)
   public void testMetaSaveNN1UpNN2Down() throws Exception {
     setUpHaCluster(false);
     cluster.getDfsCluster().transitionToActive(0);
@@ -472,7 +475,7 @@ public class TestDFSAdminWithHA {
   }
 
   @Test
-  @Timeout(value = 30000, unit = TimeUnit.MILLISECONDS)
+  @Timeout(value = 30)
   public void testMetaSaveNN1DownNN2Up() throws Exception {
     setUpHaCluster(false);
     cluster.getDfsCluster().transitionToActive(1);
@@ -487,7 +490,7 @@ public class TestDFSAdminWithHA {
   }
 
   @Test
-  @Timeout(value = 30000, unit = TimeUnit.MILLISECONDS)
+  @Timeout(value = 30)
   public void testMetaSaveNN1DownNN2Down() throws Exception {
     setUpHaCluster(false);
     cluster.getDfsCluster().shutdownNameNode(0);
@@ -499,7 +502,7 @@ public class TestDFSAdminWithHA {
   }
 
   @Test
-  @Timeout(value = 30000, unit = TimeUnit.MILLISECONDS)
+  @Timeout(value = 30)
   public void testRefreshServiceAcl() throws Exception {
     setUpHaCluster(true);
     int exitCode = admin.run(new String[] {"-refreshServiceAcl"});
@@ -509,7 +512,7 @@ public class TestDFSAdminWithHA {
   }
 
   @Test
-  @Timeout(value = 30000, unit = TimeUnit.MILLISECONDS)
+  @Timeout(value = 30)
   public void testRefreshServiceAclNN1UpNN2Down() throws Exception {
     setUpHaCluster(true);
     cluster.getDfsCluster().shutdownNameNode(1);
@@ -521,7 +524,7 @@ public class TestDFSAdminWithHA {
   }
 
   @Test
-  @Timeout(value = 30000, unit = TimeUnit.MILLISECONDS)
+  @Timeout(value = 30)
   public void testRefreshServiceAclNN1DownNN2Up() throws Exception {
     setUpHaCluster(true);
     cluster.getDfsCluster().shutdownNameNode(0);
@@ -533,7 +536,7 @@ public class TestDFSAdminWithHA {
   }
 
   @Test
-  @Timeout(value = 30000, unit = TimeUnit.MILLISECONDS)
+  @Timeout(value = 30)
   public void testRefreshServiceAclNN1DownNN2Down() throws Exception {
     setUpHaCluster(true);
     cluster.getDfsCluster().shutdownNameNode(0);
@@ -546,7 +549,7 @@ public class TestDFSAdminWithHA {
 
 
   @Test
-  @Timeout(value = 30000, unit = TimeUnit.MILLISECONDS)
+  @Timeout(value = 30)
   public void testRefreshUserToGroupsMappings() throws Exception {
     setUpHaCluster(false);
     int exitCode = admin.run(new String[] {"-refreshUserToGroupsMappings"});
@@ -556,7 +559,7 @@ public class TestDFSAdminWithHA {
   }
 
   @Test
-  @Timeout(value = 30000, unit = TimeUnit.MILLISECONDS)
+  @Timeout(value = 30)
   public void testRefreshUserToGroupsMappingsNN1UpNN2Down() throws Exception {
     setUpHaCluster(false);
     cluster.getDfsCluster().shutdownNameNode(1);
@@ -568,7 +571,7 @@ public class TestDFSAdminWithHA {
   }
 
   @Test
-  @Timeout(value = 30000, unit = TimeUnit.MILLISECONDS)
+  @Timeout(value = 30)
   public void testRefreshUserToGroupsMappingsNN1DownNN2Up() throws Exception {
     setUpHaCluster(false);
     cluster.getDfsCluster().shutdownNameNode(0);
@@ -580,7 +583,7 @@ public class TestDFSAdminWithHA {
   }
 
   @Test
-  @Timeout(value = 30000, unit = TimeUnit.MILLISECONDS)
+  @Timeout(value = 30)
   public void testRefreshUserToGroupsMappingsNN1DownNN2Down() throws Exception {
     setUpHaCluster(false);
     cluster.getDfsCluster().shutdownNameNode(0);
@@ -592,7 +595,7 @@ public class TestDFSAdminWithHA {
   }
 
   @Test
-  @Timeout(value = 30000, unit = TimeUnit.MILLISECONDS)
+  @Timeout(value = 30)
   public void testRefreshSuperUserGroupsConfiguration() throws Exception {
     setUpHaCluster(false);
     int exitCode = admin.run(
@@ -603,7 +606,7 @@ public class TestDFSAdminWithHA {
   }
 
   @Test
-  @Timeout(value = 30000, unit = TimeUnit.MILLISECONDS)
+  @Timeout(value = 30)
   public void testRefreshSuperUserGroupsConfigurationNN1UpNN2Down()
       throws Exception {
     setUpHaCluster(false);
@@ -619,7 +622,7 @@ public class TestDFSAdminWithHA {
   }
 
   @Test
-  @Timeout(value = 30000, unit = TimeUnit.MILLISECONDS)
+  @Timeout(value = 30)
   public void testRefreshSuperUserGroupsConfigurationNN1DownNN2Up()
       throws Exception {
     setUpHaCluster(false);
@@ -635,7 +638,7 @@ public class TestDFSAdminWithHA {
   }
 
   @Test
-  @Timeout(value = 30000, unit = TimeUnit.MILLISECONDS)
+  @Timeout(value = 30)
   public void testRefreshSuperUserGroupsConfigurationNN1DownNN2Down()
       throws Exception {
     setUpHaCluster(false);
@@ -649,7 +652,7 @@ public class TestDFSAdminWithHA {
   }
 
   @Test
-  @Timeout(value = 30000, unit = TimeUnit.MILLISECONDS)
+  @Timeout(value = 30)
   public void testRefreshCallQueue() throws Exception {
     setUpHaCluster(false);
     int exitCode = admin.run(new String[] {"-refreshCallQueue"});
@@ -659,7 +662,7 @@ public class TestDFSAdminWithHA {
   }
 
   @Test
-  @Timeout(value = 30000, unit = TimeUnit.MILLISECONDS)
+  @Timeout(value = 30)
   public void testRefreshCallQueueNN1UpNN2Down() throws Exception {
     setUpHaCluster(false);
     cluster.getDfsCluster().shutdownNameNode(1);
@@ -671,7 +674,7 @@ public class TestDFSAdminWithHA {
   }
 
   @Test
-  @Timeout(value = 30000, unit = TimeUnit.MILLISECONDS)
+  @Timeout(value = 30)
   public void testRefreshCallQueueNN1DownNN2Up() throws Exception {
     setUpHaCluster(false);
     cluster.getDfsCluster().shutdownNameNode(0);
@@ -683,7 +686,7 @@ public class TestDFSAdminWithHA {
   }
 
   @Test
-  @Timeout(value = 30000, unit = TimeUnit.MILLISECONDS)
+  @Timeout(value = 30)
   public void testRefreshCallQueueNN1DownNN2Down() throws Exception {
     setUpHaCluster(false);
     cluster.getDfsCluster().shutdownNameNode(0);
@@ -695,7 +698,7 @@ public class TestDFSAdminWithHA {
   }
 
   @Test
-  @Timeout(value = 30000, unit = TimeUnit.MILLISECONDS)
+  @Timeout(value = 30)
   public void testFinalizeUpgrade() throws Exception {
     setUpHaCluster(false);
     int exitCode = admin.run(new String[] {"-finalizeUpgrade"});
@@ -711,7 +714,7 @@ public class TestDFSAdminWithHA {
   }
 
   @Test
-  @Timeout(value = 30000, unit = TimeUnit.MILLISECONDS)
+  @Timeout(value = 30)
   public void testFinalizeUpgradeNN1UpNN2Down() throws Exception {
     setUpHaCluster(false);
     cluster.getDfsCluster().shutdownNameNode(1);
@@ -724,7 +727,7 @@ public class TestDFSAdminWithHA {
   }
 
   @Test
-  @Timeout(value = 30000, unit = TimeUnit.MILLISECONDS)
+  @Timeout(value = 30)
   public void testFinalizeUpgradeNN1DownNN2Up() throws Exception {
     setUpHaCluster(false);
     cluster.getDfsCluster().shutdownNameNode(0);
@@ -737,7 +740,7 @@ public class TestDFSAdminWithHA {
   }
 
   @Test
-  @Timeout(value = 30000, unit = TimeUnit.MILLISECONDS)
+  @Timeout(value = 30)
   public void testFinalizeUpgradeNN1DownNN2Down() throws Exception {
     setUpHaCluster(false);
     cluster.getDfsCluster().shutdownNameNode(0);
@@ -749,7 +752,7 @@ public class TestDFSAdminWithHA {
   }
 
   @Test
-  @Timeout(value = 300000, unit = TimeUnit.MILLISECONDS)
+  @Timeout(value = 300)
   public void testUpgradeCommand() throws Exception {
     final String finalizedMsg = "Upgrade finalized for.*";
     final String notFinalizedMsg = "Upgrade not finalized for.*";
@@ -814,8 +817,8 @@ public class TestDFSAdminWithHA {
   }
 
   @Test
-  @Timeout(value = 30000, unit = TimeUnit.MILLISECONDS)
-  public void testListOpenFilesNN1UpNN2Down() throws Exception {
+  @Timeout(value = 30)
+  public void testListOpenFilesNN1UpNN2Down() throws Exception{
     setUpHaCluster(false);
     cluster.getDfsCluster().shutdownNameNode(1);
     cluster.getDfsCluster().transitionToActive(0);
@@ -824,8 +827,8 @@ public class TestDFSAdminWithHA {
   }
 
   @Test
-  @Timeout(value = 30000, unit = TimeUnit.MILLISECONDS)
-  public void testListOpenFilesNN1DownNN2Up() throws Exception {
+  @Timeout(value = 30)
+  public void testListOpenFilesNN1DownNN2Up() throws Exception{
     setUpHaCluster(false);
     cluster.getDfsCluster().shutdownNameNode(0);
     cluster.getDfsCluster().transitionToActive(1);

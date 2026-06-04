@@ -40,7 +40,7 @@ public class TestLocalFSContractLoaded extends AbstractFSContractTestBase {
     String key = getContract().getConfKey(SUPPORTS_ATOMIC_RENAME);
     assertNotNull(getContract().getConf().get(key), "not set: " + key);
     assertTrue(getContract().isSupported(SUPPORTS_ATOMIC_RENAME, false),
-               "not true: " + key);
+        "not true: " + key);
   }
 
   @Test

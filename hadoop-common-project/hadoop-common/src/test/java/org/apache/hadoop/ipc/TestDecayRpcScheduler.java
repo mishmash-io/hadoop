@@ -309,7 +309,7 @@ public class TestDecayRpcScheduler {
   }
 
   @Test
-  @Timeout(value=2000, unit=TimeUnit.MILLISECONDS)
+  @Timeout(value = 2)
   @SuppressWarnings("deprecation")
   public void testPeriodic() throws InterruptedException {
     Configuration conf = new Configuration();
@@ -333,7 +333,7 @@ public class TestDecayRpcScheduler {
   }
 
   @Test
-  @Timeout(value=60000, unit=TimeUnit.MILLISECONDS)
+  @Timeout(value = 60)
   public void testNPEatInitialization() throws InterruptedException {
     // redirect the LOG to and check if there is NPE message while initializing
     // the DecayRpcScheduler

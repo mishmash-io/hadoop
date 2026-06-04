@@ -47,11 +47,20 @@ import org.junit.jupiter.api.*;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.MethodSource;
 
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedClass;
+import org.junit.jupiter.params.provider.MethodSource;
 import org.slf4j.LoggerFactory;
 
 /**
  * A JUnit test that audit logs are generated
  */
+@MethodSource("data")
+@ParameterizedClass
 public class TestAuditLogs {
 
   private static final org.slf4j.Logger LOG = LoggerFactory.getLogger(TestAuditLogs.class);
@@ -330,9 +339,8 @@ public class TestAuditLogs {
         success++;
       }
     }
-    assertEquals(expected,
-        success,
-        "Expected: " + expected + ". Actual failure: " + success);
+    assertEquals(expected, success, "Expected: " + expected
+        + ". Actual failure: " + success);
   }
 
 }

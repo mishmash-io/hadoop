@@ -46,7 +46,6 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-
 /**
  * Startup and checkpoint tests
  * 
@@ -107,8 +106,8 @@ public class TestJMXGet {
     try {
       DFSTestUtil.waitForMetric(jmx, "NumLiveDataNodes", numDatanodes);
     } catch (TimeoutException e) {
-    assertEquals(numDatanodes, Integer.parseInt(
-        jmx.getValue("NumLiveDataNodes")), String.format(WRONG_METRIC_VALUE_ERROR_MSG, "NumLiveDataNodes"));
+      assertEquals(numDatanodes, Integer.parseInt(jmx.getValue("NumLiveDataNodes")),
+          String.format(WRONG_METRIC_VALUE_ERROR_MSG, "NumLiveDataNodes"));
     }
     assertGauge("CorruptBlocks", Long.parseLong(jmx.getValue("CorruptBlocks")),
                 getMetrics("FSNamesystem"));
@@ -162,7 +161,8 @@ public class TestJMXGet {
     try {
       DFSTestUtil.waitForMetric(jmx, "BytesWritten", fileSize);
     } catch (TimeoutException e) {
-      assertEquals(fileSize, Integer.parseInt(jmx.getValue("BytesWritten")), String.format(WRONG_METRIC_VALUE_ERROR_MSG, "BytesWritten"));
+      assertEquals(fileSize, Integer.parseInt(jmx.getValue("BytesWritten")),
+          String.format(WRONG_METRIC_VALUE_ERROR_MSG, "BytesWritten"));
     }
 
     cluster.shutdown();

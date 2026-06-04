@@ -32,8 +32,9 @@ import org.apache.hadoop.metrics2.sink.RollingFileSystemSinkTestBase.MyMetrics1;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.fail;
 
 /**
  * Test the {@link RollingFileSystemSink} class in the context of HDFS.
@@ -155,8 +156,8 @@ public class TestRollingFileSystemSinkWithHdfs
 
     ms.publishMetricsNow(); // publish the metrics
 
-    assertTrue(MockSink.errored, "No exception was generated while writing metrics "
-        + "even though HDFS was unavailable");
+    assertTrue(MockSink.errored,
+        "No exception was generated while writing metrics " + "even though HDFS was unavailable");
 
     try {
       ms.stop();
@@ -186,8 +187,8 @@ public class TestRollingFileSystemSinkWithHdfs
     try {
       ms.stop();
 
-      assertTrue(MockSink.errored, "No exception was generated while stopping sink "
-          + "even though HDFS was unavailable");
+      assertTrue(MockSink.errored,
+          "No exception was generated while stopping sink " + "even though HDFS was unavailable");
     } catch (MetricsException ex) {
       // Expected
     } finally {
@@ -301,7 +302,7 @@ public class TestRollingFileSystemSinkWithHdfs
       // Each metrics record is 118+ bytes, depending on hostname
       assertTrue(status.getLen() >= 236,
           "The flusher thread didn't flush the log contents. Expected "
-          + "at least 236 bytes in the log file, but got " + status.getLen());
+              + "at least 236 bytes in the log file, but got " + status.getLen());
     } finally {
       RollingFileSystemSink.forceFlush = false;
 

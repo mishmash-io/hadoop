@@ -64,7 +64,6 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.Timeout;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.slf4j.event.Level;
@@ -222,19 +221,16 @@ public class TestDecommissioningStatus {
       }
       assertTrue(num != null, "No decommissioning output");
       assertEquals(expectedDecomm.size(),
-          num.intValue(),
-          "Unexpected number of decomming DNs");
+          num.intValue(), "Unexpected number of decomming DNs");
       assertEquals(expectedDecomm.size(),
-          count,
-          "Unexpected number of decomming DNs");
+          count, "Unexpected number of decomming DNs");
 
       // Check Java API for correct contents
       List<DatanodeInfo> decomming =
           new ArrayList<DatanodeInfo>(Arrays.asList(dfs
               .getDataNodeStats(DatanodeReportType.DECOMMISSIONING)));
       assertEquals(expectedDecomm.size(),
-          decomming.size(),
-          "Unexpected number of decomming DNs");
+          decomming.size(), "Unexpected number of decomming DNs");
       for (DatanodeID id : expectedDecomm) {
         assertTrue(decomming.contains(id),
             "Did not find expected decomming DN " + id);
@@ -397,7 +393,7 @@ public class TestDecommissioningStatus {
    * the replication process after it rejoins the cluster.
    */
   @Test
-  @Timeout(value = 120000, unit = TimeUnit.MILLISECONDS)
+  @Timeout(value = 120)
   public void testDecommissionStatusAfterDNRestart() throws Exception {
     DistributedFileSystem fileSys =
         (DistributedFileSystem)cluster.getFileSystem();
@@ -476,7 +472,7 @@ public class TestDecommissioningStatus {
    * DECOMMISSIONED
    */
   @Test
-  @Timeout(value = 120000, unit = TimeUnit.MILLISECONDS)
+  @Timeout(value = 120)
   public void testDecommissionDeadDN() throws Exception {
     Logger log = LoggerFactory.getLogger(DatanodeAdminManager.class);
     GenericTestUtils.setLogLevel(log, Level.DEBUG);
@@ -506,7 +502,7 @@ public class TestDecommissioningStatus {
   }
 
   @Test
-  @Timeout(value = 120000, unit = TimeUnit.MILLISECONDS)
+  @Timeout(value = 120)
   public void testDecommissionLosingData() throws Exception {
     ArrayList<String> nodes = new ArrayList<String>(2);
     FSNamesystem fsn = cluster.getNamesystem();

@@ -27,7 +27,12 @@ import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hdfs.protocol.SnapshotDiffReport;
 import org.apache.hadoop.hdfs.tools.snapshot.SnapshotDiff;
 
-import org.junit.jupiter.api.*;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.Timeout;
 
 /**
  * This class includes end-to-end tests for snapshot related FsShell and
@@ -191,8 +196,8 @@ public class TestSnapshotCommands {
   }
 
   @Test
-  @Timeout(value = 60000, unit = TimeUnit.MILLISECONDS)
-  public void testSnapshotCommandsWithURI() throws Exception {
+  @Timeout(value = 60)
+  public void testSnapshotCommandsWithURI()throws Exception {
     Configuration config = new HdfsConfiguration();
     //fs.defaultFS should not be used, when path is fully qualified.
     config.set("fs.defaultFS", "hdfs://127.0.0.1:1024");
@@ -223,8 +228,8 @@ public class TestSnapshotCommands {
   }
 
   @Test
-  @Timeout(value = 120000, unit = TimeUnit.MILLISECONDS)
-  public void testSnapshotDiff() throws Exception {
+  @Timeout(value = 120)
+  public void testSnapshotDiff()throws Exception {
     Configuration config = new HdfsConfiguration();
     Path snapDirPath = new Path(fs.getUri().toString() + "/snap_dir");
     String snapDir = snapDirPath.toString();

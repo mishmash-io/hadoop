@@ -33,9 +33,9 @@ import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.metrics2.util.Quantile;
 import org.apache.hadoop.metrics2.util.SampleQuantiles;
 import org.apache.hadoop.util.StopWatch;
-import org.apache.hadoop.util.cli.Tool;
-import org.apache.hadoop.util.cli.ToolRunner;
-
+import org.apache.hadoop.util.Tool;
+import org.apache.hadoop.util.ToolRunner;
+import org.apache.hadoop.util.concurrent.SubjectInheritingThread;
 import org.junit.jupiter.api.Test;
 
 /**
@@ -72,7 +72,7 @@ public class TestMultiThreadedHflush {
     toWrite = AppendTestUtil.randomBytes(seed, size);
   }
 
-  private class WriterThread extends Thread {
+  private class WriterThread extends SubjectInheritingThread {
     private final FSDataOutputStream stm;
     private final AtomicReference<Throwable> thrown;
     private final int numWrites;
@@ -88,7 +88,7 @@ public class TestMultiThreadedHflush {
     }
 
     @Override
-    public void run() {
+    public void work() {
       try {
         countdown.await();
         for (int i = 0; i < numWrites && thrown.get() == null; i++) {
@@ -163,9 +163,9 @@ public class TestMultiThreadedHflush {
     final AtomicReference<Throwable> thrown = new AtomicReference<Throwable>();
     try {
       for (int i = 0; i < 10; i++) {
-        Thread flusher = new Thread() {
+        SubjectInheritingThread flusher = new SubjectInheritingThread() {
             @Override
-            public void run() {
+            public void work() {
               try {
                 while (true) {
                   try {

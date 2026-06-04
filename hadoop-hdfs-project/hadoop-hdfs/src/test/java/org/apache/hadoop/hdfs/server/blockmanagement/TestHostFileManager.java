@@ -23,13 +23,15 @@ import org.apache.hadoop.hdfs.protocol.DatanodeID;
 import org.apache.hadoop.hdfs.protocol.HdfsConstants;
 import org.apache.hadoop.hdfs.server.namenode.FSNamesystem;
 import org.apache.hadoop.test.Whitebox;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
 import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.util.Map;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.mock;
 
 public class TestHostFileManager {
@@ -44,57 +46,57 @@ public class TestHostFileManager {
     // address + port combo.
     s.add(entry("127.0.0.1:12345"));
     s.add(entry("localhost:12345"));
-    Assertions.assertEquals(1, s.size());
+    assertEquals(1, s.size());
     s.add(entry("127.0.0.1:12345"));
-    Assertions.assertEquals(1, s.size());
+    assertEquals(1, s.size());
 
     // The following entries should not be de-duped.
     s.add(entry("127.0.0.1:12346"));
-    Assertions.assertEquals(2, s.size());
+    assertEquals(2, s.size());
     s.add(entry("127.0.0.1"));
-    Assertions.assertEquals(3, s.size());
+    assertEquals(3, s.size());
     s.add(entry("127.0.0.10"));
-    Assertions.assertEquals(4, s.size());
+    assertEquals(4, s.size());
   }
 
   @Test
   public void testRelation() {
     HostSet s = new HostSet();
     s.add(entry("127.0.0.1:123"));
-    Assertions.assertTrue(s.match(entry("127.0.0.1:123")));
-    Assertions.assertFalse(s.match(entry("127.0.0.1:12")));
-    Assertions.assertFalse(s.match(entry("127.0.0.1")));
-    Assertions.assertFalse(s.matchedBy(entry("127.0.0.1:12")));
-    Assertions.assertTrue(s.matchedBy(entry("127.0.0.1")));
-    Assertions.assertTrue(s.matchedBy(entry("127.0.0.1:123")));
-    Assertions.assertFalse(s.match(entry("127.0.0.2")));
-    Assertions.assertFalse(s.match(entry("127.0.0.2:123")));
-    Assertions.assertFalse(s.matchedBy(entry("127.0.0.2")));
-    Assertions.assertFalse(s.matchedBy(entry("127.0.0.2:123")));
+    assertTrue(s.match(entry("127.0.0.1:123")));
+    assertFalse(s.match(entry("127.0.0.1:12")));
+    assertFalse(s.match(entry("127.0.0.1")));
+    assertFalse(s.matchedBy(entry("127.0.0.1:12")));
+    assertTrue(s.matchedBy(entry("127.0.0.1")));
+    assertTrue(s.matchedBy(entry("127.0.0.1:123")));
+    assertFalse(s.match(entry("127.0.0.2")));
+    assertFalse(s.match(entry("127.0.0.2:123")));
+    assertFalse(s.matchedBy(entry("127.0.0.2")));
+    assertFalse(s.matchedBy(entry("127.0.0.2:123")));
 
     s.add(entry("127.0.0.1"));
-    Assertions.assertTrue(s.match(entry("127.0.0.1:123")));
-    Assertions.assertTrue(s.match(entry("127.0.0.1:12")));
-    Assertions.assertTrue(s.match(entry("127.0.0.1")));
-    Assertions.assertFalse(s.matchedBy(entry("127.0.0.1:12")));
-    Assertions.assertTrue(s.matchedBy(entry("127.0.0.1")));
-    Assertions.assertTrue(s.matchedBy(entry("127.0.0.1:123")));
-    Assertions.assertFalse(s.match(entry("127.0.0.2")));
-    Assertions.assertFalse(s.match(entry("127.0.0.2:123")));
-    Assertions.assertFalse(s.matchedBy(entry("127.0.0.2")));
-    Assertions.assertFalse(s.matchedBy(entry("127.0.0.2:123")));
+    assertTrue(s.match(entry("127.0.0.1:123")));
+    assertTrue(s.match(entry("127.0.0.1:12")));
+    assertTrue(s.match(entry("127.0.0.1")));
+    assertFalse(s.matchedBy(entry("127.0.0.1:12")));
+    assertTrue(s.matchedBy(entry("127.0.0.1")));
+    assertTrue(s.matchedBy(entry("127.0.0.1:123")));
+    assertFalse(s.match(entry("127.0.0.2")));
+    assertFalse(s.match(entry("127.0.0.2:123")));
+    assertFalse(s.matchedBy(entry("127.0.0.2")));
+    assertFalse(s.matchedBy(entry("127.0.0.2:123")));
 
     s.add(entry("127.0.0.2:123"));
-    Assertions.assertTrue(s.match(entry("127.0.0.1:123")));
-    Assertions.assertTrue(s.match(entry("127.0.0.1:12")));
-    Assertions.assertTrue(s.match(entry("127.0.0.1")));
-    Assertions.assertFalse(s.matchedBy(entry("127.0.0.1:12")));
-    Assertions.assertTrue(s.matchedBy(entry("127.0.0.1")));
-    Assertions.assertTrue(s.matchedBy(entry("127.0.0.1:123")));
-    Assertions.assertFalse(s.match(entry("127.0.0.2")));
-    Assertions.assertTrue(s.match(entry("127.0.0.2:123")));
-    Assertions.assertTrue(s.matchedBy(entry("127.0.0.2")));
-    Assertions.assertTrue(s.matchedBy(entry("127.0.0.2:123")));
+    assertTrue(s.match(entry("127.0.0.1:123")));
+    assertTrue(s.match(entry("127.0.0.1:12")));
+    assertTrue(s.match(entry("127.0.0.1")));
+    assertFalse(s.matchedBy(entry("127.0.0.1:12")));
+    assertTrue(s.matchedBy(entry("127.0.0.1")));
+    assertTrue(s.matchedBy(entry("127.0.0.1:123")));
+    assertFalse(s.match(entry("127.0.0.2")));
+    assertTrue(s.match(entry("127.0.0.2:123")));
+    assertTrue(s.matchedBy(entry("127.0.0.2")));
+    assertTrue(s.matchedBy(entry("127.0.0.2:123")));
   }
 
   @Test
@@ -115,8 +117,8 @@ public class TestHostFileManager {
     excludedNodes.add(entry("127.0.0.1:12346"));
     excludedNodes.add(entry("127.0.30.1:12346"));
 
-    Assertions.assertEquals(2, includedNodes.size());
-    Assertions.assertEquals(2, excludedNodes.size());
+    assertEquals(2, includedNodes.size());
+    assertEquals(2, excludedNodes.size());
 
     hm.refresh(includedNodes, excludedNodes);
 
@@ -127,30 +129,30 @@ public class TestHostFileManager {
 
     // After the de-duplication, there should be only one DN from the included
     // nodes declared as dead.
-    Assertions.assertEquals(2, dm.getDatanodeListForReport(HdfsConstants
-            .DatanodeReportType.ALL).size());
-    Assertions.assertEquals(2, dm.getDatanodeListForReport(HdfsConstants
-            .DatanodeReportType.DEAD).size());
+    assertEquals(2,
+        dm.getDatanodeListForReport(HdfsConstants.DatanodeReportType.ALL).size());
+    assertEquals(2,
+        dm.getDatanodeListForReport(HdfsConstants.DatanodeReportType.DEAD).size());
     dnMap.put("uuid-foo", new DatanodeDescriptor(new DatanodeID("127.0.0.1",
             "localhost", "uuid-foo", 12345, 1020, 1021, 1022)));
-    Assertions.assertEquals(1, dm.getDatanodeListForReport(HdfsConstants
-            .DatanodeReportType.DEAD).size());
+    assertEquals(1,
+        dm.getDatanodeListForReport(HdfsConstants.DatanodeReportType.DEAD).size());
     dnMap.put("uuid-bar", new DatanodeDescriptor(new DatanodeID("127.0.0.2",
             "127.0.0.2", "uuid-bar", 12345, 1020, 1021, 1022)));
-    Assertions.assertEquals(0, dm.getDatanodeListForReport(HdfsConstants
-            .DatanodeReportType.DEAD).size());
+    assertEquals(0,
+        dm.getDatanodeListForReport(HdfsConstants.DatanodeReportType.DEAD).size());
     DatanodeDescriptor spam = new DatanodeDescriptor(new DatanodeID("127.0.0" +
             ".3", "127.0.0.3", "uuid-spam", 12345, 1020, 1021, 1022));
     DFSTestUtil.setDatanodeDead(spam);
     includedNodes.add(entry("127.0.0.3:12345"));
     dnMap.put("uuid-spam", spam);
-    Assertions.assertEquals(1, dm.getDatanodeListForReport(HdfsConstants
-            .DatanodeReportType.DEAD).size());
+    assertEquals(1,
+        dm.getDatanodeListForReport(HdfsConstants.DatanodeReportType.DEAD).size());
     dnMap.remove("uuid-spam");
-    Assertions.assertEquals(1, dm.getDatanodeListForReport(HdfsConstants
-            .DatanodeReportType.DEAD).size());
+    assertEquals(1,
+        dm.getDatanodeListForReport(HdfsConstants.DatanodeReportType.DEAD).size());
     excludedNodes.add(entry("127.0.0.3"));
-    Assertions.assertEquals(1, dm.getDatanodeListForReport(HdfsConstants
-            .DatanodeReportType.DEAD).size());
+    assertEquals(1,
+        dm.getDatanodeListForReport(HdfsConstants.DatanodeReportType.DEAD).size());
   }
 }

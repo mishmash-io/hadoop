@@ -30,6 +30,11 @@ import java.util.Random;
 import org.apache.hadoop.HadoopIllegalArgumentException;
 import org.junit.jupiter.api.Test;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.fail;
+
 public class TestGSet {
   private static final Random ran = new Random();
   private static final long starttime = Time.now();

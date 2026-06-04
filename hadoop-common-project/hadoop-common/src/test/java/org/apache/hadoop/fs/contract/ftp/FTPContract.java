@@ -25,7 +25,7 @@ import org.apache.hadoop.fs.contract.AbstractBondedFSContract;
 
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 
-import java.net.URI;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 /**
  * The contract of FTP; requires the option "test.testdir" to be set

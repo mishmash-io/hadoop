@@ -72,7 +72,7 @@ public class TestPathData {
   }
 
   @Test
-  @Timeout(value=30000, unit=TimeUnit.MILLISECONDS)
+  @Timeout(value = 30)
   public void testWithDirStringAndConf() throws Exception {
     String dirString = "d1";
     PathData item = new PathData(dirString, conf);
@@ -86,7 +86,7 @@ public class TestPathData {
   }
 
   @Test
-  @Timeout(value=30000, unit=TimeUnit.MILLISECONDS)
+  @Timeout(value = 30)
   public void testUnqualifiedUriContents() throws Exception {
     String dirString = "d1";
     PathData item = new PathData(dirString, conf);
@@ -98,7 +98,7 @@ public class TestPathData {
   }
 
   @Test
-  @Timeout(value=30000, unit=TimeUnit.MILLISECONDS)
+  @Timeout(value = 30)
   public void testQualifiedUriContents() throws Exception {
     String dirString = fs.makeQualified(new Path("d1")).toString();
     PathData item = new PathData(dirString, conf);
@@ -110,7 +110,7 @@ public class TestPathData {
   }
 
   @Test
-  @Timeout(value=30000, unit=TimeUnit.MILLISECONDS)
+  @Timeout(value = 30)
   public void testCwdContents() throws Exception {
     String dirString = Path.CUR_DIR;
     PathData item = new PathData(dirString, conf);
@@ -122,7 +122,7 @@ public class TestPathData {
   }
 
   @Test
-  @Timeout(value=30000, unit=TimeUnit.MILLISECONDS)
+  @Timeout(value = 30)
   public void testToFile() throws Exception {
     PathData item = new PathData(".", conf);
     assertEquals(new File(testDir.toString()), item.toFile());
@@ -133,7 +133,7 @@ public class TestPathData {
   }
 
   @Test
-  @Timeout(value=5000, unit=TimeUnit.MILLISECONDS)
+  @Timeout(value = 5)
   public void testToFileRawWindowsPaths() throws Exception {
     assumeWindows();
 
@@ -161,7 +161,7 @@ public class TestPathData {
   }
 
   @Test
-  @Timeout(value=5000, unit=TimeUnit.MILLISECONDS)
+  @Timeout(value = 5)
   public void testInvalidWindowsPath() throws Exception {
     assumeWindows();
 
@@ -180,7 +180,7 @@ public class TestPathData {
   }
 
   @Test
-  @Timeout(value=30000, unit=TimeUnit.MILLISECONDS)
+  @Timeout(value = 30)
   public void testAbsoluteGlob() throws Exception {
     PathData[] items = PathData.expandAsGlob(testDir+"/d1/f1*", conf);
     assertEquals(
@@ -209,7 +209,7 @@ public class TestPathData {
   }
 
   @Test
-  @Timeout(value=30000, unit=TimeUnit.MILLISECONDS)
+  @Timeout(value = 30)
   public void testRelativeGlob() throws Exception {
     PathData[] items = PathData.expandAsGlob("d1/f1*", conf);
     assertEquals(
@@ -219,7 +219,7 @@ public class TestPathData {
   }
 
   @Test
-  @Timeout(value=30000, unit=TimeUnit.MILLISECONDS)
+  @Timeout(value = 30)
   public void testRelativeGlobBack() throws Exception {
     fs.setWorkingDirectory(new Path("d1"));
     PathData[] items = PathData.expandAsGlob("../d2/*", conf);
@@ -247,7 +247,7 @@ public class TestPathData {
   }
 
   @Test
-  @Timeout(value=30000, unit=TimeUnit.MILLISECONDS)
+  @Timeout(value = 30)
   public void testWithStringAndConfForBuggyPath() throws Exception {
     String dirString = "file:///tmp";
     Path tmpDir = new Path(dirString);
@@ -263,10 +263,7 @@ public class TestPathData {
   public void checkPathData(String dirString, PathData item) throws Exception {
     assertEquals(fs, item.fs, "checking fs");
     assertEquals(dirString, item.toString(), "checking string");
-    assertEquals(
-        fs.makeQualified(new Path(item.toString())), item.path,
-        "checking path"
-    );
+    assertEquals(fs.makeQualified(new Path(item.toString())), item.path, "checking path");
     assertTrue(item.stat != null, "checking exist");
     assertTrue(item.stat.isDirectory(), "checking isDir");
   }

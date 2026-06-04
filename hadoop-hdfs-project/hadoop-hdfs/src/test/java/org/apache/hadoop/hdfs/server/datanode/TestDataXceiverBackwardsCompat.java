@@ -34,6 +34,7 @@ import org.apache.hadoop.io.Text;
 import org.apache.hadoop.net.ServerSocketUtil;
 import org.apache.hadoop.security.token.Token;
 import org.apache.hadoop.util.DataChecksum;
+import org.apache.hadoop.util.concurrent.SubjectInheritingThread;
 
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.Timeout;
@@ -62,8 +63,9 @@ import static org.mockito.Mockito.spy;
  * Mock-based unit test to verify that DataXceiver does not fail when no
  * storageId or targetStorageTypes are passed - as is the case in Hadoop 2.x.
  */
-@Timeout(value=60000, unit=TimeUnit.MILLISECONDS)
+@Timeout(60)
 public class TestDataXceiverBackwardsCompat {
+
   private void failWithException(String message, Exception exception) {
     ByteArrayOutputStream buffer = new ByteArrayOutputStream();
     exception.printStackTrace(new PrintStream(buffer));
@@ -95,7 +97,7 @@ public class TestDataXceiverBackwardsCompat {
           any(StorageType.class), any(String.class), any(ExtendedBlock.class),
           anyBoolean());
 
-      new Thread(new NullServer(port)).start();
+      new SubjectInheritingThread(new NullServer(port)).start();
     }
 
     @Override

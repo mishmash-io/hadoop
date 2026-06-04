@@ -23,17 +23,15 @@ import org.apache.hadoop.hdfs.HdfsConfiguration;
 import org.apache.hadoop.hdfs.server.datanode.StorageLocation;
 import org.apache.hadoop.hdfs.server.datanode.fsdataset.FsVolumeReference;
 import org.apache.hadoop.hdfs.server.datanode.fsdataset.FsVolumeSpi;
+import org.apache.hadoop.test.TestName;
 import org.apache.hadoop.util.FakeTimer;
-import static org.hamcrest.CoreMatchers.is;
-import static org.hamcrest.MatcherAssert.assertThat;
-
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.TestInfo;
 import org.junit.jupiter.api.Timeout;
-
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
+import static org.assertj.core.api.Assertions.assertThat;
+
+import org.junit.jupiter.api.extension.RegisterExtension;
 import org.mockito.stubbing.Answer;
 import org.slf4j.LoggerFactory;
 
@@ -51,8 +49,9 @@ public class TestDatasetVolumeCheckerTimeout {
   public static final org.slf4j.Logger LOG =
       LoggerFactory.getLogger(TestDatasetVolumeCheckerTimeout.class);
 
-  
-  public String testName;
+  @SuppressWarnings("checkstyle:VisibilityModifier")
+  @RegisterExtension
+  public TestName testName = new TestName();
 
   static Configuration conf;
   private static final long DISK_CHECK_TIMEOUT = 10;
@@ -87,7 +86,7 @@ public class TestDatasetVolumeCheckerTimeout {
   }
 
   @Test
-  @Timeout(value = 300000, unit = TimeUnit.MILLISECONDS)
+  @Timeout(value = 300)
   public void testDiskCheckTimeout() throws Exception {
     LOG.info("Executing {}", testName);
     final FsVolumeSpi volume = makeSlowVolume();
@@ -109,9 +108,9 @@ public class TestDatasetVolumeCheckerTimeout {
 
             // Assert that the disk check registers a failed volume due to
             // timeout
-            assertThat(healthyVolumes.size(), is(0));
-            assertThat(failedVolumes.size(), is(1));
-          }
+            assertThat(healthyVolumes.size()).isEqualTo(0);
+            assertThat(failedVolumes.size()).isEqualTo(1);
+            }
         });
 
     // Wait for the callback
@@ -122,7 +121,7 @@ public class TestDatasetVolumeCheckerTimeout {
 
     // Ensure that the check was invoked only once.
     verify(volume, times(1)).check(any());
-    assertThat(numCallbackInvocations.get(), is(1L));
+    assertThat(numCallbackInvocations.get()).isEqualTo(1L);
   }
 
   @BeforeEach

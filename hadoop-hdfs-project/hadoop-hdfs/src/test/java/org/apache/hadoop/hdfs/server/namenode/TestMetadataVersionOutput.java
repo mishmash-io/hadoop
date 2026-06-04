@@ -63,7 +63,7 @@ public class TestMetadataVersionOutput {
   }
 
   @Test
-  @Timeout(value = 30000, unit = TimeUnit.MILLISECONDS)
+  @Timeout(value = 30)
   public void testMetadataVersionOutput() throws IOException {
 
     initConfig();

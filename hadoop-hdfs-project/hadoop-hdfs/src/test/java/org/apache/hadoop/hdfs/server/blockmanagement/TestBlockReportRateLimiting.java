@@ -20,6 +20,9 @@ package org.apache.hadoop.hdfs.server.blockmanagement;
 
 import static org.apache.hadoop.hdfs.DFSConfigKeys.DFS_NAMENODE_MAX_FULL_BLOCK_REPORT_LEASES;
 import static org.apache.hadoop.hdfs.DFSConfigKeys.DFS_NAMENODE_FULL_BLOCK_REPORT_LEASE_LENGTH_MS;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
 
 import org.apache.hadoop.thirdparty.com.google.common.base.Joiner;
 import java.util.function.Supplier;
@@ -31,8 +34,10 @@ import org.apache.hadoop.hdfs.MiniDFSCluster;
 import org.apache.hadoop.hdfs.protocol.DatanodeID;
 import org.apache.hadoop.hdfs.server.protocol.BlockReportContext;
 import org.apache.hadoop.test.GenericTestUtils;
-import org.junit.jupiter.api.*;
-
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.Timeout;
 import org.slf4j.event.Level;
 
 import java.io.IOException;
@@ -63,7 +68,7 @@ public class TestBlockReportRateLimiting {
   }
 
   @Test
-  @Timeout(value = 180000, unit = TimeUnit.MILLISECONDS)
+  @Timeout(value = 180)
   public void testRateLimitingDuringDataNodeStartup() throws Exception {
     Configuration conf = new Configuration();
     conf.setInt(DFS_NAMENODE_MAX_FULL_BLOCK_REPORT_LEASES, 1);
@@ -154,7 +159,7 @@ public class TestBlockReportRateLimiting {
       }, 25, 50000);
     }
     cluster.shutdown();
-    Assertions.assertEquals("", failure.get());
+    assertEquals("", failure.get());
   }
 
   /**
@@ -163,7 +168,7 @@ public class TestBlockReportRateLimiting {
    * expire, and the second datanode to send a full block report.
    */
   @Test
-  @Timeout(value = 180000, unit = TimeUnit.MILLISECONDS)
+  @Timeout(value = 180)
   public void testLeaseExpiration() throws Exception {
     Configuration conf = new Configuration();
     conf.setInt(DFS_NAMENODE_MAX_FULL_BLOCK_REPORT_LEASES, 1);
@@ -207,9 +212,9 @@ public class TestBlockReportRateLimiting {
       BlockManagerFaultInjector.instance = injector;
       cluster.set(new MiniDFSCluster.Builder(conf).numDataNodes(2).build());
       cluster.get().waitActive();
-      Assertions.assertNotNull(cluster.get().stopDataNode(datanodeToStop.get()));
+      assertNotNull(cluster.get().stopDataNode(datanodeToStop.get()));
       gotFbrSem.acquire();
-      Assertions.assertNull(failure.get());
+      assertNull(failure.get());
     } finally {
       if (cluster.get() != null) {
         cluster.get().shutdown();

@@ -41,7 +41,6 @@ import org.apache.hadoop.util.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.slf4j.event.Level;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 
 import java.io.IOException;
@@ -55,7 +54,9 @@ import java.util.Stack;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.fail;
 
 /**
  * Base class for test striped file write operation.
@@ -245,7 +246,7 @@ public class TestDFSStripedOutputStreamWithFailureBase {
         final String err = "failed, dn=" + dn + ", length=" + length
             + StringUtils.stringifyException(e);
         LOG.error(err);
-        Assertions.fail(err);
+        fail(err);
       } finally {
         tearDown();
       }
@@ -389,15 +390,15 @@ public class TestDFSStripedOutputStreamWithFailureBase {
       }
 
       if (datanodes != null) {
-        Assertions.assertEquals(1, datanodes.length);
-        Assertions.assertNotNull(datanodes[0]);
+        assertEquals(1, datanodes.length);
+        assertNotNull(datanodes[0]);
         return datanodes[0];
       }
 
       try {
         Thread.sleep(100);
       } catch (InterruptedException ie) {
-        Assertions.fail(StringUtils.stringifyException(ie));
+        fail(StringUtils.stringifyException(ie));
         return null;
       }
     }

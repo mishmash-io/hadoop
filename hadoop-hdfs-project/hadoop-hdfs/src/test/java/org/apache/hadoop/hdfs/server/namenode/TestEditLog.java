@@ -23,7 +23,11 @@ import static org.apache.hadoop.fs.permission.FsAction.*;
 import static org.apache.hadoop.hdfs.server.namenode.AclTestHelpers.*;
 import static org.apache.hadoop.test.MetricsAsserts.assertCounter;
 import static org.apache.hadoop.test.MetricsAsserts.getMetrics;
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.fail;
 
 import java.io.BufferedInputStream;
 import java.io.ByteArrayInputStream;
@@ -88,9 +92,12 @@ import org.apache.hadoop.util.ExitUtil.ExitException;
 import org.apache.hadoop.util.Lists;
 import org.apache.hadoop.util.StringUtils;
 import org.apache.hadoop.util.Time;
-import org.apache.logging.log4j.core.LogEvent;
+import org.apache.hadoop.util.concurrent.SubjectInheritingThread;
+import org.apache.log4j.AppenderSkeleton;
+import org.apache.log4j.LogManager;
+import org.apache.log4j.spi.LoggingEvent;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.ParameterizedClass;
 import org.junit.jupiter.params.provider.MethodSource;
 import org.mockito.Mockito;
 import org.slf4j.event.Level;
@@ -105,6 +112,8 @@ import org.slf4j.LoggerFactory;
 /**
  * This class tests the creation and validation of a checkpoint.
  */
+@MethodSource("data")
+@ParameterizedClass
 public class TestEditLog {
 
   static {
@@ -495,7 +504,7 @@ public class TestEditLog {
       for (int i = 0; i < NUM_THREADS; i++) {
         Transactions trans =
           new Transactions(namesystem, NUM_TRANSACTIONS, i*NUM_TRANSACTIONS);
-        threadId[i] = new Thread(trans, "TransactionThread-" + i);
+        threadId[i] = new SubjectInheritingThread(trans, "TransactionThread-" + i);
         threadId[i].start();
       }
   
@@ -537,10 +546,11 @@ public class TestEditLog {
         int numLeases = namesystem.leaseManager.countLease();
         System.out.println("Number of outstanding leases " + numLeases);
         assertEquals(0, numLeases);
-        assertTrue(numEdits == expectedTxns,
-                   "Verification for " + editFile + " failed. " +
-                   "Expected " + expectedTxns + " transactions. "+
-                   "Found " + numEdits + " transactions.");
+        assertTrue(numEdits == expectedTxns, "Verification for "
+            + editFile + " failed. " +
+            "Expected " + expectedTxns
+            + " transactions. " +
+            "Found " + numEdits + " transactions.");
   
       }
     } finally {
@@ -611,24 +621,29 @@ public class TestEditLog {
       FSImage fsimage = namesystem.getFSImage();
       final FSEditLog editLog = fsimage.getEditLog();
 
-      assertEquals(1, editLog.getSyncTxId(), "should start with only the BEGIN_LOG_SEGMENT txn synced");
+      assertEquals(1, editLog.getSyncTxId(),
+          "should start with only the BEGIN_LOG_SEGMENT txn synced");
       
       // Log an edit from thread A
       doLogEdit(threadA, editLog, "thread-a 1");
-      assertEquals(1, editLog.getSyncTxId(), "logging edit without syncing should do not affect txid");
+      assertEquals(1, editLog.getSyncTxId(),
+          "logging edit without syncing should do not affect txid");
 
       // Log an edit from thread B
       doLogEdit(threadB, editLog, "thread-b 1");
-      assertEquals(1, editLog.getSyncTxId(), "logging edit without syncing should do not affect txid");
+      assertEquals(1, editLog.getSyncTxId(),
+          "logging edit without syncing should do not affect txid");
 
       // Now ask to sync edit from B, which should sync both edits.
       doCallLogSync(threadB, editLog);
-      assertEquals(3, editLog.getSyncTxId(), "logSync from second thread should bump txid up to 3");
+      assertEquals(3, editLog.getSyncTxId(),
+          "logSync from second thread should bump txid up to 3");
 
       // Now ask to sync edit from A, which was already batched in - thus
       // it should increment the batch count metric
       doCallLogSync(threadA, editLog);
-      assertEquals(3, editLog.getSyncTxId(), "logSync from first thread shouldn't change txid");
+      assertEquals(3, editLog.getSyncTxId(),
+          "logSync from first thread shouldn't change txid");
 
       //Should have incremented the batch count exactly once
       assertCounter("TransactionsBatchedInSync", 1L, 
@@ -674,12 +689,14 @@ public class TestEditLog {
       doLogEdit(threadA, editLog, "thread-a 1");
       // async log is doing batched syncs in background.  logSync just ensures
       // the edit is durable, so the txid may increase prior to sync
-      if (!async) {
-        assertEquals(1, editLog.getSyncTxId(), "logging edit without syncing should do not affect txid");
+      if (!useAsyncEditLog) {
+        assertEquals(1, editLog.getSyncTxId(),
+            "logging edit without syncing should do not affect txid");
       }
       // logSyncAll in Thread B
       doCallLogSyncAll(threadB, editLog);
-      assertEquals(2, editLog.getSyncTxId(), "logSyncAll should sync thread A's transaction");
+      assertEquals(2, editLog.getSyncTxId(),
+          "logSyncAll should sync thread A's transaction");
 
       // Close edit log
       editLog.close();
@@ -739,7 +756,8 @@ public class TestEditLog {
     } catch (IOException e) {
       // expected
       assertNotNull(e.getCause(), "Cause of exception should be ChecksumException");
-      assertEquals(ChecksumException.class, e.getCause().getClass(), "Cause of exception should be ChecksumException");
+      assertEquals(ChecksumException.class, e.getCause().getClass(),
+          "Cause of exception should be ChecksumException");
     }
   }
 
@@ -816,11 +834,11 @@ public class TestEditLog {
         // We should see the file as in-progress
         File editsFile = new File(currentDir,
             NNStorage.getInProgressEditsFileName(1));
-        assertTrue(editsFile.exists(), "Edits file " + editsFile + " should exist");        
-        
+      assertTrue(editsFile.exists(), "Edits file " + editsFile + " should exist");
+
         File imageFile = FSImageTestUtil.findNewestImageFile(
             currentDir.getAbsolutePath());
-        assertNotNull(imageFile, "No image found in " + nameDir);
+      assertNotNull(imageFile, "No image found in " + nameDir);
         assertEquals(NNStorage.getImageFileName(0), imageFile.getName());
         // Try to start a new cluster
         LOG.info("\n===========================================\n" +
@@ -848,9 +866,9 @@ public class TestEditLog {
         }
         imageFile = FSImageTestUtil.findNewestImageFile(
             currentDir.getAbsolutePath());
-        assertNotNull(imageFile, "No image found in " + nameDir);
-        assertEquals(NNStorage.getImageFileName(expectedTxId),
-                     imageFile.getName());
+      assertNotNull(imageFile, "No image found in " + nameDir);
+      assertEquals(NNStorage.getImageFileName(expectedTxId),
+          imageFile.getName());
         
         // Started successfully. Shut it down and make sure it can restart.
         cluster.shutdown();    
@@ -1139,8 +1157,8 @@ public class TestEditLog {
         "[1,100]|[201,300]|[301,400]"); // nothing starting at 101
     log = getFSEditLog(storage, async);
     log.initJournalsForWrite();
-    assertEquals("[[1,100], [101,200], [201,300], [301,400]]" +
-            " CommittedTxId: 400", log.getEditLogManifest(1).toString());
+    assertEquals("[[1,100], [101,200], [201,300], [301,400]]" + " CommittedTxId: 400",
+        log.getEditLogManifest(1).toString());
     
     // Case where one directory has an earlier finalized log, followed
     // by a gap. The returned manifest should start after the gap.
@@ -1149,8 +1167,7 @@ public class TestEditLog {
         "[301,400]|[401,500]");
     log = getFSEditLog(storage, async);
     log.initJournalsForWrite();
-    assertEquals("[[301,400], [401,500]] CommittedTxId: 500",
-        log.getEditLogManifest(1).toString());
+    assertEquals("[[301,400], [401,500]] CommittedTxId: 500", log.getEditLogManifest(1).toString());
     
     // Case where different directories have different length logs
     // starting at the same txid - should pick the longer one
@@ -1374,7 +1391,7 @@ public class TestEditLog {
 
     editlog.close();
     storage.close();
-    assertEquals(TXNS_PER_ROLL*11, totaltxnread);    
+    assertEquals(TXNS_PER_ROLL * 11, totaltxnread);
   }
 
   /** 
