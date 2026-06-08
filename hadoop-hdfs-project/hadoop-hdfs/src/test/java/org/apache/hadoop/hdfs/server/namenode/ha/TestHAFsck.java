@@ -64,10 +64,8 @@ public class TestHAFsck {
   /**
    * Test that fsck still works with HA enabled.
    */
-  @MethodSource("data")
-  @ParameterizedTest(name = "ProxyProvider: {0}")
-  public void testHaFsck(String proxyProvider) throws Exception {
-    initTestHAFsck(proxyProvider);
+  @Test
+  public void testHaFsck() throws Exception {
     Configuration conf = new Configuration();
     
     // need some HTTP ports
@@ -124,9 +122,5 @@ public class TestHAFsck {
     assertEquals(0, errCode);
     assertTrue(result.contains("/test1"));
     assertTrue(result.contains("/test2"));
-  }
-
-  public void initTestHAFsck(String proxyProvider) {
-    this.proxyProvider = proxyProvider;
   }
 }

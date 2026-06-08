@@ -35,6 +35,7 @@ import org.eclipse.jetty.server.ServerConnector;
 import org.eclipse.jetty.server.handler.StatisticsHandler;
 import org.eclipse.jetty.util.ajax.JSON;
 import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;

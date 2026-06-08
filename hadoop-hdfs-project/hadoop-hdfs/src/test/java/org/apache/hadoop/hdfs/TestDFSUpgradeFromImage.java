@@ -50,7 +50,6 @@ import org.apache.hadoop.hdfs.server.namenode.IllegalReservedPathException;
 import org.apache.hadoop.test.GenericTestUtils;
 import org.apache.hadoop.test.LogCapturingAppender;
 import org.apache.hadoop.util.StringUtils;
-import org.apache.log4j.Logger;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -340,8 +339,11 @@ public class TestDFSUpgradeFromImage {
       if (!msg.contains("Failed to load FSImage file")) {
         throw ioe;
       }
-      int md5failures = appender.countExceptionsWithMessage(
-          " is corrupt with MD5 checksum of ");
+      long md5failures = thrown.stream()
+          .filter(
+            t -> t.getMessage() != null
+                   && t.getMessage().contains(" is corrupt with MD5 checksum of "))
+          .count();
       assertEquals(1, md5failures, "Upgrade did not fail with bad MD5");
     }
   }

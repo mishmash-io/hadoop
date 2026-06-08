@@ -19,6 +19,7 @@
 package org.apache.hadoop.security.shell;
 
 import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.security.UserGroupInformation;
 
 import org.junit.jupiter.api.*;
 import org.slf4j.Logger;

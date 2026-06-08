@@ -42,10 +42,10 @@ import static org.junit.jupiter.api.Assertions.fail;
 @MethodSource("policies")
 public class TestLowRedundancyBlockQueues {
 
-  private ErasureCodingPolicy ecPolicy;
+  private final ErasureCodingPolicy ecPolicy;
   private static AtomicLong mockINodeId = new AtomicLong(0);
 
-  public void initTestLowRedundancyBlockQueues(ErasureCodingPolicy policy) {
+  public TestLowRedundancyBlockQueues(ErasureCodingPolicy policy) {
     ecPolicy = policy;
   }
 
@@ -104,10 +104,8 @@ public class TestLowRedundancyBlockQueues {
    * {@link LowRedundancyBlocks#chooseLowRedundancyBlocks(int, boolean)}.
    * @throws Exception
    */
-  @MethodSource("policies")
-  @ParameterizedTest(name = "{index}: {0}")
-  public void testDeletedBlocks(ErasureCodingPolicy policy) throws Exception {
-    initTestLowRedundancyBlockQueues(policy);
+  @Test
+  public void testDeletedBlocks() throws Exception {
     int numBlocks = 5;
     LowRedundancyBlocks queues = new LowRedundancyBlocks();
     // create 5 blockinfos. The first one is corrupt.
@@ -136,10 +134,8 @@ public class TestLowRedundancyBlockQueues {
     assertEquals(1, blocks.get(2).get(0).getBlockId());
   }
 
-  @MethodSource("policies")
-  @ParameterizedTest(name = "{index}: {0}")
-  public void testQueuePositionCanBeReset(ErasureCodingPolicy policy) throws Throwable {
-    initTestLowRedundancyBlockQueues(policy);
+  @Test
+  public void testQueuePositionCanBeReset() throws Throwable {
     LowRedundancyBlocks queues = new LowRedundancyBlocks();
     for (int i=0; i< 4; i++) {
       BlockInfo block = genBlockInfo(i);
@@ -169,10 +165,8 @@ public class TestLowRedundancyBlockQueues {
    * into different queues.
    * @throws Throwable if something goes wrong
    */
-  @MethodSource("policies")
-  @ParameterizedTest(name = "{index}: {0}")
-  public void testBlockPriorities(ErasureCodingPolicy policy) throws Throwable {
-    initTestLowRedundancyBlockQueues(policy);
+  @Test
+  public void testBlockPriorities() throws Throwable {
     LowRedundancyBlocks queues = new LowRedundancyBlocks();
     BlockInfo block1 = genBlockInfo(1);
     BlockInfo block2 = genBlockInfo(2);
@@ -233,10 +227,8 @@ public class TestLowRedundancyBlockQueues {
     verifyBlockStats(queues, 3, 3, 2, 0, 0, 0, 0, 2);
   }
 
-  @MethodSource("policies")
-  @ParameterizedTest(name = "{index}: {0}")
-  public void testRemoveWithWrongPriority(ErasureCodingPolicy policy) {
-    initTestLowRedundancyBlockQueues(policy);
+  @Test
+  public void testRemoveWithWrongPriority() {
     final LowRedundancyBlocks queues = new LowRedundancyBlocks();
     final BlockInfo corruptBlock = genBlockInfo(1);
     assertAdded(queues, corruptBlock, 0, 0, 3);
@@ -250,10 +242,8 @@ public class TestLowRedundancyBlockQueues {
     verifyBlockStats(queues, 0, 0, 0, 0, 0, 0, 0, 0);
   }
 
-  @MethodSource("policies")
-  @ParameterizedTest(name = "{index}: {0}")
-  public void testStripedBlockPriorities(ErasureCodingPolicy policy) throws Throwable {
-    initTestLowRedundancyBlockQueues(policy);
+  @Test
+  public void testStripedBlockPriorities() throws Throwable {
     int dataBlkNum = ecPolicy.getNumDataUnits();
     int parityBlkNUm = ecPolicy.getNumParityUnits();
     doTestStripedBlockPriorities(1, parityBlkNUm);
@@ -335,10 +325,8 @@ public class TestLowRedundancyBlockQueues {
     fail("Block " + block + " not found in level " + level);
   }
 
-  @MethodSource("policies")
-  @ParameterizedTest(name = "{index}: {0}")
-  public void testRemoveBlockInManyQueues(ErasureCodingPolicy policy) {
-    initTestLowRedundancyBlockQueues(policy);
+  @Test
+  public void testRemoveBlockInManyQueues() {
     LowRedundancyBlocks neededReconstruction = new LowRedundancyBlocks();
     BlockInfo block = new BlockInfoContiguous(new Block(), (short)1024);
     neededReconstruction.add(block, 2, 0, 1, 3);

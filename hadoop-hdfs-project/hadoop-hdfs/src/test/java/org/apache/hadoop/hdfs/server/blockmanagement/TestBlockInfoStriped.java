@@ -29,7 +29,7 @@ import org.apache.hadoop.hdfs.protocol.ExtendedBlock;
 import org.apache.hadoop.hdfs.tools.DFSck;
 import org.apache.hadoop.test.GenericTestUtils;
 import org.apache.hadoop.test.Whitebox;
-import org.apache.hadoop.util.ToolRunner;
+import org.apache.hadoop.util.cli.ToolRunner;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.Timeout;
 import org.junit.jupiter.params.ParameterizedClass;
@@ -42,7 +42,6 @@ import java.io.PrintStream;
 import java.io.ByteArrayOutputStream;
 import java.nio.ByteBuffer;
 import java.util.Collection;
-import java.util.concurrent.TimeUnit;
 
 import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -61,11 +60,11 @@ import static org.junit.jupiter.api.Assertions.fail;
 public class TestBlockInfoStriped {
   private static final long BASE_ID = -1600;
   private final Block baseBlock = new Block(BASE_ID);
-  private ErasureCodingPolicy testECPolicy;
-  private int totalBlocks;
-  private BlockInfoStriped info;
+  private final ErasureCodingPolicy testECPolicy;
+  private final int totalBlocks;
+  private final BlockInfoStriped info;
 
-  public void initTestBlockInfoStriped(ErasureCodingPolicy policy) {
+  public TestBlockInfoStriped(ErasureCodingPolicy policy) {
     testECPolicy = policy;
     totalBlocks = testECPolicy.getNumDataUnits()
         + testECPolicy.getNumParityUnits();
@@ -87,10 +86,8 @@ public class TestBlockInfoStriped {
   /**
    * Test adding storage and reported block.
    */
-  @MethodSource("policies")
-  @ParameterizedTest(name = "{index}: {0}")
-  public void testAddStorage(ErasureCodingPolicy policy) {
-    initTestBlockInfoStriped(policy);
+  @Test
+  public void testAddStorage() {
     // first add NUM_DATA_BLOCKS + NUM_PARITY_BLOCKS storages, i.e., a complete
     // group of blocks/storages
     DatanodeStorageInfo[] storageInfos = DFSTestUtil.createDatanodeStorageInfos(
@@ -151,10 +148,8 @@ public class TestBlockInfoStriped {
     }
   }
 
-  @MethodSource("policies")
-  @ParameterizedTest(name = "{index}: {0}")
-  public void testRemoveStorage(ErasureCodingPolicy policy) {
-    initTestBlockInfoStriped(policy);
+  @Test
+  public void testRemoveStorage() {
     // first add TOTAL_NUM_BLOCKS into the BlockInfoStriped
     DatanodeStorageInfo[] storages = DFSTestUtil.createDatanodeStorageInfos(
         totalBlocks);
@@ -227,10 +222,8 @@ public class TestBlockInfoStriped {
     }
   }
 
-  @MethodSource("policies")
-  @ParameterizedTest(name = "{index}: {0}")
-  public void testGetBlockInfo(ErasureCodingPolicy policy) throws IllegalArgumentException, Exception {
-    initTestBlockInfoStriped(policy);
+  @Test
+  public void testGetBlockInfo() throws IllegalArgumentException, Exception {
     int dataBlocks = testECPolicy.getNumDataUnits();
     int parityBlocks = testECPolicy.getNumParityUnits();
     int totalSize = dataBlocks + parityBlocks;
@@ -263,10 +256,8 @@ public class TestBlockInfoStriped {
     }
   }
 
-  @MethodSource("policies")
-  @ParameterizedTest(name = "{index}: {0}")
-  public void testWrite(ErasureCodingPolicy policy) {
-    initTestBlockInfoStriped(policy);
+  @Test
+  public void testWrite() {
     long blkID = 1;
     long numBytes = 1;
     long generationStamp = 1;

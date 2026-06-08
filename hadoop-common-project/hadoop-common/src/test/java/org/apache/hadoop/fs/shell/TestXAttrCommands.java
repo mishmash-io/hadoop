@@ -25,7 +25,7 @@ import java.io.IOException;
 import java.io.PrintStream;
 
 import org.apache.hadoop.conf.Configuration;
-import org.apache.hadoop.fs.FsShell;
+import org.apache.hadoop.fs.shell.FsShell;
 import org.apache.hadoop.util.cli.ToolRunner;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;

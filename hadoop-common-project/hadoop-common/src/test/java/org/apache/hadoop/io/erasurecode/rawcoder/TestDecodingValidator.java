@@ -91,32 +91,7 @@ public class TestDecodingValidator extends TestRawCoderBase {
     testValidate(false);
   }
 
-  @Override
-  public void testCodingWithErasingTooMany() {
-    // Overriding to drop the Test annotation, replacing it with a parameterized test
-  }
-
-  @ParameterizedTest
-  @MethodSource("data")
-  public void testCodingWithErasingTooMany(
-          Class<? extends RawErasureCoderFactory> factoryClass, int numDataUnits,
-          int numParityUnits, int[] erasedDataIndexes, int[] erasedParityIndexes) {
-    init(factoryClass, numDataUnits, numParityUnits, erasedDataIndexes, erasedParityIndexes);
-    setup(factoryClass);
-    super.testCodingWithErasingTooMany();
-  }
-
-  @ParameterizedTest
-  @MethodSource("data")
-  public void testIdempotentReleases(
-          Class<? extends RawErasureCoderFactory> factoryClass, int numDataUnits,
-          int numParityUnits, int[] erasedDataIndexes, int[] erasedParityIndexes) {
-    init(factoryClass, numDataUnits, numParityUnits, erasedDataIndexes, erasedParityIndexes);
-    setup(factoryClass);
-    super.testIdempotentReleases();
-  }
-
-/**
+  /**
    * Test if the same validator can process variable width of data for
    * inputs and outputs.
    */

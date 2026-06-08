@@ -83,6 +83,9 @@ import org.apache.hadoop.util.StringUtils;
 import org.apache.hadoop.util.Time;
 import org.apache.hadoop.util.VersionInfo;
 import org.apache.hadoop.util.concurrent.SubjectInheritingThread;
+import org.apache.hadoop.util.cli.GenericOptionsParser;
+import org.apache.hadoop.util.cli.Tool;
+import org.apache.hadoop.util.cli.ToolRunner;
 import org.slf4j.event.Level;
 
 /**

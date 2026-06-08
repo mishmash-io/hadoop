@@ -66,7 +66,7 @@ import org.apache.hadoop.hdfs.server.federation.store.records.MountTable;
 import org.apache.hadoop.hdfs.tools.federation.RouterAdmin;
 import org.apache.hadoop.io.IOUtils;
 import org.apache.hadoop.test.LambdaTestUtils;
-import org.apache.hadoop.util.ToolRunner;
+import org.apache.hadoop.util.cli.ToolRunner;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;

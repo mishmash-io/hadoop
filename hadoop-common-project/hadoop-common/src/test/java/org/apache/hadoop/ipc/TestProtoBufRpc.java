@@ -47,7 +47,6 @@ import java.io.IOException;
 import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 
 import static org.apache.hadoop.test.MetricsAsserts.assertCounterGt;
@@ -160,7 +159,7 @@ public class TestProtoBufRpc extends TestRpcBase {
   }
 
   @SuppressWarnings("deprecation")
-  public void setUp(Boolean testWithLegacy, Boolean testWithLegacyFirst) throws IOException { // Setup server for both protocols
+  public void setUp() throws IOException { // Setup server for both protocols
     conf = new Configuration();
     conf.setInt(CommonConfigurationKeys.IPC_MAXIMUM_DATA_LENGTH, 1024);
     conf.setBoolean(CommonConfigurationKeys.IPC_SERVER_LOG_SLOW_RPC, true);
@@ -325,7 +324,6 @@ public class TestProtoBufRpc extends TestRpcBase {
     initTestProtoBufRpc(pTestWithLegacy, pTestWithLegacyFirst);
     //No test with legacy
     assumeFalse(testWithLegacy);
-    setUp(testWithLegacy, testWithLegacyFirst);
     TestRpcService client = getClient(addr, conf);
 
     try {
@@ -349,7 +347,6 @@ public class TestProtoBufRpc extends TestRpcBase {
     initTestProtoBufRpc(pTestWithLegacy, pTestWithLegacyFirst);
     //No test with legacy
     assumeFalse(testWithLegacy);
-    setUp(testWithLegacy, testWithLegacyFirst);
     TestRpcService2 client = getClient2();
     final String shortString = StringUtils.repeat("X", 4);
     // short message goes through
@@ -375,7 +372,6 @@ public class TestProtoBufRpc extends TestRpcBase {
     initTestProtoBufRpc(pTestWithLegacy, pTestWithLegacyFirst);
     //No test with legacy
     assumeFalse(testWithLegacy);
-    setUp(testWithLegacy, testWithLegacyFirst);
     server.setLogSlowRPCThresholdTime(SLEEP_DURATION);
     TestRpcService2 client = getClient2();
     // make 10 K fast calls
@@ -414,7 +410,6 @@ public class TestProtoBufRpc extends TestRpcBase {
     initTestProtoBufRpc(pTestWithLegacy, pTestWithLegacyFirst);
     //No test with legacy
     assumeFalse(testWithLegacy);
-    setUp(testWithLegacy, testWithLegacyFirst);
     // disable slow RPC  logging
     server.setLogSlowRPC(false);
     TestRpcService2 client = getClient2();

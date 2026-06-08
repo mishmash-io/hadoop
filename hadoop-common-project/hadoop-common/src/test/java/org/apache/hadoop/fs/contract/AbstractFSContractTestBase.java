@@ -55,6 +55,11 @@ public abstract class AbstractFSContractTestBase extends Assertions
   public static final int TEST_FILE_LEN = 1024;
 
   /**
+   * standard test timeout: {@value}.
+   */
+  public static final int DEFAULT_TEST_TIMEOUT = 180 * 1000;
+
+  /**
    * The FS contract used for these tests.
    */
   private AbstractFSContract contract;
@@ -83,7 +88,7 @@ public abstract class AbstractFSContractTestBase extends Assertions
   }
 
   protected String getMethodName() {
-    return methodName;
+    return methodName.getMethodName();
   }
 
   /**
@@ -166,7 +171,6 @@ public abstract class AbstractFSContractTestBase extends Assertions
 
   /**
    * Setup: create the contract then init it.
-   * @param info the test info
    * @throws Exception on any failure
    */
   @BeforeEach
@@ -235,7 +239,7 @@ public abstract class AbstractFSContractTestBase extends Assertions
    * @throws IOException IO problems
    */
   protected Path methodPath() throws IOException {
-    return path(getMethodName());
+    return path(methodName.getMethodName());
   }
 
   /**

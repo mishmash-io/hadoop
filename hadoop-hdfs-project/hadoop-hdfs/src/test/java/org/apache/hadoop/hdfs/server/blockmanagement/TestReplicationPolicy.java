@@ -53,7 +53,6 @@ import org.apache.hadoop.hdfs.DFSConfigKeys;
 import org.apache.hadoop.hdfs.DFSTestUtil;
 import org.apache.hadoop.hdfs.DFSUtil;
 import org.apache.hadoop.hdfs.HdfsConfiguration;
-import org.apache.hadoop.test.LogCapturingAppender;
 import org.apache.hadoop.hdfs.MiniDFSCluster;
 import org.apache.hadoop.hdfs.TestBlockStoragePolicy;
 import org.apache.hadoop.hdfs.protocol.Block;
@@ -73,10 +72,10 @@ import org.apache.hadoop.hdfs.server.namenode.TestINodeFile;
 import org.apache.hadoop.hdfs.server.protocol.DatanodeStorage;
 import org.apache.hadoop.hdfs.util.RwLockMode;
 import org.apache.hadoop.net.Node;
+import org.apache.hadoop.test.LogCapturingAppender;
 import org.apache.hadoop.util.ReflectionUtils;
-import org.apache.log4j.Level;
-import org.apache.log4j.Logger;
-import org.apache.log4j.spi.LoggingEvent;
+import org.apache.logging.log4j.Level;
+import org.apache.logging.log4j.core.LogEvent;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.Timeout;
 import org.junit.jupiter.params.ParameterizedClass;
@@ -509,7 +508,7 @@ public class TestReplicationPolicy extends BaseReplicationPolicyTest {
           2* HdfsServerConstants.MIN_BLOCKS_FOR_WRITE*BLOCK_SIZE, 0L,
           (HdfsServerConstants.MIN_BLOCKS_FOR_WRITE-1)*BLOCK_SIZE, 0L, 0L, 0L, 0, 0);
     }
-
+    
     final Deque<LogEvent> log = new ConcurrentLinkedDeque<>();
     LogCapturingAppender.collectEvents(null, log);
 
@@ -519,15 +518,14 @@ public class TestReplicationPolicy extends BaseReplicationPolicyTest {
       DatanodeStorageInfo[] targets = chooseTarget(dataNodes.length);
       assertEquals(targets.length, dataNodes.length - 2);
 
-      final List<LoggingEvent> log = appender.getLog();
       assertNotNull(log);
       assertFalse(log.size() == 0);
-      final LoggingEvent lastLogEntry = log.get(log.size() - 1);
+      final LogEvent lastLogEntry = log.peekLast();
     
-      assertTrue(Level.WARN.isGreaterOrEqual(lastLogEntry.getLevel()));
+      assertTrue(Level.WARN.isMoreSpecificThan(lastLogEntry.getLevel()));
       // Suppose to place replicas on each node but two data nodes are not
       // available for placing replica, so here we expect a short of 2
-      assertTrue(((String)lastLogEntry.getMessage()).contains("in need of 2"));
+      assertTrue((lastLogEntry.getMessage().getFormattedMessage()).contains("in need of 2"));
 
       resetHeartbeatForStorages();
     } finally {
@@ -1740,8 +1738,10 @@ public class TestReplicationPolicy extends BaseReplicationPolicyTest {
           BLOCK_SIZE, TestBlockStoragePolicy.POLICY_SUITE.getPolicy(
               HdfsConstants.StoragePolicy.COLD.value()), null);
       assertEquals(0, targets.length);
-      assertNotEquals(0,
-          appender.countLinesWithMessage("NO_REQUIRED_STORAGE_TYPE"));
+      long numLines = log.stream()
+          .filter(m -> m != null && m.contains("NO_REQUIRED_STORAGE_TYPE"))
+          .count();
+      assertNotEquals(0, numLines);
     } finally {
       LogCapturingAppender.stop(null);
     }
@@ -1776,8 +1776,10 @@ public class TestReplicationPolicy extends BaseReplicationPolicyTest {
       DatanodeStorageInfo[] targets = chooseTarget(1, dataNodes[1],
           new ArrayList<DatanodeStorageInfo>(), null);
       assertEquals(0, targets.length);
-      assertNotEquals(0,
-          appender.countLinesWithMessage("NOT_ENOUGH_STORAGE_SPACE"));
+      long numLines = log.stream()
+          .filter(m -> m != null && m.contains("NOT_ENOUGH_STORAGE_SPACE"))
+          .count();
+      assertNotEquals(0, numLines);
 
       resetHeartbeatForStorages();
     } finally {

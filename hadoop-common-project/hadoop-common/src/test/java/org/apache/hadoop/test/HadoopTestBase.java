@@ -60,10 +60,7 @@ public abstract class HadoopTestBase extends Assertions {
    * {@link #PROPERTY_TEST_DEFAULT_TIMEOUT}, falling back to
    * the value in {@link #TEST_DEFAULT_TIMEOUT_VALUE} if the
    * property is not defined.
-   *
-   * Deprecated - use a Timeout annotation instead
-   *
-   * @return the recommended timeout for tests, in millisec
+   * @return the recommended timeout for tests
    */
   protected int retrieveTestTimeout() {
     String propval = System.getProperty(PROPERTY_TEST_DEFAULT_TIMEOUT,
@@ -91,7 +88,7 @@ public abstract class HadoopTestBase extends Assertions {
    * @return the name of the method.
    */
   protected String getMethodName() {
-    return methodName;
+    return methodName.getMethodName();
   }
 
   /**
@@ -104,8 +101,6 @@ public abstract class HadoopTestBase extends Assertions {
 
   /**
    * Before each method, the thread is renamed to match the method name.
-   *
-   * @param info the test info
    */
   @BeforeEach
   public void nameThreadToMethod() {

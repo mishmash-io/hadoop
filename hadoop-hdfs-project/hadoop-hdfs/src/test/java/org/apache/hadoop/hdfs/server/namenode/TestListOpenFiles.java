@@ -56,7 +56,7 @@ import org.apache.hadoop.hdfs.DFSConfigKeys;
 import org.apache.hadoop.hdfs.HdfsConfiguration;
 import org.apache.hadoop.hdfs.MiniDFSCluster;
 import org.apache.hadoop.hdfs.tools.DFSAdmin;
-import org.apache.hadoop.util.ToolRunner;
+import org.apache.hadoop.util.cli.ToolRunner;
 import org.apache.hadoop.util.concurrent.SubjectInheritingThread;
 import org.apache.hadoop.util.ChunkedArrayList;
 import org.junit.jupiter.api.AfterEach;

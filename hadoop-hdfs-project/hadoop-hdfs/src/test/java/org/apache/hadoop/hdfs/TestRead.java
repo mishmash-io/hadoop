@@ -36,7 +36,7 @@ import org.apache.hadoop.hdfs.server.datanode.fsdataset.FsDatasetSpi;
 import org.apache.hadoop.io.IOUtils;
 import org.apache.hadoop.test.GenericTestUtils;
 import org.apache.hadoop.util.concurrent.SubjectInheritingThread;
-import org.apache.log4j.Level;
+import org.apache.logging.log4j.Level;
 import org.junit.jupiter.api.Assertions;
 
 import org.apache.hadoop.conf.Configuration;

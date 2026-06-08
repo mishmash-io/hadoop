@@ -20,6 +20,7 @@ package org.apache.hadoop.hdfs.server.blockmanagement;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;
@@ -66,7 +67,6 @@ public class TestReplicationPolicyConsiderLoad
   }
 
   private final double EPSILON = 0.0001;
-
   /**
    * Tests that chooseTarget with considerLoad set to true correctly calculates
    * load with decommissioned nodes.

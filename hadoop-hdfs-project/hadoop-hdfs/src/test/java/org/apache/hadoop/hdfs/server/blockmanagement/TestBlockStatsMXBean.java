@@ -294,7 +294,7 @@ public class TestBlockStatsMXBean {
     URL baseUrl = new URL(cluster.getHttpUri(0));
     String result = readOutput(new URL(baseUrl, "/jmx"));
 
-    Map<String, Object> stat = (Map<String, Object>) JSON.parse(result);
+    Map<String, Object> stat = (Map<String, Object>) new JSON().fromJSON(result);
     Object[] beans = (Object[]) stat.get("beans");
     Map<String, Object> blockStats = null;
     for (Object bean : beans) {

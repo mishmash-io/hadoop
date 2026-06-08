@@ -39,6 +39,6 @@ public class TestOptions {
      Object[] opts = new Object[]{1, "hi", true, "bye", 'x'};
      assertEquals(1, Options.getOption(Integer.class, opts).intValue());
      assertEquals("hi", Options.getOption(String.class, opts));
-     assertTrue(Options.getOption(Boolean.class, opts).booleanValue());
+     assertEquals(true, Options.getOption(Boolean.class, opts).booleanValue());
   }  
 }

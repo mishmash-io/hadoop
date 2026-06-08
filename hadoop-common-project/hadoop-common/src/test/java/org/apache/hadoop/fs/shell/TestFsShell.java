@@ -26,6 +26,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
+import org.mockito.ArgumentMatchers;
 
 public class TestFsShell {
 
@@ -81,7 +82,7 @@ public class TestFsShell {
   public void testExceptionNullMessage() throws Exception {
     final String cmdName = "-cmdExNullMsg";
     final Command cmd = mock(Command.class);
-    when(cmd.run(any())).thenThrow(
+    when(cmd.run(ArgumentMatchers.<String>any())).thenThrow(
         new IllegalArgumentException());
     when(cmd.getUsage()).thenReturn(cmdName);
 

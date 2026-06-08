@@ -28,6 +28,7 @@ import org.apache.hadoop.metrics2.impl.MetricsSystemImpl;
 import org.junit.jupiter.api.Test;
 
 import java.util.Set;
+import java.util.TreeSet;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 

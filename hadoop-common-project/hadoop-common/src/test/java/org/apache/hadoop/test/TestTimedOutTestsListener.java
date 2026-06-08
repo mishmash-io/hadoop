@@ -17,14 +17,9 @@
  */
 package org.apache.hadoop.test;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertTrue;
-
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.util.concurrent.CyclicBarrier;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.TimeoutException;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 
@@ -168,9 +163,7 @@ public class TestTimedOutTestsListener {
     RuntimeException failure =
         new RuntimeException(TimedOutTestsListener.TEST_TIMED_OUT_PREFIX);
     StringWriter writer = new StringWriter();
-    new TimedOutTestsListener(new PrintWriter(writer))
-      .executionFinished(null,
-         TestExecutionResult.failed(new TimeoutException()));
+    new TimedOutTestsListener(new PrintWriter(writer)).testFailure(failure);
     String out = writer.toString();
     
     assertTrue(out.contains("THREAD DUMP"));

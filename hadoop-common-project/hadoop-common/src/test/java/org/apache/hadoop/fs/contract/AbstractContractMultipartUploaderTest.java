@@ -87,8 +87,8 @@ public abstract class AbstractContractMultipartUploaderTest extends
 
   @BeforeEach
   @Override
-  public void setup(TestInfo info) throws Exception {
-    super.setup(info);
+  public void setup() throws Exception {
+    super.setup();
 
     final FileSystem fs = getFileSystem();
     Path testPath = getContract().getTestPath();
@@ -99,7 +99,6 @@ public abstract class AbstractContractMultipartUploaderTest extends
     uploader1 = fs.createMultipartUploader(testPath).build();
   }
 
-  @AfterEach
   @Override
   @AfterEach
   public void teardown() throws Exception {

@@ -43,8 +43,10 @@ import org.apache.hadoop.hdfs.HdfsConfiguration;
 import org.apache.hadoop.hdfs.MiniDFSCluster;
 import org.apache.hadoop.metrics2.util.MBeans;
 import org.apache.hadoop.test.GenericTestUtils;
-import org.apache.log4j.Appender;
-import org.apache.log4j.AsyncAppender;
+import org.apache.hadoop.test.LogCapturingAppender;
+import org.apache.logging.log4j.core.LoggerContext;
+import org.apache.logging.log4j.core.async.AsyncLogger;
+import org.apache.logging.log4j.core.async.AsyncLoggerConfig;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
 

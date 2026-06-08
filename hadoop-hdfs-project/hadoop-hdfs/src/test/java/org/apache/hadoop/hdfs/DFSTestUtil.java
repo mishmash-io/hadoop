@@ -190,6 +190,7 @@ import org.apache.hadoop.test.Whitebox;
 import org.apache.hadoop.util.StringUtils;
 import org.apache.hadoop.util.Time;
 import org.apache.hadoop.util.VersionInfo;
+import org.apache.hadoop.util.cli.Tool;
 import org.apache.hadoop.util.cli.ToolRunner;
 
 import org.apache.hadoop.classification.VisibleForTesting;

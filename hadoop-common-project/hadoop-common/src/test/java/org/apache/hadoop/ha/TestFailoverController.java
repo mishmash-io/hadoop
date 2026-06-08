@@ -33,10 +33,7 @@ import org.apache.hadoop.ha.TestNodeFencer.AlwaysSucceedFencer;
 import org.apache.hadoop.ipc.HealthCheckFailedException;
 import org.apache.hadoop.ha.TestNodeFencer.AlwaysFailFencer;
 import static org.apache.hadoop.ha.TestNodeFencer.setupFencer;
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertSame;
-import static org.junit.jupiter.api.Assertions.assertTrue;
-import static org.junit.jupiter.api.Assertions.fail;
+import org.apache.hadoop.security.AccessControlException;
 
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;

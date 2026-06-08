@@ -62,7 +62,7 @@ import org.apache.hadoop.hdfs.tools.federation.RouterAdmin;
 import org.apache.hadoop.security.UserGroupInformation;
 import org.apache.hadoop.test.GenericTestUtils;
 import org.apache.hadoop.test.Whitebox;
-import org.apache.hadoop.util.ToolRunner;
+import org.apache.hadoop.util.cli.ToolRunner;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;

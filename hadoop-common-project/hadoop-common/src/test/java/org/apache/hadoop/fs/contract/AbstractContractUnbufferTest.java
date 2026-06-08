@@ -48,8 +48,8 @@ public abstract class AbstractContractUnbufferTest extends AbstractFSContractTes
 
   @BeforeEach
   @Override
-  public void setup(TestInfo info) throws Exception {
-    super.setup(info);
+  public void setup() throws Exception {
+    super.setup();
     skipIfUnsupported(SUPPORTS_UNBUFFER);
     file = path("unbufferFile");
     fileBytes = dataset(TEST_FILE_LEN, 0, 255);

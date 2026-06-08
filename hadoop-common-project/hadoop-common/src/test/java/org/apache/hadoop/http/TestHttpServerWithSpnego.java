@@ -33,6 +33,7 @@ import org.apache.hadoop.security.authentication.util.server.SignerSecretProvide
 import org.apache.hadoop.security.authentication.util.server.StringSignerSecretProviderCreator;
 import org.apache.hadoop.security.authorize.AccessControlList;
 import org.apache.hadoop.security.authorize.ProxyUsers;
+import org.apache.hadoop.security.http.AuthenticationFilterInitializer;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;

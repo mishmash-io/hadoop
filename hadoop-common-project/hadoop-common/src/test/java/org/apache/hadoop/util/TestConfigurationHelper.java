@@ -18,10 +18,12 @@
 
 package org.apache.hadoop.util;
 
+import java.util.Collection;
 import java.util.Set;
 
+import org.assertj.core.api.AbstractCollectionAssert;
 import org.assertj.core.api.Assertions;
-import org.assertj.core.api.IterableAssert;
+import org.assertj.core.api.ObjectAssert;
 import org.junit.jupiter.api.Test;
 
 import org.apache.hadoop.conf.Configuration;
@@ -67,12 +69,12 @@ public class TestConfigurationHelper extends AbstractHadoopTestBase {
    * @throws IllegalArgumentException if one of the entries was unknown and ignoreUnknown is false,
    * or there are two entries in the enum which differ only by case.
    */
-  private static <E extends Enum<E>> IterableAssert<E> assertEnumParse(
+private static <E extends Enum<E>> AbstractCollectionAssert<?, Collection<? extends E>, E, ObjectAssert<E>> assertEnumParse(
       final String valueString,
       final Class<E> enumClass,
       final boolean ignoreUnknown) {
     final Set<E> enumSet = parseEnumSet("key", valueString, enumClass, ignoreUnknown);
-    final IterableAssert<E> assertion = Assertions.assertThat(enumSet);
+    final AbstractCollectionAssert<?, Collection<? extends E>, E, ObjectAssert<E>> assertion = Assertions.assertThat(enumSet);
     return assertion.describedAs("parsed enum set '%s'", valueString);
   }
 

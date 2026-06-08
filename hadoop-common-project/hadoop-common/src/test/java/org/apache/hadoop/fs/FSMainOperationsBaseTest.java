@@ -36,8 +36,7 @@ import org.apache.hadoop.fs.permission.FsPermission;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.eclipse.jetty.util.log.Log;
-
+import org.slf4j.LoggerFactory;
 /**
  * <p>
  * A collection of tests for the {@link FileSystem}.
@@ -803,7 +802,7 @@ public abstract class FSMainOperationsBaseTest extends FileSystemTestHelper {
       rename(src, dst, false, false, false, Rename.NONE);
       fail("Should throw FileNotFoundException");
     } catch (IOException e) {
-      Log.getLog().info("XXX", e);
+      LoggerFactory.getLogger(FSMainOperationsBaseTest.class).info("XXX", e);
       assertTrue(unwrapException(e) instanceof FileNotFoundException);
     }
 

@@ -18,6 +18,8 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+import org.apache.hadoop.security.authentication.client.AuthenticatorTestCase.Scheme;
+import org.apache.hadoop.security.authentication.client.KerberosAuthenticator.KerberosConfiguration;
 import org.apache.hadoop.security.authentication.server.AuthenticationFilter;
 import org.apache.hadoop.security.authentication.util.KerberosUtil;
 import org.apache.hc.client5.http.SystemDefaultDnsResolver;
@@ -75,6 +77,9 @@ import java.security.PrivilegedExceptionAction;
 import java.util.EnumSet;
 import java.util.List;
 import java.util.Properties;
+
+import javax.security.auth.Subject;
+import javax.security.auth.login.LoginContext;
 
 public class AuthenticatorTestCase {
   private Server server;
@@ -306,15 +311,42 @@ public class AuthenticatorTestCase {
     }
   }
 
-  private void doHttpClientRequest(HttpClient httpClient, HttpUriRequest request) throws Exception {
-    HttpResponse response = null;
-    try {
-      response = httpClient.execute(request);
-      final int httpStatus = response.getStatusLine().getStatusCode();
-      assertEquals(HttpURLConnection.HTTP_OK, httpStatus);
-    } finally {
-      if (response != null) EntityUtils.consumeQuietly(response.getEntity());
-    }
+  private HttpClientContext getHttpClientContext() throws Exception {
+    HttpClientContext ctx = HttpClientContext.create();
+
+    Credentials useJaasCreds = new Credentials() {
+        public char[] getPassword() {
+          return null;
+        }
+        public Principal getUserPrincipal() {
+          return null;
+        }
+    };
+
+    BasicCredentialsProvider jaasCredentialProvider
+          = new BasicCredentialsProvider();
+    jaasCredentialProvider.setCredentials(new AuthScope(null, host, port, null, null), useJaasCreds);
+    // Set credential provider
+    ctx.setCredentialsProvider(jaasCredentialProvider);
+    ctx.setAuthSchemeRegistry(
+            s-> httpContext -> new Scheme());
+    // Configure Auth scheme preferences to include SPNEGO
+    ctx.setRequestConfig(
+            RequestConfig
+                .copy(ctx.getRequestConfigOrDefault())
+                .setAuthenticationEnabled(true)
+                .setTargetPreferredAuthSchemes(List.of(StandardAuthScheme.SPNEGO)).build());
+
+    return ctx;
+  }
+
+  private void doHttpClientRequest(CloseableHttpClient httpClient, HttpUriRequest request, HttpClientContext ctx) throws Exception {
+    httpClient.execute(request, ctx, response -> {
+        final int httpStatus = response.getCode();
+        assertEquals(HttpURLConnection.HTTP_OK, httpStatus);
+        EntityUtils.consumeQuietly(response.getEntity());
+        return null;
+    });
   }
 
   protected void _testAuthenticationHttpClient(Authenticator authenticator, boolean doPost) throws Exception {

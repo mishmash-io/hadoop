@@ -29,8 +29,6 @@ import org.apache.hadoop.hdfs.server.blockmanagement.DatanodeDescriptor;
 import org.apache.hadoop.hdfs.server.blockmanagement.DatanodeManager;
 import org.apache.hadoop.hdfs.server.blockmanagement
     .DatanodeAdminMonitorInterface;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
 import org.apache.hadoop.hdfs.server.blockmanagement
     .DatanodeAdminBackoffMonitor;
 import org.apache.hadoop.hdfs.server.datanode.DataNode;
@@ -41,6 +39,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import java.net.InetSocketAddress;
+import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 

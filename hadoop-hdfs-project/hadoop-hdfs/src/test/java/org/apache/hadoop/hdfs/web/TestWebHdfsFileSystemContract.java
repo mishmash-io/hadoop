@@ -36,7 +36,6 @@ import java.text.MessageFormat;
 import java.util.Arrays;
 import java.util.Map;
 import java.util.Random;
-import java.util.concurrent.TimeUnit;
 
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.ws.rs.core.MediaType;
@@ -60,8 +59,9 @@ import org.apache.hadoop.security.UserGroupInformation;
 import org.apache.hadoop.test.GenericTestUtils;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.Timeout;
 
-@Timeout(value=60000, unit=TimeUnit.MILLISECONDS)
+@Timeout(value=60)
 public class TestWebHdfsFileSystemContract extends FileSystemContractBaseTest {
   private static final Configuration conf = new Configuration();
   private static final MiniDFSCluster cluster;

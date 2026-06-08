@@ -23,7 +23,7 @@ import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.fs.contract.AbstractBondedFSContract;
 
-import static org.junit.jupiter.api.Assertions.assertNotNull;
+import java.net.URI;
 
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 

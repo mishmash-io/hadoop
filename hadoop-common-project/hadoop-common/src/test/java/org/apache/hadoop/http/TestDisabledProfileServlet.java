@@ -26,6 +26,8 @@ import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
+import jakarta.servlet.http.HttpServletResponse;
+
 /**
  * Small test to cover default disabled prof endpoint.
  */

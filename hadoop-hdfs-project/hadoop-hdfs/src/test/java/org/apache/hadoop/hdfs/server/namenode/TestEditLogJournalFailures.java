@@ -68,7 +68,7 @@ public class TestEditLogJournalFailures {
     return params;
   }
 
-  public void initTestEditLogJournalFailures(boolean useAsyncEdits) {
+  public TestEditLogJournalFailures(boolean useAsyncEdits) {
     this.useAsyncEdits = useAsyncEdits;
   }
 
@@ -112,11 +112,9 @@ public class TestEditLogJournalFailures {
       }
     }
   }
-
-  @MethodSource("data")
-  @ParameterizedTest
-  public void testSingleFailedEditsDirOnFlush(boolean useAsyncEdits) throws IOException {
-    initTestEditLogJournalFailures(useAsyncEdits);
+   
+  @Test
+  public void testSingleFailedEditsDirOnFlush() throws IOException {
     assertTrue(doAnEdit());
     // Invalidate one edits journal.
     invalidateEditsDirAtIndex(0, true, false);
@@ -125,11 +123,9 @@ public class TestEditLogJournalFailures {
     // A single journal failure should not result in a call to terminate
     assertFalse(cluster.getNameNode().isInSafeMode());
   }
-
-  @MethodSource("data")
-  @ParameterizedTest
-  public void testAllEditsDirsFailOnFlush(boolean useAsyncEdits) throws IOException {
-    initTestEditLogJournalFailures(useAsyncEdits);
+   
+  @Test
+  public void testAllEditsDirsFailOnFlush() throws IOException {
     assertTrue(doAnEdit());
     // Invalidate both edits journals.
     invalidateEditsDirAtIndex(0, true, false);
@@ -146,11 +142,9 @@ public class TestEditLogJournalFailures {
           "Unsynced transactions: 1", re);
     }
   }
-
-  @MethodSource("data")
-  @ParameterizedTest
-  public void testAllEditsDirFailOnWrite(boolean useAsyncEdits) throws IOException {
-    initTestEditLogJournalFailures(useAsyncEdits);
+  
+  @Test
+  public void testAllEditsDirFailOnWrite() throws IOException {
     assertTrue(doAnEdit());
     // Invalidate both edits journals.
     invalidateEditsDirAtIndex(0, true, true);
@@ -168,11 +162,9 @@ public class TestEditLogJournalFailures {
           "Unsynced transactions: 1", re);
     }
   }
-
-  @MethodSource("data")
-  @ParameterizedTest
-  public void testSingleFailedEditsDirOnSetReadyToFlush(boolean useAsyncEdits) throws IOException {
-    initTestEditLogJournalFailures(useAsyncEdits);
+  
+  @Test
+  public void testSingleFailedEditsDirOnSetReadyToFlush() throws IOException {
     assertTrue(doAnEdit());
     // Invalidate one edits journal.
     invalidateEditsDirAtIndex(0, false, false);
@@ -181,12 +173,10 @@ public class TestEditLogJournalFailures {
     // A single journal failure should not result in a call to terminate
     assertFalse(cluster.getNameNode().isInSafeMode());
   }
-
-  @MethodSource("data")
-  @ParameterizedTest
-  public void testSingleRequiredFailedEditsDirOnSetReadyToFlush(boolean useAsyncEdits)
+  
+  @Test
+  public void testSingleRequiredFailedEditsDirOnSetReadyToFlush()
       throws IOException {
-    initTestEditLogJournalFailures(useAsyncEdits);
     // Set one of the edits dirs to be required.
     String[] editsDirs = cluster.getConfiguration(0).getTrimmedStrings(
         DFSConfigKeys.DFS_NAMENODE_NAME_DIR_KEY);
@@ -225,12 +215,10 @@ public class TestEditLogJournalFailures {
     Mockito.verify(nonRequiredSpy, Mockito.never()).setReadyToFlush();
     assertFalse(nonRequiredJas.isActive());
   }
-
-  @MethodSource("data")
-  @ParameterizedTest
-  public void testMultipleRedundantFailedEditsDirOnSetReadyToFlush(boolean useAsyncEdits)
+  
+  @Test
+  public void testMultipleRedundantFailedEditsDirOnSetReadyToFlush()
       throws IOException {
-    initTestEditLogJournalFailures(useAsyncEdits);
     // Set up 4 name/edits dirs.
     shutDownMiniCluster();
     Configuration conf = getConf();
@@ -277,11 +265,9 @@ public class TestEditLogJournalFailures {
     }
   }
 
-  @MethodSource("data")
-  @ParameterizedTest
-  public void testMultipleRedundantFailedEditsDirOnStartLogSegment(boolean useAsyncEdits)
+  @Test
+  public void testMultipleRedundantFailedEditsDirOnStartLogSegment()
       throws Exception {
-    initTestEditLogJournalFailures(useAsyncEdits);
     // Set up 4 name/edits dirs.
     shutDownMiniCluster();
     Configuration conf = getConf();

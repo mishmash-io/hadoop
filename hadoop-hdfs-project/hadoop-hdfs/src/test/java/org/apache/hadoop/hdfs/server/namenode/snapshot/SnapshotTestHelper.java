@@ -46,11 +46,6 @@ import org.apache.hadoop.security.UserGroupInformation;
 import org.apache.hadoop.test.GenericTestUtils;
 import org.apache.hadoop.test.LogCapturingAppender;
 import org.apache.hadoop.util.GSet;
-import org.apache.log4j.Appender;
-import org.apache.log4j.Layout;
-import org.apache.log4j.LogManager;
-import org.apache.log4j.PatternLayout;
-import org.apache.log4j.WriterAppender;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

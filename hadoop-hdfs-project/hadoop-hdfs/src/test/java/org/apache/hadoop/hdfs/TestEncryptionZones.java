@@ -100,6 +100,7 @@ import org.apache.hadoop.security.token.Token;
 import org.apache.hadoop.security.token.DelegationTokenIssuer;
 import org.apache.hadoop.util.DataChecksum;
 import org.apache.hadoop.util.Lists;
+import org.apache.hadoop.util.cli.ToolRunner;
 import org.apache.hadoop.crypto.key.KeyProviderDelegationTokenExtension.DelegationTokenExtension;
 import org.apache.hadoop.crypto.key.KeyProviderCryptoExtension.CryptoExtension;
 import org.apache.hadoop.io.Text;

@@ -35,7 +35,6 @@ import java.io.IOException;
 
 public class TestDecommissionWithBackoffMonitor extends TestDecommission {
 
-  @BeforeEach
   @Override
   @BeforeEach
   public void setup() throws IOException {

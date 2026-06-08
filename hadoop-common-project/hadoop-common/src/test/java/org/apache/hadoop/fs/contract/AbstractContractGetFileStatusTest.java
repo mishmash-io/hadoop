@@ -25,9 +25,7 @@ import java.util.List;
 import java.util.UUID;
 
 import org.assertj.core.api.Assertions;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.TestInfo;
+
 import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.FilterFileSystem;
@@ -60,8 +58,8 @@ public abstract class AbstractContractGetFileStatusTest extends
 
   @BeforeEach
   @Override
-  public void setup(TestInfo info) throws Exception {
-    super.setup(info);
+  public void setup() throws Exception {
+    super.setup();
     skipIfUnsupported(SUPPORTS_GETFILESTATUS);
 
     //delete the test directory
@@ -481,7 +479,7 @@ public abstract class AbstractContractGetFileStatusTest extends
     Path path = getContract().getTestPath();
     fs.delete(path, true);
     // create a - non-qualified - Path for a subdir
-    Path subfolder = path.suffix('/' + getMethodName()
+    Path subfolder = path.suffix('/' + this.methodName.getMethodName()
         + "-" + UUID.randomUUID());
     mkdirs(subfolder);
     return subfolder;
@@ -494,7 +492,7 @@ public abstract class AbstractContractGetFileStatusTest extends
    * @throws IOException
    */
   private TreeScanResults createTestTree() throws IOException {
-    return createSubdirs(getFileSystem(), path(getMethodName()),
+    return createSubdirs(getFileSystem(), path(methodName.getMethodName()),
         TREE_DEPTH, TREE_WIDTH, TREE_FILES, TREE_FILESIZE);
   }
 

@@ -87,9 +87,8 @@ public class TestNameNodeHttpServer {
     KeyStoreTestUtil.cleanupSSLConfig(keystoresDir, sslConfDir);
   }
 
-  @MethodSource("policy")
-  @ParameterizedTest
-  public void testHttpPolicy(Policy policy) throws Exception {
+  @Test
+  public void testHttpPolicy() throws Exception {
     conf.set(DFSConfigKeys.DFS_HTTP_POLICY_KEY, policy.name());
     conf.set(DFSConfigKeys.DFS_NAMENODE_HTTPS_ADDRESS_KEY, "localhost:0");
 

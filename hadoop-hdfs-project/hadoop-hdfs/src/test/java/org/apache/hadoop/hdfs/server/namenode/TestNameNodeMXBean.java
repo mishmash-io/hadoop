@@ -1174,7 +1174,7 @@ public class TestNameNodeMXBean {
       assertEquals(fsn.getDeadNodes(), deadNodeInfo);
       LOG.info("Get deadNode info: {}", deadNodeInfo);
       Map<String, Map<String, Object>> deadNodes =
-          (Map<String, Map<String, Object>>) JSON.parse(deadNodeInfo);
+          (Map<String, Map<String, Object>>) new JSON().fromJSON(deadNodeInfo);
       assertEquals(1, deadNodes.size());
       for (Map<String, Object> deadNode : deadNodes.values()) {
         assertTrue(deadNode.containsKey("lastContact"));

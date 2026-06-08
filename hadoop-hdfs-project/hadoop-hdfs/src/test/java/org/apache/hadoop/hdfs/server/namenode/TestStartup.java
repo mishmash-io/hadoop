@@ -74,7 +74,6 @@ import org.apache.hadoop.test.PathUtils;
 import org.apache.hadoop.util.ExitUtil.ExitException;
 import org.apache.hadoop.util.ExitUtil;
 import org.apache.hadoop.util.StringUtils;
-import org.apache.log4j.Logger;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;

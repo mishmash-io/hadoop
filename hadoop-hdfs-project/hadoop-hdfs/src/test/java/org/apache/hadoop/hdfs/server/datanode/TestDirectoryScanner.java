@@ -85,8 +85,6 @@ import org.apache.hadoop.test.GenericTestUtils;
 import org.apache.hadoop.test.LogCapturingAppender;
 import org.apache.hadoop.util.AutoCloseableLock;
 import org.apache.hadoop.util.Time;
-import org.apache.log4j.SimpleLayout;
-import org.apache.log4j.WriterAppender;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.Timeout;

@@ -87,8 +87,7 @@ public class TestFSEditLogLoader {
   }
 
   private static boolean useAsyncEditLog;
-
-  public void initTestFSEditLogLoader(Boolean async) {
+  public TestFSEditLogLoader(Boolean async) {
     useAsyncEditLog = async;
   }
 
@@ -112,10 +111,8 @@ public class TestFSEditLogLoader {
   private final ErasureCodingPolicy testECPolicy
       = StripedFileTestUtil.getDefaultECPolicy();
 
-  @MethodSource("data")
-  @ParameterizedTest
-  public void testDisplayRecentEditLogOpCodes(Boolean async) throws IOException {
-    initTestFSEditLogLoader(async);
+  @Test
+  public void testDisplayRecentEditLogOpCodes() throws IOException {
     // start a cluster
     Configuration conf = getConf();
     MiniDFSCluster cluster = null;
@@ -158,16 +155,14 @@ public class TestFSEditLogLoader {
           "error message contains opcodes message");
     }
   }
-
+  
   /**
    * Test that, if the NN restarts with a new minimum replication,
    * any files created with the old replication count will get
    * automatically bumped up to the new minimum upon restart.
    */
-  @MethodSource("data")
-  @ParameterizedTest
-  public void testReplicationAdjusted(Boolean async) throws Exception {
-    initTestFSEditLogLoader(async);
+  @Test
+  public void testReplicationAdjusted() throws Exception {
     // start a cluster 
     Configuration conf = getConf();
     // Replicate and heartbeat fast to shave a few seconds off test
@@ -271,10 +266,8 @@ public class TestFSEditLogLoader {
     }
   }
 
-  @MethodSource("data")
-  @ParameterizedTest
-  public void testStreamLimiter(Boolean async) throws IOException {
-    initTestFSEditLogLoader(async);
+  @Test
+  public void testStreamLimiter() throws IOException {
     final File LIMITER_TEST_FILE = new File(TEST_DIR, "limiter.test");
     
     FileOutputStream fos = new FileOutputStream(LIMITER_TEST_FILE);
@@ -358,10 +351,8 @@ public class TestFSEditLogLoader {
     return inProgressFile;
   }
 
-  @MethodSource("data")
-  @ParameterizedTest
-  public void testValidateEditLogWithCorruptHeader(Boolean async) throws IOException {
-    initTestFSEditLogLoader(async);
+  @Test
+  public void testValidateEditLogWithCorruptHeader() throws IOException {
     File testDir = new File(TEST_DIR, "testValidateEditLogWithCorruptHeader");
     SortedMap<Long, Long> offsetToTxId = Maps.newTreeMap();
     File logFile = prepareUnfinalizedTestEditLog(testDir, 2, offsetToTxId);
@@ -377,10 +368,8 @@ public class TestFSEditLogLoader {
     assertTrue(validation.hasCorruptHeader());
   }
 
-  @MethodSource("data")
-  @ParameterizedTest
-  public void testValidateEditLogWithCorruptBody(Boolean async) throws IOException {
-    initTestFSEditLogLoader(async);
+  @Test
+  public void testValidateEditLogWithCorruptBody() throws IOException {
     File testDir = new File(TEST_DIR, "testValidateEditLogWithCorruptBody");
     SortedMap<Long, Long> offsetToTxId = Maps.newTreeMap();
     final int NUM_TXNS = 20;
@@ -431,10 +420,8 @@ public class TestFSEditLogLoader {
     }
   }
 
-  @MethodSource("data")
-  @ParameterizedTest
-  public void testValidateEmptyEditLog(Boolean async) throws IOException {
-    initTestFSEditLogLoader(async);
+  @Test
+  public void testValidateEmptyEditLog() throws IOException {
     File testDir = new File(TEST_DIR, "testValidateEmptyEditLog");
     SortedMap<Long, Long> offsetToTxId = Maps.newTreeMap();
     File logFile = prepareUnfinalizedTestEditLog(testDir, 0, offsetToTxId);
@@ -459,10 +446,8 @@ public class TestFSEditLogLoader {
     return byteToEnum.get(opCode);
   }
 
-  @MethodSource("data")
-  @ParameterizedTest
-  public void testFSEditLogOpCodes(Boolean async) throws IOException {
-    initTestFSEditLogLoader(async);
+  @Test
+  public void testFSEditLogOpCodes() throws IOException {
     //try all codes
     for(FSEditLogOpCodes c : FSEditLogOpCodes.values()) {
       final byte code = c.getOpCode();
@@ -476,10 +461,8 @@ public class TestFSEditLogLoader {
     }
   }
 
-  @MethodSource("data")
-  @ParameterizedTest
-  public void testAddNewStripedBlock(Boolean async) throws IOException {
-    initTestFSEditLogLoader(async);
+  @Test
+  public void testAddNewStripedBlock() throws IOException{
     // start a cluster
     Configuration conf = new HdfsConfiguration();
     MiniDFSCluster cluster = null;
@@ -552,10 +535,8 @@ public class TestFSEditLogLoader {
     }
   }
 
-  @MethodSource("data")
-  @ParameterizedTest
-  public void testUpdateStripedBlocks(Boolean async) throws IOException {
-    initTestFSEditLogLoader(async);
+  @Test
+  public void testUpdateStripedBlocks() throws IOException{
     // start a cluster
     Configuration conf = new HdfsConfiguration();
     MiniDFSCluster cluster = null;
@@ -636,10 +617,8 @@ public class TestFSEditLogLoader {
     }
   }
 
-  @MethodSource("data")
-  @ParameterizedTest
-  public void testHasNonEcBlockUsingStripedIDForAddBlock(Boolean async) throws IOException {
-    initTestFSEditLogLoader(async);
+  @Test
+  public void testHasNonEcBlockUsingStripedIDForAddBlock() throws IOException{
     // start a cluster
     Configuration conf = new HdfsConfiguration();
     MiniDFSCluster cluster = null;
@@ -686,11 +665,9 @@ public class TestFSEditLogLoader {
     }
   }
 
-  @MethodSource("data")
-  @ParameterizedTest
-  public void testHasNonEcBlockUsingStripedIDForUpdateBlocks(Boolean async)
-      throws IOException {
-    initTestFSEditLogLoader(async);
+  @Test
+  public void testHasNonEcBlockUsingStripedIDForUpdateBlocks()
+      throws IOException{
     // start a cluster
     Configuration conf = new HdfsConfiguration();
     MiniDFSCluster cluster = null;
@@ -743,10 +720,8 @@ public class TestFSEditLogLoader {
     }
   }
 
-  @MethodSource("data")
-  @ParameterizedTest
-  public void testErasureCodingPolicyOperations(Boolean async) throws IOException {
-    initTestFSEditLogLoader(async);
+  @Test
+  public void testErasureCodingPolicyOperations() throws IOException {
     // start a cluster
     Configuration conf = new HdfsConfiguration();
     final int blockSize = 16 * 1024;
@@ -825,10 +800,8 @@ public class TestFSEditLogLoader {
     }
   }
 
-  @MethodSource("data")
-  @ParameterizedTest
-  public void testLoadFSEditLogThrottling(Boolean async) throws Exception {
-    initTestFSEditLogLoader(async);
+  @Test
+  public void testLoadFSEditLogThrottling() throws Exception {
     FSNamesystem namesystem = mock(FSNamesystem.class);
     namesystem.dir = mock(FSDirectory.class);
 

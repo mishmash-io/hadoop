@@ -32,7 +32,7 @@ import org.apache.hadoop.hdfs.MiniDFSCluster;
 import org.apache.hadoop.hdfs.MiniDFSNNTopology;
 import org.apache.hadoop.hdfs.server.namenode.TestFileTruncate;
 import org.apache.hadoop.hdfs.tools.DFSck;
-import org.apache.hadoop.util.ToolRunner;
+import org.apache.hadoop.util.cli.ToolRunner;
 import org.junit.jupiter.api.Test;
 
 public class TestHAAppend {

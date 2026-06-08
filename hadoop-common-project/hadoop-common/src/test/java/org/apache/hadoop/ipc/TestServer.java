@@ -26,6 +26,7 @@ import static org.mockito.Mockito.eq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoInteractions;
 
 import java.io.IOException;
 import java.net.BindException;
@@ -41,8 +42,6 @@ import org.apache.hadoop.ipc.Server.Call;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.Timeout;
 import org.slf4j.Logger;
-
-import static org.apache.hadoop.test.MockitoUtil.verifyZeroInteractions;
 
 /**
  * This is intended to be a set of unit tests for the 

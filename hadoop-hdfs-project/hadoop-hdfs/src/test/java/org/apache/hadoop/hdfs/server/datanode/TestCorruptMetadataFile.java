@@ -16,7 +16,7 @@
  * limitations under the License.
  */
 package org.apache.hadoop.hdfs.server.datanode;
-import java.util.concurrent.TimeUnit;
+
 import java.util.function.Supplier;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FSDataInputStream;
@@ -34,6 +34,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.Timeout;
 
 import java.io.File;
+import java.io.RandomAccessFile;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 

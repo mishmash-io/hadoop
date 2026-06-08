@@ -45,6 +45,10 @@ import org.apache.hadoop.net.Node;
 import org.junit.jupiter.api.Test;
 
 public class TestReplicationPolicyWithNodeGroup extends BaseReplicationPolicyTest {
+  public TestReplicationPolicyWithNodeGroup() {
+    this.blockPlacementPolicy = BlockPlacementPolicyWithNodeGroup.class.getName();
+  }
+
   @Override
   DatanodeDescriptor[] getDatanodeDescriptors(Configuration conf) {
     // default is true, in this case this test will against DFSNetworkTopology
@@ -130,11 +134,6 @@ public class TestReplicationPolicyWithNodeGroup extends BaseReplicationPolicyTes
     dataNodesForDependencies = DFSTestUtil.toDatanodeDescriptor(storagesForDependencies);
     
   };
-
-  @BeforeEach
-  public void setup() throws Exception {
-    setupCluster(BlockPlacementPolicyWithNodeGroup.class.getName());
-  }
 
   /**
    * Test block placement verification.

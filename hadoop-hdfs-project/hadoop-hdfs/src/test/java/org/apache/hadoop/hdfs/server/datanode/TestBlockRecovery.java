@@ -39,7 +39,6 @@ import static org.mockito.Mockito.when;
 
 import java.io.File;
 import java.io.IOException;
-import java.lang.reflect.Method;
 import java.net.InetSocketAddress;
 import java.net.URISyntaxException;
 import java.util.ArrayList;
@@ -47,7 +46,6 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 import java.util.concurrent.Semaphore;
 import java.util.concurrent.ThreadLocalRandom;
 import java.util.concurrent.TimeUnit;
@@ -184,7 +182,7 @@ public class TestBlockRecovery {
     conf.set(DFSConfigKeys.DFS_DATANODE_ADDRESS_KEY, "0.0.0.0:0");
     conf.set(DFSConfigKeys.DFS_DATANODE_HTTP_ADDRESS_KEY, "0.0.0.0:0");
     conf.set(DFSConfigKeys.DFS_DATANODE_IPC_ADDRESS_KEY, "0.0.0.0:0");
-    if ( currentTestName.contains("DoesNotHoldLock")) {
+    if (currentTestName.getMethodName().contains("DoesNotHoldLock")) {
       // This test requires a very long value for the xceiver stop timeout.
       conf.setLong(DFSConfigKeys.DFS_DATANODE_XCEIVER_STOP_TIMEOUT_MILLIS_KEY,
           TEST_STOP_WORKER_XCEIVER_STOP_TIMEOUT_MILLIS);
@@ -199,7 +197,7 @@ public class TestBlockRecovery {
     StorageLocation location = StorageLocation.parse(dataDir.getPath());
     locations.add(location);
     final DatanodeProtocolClientSideTranslatorPB namenode =
-        mock(DatanodeProtocolClientSideTranslatorPB.class);
+      mock(DatanodeProtocolClientSideTranslatorPB.class);
 
     Mockito.doAnswer(new Answer<DatanodeRegistration>() {
       @Override
@@ -214,17 +212,17 @@ public class TestBlockRecovery {
         (1, CLUSTER_ID, POOL_ID, 1L));
 
     when(namenode.sendHeartbeat(
-        Mockito.any(),
-        Mockito.any(),
-        Mockito.anyLong(),
-        Mockito.anyLong(),
-        Mockito.anyInt(),
-        Mockito.anyInt(),
-        Mockito.anyInt(),
-        Mockito.any(),
-        Mockito.anyBoolean(),
-        Mockito.any(),
-        Mockito.any()))
+            Mockito.any(),
+            Mockito.any(),
+            Mockito.anyLong(),
+            Mockito.anyLong(),
+            Mockito.anyInt(),
+            Mockito.anyInt(),
+            Mockito.anyInt(),
+            Mockito.any(),
+            Mockito.anyBoolean(),
+            Mockito.any(),
+            Mockito.any()))
         .thenReturn(new HeartbeatResponse(
             new DatanodeCommand[0],
             new NNHAStatusHeartbeat(HAServiceState.ACTIVE, 1),
@@ -532,7 +530,6 @@ public class TestBlockRecovery {
     blocks.add(rBlock);
     return blocks;
   }
-
   /**
    * BlockRecoveryFI_05. One DN throws RecoveryInProgressException.
    *
@@ -542,7 +539,7 @@ public class TestBlockRecovery {
   @Test
   @Timeout(value = 60)
   public void testRecoveryInProgressException()
-      throws IOException, InterruptedException {
+    throws IOException, InterruptedException {
     if(LOG.isDebugEnabled()) {
       LOG.debug("Running " + GenericTestUtils.getMethodName());
     }
@@ -904,7 +901,7 @@ public class TestBlockRecovery {
    */
   private void testStopWorker(final TestStopWorkerRunnable tswr)
       throws Exception {
-    LOG.debug("Running " + currentTestName);
+    LOG.debug("Running " + currentTestName.getMethodName());
     // We need a long value for the data xceiver stop timeout.
     // Otherwise the timeout will trigger, and we will not have tested that
     // thread join was done locklessly.

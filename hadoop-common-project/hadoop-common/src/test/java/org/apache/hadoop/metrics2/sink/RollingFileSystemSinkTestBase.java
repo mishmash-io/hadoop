@@ -18,8 +18,6 @@
 
 package org.apache.hadoop.metrics2.sink;
 
-import static org.junit.jupiter.api.Assertions.assertTrue;
-
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
@@ -101,7 +99,7 @@ public class RollingFileSystemSinkTestBase {
     MutableGaugeLong testMetric2;
 
     public MyMetrics1 registerWith(MetricsSystem ms) {
-      return ms.register(methodName + "-m1", null, this);
+      return ms.register(methodName.getMethodName() + "-m1", null, this);
     }
   }
 
@@ -114,7 +112,7 @@ public class RollingFileSystemSinkTestBase {
     String testTag1() { return "testTagValue22"; }
 
     public MyMetrics2 registerWith(MetricsSystem ms) {
-      return ms.register(methodName + "-m2", null, this);
+      return ms.register(methodName.getMethodName() + "-m2", null, this);
     }
   }
 
@@ -173,7 +171,7 @@ public class RollingFileSystemSinkTestBase {
       boolean allowAppend, boolean useSecureParams) {
     // If the prefix is not lower case, the metrics system won't be able to
     // read any of the properties.
-    String prefix = methodName.toLowerCase();
+    String prefix = methodName.getMethodName().toLowerCase();
 
     ConfigBuilder builder = new ConfigBuilder().add("*.period", 10000)
         .add(prefix + ".sink.mysink0.class", MockSink.class.getName())

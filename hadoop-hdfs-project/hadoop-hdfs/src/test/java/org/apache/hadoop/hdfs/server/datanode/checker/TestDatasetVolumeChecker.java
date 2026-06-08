@@ -37,7 +37,6 @@ import org.junit.jupiter.params.provider.MethodSource;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
@@ -269,13 +268,5 @@ public class TestDatasetVolumeChecker {
         "Invalid value configured for dfs.datanode.failed.volumes.tolerated"
             + " - -2 should be greater than or equal to -1",
         () -> new DatasetVolumeChecker(conf, new FakeTimer()));
-  }
-
-  @BeforeEach
-  public void setup(TestInfo testInfo) {
-    Optional<Method> testMethod = testInfo.getTestMethod();
-    if (testMethod.isPresent()) {
-      this.testName = testMethod.get().getName();
-    }
   }
 }

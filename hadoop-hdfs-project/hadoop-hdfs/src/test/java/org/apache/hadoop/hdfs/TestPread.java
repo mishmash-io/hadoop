@@ -86,7 +86,7 @@ public class TestPread {
 
   @BeforeAll
   public static void setLogLevel() {
-    GenericTestUtils.setLogLevel(DFSClient.LOG, org.apache.log4j.Level.WARN);
+    GenericTestUtils.setLogLevel(DFSClient.LOG, org.apache.logging.log4j.Level.WARN);
   }
 
   @BeforeEach

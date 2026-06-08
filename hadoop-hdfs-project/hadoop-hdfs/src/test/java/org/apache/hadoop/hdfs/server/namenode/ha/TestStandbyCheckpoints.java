@@ -57,7 +57,7 @@ import org.apache.hadoop.test.PathUtils;
 import org.apache.hadoop.util.Lists;
 import org.apache.hadoop.util.ThreadUtil;
 import org.apache.hadoop.util.concurrent.SubjectInheritingThread;
-import org.apache.log4j.spi.LoggingEvent;
+import org.apache.logging.log4j.core.LogEvent;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;

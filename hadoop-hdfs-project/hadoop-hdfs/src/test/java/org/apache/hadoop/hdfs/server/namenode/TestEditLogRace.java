@@ -93,6 +93,12 @@ public class TestEditLogRace {
     return params;
   }
 
+  private static boolean useAsyncEditLog;
+
+  public TestEditLogRace(boolean useAsyncEditLog) {
+    TestEditLogRace.useAsyncEditLog = useAsyncEditLog;
+  }
+
   private static final String NAME_DIR = MiniDFSCluster.getBaseDirectory() + "name-0-1";
 
   private static final Logger LOG =
@@ -222,11 +228,10 @@ public class TestEditLogRace {
   /**
    * Tests rolling edit logs while transactions are ongoing.
    */
-  @MethodSource("data")
-  @ParameterizedTest
-  public void testEditLogRolling(boolean useAsyncEditLog) throws Exception {
+  @Test
+  public void testEditLogRolling() throws Exception {
     // start a cluster 
-    Configuration conf = getConf(useAsyncEditLog);
+    Configuration conf = getConf();
     final MiniDFSCluster cluster =
         new MiniDFSCluster.Builder(conf).numDataNodes(NUM_DATA_NODES).build();
     FileSystem fileSys = null;
@@ -305,11 +310,10 @@ public class TestEditLogRace {
   /**
    * Tests saving fs image while transactions are ongoing.
    */
-  @MethodSource("data")
-  @ParameterizedTest
-  public void testSaveNamespace(boolean useAsyncEditLog) throws Exception {
+  @Test
+  public void testSaveNamespace() throws Exception {
     // start a cluster 
-    Configuration conf = getConf(useAsyncEditLog);
+    Configuration conf = getConf();
     MiniDFSCluster cluster = null;
     FileSystem fileSys = null;
 
@@ -371,7 +375,7 @@ public class TestEditLogRace {
     }
   }
  
-  private Configuration getConf(boolean useAsyncEditLog) {
+  private Configuration getConf() {
     Configuration conf = new HdfsConfiguration();
     conf.setBoolean(DFSConfigKeys.DFS_NAMENODE_EDITS_ASYNC_LOGGING,
         useAsyncEditLog);
@@ -402,10 +406,9 @@ public class TestEditLogRace {
    *   Then I terminate the name-node.
    *   After that the name-node wont start, since the edits file is broken.
    */
-  @MethodSource("data")
-  @ParameterizedTest
-  public void testSaveImageWhileSyncInProgress(boolean useAsyncEditLog) throws Exception {
-    Configuration conf = getConf(useAsyncEditLog);
+  @Test
+  public void testSaveImageWhileSyncInProgress() throws Exception {
+    Configuration conf = getConf();
     NameNode.initMetrics(conf, NamenodeRole.NAMENODE);
     DFSTestUtil.formatNameNode(conf);
     final FSNamesystem namesystem = FSNamesystem.loadFromDisk(conf);
@@ -493,7 +496,7 @@ public class TestEditLogRace {
       if(namesystem != null) namesystem.close();
     }
   }
-
+  
   /**
    * Most of the FSNamesystem methods have a synchronized section where they
    * update the name system itself and write to the edit log, and then
@@ -501,10 +504,9 @@ public class TestEditLogRace {
    * operation has written to the edit log but not yet synced it,
    * we wait for that sync before entering safe mode.
    */
-  @MethodSource("data")
-  @ParameterizedTest
-  public void testSaveRightBeforeSync(boolean useAsyncEditLog) throws Exception {
-    Configuration conf = getConf(useAsyncEditLog);
+  @Test
+  public void testSaveRightBeforeSync() throws Exception {
+    Configuration conf = getConf();
     NameNode.initMetrics(conf, NamenodeRole.NAMENODE);
     DFSTestUtil.formatNameNode(conf);
     final FSNamesystem namesystem = FSNamesystem.loadFromDisk(conf);
@@ -602,7 +604,7 @@ public class TestEditLogRace {
     GenericTestUtils.setLogLevel(FSEditLog.LOG, Level.DEBUG);
     GenericTestUtils.setLogLevel(FSEditLogAsync.LOG, Level.DEBUG);
 
-    Configuration conf = getConf(useAsyncEditLog);
+    Configuration conf = getConf();
     NameNode.initMetrics(conf, NamenodeRole.NAMENODE);
     DFSTestUtil.formatNameNode(conf);
     final FSNamesystem namesystem = FSNamesystem.loadFromDisk(conf);

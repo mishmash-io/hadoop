@@ -38,8 +38,8 @@ import org.apache.hadoop.tools.fedbalance.procedure.BalanceProcedure;
 import org.apache.hadoop.tools.fedbalance.procedure.BalanceProcedureScheduler;
 import org.apache.hadoop.tools.fedbalance.TrashProcedure;
 import org.apache.hadoop.tools.fedbalance.FedBalanceContext;
-import org.apache.hadoop.util.Tool;
-import org.apache.hadoop.util.ToolRunner;
+import org.apache.hadoop.util.cli.Tool;
+import org.apache.hadoop.util.cli.ToolRunner;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

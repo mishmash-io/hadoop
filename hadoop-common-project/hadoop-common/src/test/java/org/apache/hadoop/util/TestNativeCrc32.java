@@ -27,10 +27,6 @@ import java.util.Collection;
 
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.ChecksumException;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.params.ParameterizedTest;
-import org.junit.jupiter.params.provider.MethodSource;
 
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.MethodSource;
@@ -107,7 +103,7 @@ public class TestNativeCrc32 {
     // but is never tested because we are always calling it with an even value
     // such as 512.
     bytesPerChecksum--;
-    allocateDirectByteBuffers(checksumType);
+    allocateDirectByteBuffers();
     fillDataAndValidChecksums();
     NativeCrc32.verifyChunkedSums(bytesPerChecksum, checksumType.id,
       checksums, data, fileName, BASE_POSITION);
@@ -214,7 +210,7 @@ public class TestNativeCrc32 {
   /**
    * Allocates data buffer and checksums buffer as arrays on the heap.
    */
-  private void allocateArrayByteBuffers(DataChecksum.Type checksumType) {
+  private void allocateArrayByteBuffers() {
     data = ByteBuffer.wrap(new byte[bytesPerChecksum * NUM_CHUNKS]);
     checksums = ByteBuffer.wrap(new byte[NUM_CHUNKS * checksumType.size]);
   }
@@ -222,7 +218,7 @@ public class TestNativeCrc32 {
   /**
    * Allocates data buffer and checksums buffer as direct byte buffers.
    */
-  private void allocateDirectByteBuffers(DataChecksum.Type checksumType) {
+  private void allocateDirectByteBuffers() {
     data = ByteBuffer.allocateDirect(bytesPerChecksum * NUM_CHUNKS);
     checksums = ByteBuffer.allocateDirect(NUM_CHUNKS * checksumType.size);
   }

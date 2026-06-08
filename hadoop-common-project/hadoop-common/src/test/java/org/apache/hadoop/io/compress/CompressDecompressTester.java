@@ -37,7 +37,8 @@ import org.apache.hadoop.io.compress.zlib.BuiltInZlibDeflater;
 import org.apache.hadoop.io.compress.zlib.ZlibCompressor;
 import org.apache.hadoop.io.compress.zlib.ZlibFactory;
 import org.apache.hadoop.util.NativeCodeLoader;
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import org.apache.hadoop.thirdparty.com.google.common.base.Joiner;
 import org.apache.hadoop.thirdparty.com.google.common.collect.ImmutableList;

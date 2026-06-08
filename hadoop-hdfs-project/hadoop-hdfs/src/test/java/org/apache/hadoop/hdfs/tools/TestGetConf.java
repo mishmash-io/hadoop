@@ -56,7 +56,7 @@ import org.apache.hadoop.hdfs.tools.GetConf.Command;
 import org.apache.hadoop.hdfs.tools.GetConf.CommandHandler;
 import org.apache.hadoop.hdfs.util.HostsFileWriter;
 import org.apache.hadoop.net.NetUtils;
-import org.apache.hadoop.util.ToolRunner;
+import org.apache.hadoop.util.cli.ToolRunner;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.Timeout;
 

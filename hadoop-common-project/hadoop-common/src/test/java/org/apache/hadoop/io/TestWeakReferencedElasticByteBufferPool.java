@@ -84,9 +84,9 @@ public class TestWeakReferencedElasticByteBufferPool
   public void testPoolingWithDifferentSizes(String pType) {
     initTestWeakReferencedElasticByteBufferPool(pType);
     WeakReferencedElasticByteBufferPool pool = new WeakReferencedElasticByteBufferPool();
-    ByteBuffer buffer = pool.getBuffer(isDirect(type), 5);
-    ByteBuffer buffer1 = pool.getBuffer(isDirect(type), 10);
-    ByteBuffer buffer2 = pool.getBuffer(isDirect(type), 15);
+    ByteBuffer buffer = pool.getBuffer(isDirect, 5);
+    ByteBuffer buffer1 = pool.getBuffer(isDirect, 10);
+    ByteBuffer buffer2 = pool.getBuffer(isDirect, 15);
 
     assertThat(pool.getCurrentBuffersCount(isDirect))
             .describedAs("Number of buffers in the pool")
@@ -124,9 +124,9 @@ public class TestWeakReferencedElasticByteBufferPool
   public void testPoolingWithDifferentInsertionTime(String pType) {
     initTestWeakReferencedElasticByteBufferPool(pType);
     WeakReferencedElasticByteBufferPool pool = new WeakReferencedElasticByteBufferPool();
-    ByteBuffer buffer = pool.getBuffer(isDirect(type), 10);
-    ByteBuffer buffer1 = pool.getBuffer(isDirect(type), 10);
-    ByteBuffer buffer2 = pool.getBuffer(isDirect(type), 10);
+    ByteBuffer buffer = pool.getBuffer(isDirect, 10);
+    ByteBuffer buffer1 = pool.getBuffer(isDirect, 10);
+    ByteBuffer buffer2 = pool.getBuffer(isDirect, 10);
 
     assertThat(pool.getCurrentBuffersCount(isDirect))
             .describedAs("Number of buffers in the pool")
@@ -137,7 +137,7 @@ public class TestWeakReferencedElasticByteBufferPool
     assertThat(pool.getCurrentBuffersCount(isDirect))
             .describedAs("Number of buffers in the pool")
             .isEqualTo(2);
-    ByteBuffer buffer3 = pool.getBuffer(isDirect(type), 10);
+    ByteBuffer buffer3 = pool.getBuffer(isDirect, 10);
     // As buffer1 is returned to the pool before buffer2, it should
     // be returned when buffer of same size is asked again from
     // the pool. Memory references must match not just content
@@ -194,9 +194,9 @@ public class TestWeakReferencedElasticByteBufferPool
   public void testWeakReferencesPruning(String pType) {
     initTestWeakReferencedElasticByteBufferPool(pType);
     WeakReferencedElasticByteBufferPool pool = new WeakReferencedElasticByteBufferPool();
-    ByteBuffer buffer1 = pool.getBuffer(isDirect(type), 5);
-    ByteBuffer buffer2 = pool.getBuffer(isDirect(type), 10);
-    ByteBuffer buffer3 = pool.getBuffer(isDirect(type), 15);
+    ByteBuffer buffer1 = pool.getBuffer(isDirect, 5);
+    ByteBuffer buffer2 = pool.getBuffer(isDirect, 10);
+    ByteBuffer buffer3 = pool.getBuffer(isDirect, 15);
 
     pool.putBuffer(buffer2);
     pool.putBuffer(buffer3);
@@ -207,7 +207,7 @@ public class TestWeakReferencedElasticByteBufferPool
     // marking only buffer2 to be garbage collected.
     buffer2 = null;
     System.gc();
-    ByteBuffer buffer4 = pool.getBuffer(isDirect(type), 10);
+    ByteBuffer buffer4 = pool.getBuffer(isDirect, 10);
     // Number of buffers in the pool is 0 as one got garbage
     // collected and other got returned in above call.
     assertThat(pool.getCurrentBuffersCount(isDirect))

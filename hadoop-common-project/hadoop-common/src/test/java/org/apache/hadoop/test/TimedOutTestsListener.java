@@ -28,7 +28,6 @@ import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Map;
-import java.util.concurrent.TimeoutException;
 
 import org.apache.hadoop.util.StringUtils;
 
@@ -60,7 +59,7 @@ public class TimedOutTestsListener {
       output.print(buildThreadDiagnosticString());
     }
   }
-
+  
   public static String buildThreadDiagnosticString() {
     StringWriter sw = new StringWriter();
     PrintWriter output = new PrintWriter(sw);

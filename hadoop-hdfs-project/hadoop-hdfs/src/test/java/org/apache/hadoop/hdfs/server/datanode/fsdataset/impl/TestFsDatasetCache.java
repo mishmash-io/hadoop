@@ -84,8 +84,8 @@ import org.apache.hadoop.io.nativeio.NativeIO.POSIX.CacheManipulator;
 import org.apache.hadoop.io.nativeio.NativeIO.POSIX.NoMlockCacheManipulator;
 import org.apache.hadoop.metrics2.MetricsRecordBuilder;
 import org.apache.hadoop.test.GenericTestUtils;
+import org.apache.hadoop.test.LogCapturingAppender;
 import org.apache.hadoop.test.MetricsAsserts;
-import org.apache.log4j.Logger;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeEach;
@@ -408,9 +408,10 @@ public class TestFsDatasetCache {
         public Boolean get() {
           // check the log reported by FsDataSetCache
           // in the case that cache capacity is exceeded.
-          int lines = appender.countLinesWithMessage(
-              "could not reserve more bytes in the cache: ");
-          return lines > 0;
+          return log.stream()
+              .filter(m -> m != null && m.contains("could not reserve more bytes in the cache: "))
+              .findAny()
+              .isPresent();
         }
       }, 500, 30000);
       // Also check the metrics for the failure

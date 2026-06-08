@@ -82,8 +82,7 @@ public class TestEditLogTailer {
   }
 
   private static boolean useAsyncEditLog;
-
-  public void initTestEditLogTailer(Boolean async) {
+  public TestEditLogTailer(Boolean async) {
     useAsyncEditLog = async;
   }
 
@@ -105,11 +104,9 @@ public class TestEditLogTailer {
     return conf;
   }
 
-  @MethodSource("data")
-  @ParameterizedTest
-  public void testTailer(Boolean async) throws IOException, InterruptedException,
+  @Test
+  public void testTailer() throws IOException, InterruptedException,
       ServiceFailedException {
-    initTestEditLogTailer(async);
     Configuration conf = getConf();
     conf.setInt(DFSConfigKeys.DFS_HA_TAILEDITS_PERIOD_KEY, 0);
     conf.setInt(DFSConfigKeys.DFS_HA_TAILEDITS_ALL_NAMESNODES_RETRY_KEY, 100);
@@ -164,10 +161,8 @@ public class TestEditLogTailer {
     }
   }
 
-  @MethodSource("data")
-  @ParameterizedTest
-  public void testTailerBackoff(Boolean async) throws Exception {
-    initTestEditLogTailer(async);
+  @Test
+  public void testTailerBackoff() throws Exception {
     Configuration conf = new Configuration();
     NameNode.initMetrics(conf, HdfsServerConstants.NamenodeRole.NAMENODE);
     conf.setTimeDuration(DFSConfigKeys.DFS_HA_TAILEDITS_PERIOD_KEY,
@@ -206,24 +201,18 @@ public class TestEditLogTailer {
     assertEquals(expectedDurations, new ArrayList<>(sleepDurations));
   }
 
-  @MethodSource("data")
-  @ParameterizedTest
-  public void testNN0TriggersLogRolls(Boolean async) throws Exception {
-    initTestEditLogTailer(async);
+  @Test
+  public void testNN0TriggersLogRolls() throws Exception {
     testStandbyTriggersLogRolls(0);
   }
-
-  @MethodSource("data")
-  @ParameterizedTest
-  public void testNN1TriggersLogRolls(Boolean async) throws Exception {
-    initTestEditLogTailer(async);
+  
+  @Test
+  public void testNN1TriggersLogRolls() throws Exception {
     testStandbyTriggersLogRolls(1);
   }
 
-  @MethodSource("data")
-  @ParameterizedTest
-  public void testNN2TriggersLogRolls(Boolean async) throws Exception {
-    initTestEditLogTailer(async);
+  @Test
+  public void testNN2TriggersLogRolls() throws Exception {
     testStandbyTriggersLogRolls(2);
   }
 
@@ -261,10 +250,8 @@ public class TestEditLogTailer {
     it will be failed.
     2. when one NN become active, standby NN roll log success.
    */
-  @MethodSource("data")
-  @ParameterizedTest
-  public void testTriggersLogRollsForAllStandbyNN(Boolean async) throws Exception {
-    initTestEditLogTailer(async);
+  @Test
+  public void testTriggersLogRollsForAllStandbyNN() throws Exception {
     Configuration conf = getConf();
     // Roll every 1s
     conf.setInt(DFSConfigKeys.DFS_HA_LOGROLL_PERIOD_KEY, 1);
@@ -357,10 +344,8 @@ public class TestEditLogTailer {
     }
   }
 
-  @MethodSource("data")
-  @ParameterizedTest
-  public void testRollEditLogIOExceptionForRemoteNN(Boolean async) throws IOException {
-    initTestEditLogTailer(async);
+  @Test
+  public void testRollEditLogIOExceptionForRemoteNN() throws IOException {
     Configuration conf = getConf();
 
     // Roll every 1s
@@ -404,11 +389,9 @@ public class TestEditLogTailer {
     }
   }
 
-  @MethodSource("data")
-  @ParameterizedTest
-  public void testStandbyTriggersLogRollsWhenTailInProgressEdits(Boolean async)
+  @Test
+  public void testStandbyTriggersLogRollsWhenTailInProgressEdits()
       throws Exception {
-    initTestEditLogTailer(async);
     // Time in seconds to wait for standby to catch up to edits from active
     final int standbyCatchupWaitTime = 2;
     // Time in seconds to wait before checking if edit logs are rolled while
@@ -481,11 +464,9 @@ public class TestEditLogTailer {
     }
   }
 
-  @MethodSource("data")
-  @ParameterizedTest
-  public void testRollEditLogHandleThreadInterruption(Boolean async)
+  @Test
+  public void testRollEditLogHandleThreadInterruption()
       throws IOException, InterruptedException, TimeoutException {
-    initTestEditLogTailer(async);
     Configuration conf = getConf();
     // RollEdits timeout 1s.
     conf.setInt(DFSConfigKeys.DFS_HA_TAILEDITS_ROLLEDITS_TIMEOUT_KEY, 1);

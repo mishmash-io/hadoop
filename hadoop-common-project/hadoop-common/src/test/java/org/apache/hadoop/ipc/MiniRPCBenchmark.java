@@ -25,6 +25,7 @@ import java.net.InetSocketAddress;
 import java.net.NetworkInterface;
 import java.security.PrivilegedExceptionAction;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Enumeration;
 
 import org.apache.hadoop.test.GenericTestUtils;

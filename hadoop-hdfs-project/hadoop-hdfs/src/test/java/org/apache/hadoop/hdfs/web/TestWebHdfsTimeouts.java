@@ -36,7 +36,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
-import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 
 import org.junit.jupiter.params.ParameterizedTest;
@@ -193,7 +192,7 @@ public class TestWebHdfsTimeouts {
       fail("expected timeout");
     } catch (SocketTimeoutException e) {
       GenericTestUtils.assertExceptionContains(fs.getUri().getAuthority() +
-          ": Connect timed out", e);
+          ": connect timed out", e);
     }
   }
 
@@ -233,7 +232,7 @@ public class TestWebHdfsTimeouts {
     } catch (SocketTimeoutException e) {
       assumeBacklogConsumed();
       GenericTestUtils.assertExceptionContains(
-          fs.getUri().getAuthority() + ": Connect timed out", e);
+          fs.getUri().getAuthority() + ": connect timed out", e);
     }
   }
 
@@ -275,7 +274,7 @@ public class TestWebHdfsTimeouts {
     } catch (SocketTimeoutException e) {
       assumeBacklogConsumed();
       GenericTestUtils.assertExceptionContains(
-          fs.getUri().getAuthority() + ": Connect timed out", e);
+          fs.getUri().getAuthority() + ": connect timed out", e);
     } finally {
       IOUtils.cleanupWithLogger(LOG, os);
     }
@@ -426,9 +425,5 @@ public class TestWebHdfsTimeouts {
     return "HTTP/1.1 307 Temporary Redirect\r\n" +
       "Location: http://" + NetUtils.getHostPortString(nnHttpAddress) + "\r\n" +
       "\r\n";
-  }
-
-  public void initTestWebHdfsTimeouts(TimeoutSource timeoutSource) {
-    this.timeoutSource = timeoutSource;
   }
 }

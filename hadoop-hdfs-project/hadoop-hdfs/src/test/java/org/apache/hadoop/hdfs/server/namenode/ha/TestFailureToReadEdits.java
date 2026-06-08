@@ -74,8 +74,8 @@ public class TestFailureToReadEdits {
   private static final String TEST_DIR3 = "/test3";
   private static final Random RANDOM = new Random();
 
-  private TestType clusterType;
-  private boolean useAsyncEditLogging;
+  private final TestType clusterType;
+  private final boolean useAsyncEditLogging;
   private Configuration conf;
   private MiniDFSCluster cluster;
   private MiniQJMHACluster miniQjmHaCluster; // for QJM case only
@@ -104,7 +104,7 @@ public class TestFailureToReadEdits {
     });
   }
 
-  public void initTestFailureToReadEdits(TestType clusterType, Boolean
+  public TestFailureToReadEdits(TestType clusterType, Boolean
       useAsyncEditLogging) {
     this.clusterType = clusterType;
     this.useAsyncEditLogging = useAsyncEditLogging;
@@ -185,11 +185,8 @@ public class TestFailureToReadEdits {
    * Test that the standby NN won't double-replay earlier edits if it encounters
    * a failure to read a later edit.
    */
-  @MethodSource("data")
-  @ParameterizedTest
-  public void testFailuretoReadEdits(TestType clusterType, Boolean
-      useAsyncEditLogging) throws Exception {
-    initTestFailureToReadEdits(clusterType, useAsyncEditLogging);
+  @Test
+  public void testFailuretoReadEdits() throws Exception {
     assertTrue(fs.mkdirs(new Path(TEST_DIR1)));
     HATestUtil.waitForStandbyToCatchUp(nn0, nn1);
     
@@ -237,7 +234,7 @@ public class TestFailureToReadEdits {
     assertTrue(NameNodeAdapter.getFileInfo(nn1,
         TEST_DIR3, false, false, false).isDirectory());
   }
-
+  
   /**
    * Test the following case:
    * 1. SBN is reading a finalized edits file when NFS disappears halfway
@@ -249,11 +246,8 @@ public class TestFailureToReadEdits {
    * 
    * This is a regression test for HDFS-2766.
    */
-  @MethodSource("data")
-  @ParameterizedTest
-  public void testCheckpointStartingMidEditsFile(TestType clusterType, Boolean
-      useAsyncEditLogging) throws Exception {
-    initTestFailureToReadEdits(clusterType, useAsyncEditLogging);
+  @Test
+  public void testCheckpointStartingMidEditsFile() throws Exception {
     assertTrue(fs.mkdirs(new Path(TEST_DIR1)));
     
     HATestUtil.waitForStandbyToCatchUp(nn0, nn1);
@@ -308,11 +302,8 @@ public class TestFailureToReadEdits {
    * available edits in the shared edits dir when it is transitioning to active
    * state.
    */
-  @MethodSource("data")
-  @ParameterizedTest
-  public void testFailureToReadEditsOnTransitionToActive(TestType clusterType, Boolean
-      useAsyncEditLogging) throws Exception {
-    initTestFailureToReadEdits(clusterType, useAsyncEditLogging);
+  @Test
+  public void testFailureToReadEditsOnTransitionToActive() throws Exception {
     assertTrue(fs.mkdirs(new Path(TEST_DIR1)));
     
     HATestUtil.waitForStandbyToCatchUp(nn0, nn1);

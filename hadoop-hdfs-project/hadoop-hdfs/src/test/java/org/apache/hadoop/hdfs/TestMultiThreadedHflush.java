@@ -33,8 +33,8 @@ import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.metrics2.util.Quantile;
 import org.apache.hadoop.metrics2.util.SampleQuantiles;
 import org.apache.hadoop.util.StopWatch;
-import org.apache.hadoop.util.Tool;
-import org.apache.hadoop.util.ToolRunner;
+import org.apache.hadoop.util.cli.Tool;
+import org.apache.hadoop.util.cli.ToolRunner;
 import org.apache.hadoop.util.concurrent.SubjectInheritingThread;
 import org.junit.jupiter.api.Test;
 

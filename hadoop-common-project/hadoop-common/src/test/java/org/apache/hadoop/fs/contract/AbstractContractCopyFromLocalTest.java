@@ -35,8 +35,6 @@ import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.fs.PathExistsException;
-import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.Test;
 
 import static org.apache.hadoop.test.LambdaTestUtils.intercept;
 

@@ -39,8 +39,8 @@ public abstract class AbstractContractSetTimesTest extends
 
   @BeforeEach
   @Override
-  public void setup(TestInfo info) throws Exception {
-    super.setup(info);
+  public void setup() throws Exception {
+    super.setup();
     skipIfUnsupported(SUPPORTS_SETTIMES);
 
     //delete the test directory

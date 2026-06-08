@@ -32,7 +32,7 @@ import org.apache.hadoop.metrics2.MetricsRecordBuilder;
 import org.apache.hadoop.metrics2.lib.DefaultMetricsSystem;
 import org.apache.hadoop.test.GenericTestUtils;
 import org.apache.hadoop.test.MetricsAsserts;
-import org.apache.hadoop.util.Tool;
+import org.apache.hadoop.util.cli.Tool;
 import org.apache.hadoop.util.VersionInfo;
 import org.apache.hadoop.util.concurrent.SubjectInheritingThread;
 

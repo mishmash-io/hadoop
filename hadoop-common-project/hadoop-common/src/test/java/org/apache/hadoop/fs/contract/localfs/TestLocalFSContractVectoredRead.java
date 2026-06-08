@@ -23,6 +23,7 @@ import java.util.List;
 import java.util.concurrent.CompletableFuture;
 
 import org.assertj.core.api.Assertions;
+
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.ChecksumException;
 import org.apache.hadoop.fs.FSDataInputStream;
@@ -54,9 +55,8 @@ public class TestLocalFSContractVectoredRead extends AbstractContractVectoredRea
     return new LocalFSContract(conf);
   }
 
-  @ParameterizedTest
-  @MethodSource("params")
-  public void testChecksumValidationDuringVectoredRead(String bufferType) throws Exception {
+  @Test
+  public void testChecksumValidationDuringVectoredRead() throws Exception {
     Path testPath = path("big_range_checksum_file");
     List<FileRange> someRandomRanges = new ArrayList<>();
     someRandomRanges.add(FileRange.createFileRange(10, 1024));
@@ -69,15 +69,14 @@ public class TestLocalFSContractVectoredRead extends AbstractContractVectoredRea
    * Test for file size less than checksum chunk size.
    * {@code ChecksumFileSystem#bytesPerChecksum}.
    */
-  @ParameterizedTest
-  @MethodSource("params")
-  public void testChecksumValidationDuringVectoredReadSmallFile(String bufferType) throws Exception {
+  @Test
+  public void testChecksumValidationDuringVectoredReadSmallFile() throws Exception {
     Path testPath = path("big_range_checksum_file");
     final int length = 471;
     List<FileRange> smallFileRanges = new ArrayList<>();
     smallFileRanges.add(FileRange.createFileRange(10, 50));
     smallFileRanges.add(FileRange.createFileRange(100, 20));
-    validateCheckReadException(testPath, length, smallFileRanges, bufferType);
+    validateCheckReadException(testPath, length, smallFileRanges);
   }
 
   /**
@@ -89,8 +88,7 @@ public class TestLocalFSContractVectoredRead extends AbstractContractVectoredRea
    */
   private void validateCheckReadException(Path testPath,
                                           int length,
-                                          List<FileRange> ranges,
-                                          String bufferType) throws Exception {
+                                          List<FileRange> ranges) throws Exception {
     LocalFileSystem localFs = (LocalFileSystem) getFileSystem();
     final byte[] datasetCorrect = ContractTestUtils.dataset(length, 'a', 32);
     try (FSDataOutputStream out = localFs.create(testPath, true)){
@@ -111,7 +109,7 @@ public class TestLocalFSContractVectoredRead extends AbstractContractVectoredRea
     }
     CompletableFuture<FSDataInputStream> fisN = localFs.openFile(testPath).build();
     try (FSDataInputStream in = fisN.get()){
-      in.readVectored(ranges, getAllocate(bufferType));
+      in.readVectored(ranges, getAllocate());
       // Expect checksum exception when data is updated directly through
       // raw local fs instance.
       intercept(ChecksumException.class,

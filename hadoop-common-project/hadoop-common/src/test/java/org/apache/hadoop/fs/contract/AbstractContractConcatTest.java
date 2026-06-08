@@ -47,8 +47,8 @@ public abstract class AbstractContractConcatTest extends AbstractFSContractTestB
 
   @BeforeEach
   @Override
-  public void setup(TestInfo info) throws Exception {
-    super.setup(info);
+  public void setup() throws Exception {
+    super.setup();
     skipIfUnsupported(SUPPORTS_CONCAT);
 
     //delete the test directory

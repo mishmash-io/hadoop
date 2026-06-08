@@ -52,7 +52,7 @@ import org.apache.hadoop.hdfs.client.impl.DfsClientConf;
 import org.apache.hadoop.hdfs.client.HdfsClientConfigKeys.Retry;
 
 import org.apache.hadoop.test.GenericTestUtils;
-import org.apache.log4j.Level;
+import org.apache.logging.log4j.Level;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.Timeout;
 import org.mockito.Mockito;

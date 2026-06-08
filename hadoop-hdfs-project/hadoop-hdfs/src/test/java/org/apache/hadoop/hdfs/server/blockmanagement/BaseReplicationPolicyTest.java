@@ -53,6 +53,7 @@ abstract public class BaseReplicationPolicyTest {
   private BlockPlacementPolicy striptedPolicy;
   protected final String filename = "/dummyfile.txt";
   protected DatanodeStorageInfo[] storages;
+  protected String blockPlacementPolicy;
   protected NamenodeProtocols nameNodeRpc = null;
 
   void updateHeartbeatWithUsage(DatanodeDescriptor dn,

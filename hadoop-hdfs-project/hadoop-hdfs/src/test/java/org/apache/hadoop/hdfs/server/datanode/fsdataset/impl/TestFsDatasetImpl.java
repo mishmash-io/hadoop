@@ -20,10 +20,8 @@ package org.apache.hadoop.hdfs.server.datanode.fsdataset.impl;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.lang.management.ManagementFactory;
-import java.lang.reflect.Method;
 import java.nio.file.Files;
 import java.nio.file.Paths;
-import java.util.Optional;
 import java.util.Random;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -109,7 +107,6 @@ import java.util.concurrent.TimeUnit;
 
 import static org.apache.hadoop.hdfs.DFSConfigKeys.DFS_BLOCK_SIZE_KEY;
 import static org.apache.hadoop.hdfs.DFSConfigKeys.DFS_DN_CACHED_DFSUSED_CHECK_INTERVAL_MS;
-import static org.hamcrest.MatcherAssert.assertThat;
 import static org.apache.hadoop.hdfs.DFSConfigKeys.DFS_DATANODE_SCAN_PERIOD_HOURS_KEY;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -1115,7 +1112,7 @@ public class TestFsDatasetImpl {
       assertEquals(0, cluster.getNamesystem().getCorruptReplicaBlocks());
 
       FileSystem fs = cluster.getFileSystem();
-      Path filePath = new Path( name);
+      Path filePath = new Path(name.getMethodName());
       DFSTestUtil.createFile(fs, filePath, 1, (short) 1, 0);
 
       block = DFSTestUtil.getFirstBlock(fs, filePath);
@@ -1159,7 +1156,7 @@ public class TestFsDatasetImpl {
       FileSystem fs = cluster.getFileSystem();
       DataNode dataNode = cluster.getDataNodes().get(0);
 
-      Path filePath = new Path( name);
+      Path filePath = new Path(name.getMethodName());
       long fileLen = 100;
       ExtendedBlock block = createTestFile(fs, fileLen, filePath);
 
@@ -1208,7 +1205,7 @@ public class TestFsDatasetImpl {
       FileSystem fs = cluster.getFileSystem();
       DataNode dataNode = cluster.getDataNodes().get(0);
 
-      Path filePath = new Path( name);
+      Path filePath = new Path(name.getMethodName());
       DFSTestUtil.createFile(fs, filePath, 100, (short) 1, 0);
       ExtendedBlock block = DFSTestUtil.getFirstBlock(fs, filePath);
 
@@ -1248,7 +1245,7 @@ public class TestFsDatasetImpl {
       FileSystem fs = cluster.getFileSystem();
       DataNode dataNode = cluster.getDataNodes().get(0);
 
-      Path filePath = new Path( name);
+      Path filePath = new Path(name.getMethodName());
       long fileLen = 100;
 
       ExtendedBlock block = createTestFile(fs, fileLen, filePath);
@@ -1317,7 +1314,7 @@ public class TestFsDatasetImpl {
       FileSystem fs = cluster.getFileSystem();
       DataNode dataNode = cluster.getDataNodes().get(0);
 
-      Path filePath = new Path( name);
+      Path filePath = new Path(name.getMethodName());
       long fileLen = 100;
 
       ExtendedBlock block = createTestFile(fs, fileLen, filePath);
@@ -1392,7 +1389,7 @@ public class TestFsDatasetImpl {
           .build();
       FileSystem fs = cluster.getFileSystem();
       DataNode dataNode = cluster.getDataNodes().get(0);
-      Path filePath = new Path( name);
+      Path filePath = new Path(name.getMethodName());
       long fileLen = 100;
 
       ExtendedBlock block = createTestFile(fs, fileLen, filePath);
@@ -1441,7 +1438,7 @@ public class TestFsDatasetImpl {
           .build();
       FileSystem fs = cluster.getFileSystem();
       DataNode dataNode = cluster.getDataNodes().get(0);
-      Path filePath = new Path( name);
+      Path filePath = new Path(name.getMethodName());
       long fileLen = 100;
 
       ExtendedBlock block = createTestFile(fs, fileLen, filePath);
@@ -1835,7 +1832,7 @@ public class TestFsDatasetImpl {
       DataNode dataNode = cluster.getDataNodes().get(0);
 
       // Create file that has one block with one replica.
-      Path filePath = new Path( name);
+      Path filePath = new Path(name.getMethodName());
       DFSTestUtil.createFile(fs, filePath, 100, (short) 1, 0);
       ExtendedBlock block = DFSTestUtil.getFirstBlock(fs, filePath);
 

@@ -31,15 +31,14 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.PrintStream;
 import java.security.PrivilegedAction;
-import java.util.concurrent.TimeUnit;
 
 import org.apache.commons.lang3.RandomUtils;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
+import org.apache.hadoop.fs.shell.FsShell;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.fs.SafeModeAction;
-import org.apache.hadoop.fs.shell.FsShell;
 import org.apache.hadoop.hdfs.DFSConfigKeys;
 import org.apache.hadoop.hdfs.DFSTestUtil;
 import org.apache.hadoop.hdfs.DFSUtil;
@@ -116,10 +115,9 @@ public class TestSnapshotDeletion {
       cluster = null;
     }
   }
-
+    
   /**
    * Deleting snapshottable directory with snapshots must fail.
-   * @throws IOException 
    */
   @Test
   @Timeout(value = 300)
@@ -181,7 +179,6 @@ public class TestSnapshotDeletion {
 
   /**
    * Deleting directory with snapshottable descendant with snapshots must fail.
-   * @throws IOException 
    */
   @Test
   @Timeout(value = 300)
@@ -190,7 +187,7 @@ public class TestSnapshotDeletion {
     Path file1 = new Path(sub, "file1");
     DFSTestUtil.createFile(hdfs, file0, BLOCKSIZE, REPLICATION, seed);
     DFSTestUtil.createFile(hdfs, file1, BLOCKSIZE, REPLICATION, seed);
-
+    
     Path subfile1 = new Path(subsub, "file0");
     Path subfile2 = new Path(subsub, "file1");
     DFSTestUtil.createFile(hdfs, subfile1, BLOCKSIZE, REPLICATION, seed);
@@ -230,7 +227,7 @@ public class TestSnapshotDeletion {
     assertEquals(expectedDs, counts.getStorageSpace(),
         dirNode.dumpTreeRecursively().toString());
   }
-
+  
   /**
    * Test deleting a directory which is a descendant of a snapshottable
    * directory. In the test we need to cover the following cases:
@@ -406,7 +403,7 @@ public class TestSnapshotDeletion {
     assertEquals(REPLICATION,
         metaChangeFile1SCopy.getFileReplication(snapshot0.getId()));
   }
-
+  
   /**
    * Test deleting the earliest (first) snapshot. In this simplest scenario, the 
    * snapshots are taken on the same directory, and we do not need to combine
@@ -473,7 +470,7 @@ public class TestSnapshotDeletion {
         + "\n" + "After deletion: " + statusAfterDeletion.toString());
     assertEquals(statusBeforeDeletion.toString(), statusAfterDeletion.toString());
   }
-
+  
   /**
    * Test deleting the earliest (first) snapshot. In this more complicated 
    * scenario, the snapshots are taken across directories.
@@ -665,7 +662,7 @@ public class TestSnapshotDeletion {
   public void testCombineSnapshotDiff1() throws Exception {
     testCombineSnapshotDiffImpl(sub, "", 1);
   }
-
+  
   /**
    * Test deleting snapshots in more complicated scenarios (snapshot diffs are
    * distributed in the directory sub-tree)
@@ -675,7 +672,7 @@ public class TestSnapshotDeletion {
   public void testCombineSnapshotDiff2() throws Exception {
     testCombineSnapshotDiffImpl(sub, "subsub1/subsubsub1/", 3);
   }
-
+  
   /**
    * When combine two snapshots, make sure files/directories created after the 
    * prior snapshot get destroyed.
@@ -877,7 +874,7 @@ public class TestSnapshotDeletion {
       assertEquals(REPLICATION_1, b.getReplication());
     }
   }
-
+  
   /** Test deleting snapshots with modification on the metadata of directory */ 
   @Test
   @Timeout(value = 300)
@@ -1264,22 +1261,21 @@ public class TestSnapshotDeletion {
   }
 
   @Test
-  public void testSnapshotWithConcatException() throws IOException {
-    String error = "Concat: the source file /st/0.txt is in snapshot";
+  public void testSnapshotWithConcatException() throws Exception {
     final Path st = new Path("/st");
     hdfs.mkdirs(st);
     hdfs.allowSnapshot(st);
 
     Path[] files = new Path[3];
-    for (int i = 0;i < 3;i++) {
-      files[i] = new Path(st, i + ".txt");
+    for (int i = 0; i < 3; i++) {
+      files[i] = new Path(st, i+ ".txt");
     }
 
     Path dest = new Path(st, "dest.txt");
     hdfs.createNewFile(dest);
     hdfs.createSnapshot(st, "ss");
 
-    for (int j = 0;j < 3;j++) {
+    for (int j = 0; j < 3; j++) {
       FileSystem fs = cluster.getFileSystem();
       DFSTestUtil.createFile(fs, files[j], false, 1024,
           1024, 512, (short) 1, RandomUtils.nextLong(1, 512), true);

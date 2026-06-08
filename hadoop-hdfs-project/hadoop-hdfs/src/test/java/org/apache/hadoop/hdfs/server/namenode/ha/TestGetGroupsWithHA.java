@@ -25,7 +25,7 @@ import org.apache.hadoop.hdfs.MiniDFSCluster;
 import org.apache.hadoop.hdfs.MiniDFSNNTopology;
 import org.apache.hadoop.hdfs.tools.GetGroups;
 import org.apache.hadoop.tools.GetGroupsTestBase;
-import org.apache.hadoop.util.Tool;
+import org.apache.hadoop.util.cli.Tool;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 

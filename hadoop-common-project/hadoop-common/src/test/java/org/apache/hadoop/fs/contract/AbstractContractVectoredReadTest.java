@@ -22,6 +22,7 @@ import java.io.EOFException;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CountDownLatch;
@@ -95,17 +96,7 @@ public abstract class AbstractContractVectoredReadTest extends AbstractFSContrac
   private final ElasticByteBufferPool pool =
           new WeakReferencedElasticByteBufferPool();
 
-  /**
-   * Path to the vector file.
-   */
-  private Path vectorPath;
-
-  /**
-   * Counter of buffer releases.
-   * Because not all implementations release buffers on failures,
-   * this is not yet used in assertions.
-   */
-  private final AtomicInteger bufferReleases = new AtomicInteger();
+  private final String bufferType;
 
   private final boolean isDirect;
 
@@ -122,7 +113,7 @@ public abstract class AbstractContractVectoredReadTest extends AbstractFSContrac
   private final AtomicInteger bufferReleases = new AtomicInteger();
 
   public static List<String> params() {
-    return asList("direct", "array");
+    return Arrays.asList("direct", "array");
   }
 
   protected AbstractContractVectoredReadTest(String bufferType) {
@@ -289,9 +280,8 @@ public abstract class AbstractContractVectoredReadTest extends AbstractFSContrac
    * As the minimum seek value is 4*1024, the first three ranges will be
    * merged into and other two will remain as it is.
    */
-  @ParameterizedTest
-  @MethodSource("params")
-  public void testSomeRangesMergedSomeUnmerged(String bufferType) throws Exception {
+  @Test
+  public void testSomeRangesMergedSomeUnmerged() throws Exception {
     FileSystem fs = getFileSystem();
     List<FileRange> fileRanges = new ArrayList<>();
     range(fileRanges, 8 * 1024, 100);
@@ -629,8 +619,7 @@ public abstract class AbstractContractVectoredReadTest extends AbstractFSContrac
    */
   protected <T extends Throwable> void verifyExceptionalVectoredRead(
           List<FileRange> fileRanges,
-          Class<T> clazz,
-          String bufferType) throws Exception {
+          Class<T> clazz) throws Exception {
 
     try (FSDataInputStream in = openVectorFile()) {
       intercept(clazz, () -> {

@@ -82,7 +82,7 @@ public class TestGraphiteMetrics {
 
     String result = argument.getValue();
 
-    assertTrue(
+    assertEquals(true,
         result.equals("null.all.Context.Context=all.Hostname=host.foo1 1.25 10\n" +
         "null.all.Context.Context=all.Hostname=host.foo2 2.25 10\n") ||
         result.equals("null.all.Context.Context=all.Hostname=host.foo2 2.25 10\n" +
@@ -114,7 +114,7 @@ public class TestGraphiteMetrics {
 
     String result = argument.getValue();
 
-    assertTrue(
+    assertEquals(true,
         result.equals("null.all.Context.Context=all.foo1 1 10\n" +
         "null.all.Context.Context=all.foo2 2 10\n") ||
         result.equals("null.all.Context.Context=all.foo2 2 10\n" +
@@ -192,7 +192,7 @@ public class TestGraphiteMetrics {
     verify(mockGraphite).write(argument.capture());
     String result = argument.getValue();
 
-    assertTrue(
+    assertEquals(true,
         result.equals("null.all.Context.Context=all.Hostname=host.foo1 1.25 10\n" +
         "null.all.Context.Context=all.Hostname=host.foo2 2.25 10\n") ||
         result.equals("null.all.Context.Context=all.Hostname=host.foo2 2.25 10\n" +

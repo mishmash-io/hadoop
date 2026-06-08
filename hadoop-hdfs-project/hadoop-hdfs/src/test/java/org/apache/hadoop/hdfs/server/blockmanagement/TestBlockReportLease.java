@@ -46,7 +46,10 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Random;
-import java.util.concurrent.*;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -309,7 +312,6 @@ public class TestBlockReportLease {
       doAnswer(delayer).when(spyBlockManager).processReport(
           any(DatanodeStorageInfo.class),
           any(BlockListAsLongs.class));
-      ExecutorService pool = Executors.newFixedThreadPool(1);
 
       ExecutorService pool = Executors.newFixedThreadPool(1);
       // Trigger sendBlockReport.
@@ -354,7 +356,6 @@ public class TestBlockReportLease {
 
         DatanodeCommand datanodeCommand = f2.get();
         // Get result, it will not null if process successfully.
-        DatanodeCommand datanodeCommand = prFuture.get();
         assertTrue(datanodeCommand instanceof FinalizeCommand);
         assertEquals(poolId, ((FinalizeCommand) datanodeCommand)
             .getBlockPoolId());

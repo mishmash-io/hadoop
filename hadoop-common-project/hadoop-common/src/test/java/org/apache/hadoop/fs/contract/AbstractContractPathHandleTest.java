@@ -113,7 +113,7 @@ public abstract class AbstractContractPathHandleTest
     initAbstractContractPathHandleTest(pTestname, pOpts, pSerialized);
     describe("verify simple open, no changes");
     FileStatus stat = testFile(B1);
-    PathHandle fd = getHandleOrSkip(stat, opts, serialized);
+    PathHandle fd = getHandleOrSkip(stat);
     verifyFileContents(getFileSystem(), stat.getPath(), B1);
 
     try (FSDataInputStream in = getFileSystem().open(fd)) {
@@ -144,7 +144,7 @@ public abstract class AbstractContractPathHandleTest
     // verify fd entity contains contents of file1 + appended bytes
     verifyFileContents(getFileSystem(), stat.getPath(), b12);
     // get the handle *after* the file has been modified
-    PathHandle fd = getHandleOrSkip(stat, opts, serialized);
+    PathHandle fd = getHandleOrSkip(stat);
 
     try (FSDataInputStream in = getFileSystem().open(fd)) {
       assertTrue(data.allowChange(), "Failed to detect content change");
@@ -168,7 +168,7 @@ public abstract class AbstractContractPathHandleTest
     ContractTestUtils.rename(getFileSystem(), stat.getPath(),
         path(stat.getPath() + "2"));
     // obtain handle to entity from #getFileStatus call
-    PathHandle fd = getHandleOrSkip(stat, opts, serialized);
+    PathHandle fd = getHandleOrSkip(stat);
 
     try (FSDataInputStream in = getFileSystem().open(fd)) {
       assertTrue(loc.allowChange(), "Failed to detect location change");
@@ -194,7 +194,7 @@ public abstract class AbstractContractPathHandleTest
     Path dst = path(stat.getPath() + "2");
     ContractTestUtils.rename(getFileSystem(), stat.getPath(), dst);
     appendFile(getFileSystem(), dst, B2);
-    PathHandle fd = getHandleOrSkip(stat, opts, serialized);
+    PathHandle fd = getHandleOrSkip(stat);
 
     byte[] b12 = Arrays.copyOf(B1, B1.length + B2.length);
     System.arraycopy(B2, 0, b12, B1.length, B2.length);
@@ -213,7 +213,7 @@ public abstract class AbstractContractPathHandleTest
   }
 
   private FileStatus testFile(byte[] content) throws IOException {
-    Path path = path(getMethodName());
+    Path path = path(methodName.getMethodName());
     createFile(getFileSystem(), path, false, content);
     FileStatus stat = getFileSystem().getFileStatus(path);
     assertNotNull(stat);
@@ -247,11 +247,9 @@ public abstract class AbstractContractPathHandleTest
    * Utility method to obtain a handle or skip the test if the set of opts
    * are not supported.
    * @param stat Target file status
-   * @param opts HandleOpts
-   * @param serialized serialized
    * @return Handle to the indicated entity or skip the test
    */
-  protected PathHandle getHandleOrSkip(FileStatus stat, HandleOpt[] opts, boolean serialized) {
+  protected PathHandle getHandleOrSkip(FileStatus stat) {
     try {
       PathHandle fd = getFileSystem().getPathHandle(stat, opts);
       if (serialized) {
@@ -274,7 +272,7 @@ public abstract class AbstractContractPathHandleTest
     CompletableFuture<Long> readAllBytes = getFileSystem()
         .openFile(
             getHandleOrSkip(
-                testFile(B1), opts, serialized))
+                testFile(B1)))
         .build()
         .thenApply(ContractTestUtils::readStream);
     assertEquals(TEST_FILE_LEN,
@@ -288,7 +286,7 @@ public abstract class AbstractContractPathHandleTest
     initAbstractContractPathHandleTest(pTestname, pOpts, pSerialized);
     describe("use the apply sequence to read a whole file");
     FileStatus testFile = testFile(B1);
-    PathHandle handle = getHandleOrSkip(testFile, opts, serialized);
+    PathHandle handle = getHandleOrSkip(testFile);
     // delete that file
     FileSystem fs = getFileSystem();
     fs.delete(testFile.getPath(), false);
@@ -319,7 +317,7 @@ public abstract class AbstractContractPathHandleTest
     CompletableFuture<Long> readAllBytes = getFileSystem()
         .openFile(
             getHandleOrSkip(
-                stat, opts, serialized))
+                stat))
         .build()
         .thenApply(ContractTestUtils::readStream);
     assertEquals(TEST_FILE_LEN,

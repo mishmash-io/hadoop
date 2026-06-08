@@ -21,7 +21,8 @@ import org.apache.hadoop.security.ssl.KeyStoreTestUtil;
 import org.apache.hadoop.test.GenericTestUtils;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
-import org.eclipse.jetty.util.log.Log;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import jakarta.servlet.*;
 import jakarta.servlet.http.HttpServletResponse;
@@ -156,7 +157,7 @@ public class TestAuthenticationSessionCookie {
     String header = conn.getHeaderField("Set-Cookie");
     List<HttpCookie> cookies = HttpCookie.parse(header);
     assertTrue(!cookies.isEmpty());
-    Log.getLog().info(header);
+    LOG.info(header);
     assertFalse(header.contains("; Expires="));
     assertTrue("token".equals(cookies.get(0).getValue()));
   }
@@ -178,7 +179,7 @@ public class TestAuthenticationSessionCookie {
     String header = conn.getHeaderField("Set-Cookie");
     List<HttpCookie> cookies = HttpCookie.parse(header);
     assertTrue(!cookies.isEmpty());
-    Log.getLog().info(header);
+    LOG.info(header);
     assertTrue(header.contains("; Expires="));
     assertTrue("token".equals(cookies.get(0).getValue()));
   }

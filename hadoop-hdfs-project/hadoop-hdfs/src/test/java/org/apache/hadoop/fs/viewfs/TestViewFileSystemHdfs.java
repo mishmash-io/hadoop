@@ -39,10 +39,10 @@ import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.FileSystemTestHelper;
 import org.apache.hadoop.fs.FsConstants;
+import org.apache.hadoop.fs.shell.FsShell;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.fs.contract.ContractTestUtils;
 import org.apache.hadoop.fs.permission.FsPermission;
-import org.apache.hadoop.fs.shell.FsShell;
 import org.apache.hadoop.hdfs.DFSConfigKeys;
 import org.apache.hadoop.hdfs.DFSTestUtil;
 import org.apache.hadoop.hdfs.MiniDFSCluster;
@@ -289,7 +289,7 @@ public class TestViewFileSystemHdfs extends ViewFileSystemBaseTest {
     fsView.create(filePath);
     try {
       fsView.rename(filePath, hdfFilepath);
-      Assertions.fail("Should thrown IOE on Renames across filesytems");
+      ContractTestUtils.fail("Should thrown IOE on Renames across filesytems");
     } catch (IOException e) {
       GenericTestUtils
           .assertExceptionContains("Renames across Mount points not supported",

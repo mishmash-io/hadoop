@@ -332,7 +332,7 @@ public class TestSimulatedFSDataset {
       int expectedBlockCount) {
     Map<DatanodeStorage, BlockListAsLongs> blockReportMap =
         fsdataset.getBlockReports(bpid);
-    assertEquals(getStorageCount(), blockReportMap.size());
+    assertEquals(storageCount, blockReportMap.size());
     int totalCount = 0;
     for (Map.Entry<DatanodeStorage, BlockListAsLongs> ent :
         blockReportMap.entrySet()) {

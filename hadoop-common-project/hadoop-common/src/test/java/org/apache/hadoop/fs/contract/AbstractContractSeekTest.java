@@ -55,8 +55,8 @@ public abstract class AbstractContractSeekTest extends AbstractFSContractTestBas
 
   @BeforeEach
   @Override
-  public void setup(TestInfo info) throws Exception {
-    super.setup(info);
+  public void setup() throws Exception {
+    super.setup();
     skipIfUnsupported(SUPPORTS_SEEK);
     //delete the test directory
     smallSeekFile = path("seekfile.txt");

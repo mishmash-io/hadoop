@@ -32,7 +32,6 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.Set;
-import java.util.concurrent.TimeUnit;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.hadoop.conf.Configuration;
@@ -74,7 +73,12 @@ public class TestNameNodeRecovery {
     return params;
   }
 
-  private static Configuration getConf(boolean useAsyncEditLog) {
+  private static boolean useAsyncEditLog;
+  public TestNameNodeRecovery(Boolean async) {
+    useAsyncEditLog = async;
+  }
+
+  private static Configuration getConf() {
     Configuration conf = new HdfsConfiguration();
     conf.setBoolean(DFSConfigKeys.DFS_NAMENODE_EDITS_ASYNC_LOGGING,
         useAsyncEditLog);
@@ -91,14 +95,14 @@ public class TestNameNodeRecovery {
     EditLogFileOutputStream.setShouldSkipFsyncForTesting(true);
   }
 
-  static void runEditLogTest(EditLogTestSetup elts, boolean useAsyncEditLog) throws IOException {
+  static void runEditLogTest(EditLogTestSetup elts) throws IOException {
     final File TEST_LOG_NAME = new File(TEST_DIR, "test_edit_log");
     final OpInstanceCache cache = new OpInstanceCache();
     
     EditLogFileOutputStream elfos = null;
     EditLogFileInputStream elfis = null;
     try {
-      elfos = new EditLogFileOutputStream(getConf(useAsyncEditLog), TEST_LOG_NAME, 0);
+      elfos = new EditLogFileOutputStream(getConf(), TEST_LOG_NAME, 0);
       elfos.create(NameNodeLayoutVersion.CURRENT_LAYOUT_VERSION);
 
       elts.addTransactionsToLog(elfos, cache);
@@ -253,7 +257,7 @@ public class TestNameNodeRecovery {
       return new HashSet<Long>();
     } 
   }
-
+  
   /** Test an empty edit log */
   @Test
   @Timeout(value = 180)
@@ -266,21 +270,24 @@ public class TestNameNodeRecovery {
   @Timeout(value = 180)
   public void testEmptyPaddedLog() throws IOException {
     runEditLogTest(new EltsTestEmptyLog(
-        EditLogFileOutputStream.MIN_PREALLOCATION_LENGTH), async);
+        EditLogFileOutputStream.MIN_PREALLOCATION_LENGTH));
   }
-
+  
   /** Test an empty edit log with extra-long padding */
   @Test
   @Timeout(value = 180)
   public void testEmptyExtraPaddedLog() throws IOException {
     runEditLogTest(new EltsTestEmptyLog(
-        3 * EditLogFileOutputStream.MIN_PREALLOCATION_LENGTH), async);
+        3 * EditLogFileOutputStream.MIN_PREALLOCATION_LENGTH));
   }
 
   /**
    * Test using a non-default maximum opcode length.
    */
   private static class EltsTestNonDefaultMaxOpSize extends EditLogTestSetup {
+    public EltsTestNonDefaultMaxOpSize() {
+    }
+
     @Override
     public void addTransactionsToLog(EditLogOutputStream elos,
         OpInstanceCache cache) throws IOException {
@@ -347,14 +354,14 @@ public class TestNameNodeRecovery {
   @Timeout(value = 180)
   public void testOpcodesAfterPadding() throws IOException {
     runEditLogTest(new EltsTestOpcodesAfterPadding(
-        EditLogFileOutputStream.MIN_PREALLOCATION_LENGTH), async);
+        EditLogFileOutputStream.MIN_PREALLOCATION_LENGTH));
   }
 
   @Test
   @Timeout(value = 180)
   public void testOpcodesAfterExtraPadding() throws IOException {
     runEditLogTest(new EltsTestOpcodesAfterPadding(
-        3 * EditLogFileOutputStream.MIN_PREALLOCATION_LENGTH), async);
+        3 * EditLogFileOutputStream.MIN_PREALLOCATION_LENGTH));
   }
 
   private static class EltsTestGarbageInEditLog extends EditLogTestSetup {
@@ -390,7 +397,7 @@ public class TestNameNodeRecovery {
       return new HashSet<>(Arrays.asList(1L, 2L, 3L, 5L, 6L, 7L, 8L, 9L, 10L));
     }
   }
-
+  
   /** Test that we can successfully recover from a situation where there is
    * garbage in the middle of the edit log file output stream. */
   @Test
@@ -547,14 +554,14 @@ public class TestNameNodeRecovery {
     }
   }
 
-  static void testNameNodeRecoveryImpl(Corruptor corruptor, boolean finalize, boolean async)
+  static void testNameNodeRecoveryImpl(Corruptor corruptor, boolean finalize)
       throws IOException {
     final String TEST_PATH = "/test/path/dir";
     final String TEST_PATH2 = "/second/dir";
     final boolean needRecovery = corruptor.needRecovery(finalize);
 
     // start a cluster
-    Configuration conf = getConf(async);
+    Configuration conf = getConf();
     setupRecoveryTestConf(conf);
     MiniDFSCluster cluster = null;
     FileSystem fileSys = null;

@@ -84,12 +84,11 @@ import org.apache.hadoop.security.alias.CredentialProviderFactory;
 import org.apache.hadoop.security.alias.LocalJavaKeyStoreProvider;
 import org.apache.hadoop.test.GenericTestUtils;
 import org.apache.hadoop.util.concurrent.SubjectInheritingThread;
+import org.apache.hadoop.test.LogCapturingAppender;
 
 import static org.apache.hadoop.util.PlatformName.IBM_JAVA;
 
-import org.apache.log4j.AppenderSkeleton;
-import org.apache.log4j.Logger;
-import org.apache.log4j.spi.LoggingEvent;
+import org.apache.logging.log4j.core.LogEvent;
 import org.junit.jupiter.api.io.TempDir;
 import org.mockito.Mockito;
 
@@ -242,11 +241,10 @@ public class TestConfiguration {
       conf.addResource(in2);
       assertEquals("A", conf.get("prop"), "should see the first value");
 
-      List<LoggingEvent> events = appender.getLog();
       assertEquals(1, events.size(),
           "overriding a final parameter should cause logging");
-      LoggingEvent loggingEvent = events.get(0);
-      String renderedMessage = loggingEvent.getRenderedMessage();
+      LogEvent loggingEvent = events.peek();
+      String renderedMessage = loggingEvent.getMessage().getFormattedMessage();
       assertTrue(renderedMessage.contains(
           "an attempt to override final parameter: prop;  Ignoring."),
           "did not see expected string inside message "+ renderedMessage);
@@ -341,15 +339,14 @@ public class TestConfiguration {
       conf.addResource(in1);
       assertEquals("A", conf.get("prop"), "should see the value");
 
-      List<LoggingEvent> events = appender.getLog();
       assertEquals(1, events.size(), "overriding a final parameter should cause logging");
-      LoggingEvent loggingEvent = events.get(0);
-      String renderedMessage = loggingEvent.getRenderedMessage();
+      LogEvent loggingEvent = events.peek();
+      String renderedMessage = loggingEvent.getMessage().getFormattedMessage();
       assertTrue(renderedMessage.contains("an attempt to override final parameter: " +
           "prop;  Ignoring."), "did not see expected string inside message "+ renderedMessage);
     } finally {
       // Make sure the appender is removed
-      logger.removeAppender(appender);
+      LogCapturingAppender.stop(Configuration.class.getName());
     }
   }
 
@@ -362,20 +359,20 @@ public class TestConfiguration {
     String confXml = "<configuration><property><name>" + oldProp + "</name><value>a</value></property></configuration>";
     Files.write(confFile, confXml.getBytes());
 
-    TestAppender appender = new TestAppender();
-    Logger deprecationLogger = Logger.getLogger("org.apache.hadoop.conf.Configuration.deprecation");
-    deprecationLogger.addAppender(appender);
+    Queue<LogEvent> events = new ConcurrentLinkedQueue<>();
+    LogCapturingAppender.collectEvents(
+      Configuration.class.getName(), events);
 
     try {
       conf.addResource(new Path(confFile.toUri()));
       // Properties are lazily initialized so access them to trigger the loading of the resource
       conf.getProps();
     } finally {
-      deprecationLogger.removeAppender(appender);
+      LogCapturingAppender.stop(Configuration.class.getName());
     }
 
     Pattern deprecationMsgPattern = Pattern.compile(oldProp + " in file:" + confFile + " is deprecated");
-    boolean hasDeprecationMessage = appender.log.stream().map(LoggingEvent::getRenderedMessage)
+    boolean hasDeprecationMessage = events.stream().map(l -> l.getMessage().getFormattedMessage())
             .anyMatch(msg -> deprecationMsgPattern.matcher(msg).find());
     assertTrue(hasDeprecationMessage);
   }
@@ -386,9 +383,9 @@ public class TestConfiguration {
     String newProp = "test.deprecation.new.conf.b";
     Configuration.addDeprecation(oldProp, newProp);
 
-    TestAppender appender = new TestAppender();
-    Logger deprecationLogger = Logger.getLogger("org.apache.hadoop.conf.Configuration.deprecation");
-    deprecationLogger.addAppender(appender);
+    Queue<LogEvent> events = new ConcurrentLinkedQueue<>();
+    LogCapturingAppender.collectEvents(
+      Configuration.class.getName(), events);
 
     try {
       conf.set(oldProp, "b1");
@@ -401,35 +398,13 @@ public class TestConfiguration {
       conf.set(newProp, "b4");
       conf.get(newProp);
     } finally {
-      deprecationLogger.removeAppender(appender);
+      LogCapturingAppender.stop(Configuration.class.getName());
     }
 
     Pattern deprecationMsgPattern = Pattern.compile(oldProp + " is deprecated");
-    long count = appender.log.stream().map(LoggingEvent::getRenderedMessage)
+    long count = events.stream().map(l -> l.getMessage().getFormattedMessage())
             .filter(msg -> deprecationMsgPattern.matcher(msg).find()).count();
     assertEquals(4, count, "Expected exactly four warnings for deprecated property usage");
-  }
-
-  /**
-   * A simple appender for white box testing.
-   */
-  private static class TestAppender extends AppenderSkeleton {
-    private final List<LoggingEvent> log = new ArrayList<>();
-
-    @Override public boolean requiresLayout() {
-      return false;
-    }
-
-    @Override protected void append(final LoggingEvent loggingEvent) {
-      log.add(loggingEvent);
-    }
-
-    @Override public void close() {
-    }
-
-    public List<LoggingEvent> getLog() {
-      return new ArrayList<>(log);
-    }
   }
 
   /**

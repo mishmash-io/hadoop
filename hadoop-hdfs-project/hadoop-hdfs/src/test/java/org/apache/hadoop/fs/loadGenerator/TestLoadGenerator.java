@@ -31,7 +31,7 @@ import org.apache.hadoop.hdfs.HdfsConfiguration;
 import org.apache.hadoop.hdfs.MiniDFSCluster;
 import org.apache.hadoop.test.PathUtils;
 import org.apache.hadoop.util.Time;
-import org.apache.hadoop.util.Tool;
+import org.apache.hadoop.util.cli.Tool;
 import org.apache.hadoop.util.cli.ToolRunner;
 import org.junit.jupiter.api.Test;
 /**

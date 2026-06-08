@@ -20,8 +20,6 @@ package org.apache.hadoop.util.cli;
 import java.io.ByteArrayOutputStream;
 import java.io.PrintStream;
 import org.junit.jupiter.api.Assertions;
-import org.apache.hadoop.util.FindClass;
-import org.apache.hadoop.util.cli.ToolRunner;
 import org.junit.jupiter.api.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

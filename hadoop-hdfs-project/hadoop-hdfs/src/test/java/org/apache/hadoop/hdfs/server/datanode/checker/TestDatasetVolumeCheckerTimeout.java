@@ -35,8 +35,6 @@ import org.junit.jupiter.api.extension.RegisterExtension;
 import org.mockito.stubbing.Answer;
 import org.slf4j.LoggerFactory;
 
-import java.lang.reflect.Method;
-import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicLong;
@@ -88,7 +86,7 @@ public class TestDatasetVolumeCheckerTimeout {
   @Test
   @Timeout(value = 300)
   public void testDiskCheckTimeout() throws Exception {
-    LOG.info("Executing {}", testName);
+    LOG.info("Executing {}", testName.getMethodName());
     final FsVolumeSpi volume = makeSlowVolume();
 
     final DatasetVolumeChecker checker =
@@ -122,13 +120,5 @@ public class TestDatasetVolumeCheckerTimeout {
     // Ensure that the check was invoked only once.
     verify(volume, times(1)).check(any());
     assertThat(numCallbackInvocations.get()).isEqualTo(1L);
-  }
-
-  @BeforeEach
-  public void setup(TestInfo testInfo) {
-    Optional<Method> testMethod = testInfo.getTestMethod();
-    if (testMethod.isPresent()) {
-      this.testName = testMethod.get().getName();
-    }
   }
 }

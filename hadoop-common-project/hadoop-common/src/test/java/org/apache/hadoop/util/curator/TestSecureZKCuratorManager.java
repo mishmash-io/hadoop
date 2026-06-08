@@ -22,10 +22,10 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.apache.hadoop.security.SecurityUtil;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.Timeout;
 
 import org.apache.curator.test.InstanceSpec;
 import org.apache.curator.test.TestingServer;
@@ -36,10 +36,6 @@ import org.apache.zookeeper.ZooKeeper;
 import org.apache.zookeeper.client.ZKClientConfig;
 import org.apache.zookeeper.common.ClientX509Util;
 import org.apache.zookeeper.server.NettyServerCnxnFactory;
-import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.Timeout;
 
 import static org.apache.hadoop.fs.FileContext.LOG;
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -147,7 +143,7 @@ public class TestSecureZKCuratorManager {
   }
 
   @Test
-  @Timeout(value=30000, unit=TimeUnit.MILLISECONDS)
+  @Timeout(value = 30)
   public void testSecureZKConfiguration() throws Exception {
     LOG.info("Entered to the testSecureZKConfiguration test case.");
     // Validate that HadoopZooKeeperFactory will set ZKConfig with given principals
@@ -188,7 +184,7 @@ public class TestSecureZKCuratorManager {
   }
 
   @Test
-  @Timeout(value=30000, unit=TimeUnit.MILLISECONDS)
+  @Timeout(value = 30)
   public void testTruststoreKeystoreConfiguration() {
     LOG.info("Entered to the testTruststoreKeystoreConfiguration test case.");
     /*
@@ -213,8 +209,8 @@ public class TestSecureZKCuratorManager {
     conf.set(CommonConfigurationKeys.ZK_SSL_KEYSTORE_PASSWORD, "keystorePassword");
     conf.set(CommonConfigurationKeys.ZK_SSL_TRUSTSTORE_LOCATION, "/truststore.jks");
     conf.set(CommonConfigurationKeys.ZK_SSL_TRUSTSTORE_PASSWORD, "truststorePassword");
-    SecurityUtil.TruststoreKeystore truststoreKeystore1 =
-        new SecurityUtil.TruststoreKeystore(conf);
+    ZKUtil.TruststoreKeystore truststoreKeystore1 =
+        new ZKUtil.TruststoreKeystore(conf);
     assertEquals("/keystore.jks", truststoreKeystore1.getKeystoreLocation(),
         "Validate that non-null value kept intact.");
     assertEquals("keystorePassword", truststoreKeystore1.getKeystorePassword(),
